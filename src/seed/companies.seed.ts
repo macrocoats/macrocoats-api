@@ -12,33 +12,73 @@ import { hashPassword } from '../utils/crypto.js'
 const SEED_COMPANIES = [
   {
     key:            'rane',
-    displayName:    'Rane',
+    displayName:    'Rane Industries Ltd',
     accessToken:    'r7Kx9mNpQ2wLvYtA8bZeJ3dF',
     allowedProducts: ['uniklean-sp', 'uniklean-fe', 'uniflow-ecm', 'uniprotect-oil'],
+    contactPerson:  'Ravi Kumar',
+    email:          'procurement@raneindustries.in',
+    phone:          '9444012345',
+    gstNumber:      '33AABCR1234F1Z5',
+    address:        'No. 12, Raneipuram Industrial Estate, Ambattur',
+    city:           'Chennai',
+    state:          'Tamil Nadu',
+    pincode:        '600058',
   },
   {
     key:            'sanmar',
-    displayName:    'Sanmar',
+    displayName:    'Sanmar Group',
     accessToken:    'sN4wP8tRmXkL2vBqA7cYeJ5G',
     allowedProducts: ['uniklean-sp'],
+    contactPerson:  'Priya Shankar',
+    email:          'chemicals@sanmargroup.com',
+    phone:          '9840056789',
+    gstNumber:      '33AADCS5678G1Z2',
+    address:        'Sanmar House, 23 Cathedral Road',
+    city:           'Chennai',
+    state:          'Tamil Nadu',
+    pincode:        '600086',
   },
   {
     key:            'galva',
-    displayName:    'Galva',
+    displayName:    'Galva Industries',
     accessToken:    'gL3mQ9xNvKpR7wYtA2bZeJ8F',
     allowedProducts: ['unicool-al'],
+    contactPerson:  'Suresh Babu',
+    email:          'ops@galvaindustries.in',
+    phone:          '9500078901',
+    gstNumber:      '33AABCG9012H1Z8',
+    address:        'Plot 7, SIPCOT Industrial Complex, Gummidipoondi',
+    city:           'Chennai',
+    state:          'Tamil Nadu',
+    pincode:        '601201',
   },
   {
     key:            'tvs',
-    displayName:    'TVS',
+    displayName:    'TVS Motor Company',
     accessToken:    'tV5kR2mNpQ8wLxYtA7bZeJ4G',
     allowedProducts: ['uniklean-sp', 'uniklean-fe', 'uniprotect-oil'],
+    contactPerson:  'Anand Krishnamurthy',
+    email:          'vendor@tvsmotor.com',
+    phone:          '9751023456',
+    gstNumber:      '33AABCT3456J1Z4',
+    address:        'Jayalakshmi Estates, 29 Haddows Road',
+    city:           'Hosur',
+    state:          'Tamil Nadu',
+    pincode:        '635109',
   },
   {
     key:            'sundaramfasteners',
-    displayName:    'Sundaram Fasteners',
+    displayName:    'Sundaram Fasteners Ltd',
     accessToken:    'sf9Np4xRmKvL7wYtA3bZeJ2Q',
     allowedProducts: ['uniklean-sp'],
+    contactPerson:  'Meena Raghunathan',
+    email:          'purchase@sundaramfasteners.com',
+    phone:          '9600034567',
+    gstNumber:      '33AABCS7890K1Z6',
+    address:        '98-A, VII Floor, Dr. Radhakrishnan Salai, Mylapore',
+    city:           'Chennai',
+    state:          'Tamil Nadu',
+    pincode:        '600004',
   },
 ]
 
@@ -53,13 +93,26 @@ export async function seedCompanies() {
 
     let companyId: string
 
+    const contactPatch = {
+      displayName:   co.displayName,
+      contactPerson: co.contactPerson ?? null,
+      email:         co.email ?? null,
+      phone:         co.phone ?? null,
+      gstNumber:     co.gstNumber ?? null,
+      address:       co.address ?? null,
+      city:          co.city ?? null,
+      state:         co.state ?? null,
+      pincode:       co.pincode ?? null,
+    }
+
     if (existing) {
       companyId = existing.id
-      console.log(`   ↩️  Company already exists: ${co.key}`)
+      await db.update(companies).set(contactPatch).where(eq(companies.id, companyId))
+      console.log(`   ↩️  Updated contact fields for: ${co.key}`)
     } else {
       const [inserted] = await db
         .insert(companies)
-        .values({ key: co.key, displayName: co.displayName, accessToken: co.accessToken })
+        .values({ key: co.key, accessToken: co.accessToken, ...contactPatch })
         .returning()
       companyId = inserted.id
       console.log(`   ✅ Created company: ${co.key}`)

@@ -17,6 +17,14 @@ async function buildResponse(company: typeof companies.$inferSelect) {
     allowedProducts: access.map((r) => r.productKey),
     accessToken:    company.accessToken,
     tokenExpiresAt: company.tokenExpiresAt?.toISOString() ?? null,
+    contactPerson:  company.contactPerson ?? null,
+    email:          company.email ?? null,
+    phone:          company.phone ?? null,
+    gstNumber:      company.gstNumber ?? null,
+    address:        company.address ?? null,
+    city:           company.city ?? null,
+    state:          company.state ?? null,
+    pincode:        company.pincode ?? null,
     createdAt:      company.createdAt.toISOString(),
   }
 }
@@ -38,7 +46,20 @@ export async function createCompany(data: CreateCompanyBody) {
 
     const [company] = await tx
       .insert(companies)
-      .values({ key: data.key, displayName: data.displayName, accessToken, tokenExpiresAt: expiresAt })
+      .values({
+        key: data.key,
+        displayName: data.displayName,
+        accessToken,
+        tokenExpiresAt: expiresAt,
+        contactPerson: data.contactPerson ?? null,
+        email:         data.email ?? null,
+        phone:         data.phone ?? null,
+        gstNumber:     data.gstNumber ?? null,
+        address:       data.address ?? null,
+        city:          data.city ?? null,
+        state:         data.state ?? null,
+        pincode:       data.pincode ?? null,
+      })
       .returning()
 
     // Insert product access rows
@@ -68,10 +89,16 @@ export async function updateCompany(id: string, data: UpdateCompanyBody) {
     if (!company) return null
 
     const patch: Partial<typeof companies.$inferInsert> = {}
-    if (data.displayName !== undefined)   patch.displayName    = data.displayName
-    if (data.tokenExpiresAt !== undefined) {
-      patch.tokenExpiresAt = data.tokenExpiresAt ? new Date(data.tokenExpiresAt) : null
-    }
+    if (data.displayName !== undefined)    patch.displayName   = data.displayName
+    if (data.tokenExpiresAt !== undefined) patch.tokenExpiresAt = data.tokenExpiresAt ? new Date(data.tokenExpiresAt) : null
+    if (data.contactPerson !== undefined)  patch.contactPerson = data.contactPerson
+    if (data.email !== undefined)          patch.email         = data.email
+    if (data.phone !== undefined)          patch.phone         = data.phone
+    if (data.gstNumber !== undefined)      patch.gstNumber     = data.gstNumber
+    if (data.address !== undefined)        patch.address       = data.address
+    if (data.city !== undefined)           patch.city          = data.city
+    if (data.state !== undefined)          patch.state         = data.state
+    if (data.pincode !== undefined)        patch.pincode       = data.pincode
 
     if (Object.keys(patch).length) {
       await tx.update(companies).set(patch).where(eq(companies.id, id))

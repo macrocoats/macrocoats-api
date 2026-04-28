@@ -9,6 +9,14 @@ export const companies = pgTable('companies', {
   displayName:    text('display_name').notNull(),
   accessToken:    text('access_token').notNull().unique(), // /access/:token value
   tokenExpiresAt: timestamp('token_expires_at', { withTimezone: true }),  // null = never
+  contactPerson:  text('contact_person'),
+  email:          text('email'),
+  phone:          text('phone'),
+  gstNumber:      text('gst_number'),
+  address:        text('address'),
+  city:           text('city'),
+  state:          text('state'),
+  pincode:        text('pincode'),
   createdAt:      timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 

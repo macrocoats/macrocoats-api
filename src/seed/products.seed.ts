@@ -917,6 +917,55 @@ const DOCS: Array<{
     },
   },
 
+  {
+    productKey: 'uniflow-ecm',
+    docType:    'formula',
+    docNumber:  'FRM-UEF-001',
+    revision:   'Rev 01 — Apr 2026',
+    footer: {
+      left:   'FRM-UEF-001 Rev 01 · Apr 2026',
+      center: 'CONFIDENTIAL — This formulation sheet is the proprietary information of Macro Coats Pvt Ltd. Unauthorised reproduction or disclosure is prohibited.',
+      right:  'Macro Coats Pvt Ltd · Chennai · India\nPage 1 of 1',
+    },
+    body: {
+      classification:     'CONFIDENTIAL — Internal Use Only',
+      batchSize:          '100 L (reference)',
+      formulaType:        'liquid',
+      referenceBatchSize: 100,
+      batchUnit:          'L',
+      totalActivePercent: 98,
+      overview: 'UNIFLOW ECM is a petroleum-sulphonate based corrosion preventive oil formulated for long-term protection of ferrous components during storage and transit. The product deposits a thin, tenacious film that displaces moisture and provides a physical barrier against atmospheric corrosion. Effective at ambient temperature by dip or spray application; no heating required.',
+      composition: [
+        { srNo: 1, name: 'Paraffinic Base Oil (100N)',         casNo: '8042-47-5',  baseQty: 70.0, unit: 'L', percentWV: 70.0, function: 'Carrier oil — provides film-forming base and lubrication',                       density: 0.87,  unitPrice: 65  },
+        { srNo: 2, name: 'Petroleum Sulfonate (Sodium Salt)',  casNo: '68608-26-4', baseQty: 15.0, unit: 'L', percentWV: 15.0, function: 'Primary corrosion inhibitor — forms protective film on metal surface',            density: 0.95,  unitPrice: 120 },
+        { srNo: 3, name: 'Calcium Sulfonate (Overbased)',      casNo: '61789-86-4', baseQty: 8.0,  unit: 'L', percentWV: 8.0,  function: 'Secondary rust inhibitor — neutralises acidic corrosion products',               density: 1.02,  unitPrice: 185 },
+        { srNo: 4, name: 'Microcrystalline Wax',               casNo: '63231-60-7', baseQty: 4.0,  unit: 'Kg', percentWV: 4.0, function: 'Film former — thickens oil film and improves adhesion to substrate',             density: 0.92,  unitPrice: 95  },
+        { srNo: 5, name: 'Antioxidant (DBPC)',                 casNo: '128-37-0',   baseQty: 0.5,  unit: 'Kg', percentWV: 0.5, function: 'Oxidation inhibitor — extends product shelf life and prevents sludge formation', density: 1.05,  unitPrice: 480 },
+        { srNo: 6, name: 'Rust Inhibitor Additive (VCI)',      casNo: '109-02-4',   baseQty: 2.5,  unit: 'L', percentWV: 2.5,  function: 'Vapour corrosion inhibitor — supplementary vapour-phase protection',             density: 0.98,  unitPrice: 320 },
+      ],
+      preparation: [
+        { step: 1, title: 'Safety Setup',            detail: 'Ensure adequate ventilation. Wear nitrile gloves, safety goggles, and heat-resistant apron. Keep fire extinguisher accessible (Class B).' },
+        { step: 2, title: 'Heat Base Oil',           detail: 'Add 70 L of Paraffinic Base Oil (100N) to a stainless steel or mild steel mixing vessel. Heat to 60–70 °C with gentle stirring.' },
+        { step: 3, title: 'Melt and Blend Wax',     detail: 'Add 4 Kg of Microcrystalline Wax to the heated oil. Continue stirring at 65 °C until the wax is fully dissolved and the blend is homogeneous.' },
+        { step: 4, title: 'Add Sulfonates',          detail: 'Reduce temperature to 55 °C. Slowly add 15 L of Petroleum Sulfonate followed by 8 L of Calcium Sulfonate. Stir for 15 minutes after each addition.' },
+        { step: 5, title: 'Add Antioxidant & VCI',  detail: 'Add 0.5 Kg DBPC antioxidant and 2.5 L VCI additive. Mix at 50 °C for 10 minutes until fully dispersed.' },
+        { step: 6, title: 'Cool and Filter',         detail: 'Allow batch to cool to 40 °C with slow stirring. Pass through a 25-micron filter into the filling vessel.' },
+        { step: 7, title: 'QC Check & Fill',         detail: 'Verify appearance (clear amber), kinematic viscosity (20–40 cSt at 40 °C), and flash point (≥160 °C). Fill into labelled containers.' },
+      ],
+      operatingConditions: [
+        { param: 'Application Method',      value: 'Dip, brush, or spray' },
+        { param: 'Application Temperature', value: '25 – 40 °C (no heating required)' },
+        { param: 'Film Thickness',          value: '5 – 15 µm (dry)' },
+        { param: 'Protection Period',       value: '6 – 24 months (indoor storage)' },
+        { param: 'Substrate',               value: 'Mild steel, cast iron, alloy steel' },
+      ],
+      applications: {
+        removes:    ['Moisture', 'Atmospheric oxygen', 'Acidic corrosion products', 'Chloride contaminants'],
+        usedBefore: ['Long-term storage', 'Inter-process transit', 'Export packaging', 'Machined component preservation'],
+      },
+    },
+  },
+
   // ─────────────────────────────────────────────────────────────────────────────
   // UNICool AL
   // ─────────────────────────────────────────────────────────────────────────────
