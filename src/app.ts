@@ -9,6 +9,7 @@ import { inventoryRoutes } from './modules/inventory/inventory.routes.js'
 import { quotationRoutes } from './modules/quotations/quotations.routes.js'
 import { companyRoutes } from './modules/companies/companies.routes.js'
 import { analyticsRoutes } from './modules/analytics/analytics.routes.js'
+import { batchRoutes } from './modules/batches/batches.routes.js'
 
 export async function buildApp() {
   const app = Fastify({
@@ -40,6 +41,7 @@ export async function buildApp() {
   await app.register(quotationRoutes, { prefix: `${prefix}/quotations` })
   await app.register(companyRoutes,   { prefix: `${prefix}/companies` })
   await app.register(analyticsRoutes, { prefix: `${prefix}/analytics` })
+  await app.register(batchRoutes,     { prefix: `${prefix}/batches` })
 
   // ── Global error handler ──────────────────────────────────────────────────
   app.setErrorHandler((error, _request, reply) => {

@@ -1,18 +1,29 @@
 import { eq, asc } from 'drizzle-orm'
 import { db } from '../../db/index.js'
 import { inventoryItems } from '../../db/schema/index.js'
-import type { CreateInventoryItemBody, UpdateInventoryItemBody } from './inventory.schema.js'
+import type { CreateInventoryItemBody, UpdateInventoryItemBody, StockStatus } from './inventory.schema.js'
+
+function computeStockStatus(stockQty: string | null, threshold: number): StockStatus {
+  if (stockQty === null) return 'unknown'
+  const qty = Number(stockQty)
+  if (qty === 0) return 'out_of_stock'
+  if (qty < threshold) return 'low'
+  return 'in_stock'
+}
 
 function toResponse(row: typeof inventoryItems.$inferSelect) {
+  const stockStatus = computeStockStatus(row.stockQty, row.lowStockThreshold)
   return {
-    id:        row.id,
-    material:  row.material,
-    unit:      row.unit,
-    price:     Number(row.price),
-    stock:     row.stock,
-    supplier:  row.supplier,
-    sortOrder: row.sortOrder,
-    updatedAt: row.updatedAt.toISOString(),
+    id:                row.id,
+    material:          row.material,
+    unit:              row.unit,
+    price:             Number(row.price),
+    supplier:          row.supplier,
+    sortOrder:         row.sortOrder,
+    stockQty:          row.stockQty !== null ? Number(row.stockQty) : null,
+    lowStockThreshold: row.lowStockThreshold,
+    stockStatus,
+    updatedAt:         row.updatedAt.toISOString(),
   }
 }
 
@@ -34,11 +45,17 @@ export async function createItem(data: CreateInventoryItemBody, updatedBy: strin
   const [row] = await db
     .insert(inventoryItems)
     .values({
-      ...data,
-      price:     String(data.price),
-      isDefault: false,
+      material:          data.material,
+      unit:              data.unit,
+      price:             String(data.price),
+      stock:             data.stock ?? '',
+      supplier:          data.supplier ?? '',
+      sortOrder:         data.sortOrder ?? 0,
+      stockQty:          data.stockQty != null ? String(data.stockQty) : null,
+      lowStockThreshold: data.lowStockThreshold ?? 10,
+      isDefault:         false,
       updatedBy,
-      updatedAt: new Date(),
+      updatedAt:         new Date(),
     })
     .returning()
 
@@ -56,6 +73,8 @@ export async function updateItem(id: string, data: UpdateInventoryItemBody, upda
   if (data.stock     !== undefined) patch.stock     = data.stock
   if (data.supplier  !== undefined) patch.supplier  = data.supplier
   if (data.sortOrder !== undefined) patch.sortOrder = data.sortOrder
+  if (data.stockQty  !== undefined) patch.stockQty  = data.stockQty !== null ? String(data.stockQty) : null
+  if (data.lowStockThreshold !== undefined) patch.lowStockThreshold = data.lowStockThreshold
 
   const [row] = await db
     .update(inventoryItems)
@@ -80,11 +99,9 @@ export async function deleteItem(id: string): Promise<boolean> {
  * Deletes all non-default rows; restores default rows to their seed prices.
  */
 export async function resetToDefaults() {
-  // Delete all rows that were added by users (not seeded defaults)
   await db
     .delete(inventoryItems)
     .where(eq(inventoryItems.isDefault, false))
 
-  // The seed rows remain — return the current state
   return getAllItems()
 }

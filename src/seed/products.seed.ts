@@ -792,6 +792,12 @@ const DOCS: Array<{
     body: {
       signalWord: 'Warning',
       sections: {
+        identification: {
+          productType:  'Petroleum-based corrosion preventive oil',
+          intendedUse:  'Temporary corrosion protection of metal components during storage and transit',
+          manufacturer: 'Macro Coats Pvt Ltd, Chennai, Tamil Nadu, India',
+          emergency:    'AIIMS Poison Control: 1800-11-6117 (Toll-Free)',
+        },
         hazards: {
           pictograms:      ['flammable', 'health', 'environment'],
           classifications: [
@@ -800,15 +806,70 @@ const DOCS: Array<{
             { class: 'Skin Irritation',            category: 'Cat 2', tagType: 'warn'   },
             { class: 'Aquatic Toxicity (Chronic)', category: 'Cat 3', tagType: 'warn'   },
           ],
-          hStatements: 'H226, H304, H315, H412',
+          hStatements: 'H226 — Flammable liquid and vapour. H304 — May be fatal if swallowed and enters airways. H315 — Causes skin irritation. H412 — Harmful to aquatic life with long lasting effects.',
           pStatements: 'P210 · P260 · P273 · P280 · P301+P310 · P302+P352 · P331',
         },
+        composition: {
+          ingredients: [
+            { name: 'Paraffinic mineral oil',   description: 'Carrier and film-forming base — primary corrosion barrier', percent: '70–85%', ghsClass: 'Aspiration Hazard', tagType: 'danger' },
+            { name: 'Corrosion inhibitor blend', description: 'ECM-compatible inhibitor package for ferrous and non-ferrous metals', percent: '10–20%', ghsClass: 'Irritant', tagType: 'warn' },
+            { name: 'Solvent naphtha',           description: 'Viscosity modifier and carrier for inhibitor package', percent: '<5%', ghsClass: 'Flammable', tagType: 'warn' },
+          ],
+          note: 'Exact formulation is proprietary. Functional ingredient descriptions are provided for safety and emergency purposes only.',
+        },
         firstAid: {
-          skin:       'Wash with soap and water. Seek advice if irritation persists.',
+          skin:       'Wash with soap and water. Remove contaminated clothing. Seek advice if irritation persists.',
           eyes:       'Flush with water for ≥15 min. Seek medical attention.',
-          ingestion:  'Do NOT induce vomiting. Seek immediate medical attention.',
+          ingestion:  'Do NOT induce vomiting — aspiration risk. Seek immediate medical attention.',
           inhalation: 'Move to fresh air. Seek medical attention if symptoms persist.',
-          warning:    '⚠ Do NOT induce vomiting — aspiration hazard.',
+          warning:    '⚠ Do NOT induce vomiting — risk of aspiration pneumonia.',
+        },
+        fireFighting: {
+          flammability:       'Flammable liquid — flash point >60 °C.',
+          extinguishingMedia: 'CO₂, dry powder, foam. Do NOT use water jet on burning liquid.',
+          fireHazard:         'Thermal decomposition may release toxic hydrocarbon fumes.',
+          ppe:                'SCBA and full fire-resistant protective clothing.',
+        },
+        accidentalRelease: [
+          'Eliminate all ignition sources immediately',
+          'Contain spill with sand or inert absorbent material',
+          'Prevent entry into drains and waterways — harmful to aquatic organisms',
+          'Collect contaminated material into sealed HDPE containers for disposal',
+          'Dispose as per CPCB Hazardous Waste Management Rules 2016',
+        ],
+        handling: {
+          handling:     'Keep away from heat, sparks, open flames, and all ignition sources. Handle in well-ventilated areas.',
+          storageTemp:  '5 °C – 40 °C; cool, dry, well-ventilated area; away from heat sources',
+          containers:   'Sealed HDPE or steel containers; keep tightly closed when not in use',
+          segregation:  'Store separately from oxidising agents, strong acids, and strong alkalis',
+          shelfLife:    '24 months from date of manufacture in original sealed containers',
+        },
+        exposure: {
+          ppeItems:    ['Safety Glasses', 'Chemical-resist. Gloves', 'Apron', 'Closed-toe Shoes'],
+          engineering: 'Good general ventilation. Avoid generation of mist or aerosol. Eyewash station within 10 s.',
+        },
+        physical: [
+          { key: 'Appearance',    val: 'Clear amber liquid' },
+          { key: 'Odour',         val: 'Petroleum characteristic' },
+          { key: 'Flash Point',   val: '>60 °C (ASTM D93)' },
+          { key: 'Density',       val: '0.83 – 0.87 g/mL' },
+          { key: 'Viscosity',     val: '10–18 cSt at 40 °C' },
+          { key: 'Solubility',    val: 'Insoluble in water' },
+          { key: 'Boiling Point', val: '>150 °C' },
+          { key: 'Vapour Pres.',  val: 'Low at ambient temperature' },
+        ],
+        stability: {
+          stability:      'Stable under recommended storage conditions.',
+          avoid:          'Strong oxidising agents, excessive heat, open flame, ignition sources',
+          decomposition:  'Combustion may produce CO, CO₂, and hydrocarbon fragments.',
+          polymerisation: 'Will not occur',
+        },
+        sections11to16: {
+          'Skin / Eye': 'Petroleum-based oil may cause mild skin and eye irritation on prolonged exposure. Flush with water immediately.',
+          Aquatic:      'H412 — harmful to aquatic life with long lasting effects. Do not discharge to drains, waterways, or soil.',
+          Disposal:     'Recover and recycle where possible. Dispose via licensed waste contractor per CPCB/SPCB norms (E.P. Act 1986).',
+          Regulatory:   'MSIHC Rules 1989 · Factories Act 1948 · Hazardous Waste Rules 2016 · GHS Rev 9',
+          'Other Info': 'SDS Rev 01 issued Apr 2026. Next review: Apr 2028 or upon formulation change.',
         },
       },
     },
@@ -927,6 +988,12 @@ const DOCS: Array<{
     body: {
       signalWord: 'Danger',
       sections: {
+        identification: {
+          productType:  'Alcohol-based precision cleaning and degreasing fluid',
+          intendedUse:  'Fast-drying cleaning of aluminium, copper, PCBs, and electronic assemblies',
+          manufacturer: 'Macro Coats Pvt Ltd, Chennai, Tamil Nadu, India',
+          emergency:    'AIIMS Poison Control: 1800-11-6117 (Toll-Free)',
+        },
         hazards: {
           pictograms:      ['flammable', 'irritant', 'environment'],
           classifications: [
@@ -938,19 +1005,118 @@ const DOCS: Array<{
           hStatements: 'H225 — Highly flammable liquid and vapour. H319 — Causes serious eye irritation. H336 — May cause drowsiness or dizziness. H412.',
           pStatements: 'P210 · P233 · P261 · P273 · P280 · P305+P351+P338 · P370+P378',
         },
+        composition: {
+          ingredients: [
+            { name: 'Demineralised water',              description: 'Carrier / solvent — major component',                           percent: '~85%',   ghsClass: '—',        tagType: 'safe'   },
+            { name: 'Ethanol (Industrial Grade)',        description: 'Co-solvent — enhances cleaning and accelerates drying',         percent: '~10%',   ghsClass: 'Flammable', tagType: 'warn'   },
+            { name: 'Isopropyl Alcohol (IPA)',           description: 'Primary solvent — rapid evaporation and degreasing',            percent: '~5%',    ghsClass: 'Flammable', tagType: 'warn'   },
+            { name: 'Lauryl Alcohol Ethoxylate (LAE-9)', description: 'Nonionic surfactant — wetting and emulsification aid',         percent: '<0.1%',  ghsClass: 'Irritant',  tagType: 'warn'   },
+            { name: 'Ammonium Hydroxide (25–30%)',       description: 'pH regulator — mild alkalinity for enhanced cleaning',         percent: '<0.1%',  ghsClass: 'Irritant',  tagType: 'warn'   },
+          ],
+          note: 'Exact formulation is proprietary. Functional ingredient descriptions are provided for safety and emergency purposes only.',
+        },
         firstAid: {
-          skin:       'Wash with soap and water. Remove soaked clothing immediately.',
-          eyes:       'Flush with running water for ≥15 min. Seek medical attention.',
-          ingestion:  'Rinse mouth with water. Seek medical advice.',
-          inhalation: 'Move to fresh air. If symptoms persist, seek medical attention.',
-          warning:    '⚠ Highly flammable — eliminate all ignition sources.',
+          skin:       'Wash with soap and water. Remove soaked clothing immediately. Seek advice if irritation persists.',
+          eyes:       'Flush with running water for ≥15 min, holding eyelids open. Seek medical attention.',
+          ingestion:  'Rinse mouth with water. Do NOT induce vomiting. Seek medical advice.',
+          inhalation: 'Move to fresh air immediately. If symptoms persist, seek medical attention.',
+          warning:    '⚠ Highly flammable — eliminate all ignition sources before use.',
         },
         fireFighting: {
-          flammability:       'Highly flammable liquid and vapour. Flash point 12–18 °C.',
+          flammability:       'Flammable liquid and vapour. Flash point ~24 °C (alcohol component).',
           extinguishingMedia: 'CO₂, dry powder, alcohol-resistant foam.',
-          fireHazard:         'Vapours may travel to ignition source and flashback.',
+          fireHazard:         'Alcohol vapours may travel to ignition source and flashback.',
           ppe:                'SCBA and full fire-resistant clothing.',
         },
+        accidentalRelease: [
+          'Eliminate all ignition sources immediately — flammable vapour risk',
+          'Ventilate area well to prevent vapour accumulation',
+          'Contain spill with inert absorbent material (sand, vermiculite)',
+          'Prevent runoff from entering drains or waterways',
+          'Collect spilled material and dispose per CPCB/SPCB guidelines',
+        ],
+        handling: {
+          handling:     'Keep away from open flames, sparks, and all ignition sources. Use only in well-ventilated areas.',
+          storageTemp:  '5 °C – 35 °C; cool, dry, ventilated area; away from direct heat and sunlight',
+          containers:   'HDPE trigger spray bottles or HDPE jerrycans; keep tightly sealed when not in use',
+          segregation:  'Store separately from oxidising agents, strong acids, and strong alkalis',
+          shelfLife:    '24 months from date of manufacture in original sealed containers',
+        },
+        exposure: {
+          ppeItems:    ['Safety Glasses', 'Nitrile Gloves', 'Antistatic Footwear', 'Lab Coat'],
+          engineering: 'Mechanical exhaust ventilation to prevent vapour build-up. Eyewash station within 10 s of handling area.',
+        },
+        physical: [
+          { key: 'Appearance',    val: 'Clear, colourless liquid' },
+          { key: 'Odour',         val: 'Mild alcohol characteristic' },
+          { key: 'Flash Point',   val: '~24 °C (alcohol component)' },
+          { key: 'Density',       val: '0.92 – 0.96 g/mL' },
+          { key: 'pH',            val: '8.0 – 9.0' },
+          { key: 'Solubility',    val: 'Fully miscible with water' },
+          { key: 'Evaporation',   val: 'Fast (alcohol component)' },
+          { key: 'Boiling Point', val: '~80 °C' },
+        ],
+        stability: {
+          stability:      'Stable under recommended storage conditions.',
+          avoid:          'Open flames, sparks, strong oxidising agents, strong acids',
+          decomposition:  'Combustion may produce CO, CO₂, water vapour, and nitrogen oxides.',
+          polymerisation: 'Will not occur',
+        },
+        sections11to16: {
+          'Skin / Eye': 'Ethanol/IPA blend is a skin and eye irritant. May cause dryness with repeated exposure. Flush with water immediately.',
+          Aquatic:      'H412 — harmful to aquatic life with long lasting effects. Avoid discharge to drains or watercourses.',
+          Disposal:     'Recover and recycle if possible. Dispose of residues via licensed waste contractor per CPCB/SPCB norms (E.P. Act 1986).',
+          Regulatory:   'MSIHC Rules 1989 · Factories Act 1948 · Hazardous Waste Rules 2016 · GHS Rev 9',
+          'Other Info': 'SDS Rev 01 issued Apr 2026. Next review: Apr 2028 or upon formulation change.',
+        },
+      },
+    },
+  },
+
+  {
+    productKey: 'unicool-al',
+    docType:    'formula',
+    docNumber:  'FRM-UCL-001',
+    revision:   'Rev 01 — Apr 2026',
+    footer: {
+      left:   'FRM-UCL-001 Rev 01 · Apr 2026',
+      center: 'CONFIDENTIAL — This formulation sheet is the proprietary information of Macro Coats Pvt Ltd. Unauthorised reproduction or disclosure is prohibited.',
+      right:  'Macro Coats Pvt Ltd · Chennai · India\nPage 1 of 1',
+    },
+    body: {
+      classification:     'CONFIDENTIAL — Internal Use Only',
+      batchSize:          '100 L (reference)',
+      formulaType:        'liquid',
+      referenceBatchSize: 100,
+      batchUnit:          'L',
+      totalActivePercent: 95,
+      overview: 'UNICool AL is a fast-drying isopropyl alcohol (IPA) based precision cleaner formulated for cooling and degreasing of metal and electronic components. It leaves no residue, evaporates rapidly, and is suitable for precision engineering, bearing cleaning, and post-machining surface preparation.',
+      composition: [
+        { srNo: 1, name: 'DM Water',                          casNo: '7732-18-5', baseQty: null, unit: 'L', percentWV: null, function: 'Solvent base — balance to final volume (de-mineralised)',                         density: 1.0,  unitPrice: 0   },
+        { srNo: 2, name: 'Ethanol (Industrial Grade)',         casNo: '64-17-5',   baseQty: 10.0, unit: 'L', percentWV: 10.0, function: 'Co-solvent — enhances cleaning action and accelerates drying',                    density: 0.789, unitPrice: 55  },
+        { srNo: 3, name: 'IPA (Isopropyl Alcohol)',            casNo: '67-63-0',   baseQty: 5.0,  unit: 'L', percentWV: 5.0,  function: 'Primary solvent — rapid evaporation, degreasing and surface preparation',        density: 0.786, unitPrice: 65  },
+        { srNo: 4, name: 'LAE-9 (Lauryl Alcohol Ethoxylate)', casNo: '9002-92-0', baseQty: 0.01, unit: 'L', percentWV: 0.01, function: 'Nonionic surfactant — wetting and emulsification aid',                            density: 0.95,  unitPrice: 380 },
+        { srNo: 5, name: 'Ammonium Hydroxide (25–30%)',        casNo: '1336-21-6', baseQty: 0.01, unit: 'L', percentWV: 0.01, function: 'pH regulator — mild alkalinity for enhanced cleaning and degreasing performance', density: 0.91,  unitPrice: 120 },
+      ],
+      preparation: [
+        { step: 1, title: 'Safety Setup',              detail: 'Ensure working area is well-ventilated. Wear PPE: chemical goggles, nitrile gloves, and lab coat. Avoid contact with eyes and skin.' },
+        { step: 2, title: 'Charge DM Water',           detail: 'Add approximately 80 L of de-mineralised (DM) water to the stainless steel or HDPE mixing vessel.' },
+        { step: 3, title: 'Add Ethanol',               detail: 'Add 10 L of industrial-grade ethanol to the DM water and mix gently for 2 minutes.' },
+        { step: 4, title: 'Add IPA',                   detail: 'Add 5 L of Isopropyl Alcohol (IPA) to the blend and continue mixing.' },
+        { step: 5, title: 'Add Surfactant & pH Agent', detail: 'Pre-dilute LAE-9 (10 mL) and Ammonium Hydroxide (10 mL) separately in a small quantity of DM water, then blend into the main vessel with gentle agitation.' },
+        { step: 6, title: 'Final Volume Adjustment',   detail: 'Top up with DM water to bring the final batch volume to exactly 100 L. Stir for 5 minutes to ensure homogeneity.' },
+        { step: 7, title: 'QC Check & Fill',           detail: 'Check pH (target 7.5–9.0) and appearance (clear, colourless to very pale). Fill into labelled HDPE containers.' },
+      ],
+      operatingConditions: [
+        { param: 'Application Method',    value: 'Spray, wipe or dip' },
+        { param: 'Evaporation Rate',      value: 'Fast — <2 min at 25 °C' },
+        { param: 'Operating Temperature', value: '15 – 40 °C' },
+        { param: 'Contact Time',          value: '15 – 60 seconds' },
+        { param: 'Substrate Compatibility', value: 'Metal, glass, PCB, plastic (non-sensitive)' },
+      ],
+      applications: {
+        removes:    ['Machining oils', 'Cutting fluids', 'Flux residues', 'Fingerprints', 'Light greases'],
+        usedBefore: ['Precision assembly', 'Bearing installation', 'Surface inspection', 'Adhesive bonding'],
       },
     },
   },
@@ -995,6 +1161,196 @@ const DOCS: Array<{
       products: ['UNICool AL', 'UNICool AL PLUS', 'UNICool IPA'],
     },
   },
+  // ─────────────────────────────────────────────────────────────────────────────
+  // CoA — UNIKLEAN-SP
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    productKey: 'uniklean-sp',
+    docType:    'coa',
+    docNumber:  'COA-USP-001',
+    revision:   'Rev 01 — Apr 2026',
+    footer: {
+      left:   'COA-USP-001 Rev 01 · Apr 2026',
+      center: 'CONFIDENTIAL — For authorised recipients only · Macro Coats Pvt Ltd',
+      right:  'Macro Coats Pvt Ltd · Chennai · India',
+    },
+    body: {
+      batchNumber:    'USP-20260426-001',
+      batchSize:      '100 L',
+      productionDate: '26 Apr 2026',
+      expiryDate:     'Apr 2028',
+      grade:          'Industrial Grade',
+      appearance:     'Clear to pale yellow liquid',
+      tests: [
+        { parameter: 'Appearance',                 method: 'Visual',                 specification: 'Clear to pale yellow liquid',  result: 'Clear, pale yellow liquid', status: 'Pass' },
+        { parameter: 'pH (1% solution, 25 °C)',    method: 'pH Electrode',            specification: '10.5 – 12.5',                 result: '11.2',                      status: 'Pass' },
+        { parameter: 'Density (25 °C)',            method: 'ISO 2811',                specification: '1.03 – 1.08 g/mL',           result: '1.05 g/mL',                 status: 'Pass' },
+        { parameter: 'Total Alkalinity',           method: 'HCl Titration',           specification: '≥ 8.0 % (as Na₂O)',          result: '9.2 %',                     status: 'Pass' },
+        { parameter: 'Foam Level (spray, 55 °C)',  method: 'DIN 53902',               specification: '< 5 mL',                      result: '2 mL',                      status: 'Pass' },
+        { parameter: 'Flash Rust Inhibition',      method: 'IS 5521 (2 h, 25 °C)',    specification: 'No flash rust',               result: 'No flash rust observed',    status: 'Pass' },
+        { parameter: 'Oil Removal Efficiency',     method: 'Internal Method IM-001',  specification: '≥ 98 %',                      result: '99.3 %',                    status: 'Pass' },
+      ],
+      statement: 'We hereby certify that the above batch of UNIKLEAN-SP has been manufactured, tested, and inspected in accordance with our internal quality specifications. All parameters conform to the product specification and the product is approved for release.',
+      approvals: {
+        preparedBy: 'Quality Analyst — Macro Coats',
+        reviewedBy: 'QC Manager — Macro Coats',
+        approvedBy: 'Operations Head — Macro Coats',
+      },
+    },
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // CoA — UNIKLEAN-FE
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    productKey: 'uniklean-fe',
+    docType:    'coa',
+    docNumber:  'COA-UFE-001',
+    revision:   'Rev 01 — Apr 2026',
+    footer: {
+      left:   'COA-UFE-001 Rev 01 · Apr 2026',
+      center: 'CONFIDENTIAL — For authorised recipients only · Macro Coats Pvt Ltd',
+      right:  'Macro Coats Pvt Ltd · Chennai · India',
+    },
+    body: {
+      batchNumber:    'UFE-20260426-001',
+      batchSize:      '200 L',
+      productionDate: '26 Apr 2026',
+      expiryDate:     'Apr 2028',
+      grade:          'Industrial Grade',
+      appearance:     'Clear to pale yellow liquid',
+      tests: [
+        { parameter: 'Appearance',                      method: 'Visual',             specification: 'Clear to pale yellow liquid',   result: 'Clear, pale yellow liquid', status: 'Pass' },
+        { parameter: 'pH (Concentrate, 25 °C)',         method: 'pH Electrode',        specification: '1.5 – 3.0',                    result: '2.3',                       status: 'Pass' },
+        { parameter: 'pH (5% working bath, 25 °C)',     method: 'pH Electrode',        specification: '4.0 – 5.5',                    result: '4.7',                       status: 'Pass' },
+        { parameter: 'Density (25 °C)',                 method: 'ISO 2811',            specification: '1.08 – 1.12 g/mL',            result: '1.10 g/mL',                 status: 'Pass' },
+        { parameter: 'Total Phosphate (as P₂O₅)',       method: 'Volumetric Titration',specification: '20 – 30 %',                    result: '24.8 %',                    status: 'Pass' },
+        { parameter: 'Coating Weight (5%, 55°C, 5min)', method: 'IS 6005 / ISO 3892', specification: '0.3 – 1.0 g/m²',              result: '0.65 g/m²',                 status: 'Pass' },
+        { parameter: 'Flash Rust Resistance',           method: 'IS 5521 (1 h)',      specification: 'No flash rust within 1 h',     result: 'No flash rust observed',    status: 'Pass' },
+      ],
+      statement: 'We hereby certify that the above batch of UNIKLEAN-FE has been manufactured, tested, and inspected in accordance with our internal quality specifications. All parameters conform to the product specification and the product is approved for release.',
+      approvals: {
+        preparedBy: 'Quality Analyst — Macro Coats',
+        reviewedBy: 'QC Manager — Macro Coats',
+        approvedBy: 'Operations Head — Macro Coats',
+      },
+    },
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // CoA — UNIPROTECT OIL
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    productKey: 'uniprotect-oil',
+    docType:    'coa',
+    docNumber:  'COA-UPO-001',
+    revision:   'Rev 01 — Apr 2026',
+    footer: {
+      left:   'COA-UPO-001 Rev 01 · Apr 2026',
+      center: 'CONFIDENTIAL — For authorised recipients only · Macro Coats Pvt Ltd',
+      right:  'Macro Coats Pvt Ltd · Chennai · India',
+    },
+    body: {
+      batchNumber:    'UPO-20260426-001',
+      batchSize:      '200 L',
+      productionDate: '26 Apr 2026',
+      expiryDate:     'Apr 2028',
+      grade:          'Industrial Grade',
+      appearance:     'Clear amber liquid',
+      tests: [
+        { parameter: 'Appearance',                      method: 'Visual',              specification: 'Clear amber liquid',              result: 'Clear amber liquid',              status: 'Pass' },
+        { parameter: 'Flash Point',                     method: 'ASTM D93',            specification: '> 60 °C',                         result: '68 °C',                           status: 'Pass' },
+        { parameter: 'Density (25 °C)',                 method: 'ISO 2811',            specification: '0.82 – 0.86 g/mL',               result: '0.84 g/mL',                       status: 'Pass' },
+        { parameter: 'Kinematic Viscosity (40 °C)',     method: 'ASTM D445',           specification: '8 – 15 cSt',                      result: '11.2 cSt',                        status: 'Pass' },
+        { parameter: 'Film Thickness (dip application)',method: 'Dry Film Gauge',      specification: '3 – 8 μm',                        result: '5 μm',                            status: 'Pass' },
+        { parameter: 'Humidity Cabinet Test',           method: 'ASTM D1748 (500 h)',  specification: 'No rust formation in 500 h',      result: 'No rust observed at 500 h',       status: 'Pass' },
+        { parameter: 'Water Displacement',              method: 'Internal IM-002',     specification: '≥ 99 %',                          result: '99.5 %',                          status: 'Pass' },
+      ],
+      statement: 'We hereby certify that the above batch of UNIPROTECT OIL has been manufactured, tested, and inspected in accordance with our internal quality specifications. All parameters conform to the product specification and the product is approved for release.',
+      approvals: {
+        preparedBy: 'Quality Analyst — Macro Coats',
+        reviewedBy: 'QC Manager — Macro Coats',
+        approvedBy: 'Operations Head — Macro Coats',
+      },
+    },
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // CoA — UNIFLOW ECM
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    productKey: 'uniflow-ecm',
+    docType:    'coa',
+    docNumber:  'COA-UEF-001',
+    revision:   'Rev 01 — Apr 2026',
+    footer: {
+      left:   'COA-UEF-001 Rev 01 · Apr 2026',
+      center: 'CONFIDENTIAL — For authorised recipients only · Macro Coats Pvt Ltd',
+      right:  'Macro Coats Pvt Ltd · Chennai · India',
+    },
+    body: {
+      batchNumber:    'UEF-20260426-001',
+      batchSize:      '200 L',
+      productionDate: '26 Apr 2026',
+      expiryDate:     'Apr 2028',
+      grade:          'Industrial Grade',
+      appearance:     'Amber to dark amber liquid',
+      tests: [
+        { parameter: 'Appearance',                    method: 'Visual',              specification: 'Amber to dark amber liquid',      result: 'Amber liquid, clear',             status: 'Pass' },
+        { parameter: 'Flash Point',                   method: 'ASTM D93',            specification: '> 65 °C',                         result: '72 °C',                           status: 'Pass' },
+        { parameter: 'Density (25 °C)',               method: 'ISO 2811',            specification: '0.85 – 0.92 g/mL',               result: '0.88 g/mL',                       status: 'Pass' },
+        { parameter: 'Kinematic Viscosity (40 °C)',   method: 'ASTM D445',           specification: '15 – 30 cSt',                     result: '21.5 cSt',                        status: 'Pass' },
+        { parameter: 'Petroleum Sulfonate Content',   method: 'IP 33',               specification: '15 – 25 %',                       result: '19.8 %',                          status: 'Pass' },
+        { parameter: 'Humidity Cabinet (720 h)',       method: 'ASTM D1748',          specification: 'No rust in 720 h',               result: 'No rust observed at 720 h',       status: 'Pass' },
+        { parameter: 'Salt Spray Resistance',         method: 'ASTM B117 (96 h)',    specification: 'No rust in 96 h',                 result: 'No rust observed at 96 h',        status: 'Pass' },
+      ],
+      statement: 'We hereby certify that the above batch of UNIFLOW ECM has been manufactured, tested, and inspected in accordance with our internal quality specifications. All parameters conform to the product specification and the product is approved for release.',
+      approvals: {
+        preparedBy: 'Quality Analyst — Macro Coats',
+        reviewedBy: 'QC Manager — Macro Coats',
+        approvedBy: 'Operations Head — Macro Coats',
+      },
+    },
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // CoA — UNICool AL
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    productKey: 'unicool-al',
+    docType:    'coa',
+    docNumber:  'COA-UCL-001',
+    revision:   'Rev 01 — Apr 2026',
+    footer: {
+      left:   'COA-UCL-001 Rev 01 · Apr 2026',
+      center: 'CONFIDENTIAL — For authorised recipients only · Macro Coats Pvt Ltd',
+      right:  'Macro Coats Pvt Ltd · Chennai · India',
+    },
+    body: {
+      batchNumber:    'UCL-20260426-001',
+      batchSize:      '50 L',
+      productionDate: '26 Apr 2026',
+      expiryDate:     'Apr 2027',
+      grade:          'Industrial / Precision Grade',
+      appearance:     'Clear, colourless liquid',
+      tests: [
+        { parameter: 'Appearance',                  method: 'Visual',               specification: 'Clear, colourless liquid',        result: 'Clear, colourless liquid',        status: 'Pass' },
+        { parameter: 'Odour',                       method: 'Olfactory',            specification: 'Characteristic alcohol odour',    result: 'Characteristic alcohol',          status: 'Pass' },
+        { parameter: 'Flash Point',                 method: 'ASTM D56',             specification: '12 – 18 °C',                      result: '14 °C',                           status: 'Pass' },
+        { parameter: 'Density (25 °C)',             method: 'ISO 2811',             specification: '0.78 – 0.82 g/mL',               result: '0.80 g/mL',                       status: 'Pass' },
+        { parameter: 'Evaporation Residue',         method: 'ASTM D1353',           specification: '≤ 0.001 %',                       result: '< 0.001 %',                       status: 'Pass' },
+        { parameter: 'Dry Time (ambient)',          method: 'Cotton Wipe Method',   specification: '30 – 90 s',                       result: '45 s',                            status: 'Pass' },
+        { parameter: 'Aluminium Compatibility',     method: 'Internal IM-003',      specification: 'No staining, no etching',         result: 'No staining or etching observed', status: 'Pass' },
+      ],
+      statement: 'We hereby certify that the above batch of UNICool AL has been manufactured, tested, and inspected in accordance with our internal quality specifications. All parameters conform to the product specification and the product is approved for release.',
+      approvals: {
+        preparedBy: 'Quality Analyst — Macro Coats',
+        reviewedBy: 'QC Manager — Macro Coats',
+        approvedBy: 'Operations Head — Macro Coats',
+      },
+    },
+  },
+
 ]
 
 // ── Seed function ──────────────────────────────────────────────────────────────

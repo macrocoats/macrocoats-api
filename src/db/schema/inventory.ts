@@ -7,8 +7,10 @@ export const inventoryItems = pgTable('inventory_items', {
   material:  text('material').notNull(),
   unit:      text('unit', { enum: ['Kg', 'L'] }).notNull(),
   price:     numeric('price', { precision: 10, scale: 2 }).notNull().default('0'),
-  stock:     text('stock').notNull().default(''),
-  supplier:  text('supplier').notNull().default(''),
+  stock:             text('stock').notNull().default(''),
+  supplier:          text('supplier').notNull().default(''),
+  stockQty:          numeric('stock_qty', { precision: 10, scale: 2 }),
+  lowStockThreshold: integer('low_stock_threshold').notNull().default(10),
   sortOrder: integer('sort_order').notNull().default(0),
   /** true = part of the factory-default 23 items; used by resetToDefaults */
   isDefault: boolean('is_default').notNull().default(false),
