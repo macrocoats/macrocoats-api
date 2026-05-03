@@ -16,6 +16,8 @@ export const batches = pgTable('batches', {
   formulationSnapshot: jsonb('formulation_snapshot').notNull(),
   labelSnapshot:       jsonb('label_snapshot').notNull(),
   costSummary:         jsonb('cost_summary').notNull(),
+  paymentDueDate:      text('payment_due_date'),
+  paymentTermDays:     integer('payment_term_days').default(45),
   createdBy:           uuid('created_by').references(() => users.id),
   createdAt:           timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })

@@ -15,6 +15,8 @@ function toBatchResponse(row: typeof batches.$inferSelect) {
     formulationSnapshot: row.formulationSnapshot,
     labelSnapshot:       row.labelSnapshot,
     costSummary:         row.costSummary,
+    paymentDueDate:      row.paymentDueDate ?? null,
+    paymentTermDays:     row.paymentTermDays ?? 45,
     createdAt:           row.createdAt.toISOString(),
   }
 }
@@ -40,6 +42,8 @@ export async function createBatch(data: CreateBatchBody, createdBy: string | nul
         formulationSnapshot: data.formulationSnapshot,
         labelSnapshot:       labelSnapshotWithBatch,
         costSummary:         data.costSummary,
+        paymentDueDate:      data.paymentDueDate ?? null,
+        paymentTermDays:     data.paymentTermDays ?? 45,
         createdBy:           createdBy ?? undefined,
       })
       .returning()

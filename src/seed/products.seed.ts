@@ -682,6 +682,55 @@ const DOCS: Array<{
 
   {
     productKey: 'uniprotect-oil',
+    docType:    'formula',
+    docNumber:  'FRM-UPO-001',
+    revision:   'Rev 01 — Apr 2026',
+    footer: {
+      left:   'FRM-UPO-001 Rev 01 · Apr 2026',
+      center: 'CONFIDENTIAL — This formulation sheet is the proprietary information of Macro Coats Pvt Ltd. Unauthorised reproduction or disclosure is prohibited.',
+      right:  'Macro Coats Pvt Ltd · Chennai · India\nPage 1 of 1',
+    },
+    body: {
+      classification:     'CONFIDENTIAL — Internal Use Only',
+      batchSize:          '100 L (reference)',
+      formulaType:        'liquid',
+      referenceBatchSize: 100,
+      batchUnit:          'L',
+      totalActivePercent: 98,
+      overview: 'UNIPROTECT OIL is a petroleum-based, water-displacing rust preventive oil formulated for temporary corrosion protection of ferrous metal components. It deposits a thin, transparent film that displaces moisture and prevents flash rust during in-process handling, storage, and inter-stage transit.',
+      composition: [
+        { srNo: 1, name: 'Paraffinic Base Oil (100N)',          casNo: '8042-47-5',  baseQty: 65.0, unit: 'L',  percentWV: 65.0, function: 'Primary carrier and film-forming base',                                           density: 0.86, unitPrice: 65  },
+        { srNo: 2, name: 'Petroleum Sulfonate (Sodium Salt)',   casNo: '68608-26-4', baseQty: 18.0, unit: 'L',  percentWV: 18.0, function: 'Primary corrosion inhibitor and water displacer — forms protective film on metal',  density: 0.95, unitPrice: 120 },
+        { srNo: 3, name: 'Corrosion Inhibitor Blend',           casNo: 'Mixture',    baseQty: 8.0,  unit: 'L',  percentWV: 8.0,  function: 'Enhanced protection system — secondary rust inhibitor',                            density: 0.98, unitPrice: 185 },
+        { srNo: 4, name: 'Diluent / Carrier (Mineral Spirits)', casNo: '64741-65-7', baseQty: 7.0,  unit: 'L',  percentWV: 7.0,  function: 'Viscosity control and application aid',                                            density: 0.78, unitPrice: 55  },
+        { srNo: 5, name: 'Antioxidant (DBPC)',                  casNo: '128-37-0',   baseQty: 0.5,  unit: 'kg', percentWV: 0.5,  function: 'Oxidation inhibitor — extends product shelf life',                                 density: 1.05, unitPrice: 480 },
+        { srNo: 6, name: 'VCI Additive',                        casNo: '109-02-4',   baseQty: 1.5,  unit: 'L',  percentWV: 1.5,  function: 'Vapour corrosion inhibitor — supplementary vapour-phase protection',                density: 0.98, unitPrice: 320 },
+      ],
+      preparation: [
+        { step: 1, title: 'Safety Setup',            detail: 'Ensure adequate ventilation. Wear nitrile gloves, safety goggles, and heat-resistant apron. Keep fire extinguisher accessible (Class B — petroleum fires).' },
+        { step: 2, title: 'Heat Base Oil',           detail: 'Add 65 L of Paraffinic Base Oil (100N) to a stainless steel mixing vessel. Heat to 55–65 °C with gentle stirring.' },
+        { step: 3, title: 'Add Sulfonates',          detail: 'Reduce temperature to 50 °C. Slowly add 18 L of Petroleum Sulfonate with continuous stirring. Mix for 15 minutes.' },
+        { step: 4, title: 'Add Corrosion Inhibitor', detail: 'Add 8 L of the corrosion inhibitor blend and stir for 10 minutes at 50 °C until fully dispersed.' },
+        { step: 5, title: 'Add Antioxidant & VCI',  detail: 'Add 0.5 kg DBPC antioxidant and 1.5 L VCI additive. Mix at 45 °C for 10 minutes.' },
+        { step: 6, title: 'Add Diluent',             detail: 'Allow batch to cool to 40 °C. Add 7 L of diluent/mineral spirits and stir for 5 minutes.' },
+        { step: 7, title: 'QC Check & Fill',         detail: 'Verify appearance (clear amber), viscosity (8–15 cSt at 40 °C per ASTM D445), and flash point (>60 °C per ASTM D93). Fill into labelled containers.' },
+      ],
+      operatingConditions: [
+        { param: 'Application Method',      value: 'Dip, spray, or brush' },
+        { param: 'Application Temperature', value: '20 – 40 °C (ambient, no heating required)' },
+        { param: 'Film Thickness',          value: '3 – 8 µm (after dip + drain)' },
+        { param: 'Protection Period',       value: '3 – 12 months (indoor / covered storage)' },
+        { param: 'Substrate',               value: 'Mild steel, cast iron, alloy steel, non-ferrous metals' },
+      ],
+      applications: {
+        removes:    ['Surface moisture', 'Atmospheric oxygen exposure', 'Flash rust risk', 'Residual machining fluid films'],
+        usedBefore: ['Inter-process transit', 'Short-to-medium-term storage', 'Pre-painting holding stage', 'Finished component preservation'],
+      },
+    },
+  },
+
+  {
+    productKey: 'uniprotect-oil',
     docType:    'label',
     docNumber:  'LBL-UPO-001',
     revision:   'Rev 01 — Apr 2026',

@@ -39,6 +39,8 @@ export const createBatchSchema = z.object({
   formulationSnapshot: z.object({ components: z.array(formulationComponentSchema) }),
   labelSnapshot:       labelSnapshotSchema,
   costSummary:         costSummarySchema,
+  paymentDueDate:      z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  paymentTermDays:     z.number().int().positive().optional().default(45),
 })
 
 export const listBatchesQuerySchema = z.object({
