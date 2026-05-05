@@ -19,6 +19,7 @@ export const PRODUCT_KEYS = [
   'uniprotect-oil',
   'uniflow-ecm',
   'unicool-al',
+  'unikoat-lt-700',
 ] as const
 export type ProductKey = typeof PRODUCT_KEYS[number]
 
