@@ -20,6 +20,9 @@ export const PRODUCT_KEYS = [
   'uniflow-ecm',
   'unicool-al',
   'unikoat-lt-700',
+  'unisolve-h3',
+  'unipass',
+  'uniktonner',
 ] as const
 export type ProductKey = typeof PRODUCT_KEYS[number]
 

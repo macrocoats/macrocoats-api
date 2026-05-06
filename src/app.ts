@@ -11,6 +11,7 @@ import { companyRoutes } from './modules/companies/companies.routes.js'
 import { analyticsRoutes } from './modules/analytics/analytics.routes.js'
 import { batchRoutes } from './modules/batches/batches.routes.js'
 import { vendorRoutes } from './modules/vendors/vendors.routes.js'
+import { staffRoutes } from './modules/staff/staff.routes.js'
 
 export async function buildApp() {
   const app = Fastify({
@@ -44,6 +45,7 @@ export async function buildApp() {
   await app.register(analyticsRoutes, { prefix: `${prefix}/analytics` })
   await app.register(batchRoutes,     { prefix: `${prefix}/batches` })
   await app.register(vendorRoutes,    { prefix: `${prefix}/vendors` })
+  await app.register(staffRoutes,     { prefix: `${prefix}/staff` })
 
   // ── Global error handler ──────────────────────────────────────────────────
   app.setErrorHandler((error, _request, reply) => {
