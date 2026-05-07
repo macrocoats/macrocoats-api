@@ -30,8 +30,15 @@ export async function companyRoutes(app: FastifyInstance) {
       return reply.code(400).send({ error: 'VALIDATION_ERROR', issues: body.error.flatten() })
     }
 
-    const company = await createCompany(body.data)
-    return reply.code(201).send(company)
+    try {
+      const company = await createCompany(body.data)
+      return reply.code(201).send(company)
+    } catch (err: any) {
+      if (err?.code === '23505') {
+        return reply.code(409).send({ error: 'COMPANY_KEY_EXISTS', message: `A company with key "${body.data.key}" already exists.` })
+      }
+      throw err
+    }
   })
 
   // ── PATCH /companies/:id ──────────────────────────────────────────────────
