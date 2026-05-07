@@ -193,6 +193,40 @@ Integration tests use a real PostgreSQL database (the same one in `.env.local`).
 - `src/utils/quotNumber.ts` — atomic quotation number generation (UNIK-YYYY-NNN)
 - `src/utils/batchNumber.ts` — atomic batch number generation (XX-YYYYMMDD-NNN)
 
+## Database & Migrations
+
+### Migration workflow (canonical)
+
+Always use Drizzle's generator — **never hand-write migration SQL files**. Hand-written files are not registered in the Drizzle journal and cause schema drift and 500 errors.
+
+```
+# Correct flow for any schema change:
+1. Edit the schema file in src/db/schema/
+2. npm run db:generate   # generates a versioned migration file + updates journal
+3. npm run db:migrate    # applies pending migrations
+4. npm run seed          # re-seed if new tables were added
+```
+
+**Before generating a new migration:**
+- Run `npm run db:studio` or inspect the DB to check if the column/table already exists — avoid duplicate-column errors from re-applying changes that were applied manually earlier.
+- Check `drizzle/` folder: every `.sql` file must have a matching entry in `drizzle/meta/_journal.json`. If they are out of sync, resolve that before generating new migrations.
+
+### Entity relationship rules
+
+- **Staff** and **Vendors** are standalone entities — they are NOT linked to the `companies` table and have no FK to it.
+- `companies` links only to: `users`, `company_product_access`, `quotations`, `batches`, `access_log`.
+- When building new modules, confirm relationship assumptions before writing the schema — do not assume a new entity belongs to a company unless the user explicitly says so.
+
+### Recovery from a failed migration
+
+If a migration left tables partially created or the journal is out of sync:
+1. Inspect actual DB state: `npm run db:studio`
+2. Compare against `drizzle/meta/_journal.json` to identify unregistered files
+3. Use `npm run db:generate` to create a corrective migration — do not manually edit `.sql` files in `drizzle/`
+4. As a last resort in dev only: `npm run db:reset` then `npm run db:migrate` then `npm run seed`
+
+---
+
 ## graphify
 
 This project has a graphify knowledge graph at graphify-out/.
