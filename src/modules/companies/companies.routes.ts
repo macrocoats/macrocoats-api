@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import { authenticate, requireAuth } from '../../middleware/authenticate.js'
 import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js'
+import { AppErrors } from '../../types/errors.js'
 import { createCompanySchema, updateCompanySchema } from './companies.schema.js'
 import {
   listCompanies, getCompanyById, createCompany,
@@ -19,7 +20,7 @@ export async function companyRoutes(app: FastifyInstance) {
   // ── GET /companies/:id ────────────────────────────────────────────────────
   app.get<{ Params: { id: string } }>('/:id', { preHandler }, async (request, reply) => {
     const company = await getCompanyById(request.params.id)
-    if (!company) return reply.code(404).send({ error: 'COMPANY_NOT_FOUND' })
+    if (!company) return reply.code(404).send({ error: AppErrors.COMPANY_NOT_FOUND })
     return reply.send(company)
   })
 
@@ -27,7 +28,7 @@ export async function companyRoutes(app: FastifyInstance) {
   app.post('/', { preHandler }, async (request, reply) => {
     const body = createCompanySchema.safeParse(request.body)
     if (!body.success) {
-      return reply.code(400).send({ error: 'VALIDATION_ERROR', issues: body.error.flatten() })
+      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
     }
 
     try {
@@ -35,7 +36,7 @@ export async function companyRoutes(app: FastifyInstance) {
       return reply.code(201).send(company)
     } catch (err: any) {
       if (err?.code === '23505') {
-        return reply.code(409).send({ error: 'COMPANY_KEY_EXISTS', message: `A company with key "${body.data.key}" already exists.` })
+        return reply.code(409).send({ error: AppErrors.COMPANY_KEY_EXISTS, message: `A company with key "${body.data.key}" already exists.` })
       }
       throw err
     }
@@ -45,11 +46,11 @@ export async function companyRoutes(app: FastifyInstance) {
   app.patch<{ Params: { id: string } }>('/:id', { preHandler }, async (request, reply) => {
     const body = updateCompanySchema.safeParse(request.body)
     if (!body.success) {
-      return reply.code(400).send({ error: 'VALIDATION_ERROR', issues: body.error.flatten() })
+      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
     }
 
     const company = await updateCompany(request.params.id, body.data)
-    if (!company) return reply.code(404).send({ error: 'COMPANY_NOT_FOUND' })
+    if (!company) return reply.code(404).send({ error: AppErrors.COMPANY_NOT_FOUND })
 
     return reply.send(company)
   })
@@ -57,7 +58,7 @@ export async function companyRoutes(app: FastifyInstance) {
   // ── POST /companies/:id/rotate-token ──────────────────────────────────────
   app.post<{ Params: { id: string } }>('/:id/rotate-token', { preHandler }, async (request, reply) => {
     const company = await getCompanyById(request.params.id)
-    if (!company) return reply.code(404).send({ error: 'COMPANY_NOT_FOUND' })
+    if (!company) return reply.code(404).send({ error: AppErrors.COMPANY_NOT_FOUND })
 
     const result = await rotateCompanyToken(request.params.id)
     return reply.send(result)
@@ -66,7 +67,7 @@ export async function companyRoutes(app: FastifyInstance) {
   // ── DELETE /companies/:id ─────────────────────────────────────────────────
   app.delete<{ Params: { id: string } }>('/:id', { preHandler }, async (request, reply) => {
     const deleted = await deleteCompany(request.params.id)
-    if (!deleted) return reply.code(404).send({ error: 'COMPANY_NOT_FOUND' })
+    if (!deleted) return reply.code(404).send({ error: AppErrors.COMPANY_NOT_FOUND })
     return reply.code(204).send()
   })
 }

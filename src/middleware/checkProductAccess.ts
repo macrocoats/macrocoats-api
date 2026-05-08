@@ -1,6 +1,7 @@
 import type { FastifyRequest, FastifyReply } from 'fastify'
 import { RESTRICTED_DOC_TYPES } from '../types/index.js'
 import type { DocType } from '../types/index.js'
+import { AppErrors } from '../types/errors.js'
 
 interface ProductParams {
   productLine: string
@@ -26,12 +27,12 @@ export async function checkProductAccess(
 
   // Restricted doc types (formula, label, coa) are superadmin-only
   if (RESTRICTED_DOC_TYPES.includes(docType as DocType)) {
-    return reply.code(403).send({ error: 'DOC_TYPE_RESTRICTED' })
+    return reply.code(403).send({ error: AppErrors.DOC_TYPE_RESTRICTED })
   }
 
   // Company users: check allowedProducts list
   const allowed = user.allowedProducts ?? []
   if (!allowed.includes(productLine)) {
-    return reply.code(403).send({ error: 'PRODUCT_ACCESS_DENIED' })
+    return reply.code(403).send({ error: AppErrors.PRODUCT_ACCESS_DENIED })
   }
 }

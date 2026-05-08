@@ -13,6 +13,7 @@ import { batchRoutes } from './modules/batches/batches.routes.js'
 import { vendorRoutes } from './modules/vendors/vendors.routes.js'
 import { staffRoutes } from './modules/staff/staff.routes.js'
 import { salaryRecordRoutes } from './modules/salaryRecords/salaryRecords.routes.js'
+import { AppErrors } from './types/errors.js'
 
 export async function buildApp() {
   const app = Fastify({
@@ -54,7 +55,7 @@ export async function buildApp() {
     app.log.error(error)
 
     if (error.validation) {
-      return reply.code(400).send({ error: 'VALIDATION_ERROR', message: error.message })
+      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, message: error.message })
     }
 
     const statusCode = error.statusCode ?? 500
@@ -65,7 +66,7 @@ export async function buildApp() {
 
   // ── 404 handler ───────────────────────────────────────────────────────────
   app.setNotFoundHandler((_request, reply) => {
-    reply.code(404).send({ error: 'NOT_FOUND' })
+    reply.code(404).send({ error: AppErrors.NOT_FOUND })
   })
 
   return app

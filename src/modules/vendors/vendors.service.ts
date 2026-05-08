@@ -1,6 +1,8 @@
 import { eq, asc } from 'drizzle-orm'
 import { db } from '../../db/index.js'
 import { vendors } from '../../db/schema/index.js'
+import { z } from 'zod'
+import { phoneNumbersSchema, chemicalSchema, bankDetailsSchema } from './vendors.schema.js'
 import type { CreateVendorInput, UpdateVendorInput } from './vendors.schema.js'
 
 function toResponse(row: typeof vendors.$inferSelect) {
@@ -11,9 +13,9 @@ function toResponse(row: typeof vendors.$inferSelect) {
     address:       row.address ?? null,
     email:         row.email ?? null,
     contactPerson: row.contactPerson ?? null,
-    phoneNumbers:  (row.phoneNumbers as string[]) ?? [],
-    bankDetails:   row.bankDetails ?? null,
-    chemicals:     (row.chemicals as Array<{ chemicalName: string; rate: number; unit: string }>) ?? [],
+    phoneNumbers:  phoneNumbersSchema.catch([]).parse(row.phoneNumbers),
+    bankDetails:   bankDetailsSchema.catch(undefined).parse(row.bankDetails) ?? null,
+    chemicals:     z.array(chemicalSchema).catch([]).parse(row.chemicals),
     createdAt:     row.createdAt.toISOString(),
   }
 }

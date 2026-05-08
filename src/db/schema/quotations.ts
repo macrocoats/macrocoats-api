@@ -1,6 +1,6 @@
 import {
   pgTable, uuid, text, integer, numeric, date,
-  timestamp, primaryKey,
+  timestamp, primaryKey, index,
 } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
 import { users } from './users.js'
@@ -15,7 +15,9 @@ export const quotations = pgTable('quotations', {
   validUntil:   date('valid_until').notNull(),
   createdBy:    uuid('created_by').notNull().references(() => users.id),
   createdAt:    timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-})
+}, (t) => [
+  index('quotations_customer_name_idx').on(t.customerName),
+])
 
 export const quotationsRelations = relations(quotations, ({ one, many }) => ({
   creator:   one(users, { fields: [quotations.createdBy], references: [users.id] }),

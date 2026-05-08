@@ -24,3 +24,11 @@ export const createSalaryRecordSchema = z.object({
 })
 
 export type CreateSalaryRecordInput = z.infer<typeof createSalaryRecordSchema>
+
+export const listSalaryRecordsQuerySchema = z.object({
+  staffId: z.string().uuid().optional(),
+  month:   z.coerce.number().int().min(1).max(12).optional(),
+  year:    z.coerce.number().int().min(2020).max(2100).optional(),
+})
+
+export type ListSalaryRecordsQuery = z.infer<typeof listSalaryRecordsQuerySchema>

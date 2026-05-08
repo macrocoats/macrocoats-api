@@ -1,9 +1,10 @@
 import type { FastifyInstance } from 'fastify'
 import { authenticate, requireAuth } from '../../middleware/authenticate.js'
 import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js'
+import { AppErrors } from '../../types/errors.js'
 import { createInventoryItemSchema, updateInventoryItemSchema } from './inventory.schema.js'
 import {
-  getAllItems, getItemById, createItem, updateItem, deleteItem, resetToDefaults,
+  getAllItems, createItem, updateItem, deleteItem, resetToDefaults,
 } from './inventory.service.js'
 
 const preHandler = [authenticate, requireAuth, requireSuperAdmin]
@@ -19,7 +20,7 @@ export async function inventoryRoutes(app: FastifyInstance) {
   app.post('/', { preHandler }, async (request, reply) => {
     const body = createInventoryItemSchema.safeParse(request.body)
     if (!body.success) {
-      return reply.code(400).send({ error: 'VALIDATION_ERROR', issues: body.error.flatten() })
+      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
     }
 
     const item = await createItem(body.data, request.authUser!.id)
@@ -30,11 +31,11 @@ export async function inventoryRoutes(app: FastifyInstance) {
   app.patch<{ Params: { id: string } }>('/:id', { preHandler }, async (request, reply) => {
     const body = updateInventoryItemSchema.safeParse(request.body)
     if (!body.success) {
-      return reply.code(400).send({ error: 'VALIDATION_ERROR', issues: body.error.flatten() })
+      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
     }
 
     const item = await updateItem(request.params.id, body.data, request.authUser!.id)
-    if (!item) return reply.code(404).send({ error: 'ITEM_NOT_FOUND' })
+    if (!item) return reply.code(404).send({ error: AppErrors.ITEM_NOT_FOUND })
 
     return reply.send(item)
   })
@@ -42,7 +43,7 @@ export async function inventoryRoutes(app: FastifyInstance) {
   // ── DELETE /inventory/:id ─────────────────────────────────────────────────
   app.delete<{ Params: { id: string } }>('/:id', { preHandler }, async (request, reply) => {
     const deleted = await deleteItem(request.params.id)
-    if (!deleted) return reply.code(404).send({ error: 'ITEM_NOT_FOUND' })
+    if (!deleted) return reply.code(404).send({ error: AppErrors.ITEM_NOT_FOUND })
     return reply.code(204).send()
   })
 

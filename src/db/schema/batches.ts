@@ -1,6 +1,6 @@
 import {
   pgTable, uuid, text, integer, numeric,
-  timestamp, jsonb, primaryKey,
+  timestamp, jsonb, primaryKey, index,
 } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
 import { users } from './users.js'
@@ -20,7 +20,9 @@ export const batches = pgTable('batches', {
   paymentTermDays:     integer('payment_term_days').default(45),
   createdBy:           uuid('created_by').references(() => users.id),
   createdAt:           timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-})
+}, (t) => [
+  index('batches_company_name_idx').on(t.companyName),
+])
 
 export const batchesRelations = relations(batches, ({ one }) => ({
   creator: one(users, { fields: [batches.createdBy], references: [users.id] }),

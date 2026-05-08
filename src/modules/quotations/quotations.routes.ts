@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import { authenticate, requireAuth } from '../../middleware/authenticate.js'
 import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js'
+import { AppErrors } from '../../types/errors.js'
 import {
   createQuotationSchema, listQuotationsQuerySchema,
 } from './quotations.schema.js'
@@ -15,7 +16,7 @@ export async function quotationRoutes(app: FastifyInstance) {
   app.post('/', { preHandler }, async (request, reply) => {
     const body = createQuotationSchema.safeParse(request.body)
     if (!body.success) {
-      return reply.code(400).send({ error: 'VALIDATION_ERROR', issues: body.error.flatten() })
+      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
     }
 
     const quotation = await createQuotation(body.data, request.authUser!.id)
@@ -26,7 +27,7 @@ export async function quotationRoutes(app: FastifyInstance) {
   app.get('/', { preHandler }, async (request, reply) => {
     const query = listQuotationsQuerySchema.safeParse(request.query)
     if (!query.success) {
-      return reply.code(400).send({ error: 'VALIDATION_ERROR', issues: query.error.flatten() })
+      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: query.error.flatten() })
     }
 
     const result = await listQuotations(query.data)
@@ -36,7 +37,7 @@ export async function quotationRoutes(app: FastifyInstance) {
   // ── GET /quotations/:id ───────────────────────────────────────────────────
   app.get<{ Params: { id: string } }>('/:id', { preHandler }, async (request, reply) => {
     const quotation = await getQuotationById(request.params.id)
-    if (!quotation) return reply.code(404).send({ error: 'QUOTATION_NOT_FOUND' })
+    if (!quotation) return reply.code(404).send({ error: AppErrors.QUOTATION_NOT_FOUND })
     return reply.send(quotation)
   })
 }

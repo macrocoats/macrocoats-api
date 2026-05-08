@@ -1,4 +1,4 @@
-import { eq, like, desc, count, sql } from 'drizzle-orm'
+import { eq, like, desc, count, sql, inArray } from 'drizzle-orm'
 import { db } from '../../db/index.js'
 import { quotations, quotationLineItems } from '../../db/schema/index.js'
 import { nextQuotNumber } from '../../utils/quotNumber.js'
@@ -88,17 +88,19 @@ export async function listQuotations(query: ListQuotationsQuery) {
     .limit(query.limit)
     .offset(offset)
 
-  // Load line items for each quotation
-  const results = await Promise.all(
-    rows.map(async (q) => {
-      const items = await db
-        .select()
-        .from(quotationLineItems)
-        .where(eq(quotationLineItems.quotationId, q.id))
+  const ids = rows.map((q) => q.id)
+  const allItems = ids.length
+    ? await db.select().from(quotationLineItems).where(inArray(quotationLineItems.quotationId, ids))
+    : []
 
-      return toQuotationResponse(q, items)
-    }),
-  )
+  const itemsById = new Map<string, typeof quotationLineItems.$inferSelect[]>()
+  for (const item of allItems) {
+    const list = itemsById.get(item.quotationId) ?? []
+    list.push(item)
+    itemsById.set(item.quotationId, list)
+  }
+
+  const results = rows.map((q) => toQuotationResponse(q, itemsById.get(q.id) ?? []))
 
   return { quotations: results, total, page: query.page, limit: query.limit }
 }

@@ -1,4 +1,5 @@
 import type { FastifyRequest, FastifyReply } from 'fastify'
+import { AppErrors } from '../types/errors.js'
 
 /**
  * Rejects with 403 unless the authenticated user is a superadmin.
@@ -6,6 +7,6 @@ import type { FastifyRequest, FastifyReply } from 'fastify'
  */
 export async function requireSuperAdmin(request: FastifyRequest, reply: FastifyReply): Promise<void> {
   if (request.authUser?.role !== 'superadmin') {
-    return reply.code(403).send({ error: 'FORBIDDEN', message: 'Superadmin access required.' })
+    return reply.code(403).send({ error: AppErrors.FORBIDDEN, message: 'Superadmin access required.' })
   }
 }

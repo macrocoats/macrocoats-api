@@ -1,42 +1,61 @@
-import { eq } from 'drizzle-orm'
+import { eq, inArray } from 'drizzle-orm'
 import { db } from '../../db/index.js'
 import { companies, companyProductAccess, users } from '../../db/schema/index.js'
 import { generateToken, hashPassword } from '../../utils/crypto.js'
 import type { CreateCompanyBody, UpdateCompanyBody } from './companies.schema.js'
 
-async function buildResponse(company: typeof companies.$inferSelect) {
-  const access = await db
-    .select({ productKey: companyProductAccess.productKey })
-    .from(companyProductAccess)
-    .where(eq(companyProductAccess.companyId, company.id))
-
+function toResponse(
+  company: typeof companies.$inferSelect,
+  allowedProducts: string[],
+) {
   return {
-    id:             company.id,
-    key:            company.key,
-    displayName:    company.displayName,
-    allowedProducts: access.map((r) => r.productKey),
-    accessToken:    company.accessToken,
-    tokenExpiresAt: company.tokenExpiresAt?.toISOString() ?? null,
-    contactPerson:  company.contactPerson ?? null,
-    email:          company.email ?? null,
-    phone:          company.phone ?? null,
-    gstNumber:      company.gstNumber ?? null,
-    address:        company.address ?? null,
-    city:           company.city ?? null,
-    state:          company.state ?? null,
-    pincode:        company.pincode ?? null,
-    createdAt:      company.createdAt.toISOString(),
+    id:              company.id,
+    key:             company.key,
+    displayName:     company.displayName,
+    allowedProducts,
+    accessToken:     company.accessToken,
+    tokenExpiresAt:  company.tokenExpiresAt?.toISOString() ?? null,
+    contactPerson:   company.contactPerson ?? null,
+    email:           company.email ?? null,
+    phone:           company.phone ?? null,
+    gstNumber:       company.gstNumber ?? null,
+    address:         company.address ?? null,
+    city:            company.city ?? null,
+    state:           company.state ?? null,
+    pincode:         company.pincode ?? null,
+    createdAt:       company.createdAt.toISOString(),
   }
 }
 
 export async function listCompanies() {
   const rows = await db.select().from(companies)
-  return Promise.all(rows.map(buildResponse))
+  if (!rows.length) return []
+
+  const accessRows = await db
+    .select({ companyId: companyProductAccess.companyId, productKey: companyProductAccess.productKey })
+    .from(companyProductAccess)
+    .where(inArray(companyProductAccess.companyId, rows.map((r) => r.id)))
+
+  const accessMap = new Map<string, string[]>()
+  for (const r of accessRows) {
+    const list = accessMap.get(r.companyId) ?? []
+    list.push(r.productKey)
+    accessMap.set(r.companyId, list)
+  }
+
+  return rows.map((c) => toResponse(c, accessMap.get(c.id) ?? []))
 }
 
 export async function getCompanyById(id: string) {
   const [company] = await db.select().from(companies).where(eq(companies.id, id))
-  return company ? buildResponse(company) : null
+  if (!company) return null
+
+  const accessRows = await db
+    .select({ productKey: companyProductAccess.productKey })
+    .from(companyProductAccess)
+    .where(eq(companyProductAccess.companyId, id))
+
+  return toResponse(company, accessRows.map((r) => r.productKey))
 }
 
 export async function createCompany(data: CreateCompanyBody) {
@@ -79,7 +98,7 @@ export async function createCompany(data: CreateCompanyBody) {
       companyId:    company.id,
     })
 
-    return buildResponse(company)
+    return toResponse(company, data.allowedProducts)
   })
 }
 
@@ -113,7 +132,11 @@ export async function updateCompany(id: string, data: UpdateCompanyBody) {
     }
 
     const [updated] = await tx.select().from(companies).where(eq(companies.id, id))
-    return buildResponse(updated)
+    const accessRows = await tx
+      .select({ productKey: companyProductAccess.productKey })
+      .from(companyProductAccess)
+      .where(eq(companyProductAccess.companyId, id))
+    return toResponse(updated, accessRows.map((r) => r.productKey))
   })
 }
 

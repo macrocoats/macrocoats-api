@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import { authenticate, requireAuth } from '../../middleware/authenticate.js'
 import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js'
+import { AppErrors } from '../../types/errors.js'
 import { createStaffSchema, updateStaffSchema } from './staff.schema.js'
 import {
   listStaff, getStaffById, createStaff, updateStaff, deleteStaff,
@@ -18,7 +19,7 @@ export async function staffRoutes(app: FastifyInstance) {
   // ── GET /staff/:id ────────────────────────────────────────────────────────
   app.get<{ Params: { id: string } }>('/:id', { preHandler }, async (request, reply) => {
     const member = await getStaffById(request.params.id)
-    if (!member) return reply.code(404).send({ error: 'STAFF_NOT_FOUND' })
+    if (!member) return reply.code(404).send({ error: AppErrors.STAFF_NOT_FOUND })
     return reply.send({ staff: member })
   })
 
@@ -26,7 +27,7 @@ export async function staffRoutes(app: FastifyInstance) {
   app.post('/', { preHandler }, async (request, reply) => {
     const body = createStaffSchema.safeParse(request.body)
     if (!body.success) {
-      return reply.code(400).send({ error: 'VALIDATION_ERROR', issues: body.error.flatten() })
+      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
     }
 
     const member = await createStaff(body.data)
@@ -37,11 +38,11 @@ export async function staffRoutes(app: FastifyInstance) {
   app.put<{ Params: { id: string } }>('/:id', { preHandler }, async (request, reply) => {
     const body = updateStaffSchema.safeParse(request.body)
     if (!body.success) {
-      return reply.code(400).send({ error: 'VALIDATION_ERROR', issues: body.error.flatten() })
+      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
     }
 
     const member = await updateStaff(request.params.id, body.data)
-    if (!member) return reply.code(404).send({ error: 'STAFF_NOT_FOUND' })
+    if (!member) return reply.code(404).send({ error: AppErrors.STAFF_NOT_FOUND })
 
     return reply.send({ staff: member })
   })
@@ -49,7 +50,7 @@ export async function staffRoutes(app: FastifyInstance) {
   // ── DELETE /staff/:id ─────────────────────────────────────────────────────
   app.delete<{ Params: { id: string } }>('/:id', { preHandler }, async (request, reply) => {
     const deleted = await deleteStaff(request.params.id)
-    if (!deleted) return reply.code(404).send({ error: 'STAFF_NOT_FOUND' })
+    if (!deleted) return reply.code(404).send({ error: AppErrors.STAFF_NOT_FOUND })
     return reply.code(204).send()
   })
 }

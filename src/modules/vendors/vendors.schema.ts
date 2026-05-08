@@ -1,14 +1,14 @@
 import { z } from 'zod'
 
-const phoneNumbersSchema = z.array(z.string().min(7).max(15))
+export const phoneNumbersSchema = z.array(z.string().min(7).max(15))
 
-const chemicalSchema = z.object({
+export const chemicalSchema = z.object({
   chemicalName: z.string().min(1),
   rate:         z.number().min(0),
   unit:         z.enum(['L', 'kg']),
 })
 
-const bankDetailsSchema = z.object({
+export const bankDetailsSchema = z.object({
   bankName:      z.string().min(1),
   accountName:   z.string().min(1),
   accountNumber: z.string().min(1),

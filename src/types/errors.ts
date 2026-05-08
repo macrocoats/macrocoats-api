@@ -1,0 +1,34 @@
+export const AppErrors = {
+  // Generic
+  VALIDATION_ERROR:        'VALIDATION_ERROR',
+  NOT_FOUND:               'NOT_FOUND',
+  FORBIDDEN:               'FORBIDDEN',
+  // Auth
+  NOT_AUTHENTICATED:       'NOT_AUTHENTICATED',
+  INVALID_CREDENTIALS:     'INVALID_CREDENTIALS',
+  NO_REFRESH_TOKEN:        'NO_REFRESH_TOKEN',
+  REFRESH_TOKEN_INVALID:   'REFRESH_TOKEN_INVALID',
+  TOKEN_INVALID:           'TOKEN_INVALID',
+  TOO_MANY_REQUESTS:       'TOO_MANY_REQUESTS',
+  // Products
+  DOCUMENT_NOT_FOUND:      'DOCUMENT_NOT_FOUND',
+  DOC_TYPE_RESTRICTED:     'DOC_TYPE_RESTRICTED',
+  PRODUCT_ACCESS_DENIED:   'PRODUCT_ACCESS_DENIED',
+  // Companies
+  COMPANY_NOT_FOUND:       'COMPANY_NOT_FOUND',
+  COMPANY_KEY_EXISTS:      'COMPANY_KEY_EXISTS',
+  // Quotations
+  QUOTATION_NOT_FOUND:     'QUOTATION_NOT_FOUND',
+  // Batches
+  BATCH_NOT_FOUND:         'BATCH_NOT_FOUND',
+  // Inventory
+  ITEM_NOT_FOUND:          'ITEM_NOT_FOUND',
+  // Vendors
+  VENDOR_NOT_FOUND:        'VENDOR_NOT_FOUND',
+  // Staff
+  STAFF_NOT_FOUND:         'STAFF_NOT_FOUND',
+  // Salary records
+  SALARY_RECORD_NOT_FOUND: 'SALARY_RECORD_NOT_FOUND',
+} as const
+
+export type AppError = typeof AppErrors[keyof typeof AppErrors]

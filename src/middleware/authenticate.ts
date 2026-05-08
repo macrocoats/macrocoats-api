@@ -1,6 +1,7 @@
 import type { FastifyRequest, FastifyReply } from 'fastify'
 import { tryVerifyAccessToken } from '../utils/jwt.js'
 import type { AuthUser } from '../types/index.js'
+import { AppErrors } from '../types/errors.js'
 
 /**
  * Reads the `accessToken` httpOnly cookie and, if valid, sets `request.authUser`.
@@ -30,6 +31,6 @@ export async function authenticate(request: FastifyRequest, _reply: FastifyReply
  */
 export async function requireAuth(request: FastifyRequest, reply: FastifyReply): Promise<void> {
   if (!request.authUser) {
-    return reply.code(401).send({ error: 'NOT_AUTHENTICATED' })
+    return reply.code(401).send({ error: AppErrors.NOT_AUTHENTICATED })
   }
 }

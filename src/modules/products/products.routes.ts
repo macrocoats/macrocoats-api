@@ -3,6 +3,7 @@ import { authenticate, requireAuth } from '../../middleware/authenticate.js'
 import { checkProductAccess } from '../../middleware/checkProductAccess.js'
 import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js'
 import { logAccess } from '../../middleware/logAccess.js'
+import { AppErrors } from '../../types/errors.js'
 import { productParamsSchema, updateDocumentSchema } from './products.schema.js'
 import { getDocument, updateDocument, listProducts } from './products.service.js'
 
@@ -24,12 +25,12 @@ export async function productRoutes(app: FastifyInstance) {
     async (request, reply) => {
       const params = productParamsSchema.safeParse(request.params)
       if (!params.success) {
-        return reply.code(400).send({ error: 'VALIDATION_ERROR', issues: params.error.flatten() })
+        return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: params.error.flatten() })
       }
 
       const doc = await getDocument(params.data.productLine, params.data.docType)
       if (!doc) {
-        return reply.code(404).send({ error: 'DOCUMENT_NOT_FOUND' })
+        return reply.code(404).send({ error: AppErrors.DOCUMENT_NOT_FOUND })
       }
 
       return reply.send(doc)
@@ -43,12 +44,12 @@ export async function productRoutes(app: FastifyInstance) {
     async (request, reply) => {
       const params = productParamsSchema.safeParse(request.params)
       if (!params.success) {
-        return reply.code(400).send({ error: 'VALIDATION_ERROR', issues: params.error.flatten() })
+        return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: params.error.flatten() })
       }
 
       const body = updateDocumentSchema.safeParse(request.body)
       if (!body.success) {
-        return reply.code(400).send({ error: 'VALIDATION_ERROR', issues: body.error.flatten() })
+        return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
       }
 
       const updated = await updateDocument(
@@ -59,7 +60,7 @@ export async function productRoutes(app: FastifyInstance) {
       )
 
       if (!updated) {
-        return reply.code(404).send({ error: 'DOCUMENT_NOT_FOUND' })
+        return reply.code(404).send({ error: AppErrors.DOCUMENT_NOT_FOUND })
       }
 
       return reply.send(updated)

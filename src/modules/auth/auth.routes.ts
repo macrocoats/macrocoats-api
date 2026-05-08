@@ -11,6 +11,7 @@ import {
 import { accessCookieOptions, refreshCookieOptions } from '../../plugins/cookie.js'
 import { authenticate, requireAuth } from '../../middleware/authenticate.js'
 import { env } from '../../config/env.js'
+import { AppErrors } from '../../types/errors.js'
 
 export async function authRoutes(app: FastifyInstance) {
   // Apply stricter rate limiting to all auth endpoints
@@ -18,19 +19,19 @@ export async function authRoutes(app: FastifyInstance) {
     max:      env.AUTH_RATE_LIMIT_MAX,
     timeWindow: env.AUTH_RATE_LIMIT_WINDOW * 1000,
     keyGenerator: (req) => req.ip,
-    errorResponseBuilder: () => ({ error: 'TOO_MANY_REQUESTS' }),
+    errorResponseBuilder: () => ({ error: AppErrors.TOO_MANY_REQUESTS }),
   })
 
   // ── POST /auth/login ─────────────────────────────────────────────────────
   app.post('/login', async (request, reply) => {
     const body = loginSchema.safeParse(request.body)
     if (!body.success) {
-      return reply.code(400).send({ error: 'VALIDATION_ERROR', issues: body.error.flatten() })
+      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
     }
 
     const result = await loginWithCredentials(body.data.username, body.data.password)
     if (!result) {
-      return reply.code(401).send({ error: 'INVALID_CREDENTIALS' })
+      return reply.code(401).send({ error: AppErrors.INVALID_CREDENTIALS })
     }
 
     reply
@@ -43,12 +44,12 @@ export async function authRoutes(app: FastifyInstance) {
   app.post('/token', async (request, reply) => {
     const body = tokenSchema.safeParse(request.body)
     if (!body.success) {
-      return reply.code(400).send({ error: 'VALIDATION_ERROR', issues: body.error.flatten() })
+      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
     }
 
     const result = await loginWithToken(body.data.token)
     if (!result) {
-      return reply.code(401).send({ error: 'TOKEN_INVALID' })
+      return reply.code(401).send({ error: AppErrors.TOKEN_INVALID })
     }
 
     reply
@@ -61,12 +62,12 @@ export async function authRoutes(app: FastifyInstance) {
   app.post('/refresh', async (request, reply) => {
     const rawRefresh = request.cookies?.refreshToken
     if (!rawRefresh) {
-      return reply.code(401).send({ error: 'NO_REFRESH_TOKEN' })
+      return reply.code(401).send({ error: AppErrors.NO_REFRESH_TOKEN })
     }
 
     const result = await rotateRefreshToken(rawRefresh)
     if (!result) {
-      return reply.code(401).send({ error: 'REFRESH_TOKEN_INVALID' })
+      return reply.code(401).send({ error: AppErrors.REFRESH_TOKEN_INVALID })
     }
 
     reply
@@ -96,7 +97,7 @@ export async function authRoutes(app: FastifyInstance) {
     async (request, reply) => {
       const user = await getMeById(request.authUser!.id)
       if (!user) {
-        return reply.code(401).send({ error: 'NOT_AUTHENTICATED' })
+        return reply.code(401).send({ error: AppErrors.NOT_AUTHENTICATED })
       }
       return reply.send({ user })
     },

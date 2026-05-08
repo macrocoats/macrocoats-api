@@ -1,6 +1,7 @@
 import { eq, gte, lte, and, count, desc, sql } from 'drizzle-orm'
 import { db } from '../../db/index.js'
 import { accessLog } from '../../db/schema/index.js'
+import { cacheGet, cacheSet } from '../../plugins/redis.js'
 
 export interface AccessLogQuery {
   companyKey?: string
@@ -50,45 +51,52 @@ export async function getAccessLog(query: AccessLogQuery) {
   }
 }
 
+const SUMMARY_CACHE_KEY = 'analytics:summary'
+const SUMMARY_TTL = 120
+
 /** Aggregated access counts per company — last 30 days */
 export async function getAccessSummary() {
+  const cached = await cacheGet<ReturnType<typeof buildSummary>>(SUMMARY_CACHE_KEY)
+  if (cached) return cached
+
+  const result = await buildSummary()
+  await cacheSet(SUMMARY_CACHE_KEY, result, SUMMARY_TTL)
+  return result
+}
+
+async function buildSummary() {
   const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
 
-  const byCompany = await db
-    .select({
-      companyKey: accessLog.companyKey,
-      accesses:   count(),
-    })
-    .from(accessLog)
-    .where(gte(accessLog.at, since))
-    .groupBy(accessLog.companyKey)
-    .orderBy(desc(count()))
+  const [byCompany, byProduct, daily] = await Promise.all([
+    db
+      .select({ companyKey: accessLog.companyKey, accesses: count() })
+      .from(accessLog)
+      .where(gte(accessLog.at, since))
+      .groupBy(accessLog.companyKey)
+      .orderBy(desc(count())),
 
-  const byProduct = await db
-    .select({
-      productKey: accessLog.productKey,
-      accesses:   count(),
-    })
-    .from(accessLog)
-    .where(gte(accessLog.at, since))
-    .groupBy(accessLog.productKey)
-    .orderBy(desc(count()))
+    db
+      .select({ productKey: accessLog.productKey, accesses: count() })
+      .from(accessLog)
+      .where(gte(accessLog.at, since))
+      .groupBy(accessLog.productKey)
+      .orderBy(desc(count())),
 
-  // Daily access counts (last 30 days)
-  const daily = await db
-    .select({
-      day:      sql<string>`DATE(${accessLog.at})`.as('day'),
-      accesses: count(),
-    })
-    .from(accessLog)
-    .where(gte(accessLog.at, since))
-    .groupBy(sql`DATE(${accessLog.at})`)
-    .orderBy(sql`DATE(${accessLog.at})`)
+    db
+      .select({
+        day:      sql<string>`DATE(${accessLog.at})`.as('day'),
+        accesses: count(),
+      })
+      .from(accessLog)
+      .where(gte(accessLog.at, since))
+      .groupBy(sql`DATE(${accessLog.at})`)
+      .orderBy(sql`DATE(${accessLog.at})`),
+  ])
 
   return {
-    windowDays:  30,
-    byCompany:   byCompany.map((r) => ({ companyKey: r.companyKey, accesses: r.accesses })),
-    byProduct:   byProduct.map((r) => ({ productKey: r.productKey, accesses: r.accesses })),
-    daily:       daily.map((r) => ({ day: r.day, accesses: r.accesses })),
+    windowDays: 30,
+    byCompany:  byCompany.map((r) => ({ companyKey: r.companyKey, accesses: r.accesses })),
+    byProduct:  byProduct.map((r) => ({ productKey: r.productKey, accesses: r.accesses })),
+    daily:      daily.map((r) => ({ day: r.day, accesses: r.accesses })),
   }
 }
