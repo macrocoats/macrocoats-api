@@ -41,6 +41,8 @@ export const createBatchSchema = z.object({
   costSummary:         costSummarySchema,
   paymentDueDate:      z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   paymentTermDays:     z.number().int().positive().optional().default(45),
+  variantId:           z.string().uuid().nullable().optional(),
+  variantName:         z.string().nullable().optional(),
 })
 
 export const listBatchesQuerySchema = z.object({

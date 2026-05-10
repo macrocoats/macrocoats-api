@@ -1,6 +1,6 @@
-import { eq, ilike, and, gte, lte, desc, count } from 'drizzle-orm'
+import { eq, ilike, and, gte, lte, desc, count, sql } from 'drizzle-orm'
 import { db } from '../../db/index.js'
-import { batches } from '../../db/schema/index.js'
+import { batches, inventoryItems } from '../../db/schema/index.js'
 import { nextBatchNumber } from '../../utils/batchNumber.js'
 import type { CreateBatchBody, ListBatchesQuery } from './batches.schema.js'
 
@@ -17,14 +17,42 @@ function toBatchResponse(row: typeof batches.$inferSelect) {
     costSummary:         row.costSummary,
     paymentDueDate:      row.paymentDueDate ?? null,
     paymentTermDays:     row.paymentTermDays ?? 45,
+    variantId:           row.variantId ?? null,
+    variantName:         row.variantName ?? null,
     createdAt:           row.createdAt.toISOString(),
   }
 }
 
 export async function createBatch(data: CreateBatchBody, createdBy: string | null) {
   return db.transaction(async (tx) => {
-    const batchNumber = await nextBatchNumber(tx as unknown as typeof db, data.companyName)
+    const batchNumber    = await nextBatchNumber(tx as unknown as typeof db, data.companyName)
     const productionDate = new Date().toISOString().slice(0, 10)
+
+    // ── Inventory deduction ────────────────────────────────────────────────
+    for (const component of data.formulationSnapshot.components) {
+      if (!component.quantityUsed || component.quantityUsed <= 0) continue
+
+      const [item] = await tx
+        .select({ id: inventoryItems.id, stockQty: inventoryItems.stockQty })
+        .from(inventoryItems)
+        .where(sql`lower(${inventoryItems.material}) = lower(${component.name})`)
+        .limit(1)
+
+      if (!item || item.stockQty === null) continue  // not tracked — skip
+
+      const remaining = Number(item.stockQty) - component.quantityUsed
+      if (remaining < 0) {
+        throw Object.assign(
+          new Error(`Insufficient stock for "${component.name}". Available: ${Number(item.stockQty)} ${component.unit}, needed: ${component.quantityUsed} ${component.unit}.`),
+          { statusCode: 400 },
+        )
+      }
+
+      await tx
+        .update(inventoryItems)
+        .set({ stockQty: String(remaining) })
+        .where(eq(inventoryItems.id, item.id))
+    }
 
     const labelSnapshotWithBatch = {
       ...data.labelSnapshot,
@@ -44,6 +72,8 @@ export async function createBatch(data: CreateBatchBody, createdBy: string | nul
         costSummary:         data.costSummary,
         paymentDueDate:      data.paymentDueDate ?? null,
         paymentTermDays:     data.paymentTermDays ?? 45,
+        variantId:           data.variantId ?? null,
+        variantName:         data.variantName ?? null,
         createdBy:           createdBy ?? undefined,
       })
       .returning()

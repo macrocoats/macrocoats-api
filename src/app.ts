@@ -13,6 +13,7 @@ import { batchRoutes } from './modules/batches/batches.routes.js'
 import { vendorRoutes } from './modules/vendors/vendors.routes.js'
 import { staffRoutes } from './modules/staff/staff.routes.js'
 import { salaryRecordRoutes } from './modules/salaryRecords/salaryRecords.routes.js'
+import { formulationVariantRoutes } from './modules/formulation-variants/formulation-variants.routes.js'
 import { AppErrors } from './types/errors.js'
 
 export async function buildApp() {
@@ -48,7 +49,8 @@ export async function buildApp() {
   await app.register(batchRoutes,     { prefix: `${prefix}/batches` })
   await app.register(vendorRoutes,    { prefix: `${prefix}/vendors` })
   await app.register(staffRoutes,        { prefix: `${prefix}/staff` })
-  await app.register(salaryRecordRoutes, { prefix: `${prefix}/salary-records` })
+  await app.register(salaryRecordRoutes,          { prefix: `${prefix}/salary-records` })
+  await app.register(formulationVariantRoutes,    { prefix: `${prefix}/formulation-variants` })
 
   // ── Global error handler ──────────────────────────────────────────────────
   app.setErrorHandler((error, _request, reply) => {

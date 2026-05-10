@@ -4,6 +4,7 @@ import {
 } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
 import { users } from './users.js'
+import { productFormulationVariants } from './productFormulationVariants.js'
 
 // ── Batches ───────────────────────────────────────────────────────────────────
 export const batches = pgTable('batches', {
@@ -18,6 +19,8 @@ export const batches = pgTable('batches', {
   costSummary:         jsonb('cost_summary').notNull(),
   paymentDueDate:      text('payment_due_date'),
   paymentTermDays:     integer('payment_term_days').default(45),
+  variantId:           uuid('variant_id').references(() => productFormulationVariants.id, { onDelete: 'set null' }),
+  variantName:         text('variant_name'),
   createdBy:           uuid('created_by').references(() => users.id),
   createdAt:           timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [
@@ -25,7 +28,8 @@ export const batches = pgTable('batches', {
 ])
 
 export const batchesRelations = relations(batches, ({ one }) => ({
-  creator: one(users, { fields: [batches.createdBy], references: [users.id] }),
+  creator: one(users,                      { fields: [batches.createdBy],  references: [users.id] }),
+  variant: one(productFormulationVariants, { fields: [batches.variantId],  references: [productFormulationVariants.id] }),
 }))
 
 // ── Per-company per-day atomic sequence counter ───────────────────────────────
