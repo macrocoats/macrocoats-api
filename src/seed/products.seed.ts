@@ -1930,26 +1930,26 @@ const DOCS: Array<{
     },
     body: {
       classification:     'CONFIDENTIAL — Internal Use Only',
-      batchSize:          '100 L (reference)',
+      batchSize:          '139 L (reference)',
       formulaType:        'liquid',
-      referenceBatchSize: 100,
+      referenceBatchSize: 139,
       batchUnit:          'L',
-      totalActivePercent: 25.1,
+      totalActivePercent: 28.18,
       overview: 'UNISOLVE H3 is a phosphoric acid-based acidic cleaner and derusting agent for ferrous metal surfaces. Used in pre-treatment lines prior to painting, powder coating, or phosphating.',
       composition: [
-        { srNo: 1, name: 'Phosphoric Acid',                   casNo: '7664-38-2', baseQty: 21.4, unit: 'L', percentWV: 21.4, function: 'Rust removal / acid cleaning — primary active ingredient',   density: 1.685, unitPrice: 0 },
-        { srNo: 2, name: 'Water',                              casNo: '7732-18-5', baseQty: 74.9, unit: 'L', percentWV: 74.9, function: 'Base medium / carrier — balance to final volume',             density: 1.000, unitPrice: 0 },
-        { srNo: 3, name: 'LAE 9 (Lauryl Alcohol Ethoxylate)', casNo: '9002-92-0', baseQty: 0.9,  unit: 'L', percentWV: 0.9,  function: 'Wetting & degreasing agent — non-ionic surfactant',          density: 1.010, unitPrice: 0 },
-        { srNo: 4, name: 'Alphox 200',                        casNo: 'Proprietary', baseQty: 0.9, unit: 'L', percentWV: 0.9, function: 'Emulsifier / surfactant — enhances surface penetration',     density: 1.020, unitPrice: 0 },
-        { srNo: 5, name: 'TEA (Triethanolamine)',             casNo: '102-71-6',  baseQty: 1.8,  unit: 'L', percentWV: 1.8,  function: 'Neutralizing agent / pH control — improves compatibility',  density: 1.124, unitPrice: 0 },
+        { srNo: 1, name: 'Phosphoric Acid',                   casNo: '7664-38-2',   baseQty: 33.24, unit: 'L', percentWV: 23.87, function: 'Rust removal / acid cleaning — primary active ingredient',   density: 1.685, unitPrice: 0 },
+        { srNo: 2, name: 'Water',                              casNo: '7732-18-5',   baseQty: 100, unit: 'L',  percentWV: 71.82, function: 'Base medium / carrier — balance to final volume',             density: 1.000, unitPrice: 0 },
+        { srNo: 3, name: 'Alphox 200',                        casNo: 'Proprietary',  baseQty: 1.5, unit: 'L',  percentWV: 1.08,  function: 'Emulsifier / surfactant — enhances surface penetration',     density: 1.020, unitPrice: 0 },
+        { srNo: 4, name: 'LAE 9 (Lauryl Alcohol Ethoxylate)', casNo: '9002-92-0',   baseQty: 1.5, unit: 'L',  percentWV: 1.08,  function: 'Wetting & degreasing agent — non-ionic surfactant',          density: 1.010, unitPrice: 0 },
+        { srNo: 5, name: 'TEA (Triethanolamine)',             casNo: '102-71-6',    baseQty: 3,   unit: 'L',  percentWV: 2.15,  function: 'Neutralizing agent / pH control — improves compatibility',  density: 1.124, unitPrice: 0 },
       ],
       preparation: [
         { step: 1, title: 'Safety Setup',        detail: 'Ensure working area is well-ventilated. Wear full PPE: acid-resistant goggles, face shield, nitrile/butyl gloves, chemical apron, and rubber boots.' },
-        { step: 2, title: 'Water Charging',      detail: 'Add 60–70 L of the total water quantity to a clean, acid-resistant HDPE mixing tank. Begin slow agitation.' },
-        { step: 3, title: 'Acid Addition',       detail: 'Slowly add Phosphoric Acid (21.4 L) to the water with continuous stirring. Never add water to acid. Monitor temperature — reaction is mildly exothermic. Ensure ventilation.' },
-        { step: 4, title: 'Surfactant Addition', detail: 'Add LAE 9 (0.9 L) and Alphox 200 (0.9 L) to the acidic solution. Mix for 10 minutes at low agitation until homogeneous.' },
-        { step: 5, title: 'TEA Addition',        detail: 'Slowly add TEA (1.8 L) with continuous stirring to improve pH balance and substrate compatibility. Mix for 5–10 minutes.' },
-        { step: 6, title: 'Top Up & Homogenise', detail: 'Add remaining water to bring the total batch volume to exactly 100 L. Mix for 10 minutes to ensure full homogeneity.' },
+        { step: 2, title: 'Water Charging',      detail: 'Add 70–80 L of the total water quantity (100 L) to a clean, acid-resistant HDPE mixing tank. Begin slow agitation.' },
+        { step: 3, title: 'Acid Addition',       detail: 'Slowly add Phosphoric Acid (56 kg / 33.24 L) to the water with continuous stirring. Never add water to acid. Monitor temperature — reaction is mildly exothermic. Ensure ventilation.' },
+        { step: 4, title: 'Surfactant Addition', detail: 'Add Alphox 200 (1.5 L) and LAE 9 (1.5 L) to the acidic solution. Mix for 10 minutes at low agitation until homogeneous.' },
+        { step: 5, title: 'TEA Addition',        detail: 'Slowly add TEA (3 L) with continuous stirring to improve pH balance and substrate compatibility. Mix for 5–10 minutes.' },
+        { step: 6, title: 'Top Up & Homogenise', detail: 'Add remaining water to bring the total batch volume to exactly 139 L. Mix for 10 minutes to ensure full homogeneity.' },
         { step: 7, title: 'QC Check & Fill',     detail: 'Verify pH (concentrate: 1.0–2.0), density (~1.15 g/mL), and appearance (clear to pale yellow liquid). Record batch number, date, and operator sign-off before filling into labelled HDPE containers.' },
       ],
       operatingConditions: [
@@ -2221,21 +2221,21 @@ const DOCS: Array<{
       formulaType:        'liquid',
       referenceBatchSize: 136.7,
       batchUnit:          'L',
-      totalActivePercent: 8.56,
+      totalActivePercent: 9.36,
       overview: 'UNIPASS is an aqueous passivation treatment for post-phosphating application on ferrous metal surfaces. The formulation combines citric acid (chelating passivation initiator), sodium nitrite (anodic corrosion inhibitor), and BTA/benzotriazole (film-forming copper inhibitor) in a DI/RO water carrier. Passivation is applied immediately after the final phosphating rinse to seal and stabilise the conversion coating.',
       composition: [
-        { srNo: 1, name: 'Citric Acid',          casNo: '77-92-9',    baseQty: 4.0,   unit: 'kg', percentWV: 2.93,  function: 'Chelating agent / mild passivation initiator',           density: null, unitPrice: 110  },
-        { srNo: 2, name: 'Sodium Nitrite',        casNo: '7632-00-0',  baseQty: 7.0,   unit: 'kg', percentWV: 5.12,  function: 'Corrosion inhibitor / anodic passivation agent',          density: null, unitPrice: 65   },
-        { srNo: 3, name: 'BTA (Benzotriazole)',   casNo: '95-14-7',    baseQty: 0.7,   unit: 'kg', percentWV: 0.51,  function: 'Copper corrosion inhibitor / film former',                density: null, unitPrice: 850  },
-        { srNo: 4, name: 'Water (DI/RO)',         casNo: '7732-18-5',  baseQty: 125.0, unit: 'L',  percentWV: 91.44, function: 'Base medium / carrier',                                  density: 1.0,  unitPrice: 0.5  },
+        { srNo: 1, name: 'Citric Acid',          casNo: '77-92-9',    baseQty: 4.37,  unit: 'kg', percentWV: 3.20,  function: 'Chelating agent / mild passivation initiator',           density: null, unitPrice: 110  },
+        { srNo: 2, name: 'Sodium Nitrite',        casNo: '7632-00-0',  baseQty: 7.65,  unit: 'kg', percentWV: 5.60,  function: 'Corrosion inhibitor / anodic passivation agent',          density: null, unitPrice: 65   },
+        { srNo: 3, name: 'BTA (Benzotriazole)',   casNo: '95-14-7',    baseQty: 0.77,  unit: 'kg', percentWV: 0.56,  function: 'Copper corrosion inhibitor / film former',                density: null, unitPrice: 850  },
+        { srNo: 4, name: 'Water (DI/RO)',         casNo: '7732-18-5',  baseQty: 123.9, unit: 'L',  percentWV: 90.64, function: 'Base medium / carrier',                                  density: 1.0,  unitPrice: 0.5  },
       ],
       preparation: [
         { step: 1, title: 'Safety Setup',            detail: 'Ensure working area is well-ventilated. Wear nitrile gloves, chemical goggles, and apron. Note: sodium nitrite — do not handle near strong acids or open flames.' },
-        { step: 2, title: 'Water Charging',           detail: 'Add 110–115 L of DI/RO water to a clean HDPE mixing tank. Begin gentle agitation.' },
-        { step: 3, title: 'Sodium Nitrite Addition',  detail: 'Slowly add Sodium Nitrite (7.0 kg) to the water with continuous stirring until fully dissolved (~10 min). Solution may warm slightly.' },
-        { step: 4, title: 'Citric Acid Addition',     detail: 'Add Citric Acid (4.0 kg) with stirring until completely dissolved. Monitor pH — concentrate should read 3.5–5.0.' },
-        { step: 5, title: 'BTA Addition',             detail: 'Add BTA/Benzotriazole (0.7 kg) with stirring. BTA may require 15–20 min to fully dissolve at ambient temperature; light warming to 35–40 °C accelerates dissolution.' },
-        { step: 6, title: 'Top Up & Homogenise',      detail: 'Add remaining DI/RO water to bring total batch volume to exactly 136.7 L (total water: 125 L). Mix for 10 minutes to ensure full homogeneity.' },
+        { step: 2, title: 'Water Charging',           detail: 'Add 108–112 L of DI/RO water to a clean HDPE mixing tank. Begin gentle agitation.' },
+        { step: 3, title: 'Sodium Nitrite Addition',  detail: 'Slowly add Sodium Nitrite (7.65 kg) to the water with continuous stirring until fully dissolved (~10 min). Solution may warm slightly.' },
+        { step: 4, title: 'Citric Acid Addition',     detail: 'Add Citric Acid (4.37 kg) with stirring until completely dissolved. Monitor pH — concentrate should read 3.5–5.0.' },
+        { step: 5, title: 'BTA Addition',             detail: 'Add BTA/Benzotriazole (0.77 kg) with stirring. BTA may require 15–20 min to fully dissolve at ambient temperature; light warming to 35–40 °C accelerates dissolution.' },
+        { step: 6, title: 'Top Up & Homogenise',      detail: 'Add remaining DI/RO water to bring total batch volume to exactly 136.7 L (total water: 123.9 L). Mix for 10 minutes to ensure full homogeneity.' },
         { step: 7, title: 'QC Check & Fill',          detail: 'Verify pH (3.5–5.0 concentrate), appearance (clear to pale straw-yellow), and density (~1.02 g/mL). Record batch number, date, and operator sign-off before filling into labelled HDPE containers.' },
       ],
       operatingConditions: [
@@ -2315,7 +2315,7 @@ const DOCS: Array<{
         { parameter: 'pH (Concentrate, 25 °C)',           method: 'pH Electrode',             specification: '3.5 – 5.0',                        result: '4.2',                         status: 'Pass' },
         { parameter: 'pH (2% working bath, 25 °C)',       method: 'pH Electrode',             specification: '4.0 – 5.5',                        result: '4.8',                         status: 'Pass' },
         { parameter: 'Density (25 °C)',                   method: 'ISO 2811',                 specification: '1.00 – 1.05 g/mL',                 result: '1.02 g/mL',                   status: 'Pass' },
-        { parameter: 'Sodium Nitrite Content',            method: 'Titration (KMnO₄)',         specification: '4.5 – 5.8 % w/v',                  result: '5.1 % w/v',                   status: 'Pass' },
+        { parameter: 'Sodium Nitrite Content',            method: 'Titration (KMnO₄)',         specification: '5.0 – 6.2 % w/v',                  result: '5.6 % w/v',                   status: 'Pass' },
         { parameter: 'Flash Rust Protection (2%, 45°C, 2 min)', method: 'Internal QM-012',   specification: '≥ 48 h',                            result: '52 h',                        status: 'Pass' },
         { parameter: 'Appearance after treatment',        method: 'Visual',                  specification: 'Uniform — no staining or discolouration', result: 'Uniform — no staining', status: 'Pass' },
       ],
@@ -2346,7 +2346,7 @@ const DOCS: Array<{
       description: 'UNIKTONNER is a high-concentration sodium nitrite accelerator solution formulated for use as a tonnage additive in zinc and iron phosphating baths. It significantly accelerates the phosphating reaction by providing an oxidising environment that suppresses hydrogen evolution, increases coating weight, and improves bath throughput for high-volume production lines. The product is supplied as a ready-to-dose aqueous solution compatible with all standard phosphating chemistries.',
       sections: {
         features: [
-          { head: 'High-Active Accelerator',   body: '28.6% sodium nitrite active content provides powerful oxidising acceleration for fast, consistent phosphating across high-tonnage production lines' },
+          { head: 'High-Active Accelerator',   body: '~33% w/v sodium nitrite active content provides powerful oxidising acceleration for fast, consistent phosphating across high-tonnage production lines' },
           { head: 'Improved Coating Weight',   body: 'Accelerates nucleation and growth of the phosphate crystal layer, producing denser coatings with better corrosion protection and paint adhesion' },
           { head: 'Hydrogen Suppression',      body: 'Oxidising action suppresses hydrogen evolution at the metal surface, reducing porosity and pitting in the conversion coating' },
           { head: 'Easy Dosing',               body: 'Supplied as a liquid concentrate — no pre-dissolving required; dose directly into the phosphating bath at 2–5% by volume' },
@@ -2355,15 +2355,15 @@ const DOCS: Array<{
         physicalProperties: [
           { property: 'Appearance',             value: 'Clear to pale yellow solution',  unit: '—',     method: 'Visual' },
           { property: 'pH (neat, 25 °C)',        value: '8.5 – 9.5',                     unit: '—',     method: 'pH electrode' },
-          { property: 'Density (25 °C)',         value: '~1.20 – 1.22',                  unit: 'g/mL',  method: 'ISO 2811' },
-          { property: 'Active Content (NaNO₂)', value: '~28.6',                          unit: '% w/w', method: 'KMnO₄ titration' },
+          { property: 'Density (25 °C)',         value: '~1.26 – 1.32',                  unit: 'g/mL',  method: 'ISO 2811' },
+          { property: 'Active Content (NaNO₂)', value: '~33.3',                          unit: '% w/v', method: 'KMnO₄ titration' },
           { property: 'Flash Point',             value: 'None (aqueous)',                unit: '—',     method: 'ASTM D93' },
           { property: 'Boiling Point',           value: '~103',                          unit: '°C',    method: '—' },
           { property: 'Solubility',              value: 'Fully miscible with water',     unit: '—',     method: '—' },
           { property: 'Dosage Rate',             value: '2 – 5',                         unit: '% v/v', method: 'Bath titration / throughput' },
         ],
         composition: [
-          { name: 'Oxidising accelerator salt', function: 'Phosphating bath accelerator — oxidising agent', percent: '25–35%',  compat: 'All phosphating baths at working dilution' },
+          { name: 'Oxidising accelerator salt', function: 'Phosphating bath accelerator — oxidising agent', percent: '30–37%',  compat: 'All phosphating baths at working dilution' },
           { name: 'Water (aqueous carrier)',     function: 'Solvent / carrier',                              percent: 'Balance', compat: '—' },
         ],
         application: [
@@ -2419,7 +2419,7 @@ const DOCS: Array<{
         },
         composition: {
           ingredients: [
-            { name: 'Oxidising accelerator salt', description: 'Phosphating bath accelerator — oxidising agent', percent: '25–35%',  ghsClass: 'Oxidiser / Acute Tox Cat 4', tagType: 'danger' },
+            { name: 'Oxidising accelerator salt', description: 'Phosphating bath accelerator — oxidising agent', percent: '30–37%',  ghsClass: 'Oxidiser / Acute Tox Cat 4', tagType: 'danger' },
             { name: 'Water (aqueous carrier)',     description: 'Solvent / carrier — major component',           percent: 'Balance', ghsClass: 'Non-hazardous',              tagType: 'safe'   },
           ],
           note: 'Exact formulation is proprietary. Functional ingredient descriptions are provided for safety and emergency purposes only.',
@@ -2461,7 +2461,7 @@ const DOCS: Array<{
           { key: 'Appearance',    val: 'Clear to pale yellow solution' },
           { key: 'Odour',         val: 'Odourless to faint mild odour' },
           { key: 'pH (neat)',     val: '8.5 – 9.5' },
-          { key: 'Density',       val: '~1.20 – 1.22 g/mL' },
+          { key: 'Density',       val: '~1.26 – 1.32 g/mL' },
           { key: 'Flash Point',   val: 'None (aqueous)' },
           { key: 'Boiling Point', val: '~103 °C' },
           { key: 'Solubility',    val: 'Fully miscible with water' },
@@ -2496,22 +2496,22 @@ const DOCS: Array<{
     },
     body: {
       classification:     'CONFIDENTIAL — Internal Use Only',
-      batchSize:          '100 L (reference)',
+      batchSize:          '150 (50 kg NaNO₂ + 100 L water)',
       formulaType:        'liquid',
-      referenceBatchSize: 100,
+      referenceBatchSize: 150,
       batchUnit:          'L',
-      totalActivePercent: 28.6,
+      totalActivePercent: 33.3,
       overview: 'UNIKTONNER is a sodium nitrite accelerator solution for phosphating baths. The formulation is a simple two-component aqueous system: sodium nitrite dissolved in purified water. It is supplied as a ready-to-use liquid concentrate dosed directly into the phosphating bath at 2–5% v/v to maintain nitrite accelerator levels for optimal throughput and coating quality.',
       composition: [
-        { srNo: 1, name: 'Sodium Nitrite',  casNo: '7632-00-0', baseQty: 28.6, unit: 'kg', percentWV: 28.6, function: 'Phosphating accelerator / oxidising agent — suppresses hydrogen evolution, increases coating weight and bath throughput', density: null, unitPrice: 0 },
-        { srNo: 2, name: 'Water (DI/RO)',   casNo: '7732-18-5', baseQty: 71.4, unit: 'L',  percentWV: 71.4, function: 'Aqueous carrier / base medium',                                                                                         density: 1.0,  unitPrice: 0 },
+        { srNo: 1, name: 'Sodium Nitrite',  casNo: '7632-00-0', baseQty: 50,  unit: 'kg', percentWV: 33.3, function: 'Phosphating accelerator / oxidising agent — suppresses hydrogen evolution, increases coating weight and bath throughput', density: null, unitPrice: 0 },
+        { srNo: 2, name: 'Water (DI/RO)',   casNo: '7732-18-5', baseQty: 100, unit: 'L',  percentWV: null, function: 'Aqueous carrier / base medium',                                                                                         density: 1.0,  unitPrice: 0 },
       ],
       preparation: [
         { step: 1, title: 'Safety Setup',          detail: 'Ensure working area is well-ventilated. Wear nitrile gloves, chemical goggles, and apron. Sodium nitrite is an oxidising agent — keep away from combustibles, acids, and reducing agents during mixing.' },
-        { step: 2, title: 'Water Charging',         detail: 'Add 65–70 L of DI/RO water to a clean HDPE mixing vessel. Do NOT use metallic containers.' },
-        { step: 3, title: 'Sodium Nitrite Addition', detail: 'Slowly add 28.6 kg of Sodium Nitrite crystals/powder to the water with continuous stirring. Addition should be gradual — the dissolution is slightly exothermic. Stir until fully dissolved (~15–20 min). Do NOT reverse order (do not add water to solid sodium nitrite in a closed vessel).' },
-        { step: 4, title: 'Top Up to Volume',       detail: 'Add remaining DI/RO water to bring total batch volume to exactly 100 L. Mix for a further 10 minutes to ensure uniform concentration throughout.' },
-        { step: 5, title: 'QC Check & Fill',        detail: 'Verify active content by KMnO₄ titration (target: 28–30% w/w NaNO₂), pH (8.5–9.5 neat), and density (~1.20–1.22 g/mL). Record batch number, date, and operator. Fill into sealed, labelled HDPE carboys.' },
+        { step: 2, title: 'Water Charging',         detail: 'Add 90 L of DI/RO water to a clean HDPE mixing vessel. Do NOT use metallic containers.' },
+        { step: 3, title: 'Sodium Nitrite Addition', detail: 'Slowly add 50 kg of Sodium Nitrite crystals/powder to the water with continuous stirring. Addition should be gradual — the dissolution is slightly exothermic. Stir until fully dissolved (~15–20 min). Do NOT reverse order (do not add water to solid sodium nitrite in a closed vessel).' },
+        { step: 4, title: 'Top Up to Volume',       detail: 'Add remaining DI/RO water to bring total water charge to exactly 100 L. Mix for a further 10 minutes to ensure uniform concentration throughout.' },
+        { step: 5, title: 'QC Check & Fill',        detail: 'Verify active content by KMnO₄ titration (target: 31–35% w/v NaNO₂), pH (8.5–9.5 neat), and density (~1.26 – 1.32 g/mL). Record batch number, date, and operator. Fill into sealed, labelled HDPE carboys.' },
       ],
       operatingConditions: [
         { param: 'Dosage in Phosphating Bath', value: '2 – 5 % v/v' },
@@ -2594,8 +2594,8 @@ const DOCS: Array<{
       tests: [
         { parameter: 'Appearance',                            method: 'Visual',                   specification: 'Clear to pale yellow solution',     result: 'Clear, pale yellow',           status: 'Pass' },
         { parameter: 'pH (neat, 25 °C)',                      method: 'pH Electrode',              specification: '8.5 – 9.5',                        result: '8.9',                          status: 'Pass' },
-        { parameter: 'Density (25 °C)',                       method: 'ISO 2811',                  specification: '1.20 – 1.22 g/mL',                 result: '1.21 g/mL',                    status: 'Pass' },
-        { parameter: 'Active Content (NaNO₂)',                method: 'KMnO₄ Titration',           specification: '27.5 – 29.5 % w/w',                result: '28.4 % w/w',                   status: 'Pass' },
+        { parameter: 'Density (25 °C)',                       method: 'ISO 2811',                  specification: '1.26 – 1.32 g/mL',                 result: '1.29 g/mL',                    status: 'Pass' },
+        { parameter: 'Active Content (NaNO₂)',                method: 'KMnO₄ Titration',           specification: '31.0 – 35.5 % w/v',                result: '33.3 % w/v',                   status: 'Pass' },
         { parameter: 'Colour',                                method: 'Visual',                   specification: 'Colourless to pale yellow',         result: 'Pale yellow',                  status: 'Pass' },
         { parameter: 'Clarity / Turbidity',                   method: 'Visual',                   specification: 'Clear, no visible precipitate',     result: 'Clear, no precipitate',        status: 'Pass' },
         { parameter: 'Phosphating Acceleration Test (45°C)',  method: 'Internal QM-018',           specification: '≥25% increase in coating weight vs. unaccelerated control', result: '31% increase', status: 'Pass' },
@@ -2616,28 +2616,22 @@ const DOCS: Array<{
 export async function seedProducts() {
   console.log('🌱 Seeding products and documents...')
 
-  // Upsert products
+  // Insert products — skip if already exists
+  let productInserted = 0
   for (const product of PRODUCTS) {
-    await db
+    const rows = await db
       .insert(products)
       .values(product)
-      .onConflictDoUpdate({
-        target: products.key,
-        set: {
-          displayName: product.displayName,
-          code:        product.code,
-          category:    product.category,
-          subtitle:    product.subtitle,
-          accentColor: product.accentColor,
-        },
-      })
+      .onConflictDoNothing()
+      .returning({ key: products.key })
+    if (rows.length > 0) productInserted++
   }
-  console.log(`   ✅ Upserted ${PRODUCTS.length} products`)
+  console.log(`   ✅ Inserted ${productInserted} new products (${PRODUCTS.length - productInserted} already existed)`)
 
-  // Upsert documents
-  let docCount = 0
+  // Insert documents — skip if already exists
+  let docInserted = 0
   for (const doc of DOCS) {
-    await db
+    const rows = await db
       .insert(productDocuments)
       .values({
         productKey: doc.productKey,
@@ -2647,17 +2641,9 @@ export async function seedProducts() {
         body:       doc.body,
         footer:     doc.footer,
       })
-      .onConflictDoUpdate({
-        target:  [productDocuments.productKey, productDocuments.docType],
-        set: {
-          docNumber: doc.docNumber,
-          revision:  doc.revision,
-          body:      doc.body,
-          footer:    doc.footer,
-          updatedAt: new Date(),
-        },
-      })
-    docCount++
+      .onConflictDoNothing()
+      .returning({ productKey: productDocuments.productKey })
+    if (rows.length > 0) docInserted++
   }
-  console.log(`   ✅ Upserted ${docCount} product documents`)
+  console.log(`   ✅ Inserted ${docInserted} new product documents (${DOCS.length - docInserted} already existed)`)
 }

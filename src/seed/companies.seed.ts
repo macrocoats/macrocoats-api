@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import { companies, companyProductAccess, users } from '../db/schema/index.js'
 import { hashPassword } from '../utils/crypto.js'
@@ -88,45 +88,50 @@ export async function seedCompanies() {
   console.log('🌱 Seeding companies and users...')
 
   for (const co of SEED_COMPANIES) {
-    // Upsert company
     const [existing] = await db.select().from(companies).where(eq(companies.key, co.key))
 
     let companyId: string
 
-    const contactPatch = {
-      displayName:   co.displayName,
-      contactPerson: co.contactPerson ?? null,
-      email:         co.email ?? null,
-      phone:         co.phone ?? null,
-      gstNumber:     co.gstNumber ?? null,
-      address:       co.address ?? null,
-      city:          co.city ?? null,
-      state:         co.state ?? null,
-      pincode:       co.pincode ?? null,
-    }
-
     if (existing) {
       companyId = existing.id
-      await db.update(companies).set(contactPatch).where(eq(companies.id, companyId))
-      console.log(`   ↩️  Updated contact fields for: ${co.key}`)
+      console.log(`   ↩️  Company already exists, skipping: ${co.key}`)
     } else {
       const [inserted] = await db
         .insert(companies)
-        .values({ key: co.key, accessToken: co.accessToken, ...contactPatch })
+        .values({
+          key:           co.key,
+          accessToken:   co.accessToken,
+          displayName:   co.displayName,
+          contactPerson: co.contactPerson ?? null,
+          email:         co.email ?? null,
+          phone:         co.phone ?? null,
+          gstNumber:     co.gstNumber ?? null,
+          address:       co.address ?? null,
+          city:          co.city ?? null,
+          state:         co.state ?? null,
+          pincode:       co.pincode ?? null,
+        })
         .returning()
       companyId = inserted.id
       console.log(`   ✅ Created company: ${co.key}`)
     }
 
-    // Replace product access rows
-    await db.delete(companyProductAccess).where(eq(companyProductAccess.companyId, companyId))
-    if (co.allowedProducts.length) {
+    // Insert only missing product access rows
+    const existingAccess = await db
+      .select({ productKey: companyProductAccess.productKey })
+      .from(companyProductAccess)
+      .where(eq(companyProductAccess.companyId, companyId))
+    const existingProductKeys = new Set(existingAccess.map((r) => r.productKey))
+
+    const missingAccess = co.allowedProducts.filter((pk) => !existingProductKeys.has(pk))
+    if (missingAccess.length > 0) {
       await db.insert(companyProductAccess).values(
-        co.allowedProducts.map((productKey) => ({ companyId, productKey })),
+        missingAccess.map((productKey) => ({ companyId, productKey })),
       )
+      console.log(`   ✅ Added product access for ${co.key}: ${missingAccess.join(', ')}`)
     }
 
-    // Upsert company user (username = company key, password = access token)
+    // Insert company user only if not exists
     const [existingUser] = await db.select().from(users).where(eq(users.username, co.key))
     if (!existingUser) {
       const passwordHash = await hashPassword(co.accessToken)
