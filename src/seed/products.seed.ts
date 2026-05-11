@@ -1052,7 +1052,7 @@ const DOCS: Array<{
           { property: 'Residue on Evaporation', value: 'None (≤0.001%)',              unit: '—',   method: 'ASTM D1353' },
         ],
         composition: [
-          { name: 'Ethanol / IPA blend',    function: 'Cleaning solvent and carrier',          percent: '90–98%',  compat: 'Metals, PCBs, plastics' },
+          { name: 'Alcohol blend',    function: 'Cleaning solvent and carrier',          percent: '90–98%',  compat: 'Metals, PCBs, plastics' },
           { name: 'Corrosion inhibitor',    function: 'Prevents staining on aluminium, copper', percent: '<2%',     compat: 'Non-ferrous metals' },
           { name: 'Deionised water',        function: 'Carrier adjustment',                    percent: '1–5%',    compat: 'All substrates' },
         ],
@@ -1164,7 +1164,7 @@ const DOCS: Array<{
           polymerisation: 'Will not occur',
         },
         sections11to16: {
-          'Skin / Eye': 'Ethanol/IPA blend is a skin and eye irritant. May cause dryness with repeated exposure. Flush with water immediately.',
+          'Skin / Eye': 'Alcohol-based formulation is a skin and eye irritant. May cause dryness with repeated exposure. Flush with water immediately.',
           Aquatic:      'H412 — harmful to aquatic life with long lasting effects. Avoid discharge to drains or watercourses.',
           Disposal:     'Recover and recycle if possible. Dispose of residues via licensed waste contractor per CPCB/SPCB norms (E.P. Act 1986).',
           Regulatory:   'MSIHC Rules 1989 · Factories Act 1948 · Hazardous Waste Rules 2016 · GHS Rev 9',
@@ -1486,12 +1486,12 @@ const DOCS: Array<{
           { property: 'Coating Weight',             value: '1.5 – 4.5',                          unit: 'g/m²',   method: 'IS 6005 / ISO 3892' },
         ],
         composition: [
-          { name: 'Zinc Oxide',               function: 'Zinc ion source for conversion coating formation',                      percent: '~6%',     compat: 'Ferrous substrates' },
-          { name: 'Phosphoric Acid',          function: 'Phosphate source and bath acidity control — drives conversion coating',  percent: '~19%',    compat: 'All process types' },
-          { name: 'Accelerator system',       function: 'Hydroxylamine sulphate / sodium nitrate — promotes uniform, fast coating deposition', percent: '~2.5%', compat: 'Spray and dip' },
-          { name: 'Iron conditioning agent',  function: 'Ferrous sulphate — controls iron content for coating morphology',        percent: '<1%',     compat: 'Immersion and spray' },
-          { name: 'Non-ionic surfactant',     function: 'Bath wetting and foam control',                                          percent: '<0.1%',   compat: 'Low foam at ≤60 °C' },
-          { name: 'Water',                    function: 'Carrier / solvent',                                                      percent: 'Balance', compat: '—' },
+          { name: 'Zinc salt system',        function: 'Zinc ion source for phosphate conversion coating formation',            percent: '~6%',     compat: 'Ferrous substrates' },
+          { name: 'Phosphating agent',       function: 'Phosphate source and bath acidity control; drives conversion coating',  percent: '~19%',    compat: 'All process types' },
+          { name: 'Accelerator system',      function: 'Promotes uniform, fast zinc phosphate coating deposition',              percent: '~2.5%',   compat: 'Spray and dip' },
+          { name: 'Iron conditioning agent', function: 'Controls iron content in bath for coating morphology',                  percent: '<1%',     compat: 'Immersion and spray' },
+          { name: 'Non-ionic surfactant',    function: 'Bath wetting and foam control',                                         percent: '<0.1%',   compat: 'Low foam at ≤60 °C' },
+          { name: 'Water',                   function: 'Carrier / solvent',                                                     percent: 'Balance', compat: '—' },
         ],
         application: [
           { step: '1', name: 'Pre-clean',             param: 'Alkaline degreaser (e.g. Uniklean SP)',    value: '2–4%, 60–75 °C, 3–8 min' },
