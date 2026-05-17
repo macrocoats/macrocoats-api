@@ -54,8 +54,6 @@ All variables are validated by Zod at startup (`src/config/env.ts`); the server 
 | `COOKIE_DOMAIN` | no | localhost | Cookie domain |
 | `COOKIE_SECURE` | no | false | Set Secure flag on cookies |
 | `ALLOWED_ORIGIN` | no | http://localhost:5173 | CORS allowed origin |
-| `AUTH_RATE_LIMIT_MAX` | no | 10 | Max auth attempts per window |
-| `AUTH_RATE_LIMIT_WINDOW` | no | 900 | Rate-limit window in seconds (15 min) |
 
 ---
 

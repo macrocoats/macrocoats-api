@@ -20,9 +20,6 @@ const envSchema = z.object({
   COOKIE_SECURE:        z.coerce.boolean().default(false),
 
   ALLOWED_ORIGIN:       z.string().default('http://localhost:5173'),
-
-  AUTH_RATE_LIMIT_MAX:    z.coerce.number().default(10),
-  AUTH_RATE_LIMIT_WINDOW: z.coerce.number().default(900),
 })
 
 function loadEnv() {

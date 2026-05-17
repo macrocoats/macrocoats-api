@@ -41,12 +41,6 @@ export async function createBatch(data: CreateBatchBody, createdBy: string | nul
       if (!item || item.stockQty === null) continue  // not tracked — skip
 
       const remaining = Number(item.stockQty) - component.quantityUsed
-      if (remaining < 0) {
-        throw Object.assign(
-          new Error(`Insufficient stock for "${component.name}". Available: ${Number(item.stockQty)} ${component.unit}, needed: ${component.quantityUsed} ${component.unit}.`),
-          { statusCode: 400 },
-        )
-      }
 
       await tx
         .update(inventoryItems)

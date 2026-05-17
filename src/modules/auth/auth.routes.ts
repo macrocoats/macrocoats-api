@@ -1,5 +1,4 @@
 import type { FastifyInstance } from 'fastify'
-import rateLimit from '@fastify/rate-limit'
 import { loginSchema, tokenSchema } from './auth.schema.js'
 import {
   loginWithCredentials,
@@ -10,18 +9,9 @@ import {
 } from './auth.service.js'
 import { accessCookieOptions, refreshCookieOptions } from '../../plugins/cookie.js'
 import { authenticate, requireAuth } from '../../middleware/authenticate.js'
-import { env } from '../../config/env.js'
 import { AppErrors } from '../../types/errors.js'
 
 export async function authRoutes(app: FastifyInstance) {
-  // Apply stricter rate limiting to all auth endpoints
-  await app.register(rateLimit, {
-    max:      env.AUTH_RATE_LIMIT_MAX,
-    timeWindow: env.AUTH_RATE_LIMIT_WINDOW * 1000,
-    keyGenerator: (req) => req.ip,
-    errorResponseBuilder: () => ({ error: AppErrors.TOO_MANY_REQUESTS }),
-  })
-
   // ── POST /auth/login ─────────────────────────────────────────────────────
   app.post('/login', async (request, reply) => {
     const body = loginSchema.safeParse(request.body)
