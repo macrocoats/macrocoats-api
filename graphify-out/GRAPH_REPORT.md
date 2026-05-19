@@ -1,11 +1,11 @@
-# Graph Report - /Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api  (2026-05-17)
+# Graph Report - /Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api  (2026-05-19)
 
 ## Corpus Check
-- 77 files · ~61,895 words
+- 77 files · ~66,705 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 256 nodes · 389 edges · 29 communities detected
+- 257 nodes · 391 edges · 29 communities detected
 - Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 30 edges (avg confidence: 0.81)
 - Token cost: 0 input · 0 output
 
@@ -83,40 +83,40 @@ Cohesion: 0.13
 Nodes (0): 
 
 ### Community 2 - "Community 2"
-Cohesion: 0.1
-Nodes (10): getBatchByNumber(), toBatchResponse(), seedCompanies(), hashPassword(), seedFormulationVariants(), main(), seedInventory(), seedProducts() (+2 more)
-
-### Community 3 - "Community 3"
 Cohesion: 0.12
 Nodes (19): buildAuthUser(), getMeById(), issueTokens(), loginWithCredentials(), loginWithToken(), revokeRefreshToken(), rotateRefreshToken(), authenticate() (+11 more)
+
+### Community 3 - "Community 3"
+Cohesion: 0.11
+Nodes (11): seedCompanies(), hashPassword(), seedFormulationVariants(), main(), seedInventory(), seedProducts(), getQuotationById(), toQuotationResponse() (+3 more)
 
 ### Community 4 - "Community 4"
 Cohesion: 0.12
 Nodes (15): buildSummary(), getAccessSummary(), buildApp(), registerCookies(), registerCors(), cacheKey(), getDocument(), updateDocument() (+7 more)
 
 ### Community 5 - "Community 5"
+Cohesion: 0.24
+Nodes (3): getBatchByNumber(), saveCoaSnapshot(), toBatchResponse()
+
+### Community 6 - "Community 6"
 Cohesion: 0.31
 Nodes (7): computeStockStatus(), createItem(), getAllItems(), getItemById(), resetToDefaults(), toResponse(), updateItem()
 
-### Community 6 - "Community 6"
+### Community 7 - "Community 7"
 Cohesion: 0.28
 Nodes (3): getVariantById(), toVariantResponse(), updateVariant()
 
-### Community 7 - "Community 7"
+### Community 8 - "Community 8"
 Cohesion: 0.36
 Nodes (4): createVendor(), getVendorById(), toResponse(), updateVendor()
 
-### Community 8 - "Community 8"
+### Community 9 - "Community 9"
 Cohesion: 0.36
 Nodes (4): createStaff(), getStaffById(), toResponse(), updateStaff()
 
-### Community 9 - "Community 9"
+### Community 10 - "Community 10"
 Cohesion: 0.33
 Nodes (2): getCompanyById(), toResponse()
-
-### Community 10 - "Community 10"
-Cohesion: 0.47
-Nodes (3): getSalaryRecordById(), saveSalaryRecord(), toResponse()
 
 ### Community 11 - "Community 11"
 Cohesion: 0.47
@@ -227,7 +227,7 @@ _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Macro Coats API` connect `Community 0` to `Community 11`?**
   _High betweenness centrality (0.042) - this node is a cross-community bridge._
-- **Why does `rotateCompanyToken()` connect `Community 3` to `Community 9`?**
+- **Why does `rotateCompanyToken()` connect `Community 2` to `Community 10`?**
   _High betweenness centrality (0.040) - this node is a cross-community bridge._
 - **Are the 4 inferred relationships involving `issueTokens()` (e.g. with `generateToken()` and `hashToken()`) actually correct?**
   _`issueTokens()` has 4 INFERRED edges - model-reasoned connections that need verification._
@@ -238,4 +238,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `Community 1` be split into smaller, more focused modules?**
   _Cohesion score 0.13 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.1 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.12 - nodes in this community are weakly interconnected._
