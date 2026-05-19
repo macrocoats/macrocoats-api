@@ -7,7 +7,7 @@ const PRODUCTS = [
   { key: 'uniklean-fe',    displayName: 'UNIKLEAN-FE',    code: 'FE',  category: 'Iron-based Cleaner',                subtitle: 'Iron Phosphating & Metal Conditioning Agent',                     accentColor: '#7a3a1a' },
   { key: 'uniprotect-oil', displayName: 'UNIPROTECT OIL', code: 'UP',  category: 'Rust Preventive Oil',               subtitle: 'Water Displacing Rust Preventive',                                accentColor: '#1a4971' },
   { key: 'uniflow-ecm',    displayName: 'UNIFLOW ECM',    code: 'ECM', category: 'Corrosion Preventive Oil',          subtitle: 'Corrosion Preventive Oil — Hydrocarbon + Petroleum Sulfonate',     accentColor: '#1a5c73' },
-  { key: 'unicool-al',      displayName: 'UNICool AL',      code: 'AL',  category: 'Alcohol Based Cleaner', subtitle: 'Fast-Drying Alcohol Cleaner — Cooling & Precision Cleaning Fluid', accentColor: '#1590c2' },
+  { key: 'unicool-al',      displayName: 'UNICOOL AL',      code: 'AL',  category: 'Alcohol Based Cleaner', subtitle: 'Fast-Drying Alcohol Cleaner — Cooling & Precision Cleaning Fluid', accentColor: '#1590c2' },
   { key: 'unikoat-lt-700', displayName: 'UNIKOAT LT 700', code: 'LT',  category: 'Zinc Phosphating',      subtitle: 'Zinc Phosphating & Surface Conversion Agent',                     accentColor: '#4a6741' },
   { key: 'unisolve-h3',    displayName: 'UNISOLVE H3',    code: 'H3',  category: 'Degreasing / Derusting Chemical', subtitle: 'Phosphoric Acid-Based Acidic Cleaner & Rust Remover',         accentColor: '#7a5c1a' },
   { key: 'unipass',        displayName: 'UNIPASS',        code: 'PS',  category: 'Passivation Chemical',             subtitle: 'Post-treatment / Anti-corrosion Passivation',                   accentColor: '#2d6a6a' },
@@ -1020,7 +1020,7 @@ const DOCS: Array<{
   },
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // UNICool AL
+  // UNICOOL AL
   // ─────────────────────────────────────────────────────────────────────────────
   {
     productKey: 'unicool-al',
@@ -1034,7 +1034,7 @@ const DOCS: Array<{
     },
     body: {
       grade:       'Industrial / Precision Grade',
-      description: 'UNICool AL is a fast-drying, alcohol-based precision cleaning fluid for aluminium, copper, PCBs, and electronic assemblies. It evaporates without residue, leaving no film or contamination.',
+      description: 'UNICOOL AL is a fast-drying, alcohol-based precision cleaning fluid for aluminium, copper, PCBs, and electronic assemblies. It evaporates without residue, leaving no film or contamination.',
       sections: {
         features: [
           { head: 'Residue-Free Evaporation', body: 'Evaporates completely without leaving residue or film on cleaned surfaces' },
@@ -1057,7 +1057,7 @@ const DOCS: Array<{
           { name: 'Deionised water',        function: 'Carrier adjustment',                    percent: '1–5%',    compat: 'All substrates' },
         ],
         application: [
-          { step: '1', name: 'Apply UNICool AL', param: 'Spray or wipe with lint-free cloth',  value: 'Ambient temperature' },
+          { step: '1', name: 'Apply UNICOOL AL', param: 'Spray or wipe with lint-free cloth',  value: 'Ambient temperature' },
           { step: '2', name: 'Wipe / Agitate',   param: 'Wipe with lint-free cloth if needed', value: 'Light pressure' },
           { step: '3', name: 'Air dry',           param: 'No rinsing required',                 value: '30–90 s at ambient' },
           { step: '4', name: 'Inspect',           param: 'Verify residue-free surface',          value: 'White cloth test' },
@@ -1191,7 +1191,7 @@ const DOCS: Array<{
       referenceBatchSize: 100,
       batchUnit:          'L',
       totalActivePercent: 95,
-      overview: 'UNICool AL is a fast-drying isopropyl alcohol (IPA) based precision cleaner formulated for cooling and degreasing of metal and electronic components. It leaves no residue, evaporates rapidly, and is suitable for precision engineering, bearing cleaning, and post-machining surface preparation.',
+      overview: 'UNICOOL AL is a fast-drying isopropyl alcohol (IPA) based precision cleaner formulated for cooling and degreasing of metal and electronic components. It leaves no residue, evaporates rapidly, and is suitable for precision engineering, bearing cleaning, and post-machining surface preparation.',
       composition: [
         { srNo: 1, name: 'DM Water',                          casNo: '7732-18-5', baseQty: null, unit: 'L', percentWV: null, function: 'Solvent base — balance to final volume (de-mineralised)',                         density: 1.0,  unitPrice: 0   },
         { srNo: 2, name: 'Ethanol (Industrial Grade)',         casNo: '64-17-5',   baseQty: 10.0, unit: 'L', percentWV: 10.0, function: 'Co-solvent — enhances cleaning action and accelerates drying',                    density: 0.789, unitPrice: 55  },
@@ -1259,7 +1259,7 @@ const DOCS: Array<{
         'Ensure adequate ventilation during use',
       ],
       storage:  ['Store at 5°C – 35°C', 'Keep away from ignition sources', 'Keep container sealed and upright', 'Dispose per local regulations'],
-      products: ['UNICool AL', 'UNICool AL PLUS', 'UNICool IPA'],
+      products: ['UNICOOL AL', 'UNICOOL AL PLUS', 'UNICool IPA'],
     },
   },
   // ─────────────────────────────────────────────────────────────────────────────
@@ -1415,7 +1415,7 @@ const DOCS: Array<{
   },
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // CoA — UNICool AL
+  // CoA — UNICOOL AL
   // ─────────────────────────────────────────────────────────────────────────────
   {
     productKey: 'unicool-al',
@@ -1444,7 +1444,7 @@ const DOCS: Array<{
         { parameter: 'Dry Time (ambient)',          method: 'Cotton Wipe Method',   specification: '30 – 90 s',                       result: '45 s',                            status: 'Pass' },
         { parameter: 'Aluminium Compatibility',     method: 'Internal IM-003',      specification: 'No staining, no etching',         result: 'No staining or etching observed', status: 'Pass' },
       ],
-      statement: 'We hereby certify that the above batch of UNICool AL has been manufactured, tested, and inspected in accordance with our internal quality specifications. All parameters conform to the product specification and the product is approved for release.',
+      statement: 'We hereby certify that the above batch of UNICOOL AL has been manufactured, tested, and inspected in accordance with our internal quality specifications. All parameters conform to the product specification and the product is approved for release.',
       approvals: {
         preparedBy: 'Quality Analyst — Macro Coats',
         reviewedBy: 'QC Manager — Macro Coats',
