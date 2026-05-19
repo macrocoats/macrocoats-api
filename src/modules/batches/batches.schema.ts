@@ -45,6 +45,24 @@ export const createBatchSchema = z.object({
   variantName:         z.string().nullable().optional(),
 })
 
+const coaTestSchema = z.object({
+  parameter:     z.string(),
+  method:        z.string(),
+  specification: z.string(),
+  result:        z.string(),
+  status:        z.enum(['Pass', 'Fail']),
+})
+
+export const saveCoaSnapshotSchema = z.object({
+  tests:        z.array(coaTestSchema).min(1),
+  customerName: z.string().optional(),
+  poNumber:     z.string().optional(),
+  prodDate:     z.string().optional(),
+  savedAt:      z.string().optional(),
+})
+
+export type SaveCoaSnapshotBody = z.infer<typeof saveCoaSnapshotSchema>
+
 export const listBatchesQuerySchema = z.object({
   companyName: z.string().optional(),
   productCode: z.string().optional(),

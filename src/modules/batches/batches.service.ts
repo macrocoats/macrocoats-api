@@ -2,7 +2,7 @@ import { eq, ilike, and, gte, lte, desc, count, sql } from 'drizzle-orm'
 import { db } from '../../db/index.js'
 import { batches, inventoryItems } from '../../db/schema/index.js'
 import { nextBatchNumber } from '../../utils/batchNumber.js'
-import type { CreateBatchBody, ListBatchesQuery } from './batches.schema.js'
+import type { CreateBatchBody, ListBatchesQuery, SaveCoaSnapshotBody } from './batches.schema.js'
 
 function toBatchResponse(row: typeof batches.$inferSelect) {
   return {
@@ -19,6 +19,7 @@ function toBatchResponse(row: typeof batches.$inferSelect) {
     paymentTermDays:     row.paymentTermDays ?? 45,
     variantId:           row.variantId ?? null,
     variantName:         row.variantName ?? null,
+    coaSnapshot:         row.coaSnapshot ?? null,
     createdAt:           row.createdAt.toISOString(),
   }
 }
@@ -111,6 +112,15 @@ export async function getBatchByNumber(batchNumber: string) {
     .from(batches)
     .where(eq(batches.batchNumber, batchNumber))
 
+  return row ? toBatchResponse(row) : null
+}
+
+export async function saveCoaSnapshot(batchNumber: string, snapshot: SaveCoaSnapshotBody) {
+  const [row] = await db
+    .update(batches)
+    .set({ coaSnapshot: snapshot })
+    .where(eq(batches.batchNumber, batchNumber))
+    .returning()
   return row ? toBatchResponse(row) : null
 }
 

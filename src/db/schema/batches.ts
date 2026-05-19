@@ -21,6 +21,7 @@ export const batches = pgTable('batches', {
   paymentTermDays:     integer('payment_term_days').default(45),
   variantId:           uuid('variant_id').references(() => productFormulationVariants.id, { onDelete: 'set null' }),
   variantName:         text('variant_name'),
+  coaSnapshot:         jsonb('coa_snapshot'),
   createdBy:           uuid('created_by').references(() => users.id),
   createdAt:           timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [

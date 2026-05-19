@@ -59,13 +59,13 @@ const ALCOHOL_PRECISION_COMPONENTS = [
  * High IPA Variant for UNICool AL.
  * Percentage-based; Water is auto-calculated (~79.96%).
  * IPA at 20% gives fast-drying, high-purity cleaning action.
- * LAE-9 and Ammonium Hydroxide at 0.02% L each (~20 mL per 100 L batch).
+ * LAE-9 and Ammonium Hydroxide at 0.01% L each (~10 mL per 100 L batch).
  */
 const HIGH_IPA_COMPONENTS = [
   { materialName: 'Water',               percentage: null,  unit: 'L' as const },  // auto-calc ~79.96%
   { materialName: 'IPA',                 percentage: 20.00, unit: 'L' as const },
-  { materialName: 'LAE-9',              percentage: 0.02,  unit: 'L' as const },  // ~20 mL per 100 L
-  { materialName: 'Ammonium Hydroxide', percentage: 0.02,  unit: 'L' as const },  // ~20 mL per 100 L
+  { materialName: 'LAE-9',              percentage: 0.01,  unit: 'L' as const },  // ~20 mL per 100 L
+  { materialName: 'Ammonium Hydroxide', percentage: 0.01,  unit: 'L' as const },  // ~20 mL per 100 L
 ]
 
 export async function seedFormulationVariants() {

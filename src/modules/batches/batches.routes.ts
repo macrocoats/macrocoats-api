@@ -2,8 +2,8 @@ import type { FastifyInstance } from 'fastify'
 import { authenticate, requireAuth } from '../../middleware/authenticate.js'
 import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js'
 import { AppErrors } from '../../types/errors.js'
-import { createBatchSchema, listBatchesQuerySchema } from './batches.schema.js'
-import { createBatch, listBatches, getBatchByNumber, deleteBatch } from './batches.service.js'
+import { createBatchSchema, listBatchesQuerySchema, saveCoaSnapshotSchema } from './batches.schema.js'
+import { createBatch, listBatches, getBatchByNumber, deleteBatch, saveCoaSnapshot } from './batches.service.js'
 
 const preHandler = [authenticate, requireAuth, requireSuperAdmin]
 
@@ -33,6 +33,18 @@ export async function batchRoutes(app: FastifyInstance) {
   // ── GET /batches/:batchNumber ─────────────────────────────────────────────
   app.get<{ Params: { batchNumber: string } }>('/:batchNumber', { preHandler }, async (request, reply) => {
     const batch = await getBatchByNumber(request.params.batchNumber)
+    if (!batch) return reply.code(404).send({ error: AppErrors.BATCH_NOT_FOUND })
+    return reply.send(batch)
+  })
+
+  // ── PATCH /batches/:batchNumber/coa ──────────────────────────────────────
+  app.patch<{ Params: { batchNumber: string } }>('/:batchNumber/coa', { preHandler }, async (request, reply) => {
+    const body = saveCoaSnapshotSchema.safeParse(request.body)
+    if (!body.success) {
+      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
+    }
+
+    const batch = await saveCoaSnapshot(request.params.batchNumber, body.data)
     if (!batch) return reply.code(404).send({ error: AppErrors.BATCH_NOT_FOUND })
     return reply.send(batch)
   })

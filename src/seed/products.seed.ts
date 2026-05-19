@@ -1285,7 +1285,7 @@ const DOCS: Array<{
       tests: [
         { parameter: 'Appearance',                 method: 'Visual',                 specification: 'Clear to pale yellow liquid',  result: 'Clear, pale yellow liquid', status: 'Pass' },
         { parameter: 'pH (1% solution, 25 °C)',    method: 'pH Electrode',            specification: '10.5 – 12.5',                 result: '11.2',                      status: 'Pass' },
-        { parameter: 'Density (25 °C)',            method: 'ISO 2811',                specification: '1.03 – 1.08 g/mL',           result: '1.05 g/mL',                 status: 'Pass' },
+        { parameter: 'Specific Gravity (25 °C)',    method: 'ISO 2811',                specification: '1.03 – 1.08',                result: '1.05',                      status: 'Pass' },
         { parameter: 'Total Alkalinity',           method: 'HCl Titration',           specification: '≥ 8.0 % (as Na₂O)',          result: '9.2 %',                     status: 'Pass' },
         { parameter: 'Foam Level (spray, 55 °C)',  method: 'DIN 53902',               specification: '< 5 mL',                      result: '2 mL',                      status: 'Pass' },
         { parameter: 'Flash Rust Inhibition',      method: 'IS 5521 (2 h, 25 °C)',    specification: 'No flash rust',               result: 'No flash rust observed',    status: 'Pass' },
@@ -1324,7 +1324,7 @@ const DOCS: Array<{
         { parameter: 'Appearance',                      method: 'Visual',             specification: 'Clear to pale yellow liquid',   result: 'Clear, pale yellow liquid', status: 'Pass' },
         { parameter: 'pH (Concentrate, 25 °C)',         method: 'pH Electrode',        specification: '1.5 – 3.0',                    result: '2.3',                       status: 'Pass' },
         { parameter: 'pH (5% working bath, 25 °C)',     method: 'pH Electrode',        specification: '4.0 – 5.5',                    result: '4.7',                       status: 'Pass' },
-        { parameter: 'Density (25 °C)',                 method: 'ISO 2811',            specification: '1.08 – 1.12 g/mL',            result: '1.10 g/mL',                 status: 'Pass' },
+        { parameter: 'Specific Gravity (25 °C)',         method: 'ISO 2811',            specification: '1.08 – 1.12',                  result: '1.10',                      status: 'Pass' },
         { parameter: 'Total Phosphate (as P₂O₅)',       method: 'Volumetric Titration',specification: '20 – 30 %',                    result: '24.8 %',                    status: 'Pass' },
         { parameter: 'Coating Weight (5%, 55°C, 5min)', method: 'IS 6005 / ISO 3892', specification: '0.3 – 1.0 g/m²',              result: '0.65 g/m²',                 status: 'Pass' },
         { parameter: 'Flash Rust Resistance',           method: 'IS 5521 (1 h)',      specification: 'No flash rust within 1 h',     result: 'No flash rust observed',    status: 'Pass' },
@@ -1361,7 +1361,7 @@ const DOCS: Array<{
       tests: [
         { parameter: 'Appearance',                      method: 'Visual',              specification: 'Clear amber liquid',              result: 'Clear amber liquid',              status: 'Pass' },
         { parameter: 'Flash Point',                     method: 'ASTM D93',            specification: '> 60 °C',                         result: '68 °C',                           status: 'Pass' },
-        { parameter: 'Density (25 °C)',                 method: 'ISO 2811',            specification: '0.82 – 0.86 g/mL',               result: '0.84 g/mL',                       status: 'Pass' },
+        { parameter: 'Specific Gravity (25 °C)',         method: 'ISO 2811',            specification: '0.82 – 0.86',                     result: '0.84',                            status: 'Pass' },
         { parameter: 'Kinematic Viscosity (40 °C)',     method: 'ASTM D445',           specification: '8 – 15 cSt',                      result: '11.2 cSt',                        status: 'Pass' },
         { parameter: 'Film Thickness (dip application)',method: 'Dry Film Gauge',      specification: '3 – 8 μm',                        result: '5 μm',                            status: 'Pass' },
         { parameter: 'Humidity Cabinet Test',           method: 'ASTM D1748 (500 h)',  specification: 'No rust formation in 500 h',      result: 'No rust observed at 500 h',       status: 'Pass' },
@@ -1399,7 +1399,7 @@ const DOCS: Array<{
       tests: [
         { parameter: 'Appearance',                    method: 'Visual',              specification: 'Amber to dark amber liquid',      result: 'Amber liquid, clear',             status: 'Pass' },
         { parameter: 'Flash Point',                   method: 'ASTM D93',            specification: '> 65 °C',                         result: '72 °C',                           status: 'Pass' },
-        { parameter: 'Density (25 °C)',               method: 'ISO 2811',            specification: '0.85 – 0.92 g/mL',               result: '0.88 g/mL',                       status: 'Pass' },
+        { parameter: 'Specific Gravity (25 °C)',       method: 'ISO 2811',            specification: '0.85 – 0.92',                     result: '0.88',                            status: 'Pass' },
         { parameter: 'Kinematic Viscosity (40 °C)',   method: 'ASTM D445',           specification: '15 – 30 cSt',                     result: '21.5 cSt',                        status: 'Pass' },
         { parameter: 'Petroleum Sulfonate Content',   method: 'IP 33',               specification: '15 – 25 %',                       result: '19.8 %',                          status: 'Pass' },
         { parameter: 'Humidity Cabinet (720 h)',       method: 'ASTM D1748',          specification: 'No rust in 720 h',               result: 'No rust observed at 720 h',       status: 'Pass' },
@@ -1436,9 +1436,10 @@ const DOCS: Array<{
       appearance:     'Clear, colourless liquid',
       tests: [
         { parameter: 'Appearance',                  method: 'Visual',               specification: 'Clear, colourless liquid',        result: 'Clear, colourless liquid',        status: 'Pass' },
+        { parameter: 'pH (neat, 25 °C)',            method: 'pH Electrode',         specification: '6.5 – 8.0',                       result: '7.2',                             status: 'Pass' },
         { parameter: 'Odour',                       method: 'Olfactory',            specification: 'Characteristic alcohol odour',    result: 'Characteristic alcohol',          status: 'Pass' },
         { parameter: 'Flash Point',                 method: 'ASTM D56',             specification: '12 – 18 °C',                      result: '14 °C',                           status: 'Pass' },
-        { parameter: 'Density (25 °C)',             method: 'ISO 2811',             specification: '0.78 – 0.82 g/mL',               result: '0.80 g/mL',                       status: 'Pass' },
+        { parameter: 'Specific Gravity (25 °C)',    method: 'ISO 2811',             specification: '0.78 – 0.82',                     result: '0.80',                            status: 'Pass' },
         { parameter: 'Evaporation Residue',         method: 'ASTM D1353',           specification: '≤ 0.001 %',                       result: '< 0.001 %',                       status: 'Pass' },
         { parameter: 'Dry Time (ambient)',          method: 'Cotton Wipe Method',   specification: '30 – 90 s',                       result: '45 s',                            status: 'Pass' },
         { parameter: 'Aluminium Compatibility',     method: 'Internal IM-003',      specification: 'No staining, no etching',         result: 'No staining or etching observed', status: 'Pass' },
