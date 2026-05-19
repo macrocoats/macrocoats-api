@@ -1467,7 +1467,7 @@ const DOCS: Array<{
     },
     body: {
       grade:       'Industrial Grade',
-      description: 'UNIKOAT LT 700 is a ready-to-dilute liquid zinc phosphating concentrate engineered to produce a heavy, microcrystalline zinc phosphate conversion coating on ferrous substrates. The coating provides an excellent keying layer for paints and powder coats and acts as a corrosion barrier in its own right. The formulation contains zinc oxide, phosphoric acid, and a balanced accelerator system (hydroxylamine sulphate, sodium nitrate, ferrous sulphate) with a low-foam surfactant. It is suitable for spray wash and immersion application at moderate temperatures.',
+      description: 'UNIKOAT LT 700 is a ready-to-dilute liquid zinc phosphating concentrate engineered to produce a heavy, microcrystalline zinc phosphate conversion coating on ferrous substrates. The coating provides an excellent keying layer for paints and powder coats and acts as a corrosion barrier in its own right. The formulation incorporates a proprietary accelerator system with a low-foam surfactant, suitable for spray wash and immersion application at moderate temperatures.',
       sections: {
         features: [
           { head: 'Heavy Zinc Phosphate Coating',  body: 'Produces a dense, microcrystalline zinc phosphate layer (1.5 – 4.5 g/m²) on ferrous substrates for superior paint adhesion and corrosion resistance' },
@@ -1772,7 +1772,7 @@ const DOCS: Array<{
     },
     body: {
       grade:       'Industrial Grade',
-      description: 'UNISOLVE H3 is a phosphoric acid-based acidic cleaner and derusting agent formulated for the removal of rust, mill scale, and oxide layers from ferrous metal surfaces. The product combines a phosphate acid system with a wetting surfactant, emulsifier, and pH-buffering agent to deliver effective, controlled metal pickling. It is suitable for immersion, spray, and brush application at ambient to moderate temperatures, and is widely used in pre-treatment lines prior to phosphating, powder coating, and painting.',
+      description: 'UNISOLVE H3 is an acidic cleaner and derusting agent formulated for the removal of rust, mill scale, and oxide layers from ferrous metal surfaces. The product combines an active acid system with wetting and emulsifying agents to deliver effective, controlled metal pickling. It is suitable for immersion, spray, and brush application at ambient to moderate temperatures, and is widely used in pre-treatment lines prior to phosphating, powder coating, and painting.',
       sections: {
         features: [
           { head: 'Dual-Action Derusting & Degreasing', body: 'Simultaneously removes rust, scale, and light oils in a single-step treatment — reduces pre-treatment steps and cycle time' },
@@ -2060,7 +2060,7 @@ const DOCS: Array<{
     },
     body: {
       grade:       'Industrial Grade',
-      description: 'UNIPASS is an aqueous passivation treatment formulated for post-phosphating application on ferrous metal surfaces. The product combines a citric acid chelating system with sodium nitrite corrosion inhibitor and benzotriazole (BTA) film former to produce a dense, stable passivation layer that significantly enhances the corrosion resistance of phosphated surfaces. UNIPASS is designed for spray or dip application immediately following the phosphating and rinse stages, and is compatible with subsequent painting, powder coating, and electrocoat processes.',
+      description: 'UNIPASS is an aqueous passivation treatment formulated for post-phosphating application on ferrous metal surfaces. The product combines a chelating system with corrosion inhibitors and a film former to produce a dense, stable passivation layer that significantly enhances the corrosion resistance of phosphated surfaces. UNIPASS is designed for spray or dip application immediately following the phosphating and rinse stages, and is compatible with subsequent painting, powder coating, and electrocoat processes.',
       sections: {
         features: [
           { head: 'Post-Phosphating Passivation',   body: 'Seals and stabilises zinc or iron phosphate conversion coatings — extends the corrosion protection window and improves topcoat adhesion' },
@@ -2343,7 +2343,7 @@ const DOCS: Array<{
     },
     body: {
       grade:       'Industrial Grade',
-      description: 'UNIKTONNER is a high-concentration sodium nitrite accelerator solution formulated for use as a tonnage additive in zinc and iron phosphating baths. It significantly accelerates the phosphating reaction by providing an oxidising environment that suppresses hydrogen evolution, increases coating weight, and improves bath throughput for high-volume production lines. The product is supplied as a ready-to-dose aqueous solution compatible with all standard phosphating chemistries.',
+      description: 'UNIKTONNER is a high-concentration accelerator solution formulated for use as a tonnage additive in zinc and iron phosphating baths. It significantly accelerates the phosphating reaction by providing an oxidising environment that suppresses hydrogen evolution, increases coating weight, and improves bath throughput for high-volume production lines. The product is supplied as a ready-to-dose aqueous solution compatible with all standard phosphating chemistries.',
       sections: {
         features: [
           { head: 'High-Active Accelerator',   body: '~33% w/v sodium nitrite active content provides powerful oxidising acceleration for fast, consistent phosphating across high-tonnage production lines' },
