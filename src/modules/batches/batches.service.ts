@@ -20,6 +20,7 @@ function toBatchResponse(row: typeof batches.$inferSelect) {
     variantId:           row.variantId ?? null,
     variantName:         row.variantName ?? null,
     coaSnapshot:         row.coaSnapshot ?? null,
+    notes:               row.notes ?? null,
     createdAt:           row.createdAt.toISOString(),
   }
 }
@@ -69,6 +70,7 @@ export async function createBatch(data: CreateBatchBody, createdBy: string | nul
         paymentTermDays:     data.paymentTermDays ?? 45,
         variantId:           data.variantId ?? null,
         variantName:         data.variantName ?? null,
+        notes:               data.notes ?? null,
         createdBy:           createdBy ?? undefined,
       })
       .returning()
