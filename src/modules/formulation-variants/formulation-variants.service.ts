@@ -30,6 +30,7 @@ function toVariantResponse(
     companyDisplayName,
     variantName:        row.variantName,
     isDefault:          row.isDefault,
+    coaTests:           (row.coaTests as Record<string, unknown>[] | null) ?? null,
     createdAt:          row.createdAt.toISOString(),
     components,
   }
@@ -139,6 +140,7 @@ export async function updateVariant(variantId: string, data: UpdateVariantBody) 
   const patch: Partial<typeof productFormulationVariants.$inferInsert> = {}
   if (data.variantName !== undefined) patch.variantName = data.variantName
   if (data.isDefault   !== undefined) patch.isDefault   = data.isDefault
+  if (data.coaTests    !== undefined) patch.coaTests    = data.coaTests
 
   if (!Object.keys(patch).length) return getVariantById(variantId)
 

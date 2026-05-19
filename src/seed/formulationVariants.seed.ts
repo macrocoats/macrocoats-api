@@ -23,6 +23,36 @@ const UNIROLS_COMPONENTS = [
   { materialName: 'Water',                  percentage: null, unit: 'L'  as const },  // auto-calculated
 ]
 
+const COA_TESTS_PEG_GLYCOL = [
+  { parameter: 'Appearance',               method: 'Visual',              specification: 'Clear, colourless to pale liquid', result: '', status: 'Pass' },
+  { parameter: 'pH (neat, 25 °C)',         method: 'pH Electrode',        specification: '7.0 – 9.0',                        result: '', status: 'Pass' },
+  { parameter: 'Flash Point',              method: 'Pensky-Martens (PM)', specification: '> 100 °C',                         result: '', status: 'Pass' },
+  { parameter: 'Specific Gravity (25 °C)', method: 'ISO 2811',            specification: '1.00 – 1.04',                      result: '', status: 'Pass' },
+  { parameter: 'Evaporation Residue',      method: 'ASTM D2369',          specification: '0.5 – 2.0 %',                      result: '', status: 'Pass' },
+  { parameter: 'Dry Time (ambient)',       method: 'Cotton Wipe Method',  specification: '60 – 180 s',                       result: '', status: 'Pass' },
+  { parameter: 'Aluminium Compatibility',  method: 'Coupon test (24 h)',  specification: 'No staining, no etching',          result: '', status: 'Pass' },
+]
+
+const COA_TESTS_ALCOHOL_PRECISION = [
+  { parameter: 'Appearance',               method: 'Visual',              specification: 'Clear, colourless liquid',          result: '', status: 'Pass' },
+  { parameter: 'pH (neat, 25 °C)',         method: 'pH Electrode',        specification: '7.0 – 9.0',                        result: '', status: 'Pass' },
+  { parameter: 'Flash Point',              method: 'Pensky-Martens (PM)', specification: '38 – 50 °C',                       result: '', status: 'Pass' },
+  { parameter: 'Specific Gravity (25 °C)', method: 'ISO 2811',            specification: '0.94 – 0.97',                      result: '', status: 'Pass' },
+  { parameter: 'Evaporation Residue',      method: 'ASTM D2369',          specification: '≤ 0.01 %',                         result: '', status: 'Pass' },
+  { parameter: 'Dry Time (ambient)',       method: 'Cotton Wipe Method',  specification: '20 – 60 s',                        result: '', status: 'Pass' },
+  { parameter: 'Aluminium Compatibility',  method: 'Coupon test (24 h)',  specification: 'No staining, no etching',          result: '', status: 'Pass' },
+]
+
+const COA_TESTS_HIGH_IPA = [
+  { parameter: 'Appearance',               method: 'Visual',              specification: 'Clear, colourless liquid',          result: '', status: 'Pass' },
+  { parameter: 'pH (neat, 25 °C)',         method: 'pH Electrode',        specification: '7.0 – 9.0',                        result: '', status: 'Pass' },
+  { parameter: 'Flash Point',             method: 'Pensky-Martens (PM)',  specification: '26 – 38 °C',                       result: '', status: 'Pass' },
+  { parameter: 'Specific Gravity (25 °C)', method: 'ISO 2811',            specification: '0.90 – 0.94',                      result: '', status: 'Pass' },
+  { parameter: 'Evaporation Residue',      method: 'ASTM D2369',          specification: '≤ 0.001 %',                        result: '', status: 'Pass' },
+  { parameter: 'Dry Time (ambient)',       method: 'Cotton Wipe Method',  specification: '15 – 40 s',                        result: '', status: 'Pass' },
+  { parameter: 'Aluminium Compatibility',  method: 'Coupon test (24 h)',  specification: 'No staining, no etching',          result: '', status: 'Pass' },
+]
+
 /**
  * PEG Glycol Variant for UNICool AL.
  * Reference batch: 18.537 L.  Percentages derived from absolute quantities:
@@ -151,6 +181,13 @@ export async function seedFormulationVariants() {
 
   if (existingPEG) {
     console.log(`   ↩️  PEG Glycol Variant for UNICool AL already exists (id: ${existingPEG.id})`)
+    if (!existingPEG.coaTests) {
+      await db
+        .update(productFormulationVariants)
+        .set({ coaTests: COA_TESTS_PEG_GLYCOL })
+        .where(eq(productFormulationVariants.id, existingPEG.id))
+      console.log('   ✅ Backfilled coaTests for PEG Glycol Variant')
+    }
   } else {
     const [pegVariant] = await db
       .insert(productFormulationVariants)
@@ -159,6 +196,7 @@ export async function seedFormulationVariants() {
         companyId:   null,
         variantName: 'PEG Glycol Variant',
         isDefault:   true,
+        coaTests:    COA_TESTS_PEG_GLYCOL,
       })
       .returning()
 
@@ -188,6 +226,13 @@ export async function seedFormulationVariants() {
 
   if (existingAlcohol) {
     console.log(`   ↩️  Alcohol Precision Variant for UNICool AL already exists (id: ${existingAlcohol.id})`)
+    if (!existingAlcohol.coaTests) {
+      await db
+        .update(productFormulationVariants)
+        .set({ coaTests: COA_TESTS_ALCOHOL_PRECISION })
+        .where(eq(productFormulationVariants.id, existingAlcohol.id))
+      console.log('   ✅ Backfilled coaTests for Alcohol Precision Variant')
+    }
   } else {
     const [alcoholVariant] = await db
       .insert(productFormulationVariants)
@@ -196,6 +241,7 @@ export async function seedFormulationVariants() {
         companyId:   null,
         variantName: 'Alcohol Precision Variant',
         isDefault:   false,
+        coaTests:    COA_TESTS_ALCOHOL_PRECISION,
       })
       .returning()
 
@@ -225,6 +271,13 @@ export async function seedFormulationVariants() {
 
   if (existingHighIPA) {
     console.log(`   ↩️  High IPA Variant for UNICool AL already exists (id: ${existingHighIPA.id})`)
+    if (!existingHighIPA.coaTests) {
+      await db
+        .update(productFormulationVariants)
+        .set({ coaTests: COA_TESTS_HIGH_IPA })
+        .where(eq(productFormulationVariants.id, existingHighIPA.id))
+      console.log('   ✅ Backfilled coaTests for High IPA Variant')
+    }
   } else {
     const [highIPAVariant] = await db
       .insert(productFormulationVariants)
@@ -233,6 +286,7 @@ export async function seedFormulationVariants() {
         companyId:   null,
         variantName: 'High IPA Variant',
         isDefault:   false,
+        coaTests:    COA_TESTS_HIGH_IPA,
       })
       .returning()
 

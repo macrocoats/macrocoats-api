@@ -19,6 +19,13 @@ export const createVariantSchema = z.object({
 export const updateVariantSchema = z.object({
   variantName: z.string().min(1).max(200).optional(),
   isDefault:   z.boolean().optional(),
+  coaTests:    z.array(z.object({
+    parameter:     z.string(),
+    method:        z.string(),
+    specification: z.string(),
+    result:        z.string(),
+    status:        z.enum(['Pass', 'Fail']),
+  })).nullable().optional(),
 })
 
 export const replaceComponentsSchema = z.object({

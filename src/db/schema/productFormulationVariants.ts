@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, boolean, timestamp, unique } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, text, boolean, timestamp, unique, jsonb } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
 import { products } from './products.js'
 import { companies } from './companies.js'
@@ -10,6 +10,7 @@ export const productFormulationVariants = pgTable('product_formulation_variants'
   companyId:   uuid('company_id').references(() => companies.id, { onDelete: 'cascade' }),
   variantName: text('variant_name').notNull(),
   isDefault:   boolean('is_default').notNull().default(false),
+  coaTests:    jsonb('coa_tests'),
   createdAt:   timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [
   unique('pfv_product_company_unique').on(t.productKey, t.companyId),
