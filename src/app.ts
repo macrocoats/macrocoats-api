@@ -14,6 +14,7 @@ import { vendorRoutes } from './modules/vendors/vendors.routes.js'
 import { staffRoutes } from './modules/staff/staff.routes.js'
 import { salaryRecordRoutes } from './modules/salaryRecords/salaryRecords.routes.js'
 import { formulationVariantRoutes } from './modules/formulation-variants/formulation-variants.routes.js'
+import { companyPricingRoutes } from './modules/company-pricing/company-pricing.routes.js'
 import { AppErrors } from './types/errors.js'
 
 export async function buildApp() {
@@ -51,6 +52,7 @@ export async function buildApp() {
   await app.register(staffRoutes,        { prefix: `${prefix}/staff` })
   await app.register(salaryRecordRoutes,          { prefix: `${prefix}/salary-records` })
   await app.register(formulationVariantRoutes,    { prefix: `${prefix}/formulation-variants` })
+  await app.register(companyPricingRoutes,        { prefix: `${prefix}/companies` })
 
   // ── Global error handler ──────────────────────────────────────────────────
   app.setErrorHandler((error, _request, reply) => {
