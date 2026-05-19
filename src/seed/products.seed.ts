@@ -75,8 +75,8 @@ const DOCS: Array<{
           { step: '5', name: 'Next Stage',    param: 'Phosphating / DI rinse / topcoat',              value: 'As required' },
         ],
         packaging: [
-          { size: '30',  unit: 'L',   type: 'HDPE jerrycan' },
-          { size: '200', unit: 'KG',  type: 'HDPE barrel / drum' },
+          { size: '35',  unit: 'L', type: 'HDPE jerrycan' },
+          { size: '50',  unit: 'L', type: 'HDPE jerrycan' },
         ],
         performance: [
           { label: 'Oil removal (mineral)', val: '>99% at 2%, 55 °C, 5 min' },
@@ -331,8 +331,8 @@ const DOCS: Array<{
           { step: '6', name: 'Dry & Topcoat',            param: 'Powder coat / Liquid paint / E-coat',   value: 'Apply within 4 h of treatment' },
         ],
         packaging: [
-          { size: '30',  unit: 'L', type: 'HDPE jerrycan' },
-          { size: '200', unit: 'L', type: 'HDPE barrel / drum' },
+          { size: '35',  unit: 'L', type: 'HDPE jerrycan' },
+          { size: '50',  unit: 'L', type: 'HDPE jerrycan' },
         ],
         performance: [
           { label: 'Salt Spray (coated)',  val: '≥240 h (IS 101 / ASTM B117)' },
@@ -577,8 +577,8 @@ const DOCS: Array<{
           { step: '5', name: 'Remove before use',   param: 'Alkaline degreaser',                    value: 'Wash off before further processing' },
         ],
         packaging: [
-          { size: '20', unit: 'L', type: 'HDPE jerrycan' },
-          { size: '200', unit: 'L', type: 'HDPE barrel / drum' },
+          { size: '35', unit: 'L', type: 'HDPE jerrycan' },
+          { size: '50', unit: 'L', type: 'HDPE jerrycan' },
         ],
         performance: [
           { label: 'Humidity cabinet',     val: '>500 h (IS 11864 / ASTM D1748)' },
@@ -819,8 +819,8 @@ const DOCS: Array<{
           { step: '5', name: 'Pack / Store',        param: 'Wrap or bag after film sets',      value: 'Enhanced protection when wrapped' },
         ],
         packaging: [
-          { size: '20',  unit: 'L', type: 'HDPE jerrycan' },
-          { size: '200', unit: 'L', type: 'HDPE barrel / drum' },
+          { size: '35',  unit: 'L', type: 'HDPE jerrycan' },
+          { size: '50',  unit: 'L', type: 'HDPE jerrycan' },
         ],
         performance: [
           { label: 'Humidity cabinet',       val: '>720 h (ASTM D1748)' },
@@ -1063,9 +1063,8 @@ const DOCS: Array<{
           { step: '4', name: 'Inspect',           param: 'Verify residue-free surface',          value: 'White cloth test' },
         ],
         packaging: [
-          { size: '1',  unit: 'L',  type: 'HDPE trigger spray bottle' },
-          { size: '5',  unit: 'L',  type: 'HDPE jerrycan' },
-          { size: '20', unit: 'L',  type: 'HDPE jerrycan' },
+          { size: '35', unit: 'L',  type: 'HDPE jerrycan' },
+          { size: '50', unit: 'L',  type: 'HDPE jerrycan' },
         ],
         performance: [
           { label: 'Evaporation residue',     val: '≤0.001% (ASTM D1353)' },
@@ -1504,8 +1503,8 @@ const DOCS: Array<{
           { step: '7', name: 'Dry & Topcoat',          param: 'Powder coat / Liquid paint / E-coat',    value: 'Apply within 4 h of treatment' },
         ],
         packaging: [
-          { size: '30',  unit: 'L',  type: 'HDPE jerrycan' },
-          { size: '200', unit: 'L',  type: 'HDPE barrel / drum' },
+          { size: '35',  unit: 'L',  type: 'HDPE jerrycan' },
+          { size: '50',  unit: 'L',  type: 'HDPE jerrycan' },
         ],
         performance: [
           { label: 'Salt Spray (coated)',   val: '≥500 h (IS 101 / ASTM B117)' },
@@ -1806,8 +1805,8 @@ const DOCS: Array<{
           { step: '5', name: 'Next Stage',         param: 'Phosphating / painting / powder coating',              value: 'As required' },
         ],
         packaging: [
-          { size: '30',  unit: 'L',  type: 'HDPE jerrycan' },
-          { size: '200', unit: 'L',  type: 'HDPE barrel / drum' },
+          { size: '35',  unit: 'L',  type: 'HDPE jerrycan' },
+          { size: '50',  unit: 'L',  type: 'HDPE jerrycan' },
         ],
         performance: [
           { label: 'Rust removal (light flash rust)',   val: '>98% at 5%, 40 °C, 10 min' },
@@ -2093,8 +2092,8 @@ const DOCS: Array<{
           { step: '5', name: 'Topcoat / Drying',   param: 'Paint / powder coat / e-coat as required',   value: 'As required' },
         ],
         packaging: [
-          { size: '30',  unit: 'L',  type: 'HDPE jerrycan' },
-          { size: '200', unit: 'L',  type: 'HDPE barrel / drum' },
+          { size: '35',  unit: 'L',  type: 'HDPE jerrycan' },
+          { size: '50',  unit: 'L',  type: 'HDPE jerrycan' },
         ],
         performance: [
           { label: 'Salt spray (uncoated phosphated steel)',  val: '>48 h at 2%, 45 °C, 2 min passivation' },
@@ -2375,8 +2374,8 @@ const DOCS: Array<{
           { step: '5', name: 'Next stage',     param: 'Passivation / DI rinse / topcoat as per process specification',       value: 'As required' },
         ],
         packaging: [
-          { size: '30',  unit: 'L',  type: 'HDPE jerrycan / carboy' },
-          { size: '200', unit: 'KG', type: 'HDPE barrel / drum' },
+          { size: '35',  unit: 'L',  type: 'HDPE jerrycan' },
+          { size: '50',  unit: 'L',  type: 'HDPE jerrycan' },
         ],
         performance: [
           { label: 'Bath life extension',   val: 'Reduces sludge by suppressing hydrogen pitting; extends bath replacement interval' },
