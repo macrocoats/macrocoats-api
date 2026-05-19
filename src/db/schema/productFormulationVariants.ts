@@ -11,6 +11,8 @@ export const productFormulationVariants = pgTable('product_formulation_variants'
   variantName: text('variant_name').notNull(),
   isDefault:   boolean('is_default').notNull().default(false),
   coaTests:    jsonb('coa_tests'),
+  tdsOverrides: jsonb('tds_overrides'),
+  msdsOverrides: jsonb('msds_overrides'),
   createdAt:   timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [
   unique('pfv_product_company_unique').on(t.productKey, t.companyId),

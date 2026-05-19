@@ -30,7 +30,9 @@ function toVariantResponse(
     companyDisplayName,
     variantName:        row.variantName,
     isDefault:          row.isDefault,
-    coaTests:           (row.coaTests as Record<string, unknown>[] | null) ?? null,
+    coaTests:     (row.coaTests     as Record<string, unknown>[] | null) ?? null,
+    tdsOverrides:  (row.tdsOverrides  as Record<string, unknown>   | null) ?? null,
+    msdsOverrides: (row.msdsOverrides as Record<string, unknown>   | null) ?? null,
     createdAt:          row.createdAt.toISOString(),
     components,
   }
@@ -140,7 +142,9 @@ export async function updateVariant(variantId: string, data: UpdateVariantBody) 
   const patch: Partial<typeof productFormulationVariants.$inferInsert> = {}
   if (data.variantName !== undefined) patch.variantName = data.variantName
   if (data.isDefault   !== undefined) patch.isDefault   = data.isDefault
-  if (data.coaTests    !== undefined) patch.coaTests    = data.coaTests
+  if (data.coaTests     !== undefined) patch.coaTests     = data.coaTests
+  if (data.tdsOverrides  !== undefined) patch.tdsOverrides  = data.tdsOverrides
+  if (data.msdsOverrides !== undefined) patch.msdsOverrides = data.msdsOverrides
 
   if (!Object.keys(patch).length) return getVariantById(variantId)
 

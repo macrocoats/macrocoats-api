@@ -23,6 +23,245 @@ const UNIROLS_COMPONENTS = [
   { materialName: 'Water',                  percentage: null, unit: 'L'  as const },  // auto-calculated
 ]
 
+/* ── TDS overrides — UNICool AL variants ──────────────────────────────────── */
+
+const TDS_OVERRIDES_PEG_GLYCOL = {
+  physicalProperties: [
+    { property: 'Appearance',             value: 'Clear, colourless to pale liquid', unit: '—',    method: 'Visual' },
+    { property: 'Odour',                  value: 'Mild glycol, neutral',              unit: '—',    method: '—' },
+    { property: 'Flash Point',            value: '> 100',                             unit: '°C',   method: 'Pensky-Martens' },
+    { property: 'Density',                value: '1.00 – 1.04',                       unit: 'g/mL', method: 'ISO 2811' },
+    { property: 'Evaporation Rate',       value: 'Slow (water-based)',                unit: '—',    method: 'vs diethyl ether = 1' },
+    { property: 'Dry Time',               value: '60 – 180',                          unit: 's',    method: 'Ambient, cotton wipe' },
+    { property: 'Residue on Evaporation', value: '0.5 – 2.0%',                       unit: '—',    method: 'ASTM D2369' },
+  ],
+  composition: [
+    { name: 'Deionised Water',     function: 'Primary carrier',                    percent: '> 90%', compat: 'All substrates' },
+    { name: 'Propylene Glycol',    function: 'Co-solvent and humectant',            percent: '1 – 3%', compat: 'Metals, plastics' },
+    { name: 'PEG 400',             function: 'Viscosity modifier and wetting aid', percent: '< 1%',   compat: 'Metals, plastics' },
+    { name: 'TEA',                 function: 'pH regulator (mild alkalinity)',     percent: '< 1%',   compat: 'Metals, glass' },
+    { name: 'Non-ionic surfactant', function: 'Wetting and degreasing aid',        percent: '< 1%',   compat: 'All substrates' },
+  ],
+  performance: [
+    { label: 'Evaporation residue',     val: '0.5 – 2.0% (ASTM D2369)' },
+    { label: 'Dry time',               val: '60 – 180 s (ambient)' },
+    { label: 'Aluminium compatibility', val: 'No staining or etching at ambient' },
+  ],
+  safetyNote: 'Water-based formulation — low flammability risk (flash point > 100 °C). Avoid contact with eyes and skin. Use in ventilated area. Refer to SDS-UCL-001.',
+}
+
+const TDS_OVERRIDES_ALCOHOL_PRECISION = {
+  physicalProperties: [
+    { property: 'Appearance',             value: 'Clear, colourless liquid', unit: '—',    method: 'Visual' },
+    { property: 'Odour',                  value: 'Mild alcohol',              unit: '—',    method: '—' },
+    { property: 'Flash Point',            value: '38 – 50',                   unit: '°C',   method: 'Pensky-Martens' },
+    { property: 'Density',                value: '0.94 – 0.97',               unit: 'g/mL', method: 'ISO 2811' },
+    { property: 'Evaporation Rate',       value: 'Moderate',                  unit: '—',    method: 'vs diethyl ether = 1' },
+    { property: 'Dry Time',               value: '20 – 60',                   unit: 's',    method: 'Ambient, cotton wipe' },
+    { property: 'Residue on Evaporation', value: '≤ 0.01%',                  unit: '—',    method: 'ASTM D2369' },
+  ],
+  composition: [
+    { name: 'Deionised Water',          function: 'Primary carrier',           percent: '~ 85%',   compat: 'All substrates' },
+    { name: 'Ethanol',                  function: 'Co-solvent, fast drying',   percent: '10%',     compat: 'Metals, PCBs' },
+    { name: 'Isopropyl Alcohol (IPA)',  function: 'Co-solvent, degreasing',    percent: '5%',      compat: 'Metals, PCBs' },
+    { name: 'Non-ionic surfactant',     function: 'Wetting aid',               percent: '< 0.1%',  compat: 'All substrates' },
+    { name: 'pH regulator',             function: 'Mild alkalinity buffer',    percent: '< 0.1%',  compat: 'All substrates' },
+  ],
+  performance: [
+    { label: 'Evaporation residue',     val: '≤ 0.01% (ASTM D2369)' },
+    { label: 'Dry time',               val: '20 – 60 s (ambient)' },
+    { label: 'Aluminium compatibility', val: 'No staining or etching at ambient' },
+  ],
+  safetyNote: 'Flammable liquid — flash point 38 – 50 °C. Keep away from heat, sparks, and open flames. Use in well-ventilated area. Refer to SDS-UCL-001.',
+}
+
+const TDS_OVERRIDES_HIGH_IPA = {
+  physicalProperties: [
+    { property: 'Appearance',             value: 'Clear, colourless liquid', unit: '—',    method: 'Visual' },
+    { property: 'Odour',                  value: 'Strong IPA / alcohol',     unit: '—',    method: '—' },
+    { property: 'Flash Point',            value: '26 – 38',                   unit: '°C',   method: 'Pensky-Martens' },
+    { property: 'Density',                value: '0.90 – 0.94',               unit: 'g/mL', method: 'ISO 2811' },
+    { property: 'Evaporation Rate',       value: 'Fast',                      unit: '—',    method: 'vs diethyl ether = 1' },
+    { property: 'Dry Time',               value: '15 – 40',                   unit: 's',    method: 'Ambient, cotton wipe' },
+    { property: 'Residue on Evaporation', value: '≤ 0.001%',                 unit: '—',    method: 'ASTM D1353' },
+  ],
+  composition: [
+    { name: 'Deionised Water',          function: 'Primary carrier',               percent: '~ 80%',   compat: 'All substrates' },
+    { name: 'Isopropyl Alcohol (IPA)',  function: 'Primary solvent, fast drying',  percent: '20%',     compat: 'Metals, PCBs' },
+    { name: 'Non-ionic surfactant',     function: 'Wetting aid',                   percent: '< 0.1%',  compat: 'All substrates' },
+    { name: 'pH regulator',             function: 'Mild alkalinity buffer',        percent: '< 0.1%',  compat: 'All substrates' },
+  ],
+  performance: [
+    { label: 'Evaporation residue',     val: '≤ 0.001% (ASTM D1353)' },
+    { label: 'Dry time',               val: '15 – 40 s (ambient)' },
+    { label: 'Aluminium compatibility', val: 'No staining or etching at ambient' },
+  ],
+  safetyNote: 'Flammable liquid — flash point 26 – 38 °C. High IPA content — keep away from all ignition sources. Use only in well-ventilated areas. Refer to SDS-UCL-001.',
+}
+
+/* ── MSDS overrides — UNICool AL variants ─────────────────────────────────── */
+
+const MSDS_OVERRIDES_PEG_GLYCOL = {
+  signalWord: 'Warning',
+  hazards: {
+    pictograms:      ['irritant'],
+    classifications: [
+      { class: 'Eye Irritation',  category: 'Cat 2', tagType: 'warn' },
+      { class: 'Skin Irritation', category: 'Cat 3', tagType: 'warn' },
+    ],
+    hStatements: 'H319 — Causes serious eye irritation. H316 — Causes mild skin irritation.',
+    pStatements: 'P261 · P264 · P280 · P305+P351+P338',
+  },
+  composition: {
+    ingredients: [
+      { name: 'Water',                description: 'Primary carrier — major component',   percent: '> 90%', ghsClass: '—',       tagType: 'safe' },
+      { name: 'Propylene Glycol',     description: 'Co-solvent and humectant',            percent: '1 – 3%', ghsClass: 'Irritant', tagType: 'warn' },
+      { name: 'PEG 400',              description: 'Viscosity modifier and wetting aid', percent: '< 1%',   ghsClass: '—',        tagType: 'safe' },
+      { name: 'TEA',                  description: 'pH regulator — mild alkalinity',     percent: '< 1%',   ghsClass: 'Irritant', tagType: 'warn' },
+      { name: 'Non-ionic surfactant', description: 'Wetting and degreasing aid',          percent: '< 1%',   ghsClass: 'Irritant', tagType: 'warn' },
+    ],
+    note: 'Exact formulation is proprietary. Functional ingredient descriptions are provided for safety and emergency purposes only.',
+  },
+  fireFighting: {
+    flammability:       'Non-flammable water-based product. Flash point > 100 °C.',
+    extinguishingMedia: 'Use media appropriate to surrounding fire.',
+    fireHazard:         'Not applicable. Product does not support combustion under normal conditions.',
+    ppe:                'Standard PPE appropriate to surrounding hazards.',
+  },
+  physical: [
+    { key: 'Appearance',    val: 'Clear, colourless to pale liquid' },
+    { key: 'Odour',         val: 'Mild glycol, neutral' },
+    { key: 'Flash Point',   val: '> 100 °C (non-flammable)' },
+    { key: 'Density',       val: '1.00 – 1.04 g/mL' },
+    { key: 'pH',            val: '7.0 – 9.0' },
+    { key: 'Solubility',    val: 'Fully miscible with water' },
+    { key: 'Evaporation',   val: 'Slow (water-based)' },
+    { key: 'Boiling Point', val: '> 100 °C' },
+  ],
+  accidentalRelease: [
+    'No ignition source elimination required — non-flammable product',
+    'Contain spill with absorbent material (sand, cloth, paper)',
+    'Prevent runoff from entering drains or waterways',
+    'Collect spilled material and dispose per CPCB/SPCB guidelines',
+    'Clean area with water',
+  ],
+  handling: {
+    handling:    'Avoid contact with eyes and skin. Use in well-ventilated areas. No ignition source control required.',
+    storageTemp: '5 °C – 40 °C; cool, dry area; away from direct sunlight',
+    containers:  'HDPE bottles or jerrycans; keep tightly sealed when not in use',
+    segregation: 'Store separately from strong acids and strong alkalis',
+    shelfLife:   '24 months from date of manufacture in original sealed containers',
+  },
+}
+
+const MSDS_OVERRIDES_ALCOHOL_PRECISION = {
+  signalWord: 'Warning',
+  hazards: {
+    pictograms:      ['flammable', 'irritant'],
+    classifications: [
+      { class: 'Flammable Liquid', category: 'Cat 3', tagType: 'warn' },
+      { class: 'Eye Irritation',   category: 'Cat 2', tagType: 'warn' },
+    ],
+    hStatements: 'H226 — Flammable liquid and vapour. H319 — Causes serious eye irritation.',
+    pStatements: 'P210 · P233 · P261 · P280 · P305+P351+P338 · P370+P378',
+  },
+  composition: {
+    ingredients: [
+      { name: 'Water',                   description: 'Primary carrier — major component',  percent: '~ 85%',   ghsClass: '—',         tagType: 'safe' },
+      { name: 'Ethanol',                 description: 'Co-solvent, fast drying',            percent: '10%',     ghsClass: 'Flammable', tagType: 'warn' },
+      { name: 'Isopropyl Alcohol (IPA)', description: 'Co-solvent, degreasing',             percent: '5%',      ghsClass: 'Flammable', tagType: 'warn' },
+      { name: 'Non-ionic surfactant',    description: 'Wetting aid',                        percent: '< 0.1%',  ghsClass: 'Irritant',  tagType: 'warn' },
+      { name: 'pH regulator',            description: 'Mild alkalinity buffer',             percent: '< 0.1%',  ghsClass: 'Irritant',  tagType: 'warn' },
+    ],
+    note: 'Exact formulation is proprietary. Functional ingredient descriptions are provided for safety and emergency purposes only.',
+  },
+  fireFighting: {
+    flammability:       'Flammable liquid. Flash point 38 – 50 °C (Pensky-Martens).',
+    extinguishingMedia: 'CO₂, dry powder, alcohol-resistant foam.',
+    fireHazard:         'Alcohol vapours may accumulate in enclosed spaces and ignite. Avoid vapour accumulation.',
+    ppe:                'SCBA and fire-resistant clothing for enclosed-space fires.',
+  },
+  physical: [
+    { key: 'Appearance',    val: 'Clear, colourless liquid' },
+    { key: 'Odour',         val: 'Mild alcohol' },
+    { key: 'Flash Point',   val: '38 – 50 °C' },
+    { key: 'Density',       val: '0.94 – 0.97 g/mL' },
+    { key: 'pH',            val: '7.0 – 9.0' },
+    { key: 'Solubility',    val: 'Fully miscible with water' },
+    { key: 'Evaporation',   val: 'Moderate' },
+    { key: 'Boiling Point', val: '85 – 95 °C' },
+  ],
+  accidentalRelease: [
+    'Eliminate ignition sources — flammable vapour risk at elevated temperatures',
+    'Ventilate area well to prevent vapour accumulation',
+    'Contain spill with inert absorbent material (sand, vermiculite)',
+    'Prevent runoff from entering drains or waterways',
+    'Collect spilled material and dispose per CPCB/SPCB guidelines',
+  ],
+  handling: {
+    handling:    'Keep away from ignition sources above 38 °C. Use in well-ventilated areas. Avoid contact with eyes and skin.',
+    storageTemp: '5 °C – 35 °C; cool, dry, ventilated area; away from heat and direct sunlight',
+    containers:  'HDPE bottles or jerrycans; keep tightly sealed when not in use',
+    segregation: 'Store separately from oxidising agents, strong acids, and strong alkalis',
+    shelfLife:   '24 months from date of manufacture in original sealed containers',
+  },
+}
+
+const MSDS_OVERRIDES_HIGH_IPA = {
+  signalWord: 'Danger',
+  hazards: {
+    pictograms:      ['flammable', 'irritant', 'environment'],
+    classifications: [
+      { class: 'Flammable Liquid',      category: 'Cat 3',        tagType: 'warn' },
+      { class: 'Eye Irritation',        category: 'Cat 2',        tagType: 'warn' },
+      { class: 'Specific Target Organ', category: 'Cat 3 (CNS)', tagType: 'warn' },
+    ],
+    hStatements: 'H226 — Flammable liquid and vapour. H319 — Causes serious eye irritation. H336 — May cause drowsiness or dizziness.',
+    pStatements: 'P210 · P233 · P261 · P280 · P305+P351+P338 · P370+P378',
+  },
+  composition: {
+    ingredients: [
+      { name: 'Water',                   description: 'Primary carrier',                           percent: '~ 80%',   ghsClass: '—',         tagType: 'safe'   },
+      { name: 'Isopropyl Alcohol (IPA)', description: 'Primary solvent — fast-drying, degreasing', percent: '20%',     ghsClass: 'Flammable', tagType: 'danger' },
+      { name: 'Non-ionic surfactant',    description: 'Wetting aid',                               percent: '< 0.1%',  ghsClass: 'Irritant',  tagType: 'warn'   },
+      { name: 'pH regulator',            description: 'Mild alkalinity buffer',                    percent: '< 0.1%',  ghsClass: 'Irritant',  tagType: 'warn'   },
+    ],
+    note: 'Exact formulation is proprietary. Functional ingredient descriptions are provided for safety and emergency purposes only.',
+  },
+  fireFighting: {
+    flammability:       'Flammable liquid. Flash point 26 – 38 °C. High IPA content increases fire risk.',
+    extinguishingMedia: 'CO₂, dry powder, alcohol-resistant foam.',
+    fireHazard:         'IPA vapours may travel to ignition source and flashback. Vapour accumulation in enclosed spaces is dangerous.',
+    ppe:                'SCBA and full fire-resistant clothing.',
+  },
+  physical: [
+    { key: 'Appearance',    val: 'Clear, colourless liquid' },
+    { key: 'Odour',         val: 'Strong IPA / alcohol characteristic' },
+    { key: 'Flash Point',   val: '26 – 38 °C' },
+    { key: 'Density',       val: '0.90 – 0.94 g/mL' },
+    { key: 'pH',            val: '7.0 – 9.0' },
+    { key: 'Solubility',    val: 'Fully miscible with water' },
+    { key: 'Evaporation',   val: 'Fast (high IPA content)' },
+    { key: 'Boiling Point', val: '~ 82 °C' },
+  ],
+  accidentalRelease: [
+    'Eliminate all ignition sources immediately — high flammability risk',
+    'Ventilate area thoroughly to prevent vapour accumulation',
+    'Contain spill with inert absorbent material (sand, vermiculite)',
+    'Prevent runoff from entering drains or waterways',
+    'Collect spilled material and dispose per CPCB/SPCB guidelines',
+  ],
+  handling: {
+    handling:    'Keep away from all ignition sources. Use only in well-ventilated areas or with mechanical exhaust.',
+    storageTemp: '5 °C – 30 °C; cool, dry, ventilated flammable storage area; away from heat and direct sunlight',
+    containers:  'HDPE bottles or HDPE jerrycans with antistatic grounding; keep tightly sealed when not in use',
+    segregation: 'Store separately from oxidising agents, strong acids, strong alkalis, and heat sources',
+    shelfLife:   '24 months from date of manufacture in original sealed containers',
+  },
+}
+
+/* ── CoA tests — UNICool AL variants ─────────────────────────────────────── */
+
 const COA_TESTS_PEG_GLYCOL = [
   { parameter: 'Appearance',               method: 'Visual',              specification: 'Clear, colourless to pale liquid', result: '', status: 'Pass' },
   { parameter: 'pH (neat, 25 °C)',         method: 'pH Electrode',        specification: '7.0 – 9.0',                        result: '', status: 'Pass' },
@@ -181,22 +420,28 @@ export async function seedFormulationVariants() {
 
   if (existingPEG) {
     console.log(`   ↩️  PEG Glycol Variant for UNICool AL already exists (id: ${existingPEG.id})`)
-    if (!existingPEG.coaTests) {
+    if (!existingPEG.coaTests || !existingPEG.tdsOverrides || !existingPEG.msdsOverrides) {
       await db
         .update(productFormulationVariants)
-        .set({ coaTests: COA_TESTS_PEG_GLYCOL })
+        .set({
+          coaTests:     existingPEG.coaTests     ?? COA_TESTS_PEG_GLYCOL,
+          tdsOverrides: existingPEG.tdsOverrides  ?? TDS_OVERRIDES_PEG_GLYCOL,
+          msdsOverrides: existingPEG.msdsOverrides ?? MSDS_OVERRIDES_PEG_GLYCOL,
+        })
         .where(eq(productFormulationVariants.id, existingPEG.id))
-      console.log('   ✅ Backfilled coaTests for PEG Glycol Variant')
+      console.log('   ✅ Backfilled coaTests / tdsOverrides / msdsOverrides for PEG Glycol Variant')
     }
   } else {
     const [pegVariant] = await db
       .insert(productFormulationVariants)
       .values({
-        productKey:  'unicool-al',
-        companyId:   null,
-        variantName: 'PEG Glycol Variant',
-        isDefault:   true,
-        coaTests:    COA_TESTS_PEG_GLYCOL,
+        productKey:   'unicool-al',
+        companyId:    null,
+        variantName:  'PEG Glycol Variant',
+        isDefault:    true,
+        coaTests:     COA_TESTS_PEG_GLYCOL,
+        tdsOverrides: TDS_OVERRIDES_PEG_GLYCOL,
+        msdsOverrides: MSDS_OVERRIDES_PEG_GLYCOL,
       })
       .returning()
 
@@ -226,22 +471,28 @@ export async function seedFormulationVariants() {
 
   if (existingAlcohol) {
     console.log(`   ↩️  Alcohol Precision Variant for UNICool AL already exists (id: ${existingAlcohol.id})`)
-    if (!existingAlcohol.coaTests) {
+    if (!existingAlcohol.coaTests || !existingAlcohol.tdsOverrides || !existingAlcohol.msdsOverrides) {
       await db
         .update(productFormulationVariants)
-        .set({ coaTests: COA_TESTS_ALCOHOL_PRECISION })
+        .set({
+          coaTests:     existingAlcohol.coaTests     ?? COA_TESTS_ALCOHOL_PRECISION,
+          tdsOverrides: existingAlcohol.tdsOverrides  ?? TDS_OVERRIDES_ALCOHOL_PRECISION,
+          msdsOverrides: existingAlcohol.msdsOverrides ?? MSDS_OVERRIDES_ALCOHOL_PRECISION,
+        })
         .where(eq(productFormulationVariants.id, existingAlcohol.id))
-      console.log('   ✅ Backfilled coaTests for Alcohol Precision Variant')
+      console.log('   ✅ Backfilled coaTests / tdsOverrides / msdsOverrides for Alcohol Precision Variant')
     }
   } else {
     const [alcoholVariant] = await db
       .insert(productFormulationVariants)
       .values({
-        productKey:  'unicool-al',
-        companyId:   null,
-        variantName: 'Alcohol Precision Variant',
-        isDefault:   false,
-        coaTests:    COA_TESTS_ALCOHOL_PRECISION,
+        productKey:    'unicool-al',
+        companyId:     null,
+        variantName:   'Alcohol Precision Variant',
+        isDefault:     false,
+        coaTests:      COA_TESTS_ALCOHOL_PRECISION,
+        tdsOverrides:  TDS_OVERRIDES_ALCOHOL_PRECISION,
+        msdsOverrides: MSDS_OVERRIDES_ALCOHOL_PRECISION,
       })
       .returning()
 
@@ -271,22 +522,28 @@ export async function seedFormulationVariants() {
 
   if (existingHighIPA) {
     console.log(`   ↩️  High IPA Variant for UNICool AL already exists (id: ${existingHighIPA.id})`)
-    if (!existingHighIPA.coaTests) {
+    if (!existingHighIPA.coaTests || !existingHighIPA.tdsOverrides || !existingHighIPA.msdsOverrides) {
       await db
         .update(productFormulationVariants)
-        .set({ coaTests: COA_TESTS_HIGH_IPA })
+        .set({
+          coaTests:     existingHighIPA.coaTests     ?? COA_TESTS_HIGH_IPA,
+          tdsOverrides: existingHighIPA.tdsOverrides  ?? TDS_OVERRIDES_HIGH_IPA,
+          msdsOverrides: existingHighIPA.msdsOverrides ?? MSDS_OVERRIDES_HIGH_IPA,
+        })
         .where(eq(productFormulationVariants.id, existingHighIPA.id))
-      console.log('   ✅ Backfilled coaTests for High IPA Variant')
+      console.log('   ✅ Backfilled coaTests / tdsOverrides / msdsOverrides for High IPA Variant')
     }
   } else {
     const [highIPAVariant] = await db
       .insert(productFormulationVariants)
       .values({
-        productKey:  'unicool-al',
-        companyId:   null,
-        variantName: 'High IPA Variant',
-        isDefault:   false,
-        coaTests:    COA_TESTS_HIGH_IPA,
+        productKey:    'unicool-al',
+        companyId:     null,
+        variantName:   'High IPA Variant',
+        isDefault:     false,
+        coaTests:      COA_TESTS_HIGH_IPA,
+        tdsOverrides:  TDS_OVERRIDES_HIGH_IPA,
+        msdsOverrides: MSDS_OVERRIDES_HIGH_IPA,
       })
       .returning()
 
