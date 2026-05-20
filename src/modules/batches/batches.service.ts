@@ -126,6 +126,15 @@ export async function saveCoaSnapshot(batchNumber: string, snapshot: SaveCoaSnap
   return row ? toBatchResponse(row) : null
 }
 
+export async function clearCoaSnapshot(batchNumber: string): Promise<boolean> {
+  const result = await db
+    .update(batches)
+    .set({ coaSnapshot: null })
+    .where(eq(batches.batchNumber, batchNumber))
+    .returning({ id: batches.id })
+  return result.length > 0
+}
+
 export async function deleteBatch(id: string): Promise<boolean> {
   const result = await db
     .delete(batches)
