@@ -92,10 +92,15 @@ Routes never import from other modules' services. Cross-cutting concerns (auth, 
 | `auth` | POST /auth/login, /auth/token, /auth/refresh, /auth/logout; GET /auth/me |
 | `products` | GET /products, GET /products/:productLine/:docType, PUT /products/:productLine/:docType |
 | `companies` | GET /companies, GET /companies/:id, POST /companies, PATCH /companies/:id, POST /companies/:id/rotate-token, DELETE /companies/:id |
+| `company-pricing` | GET /companies/:id/pricing, PUT /companies/:id/pricing |
+| `formulation-variants` | GET /formulation-variants, GET /formulation-variants/:variantId, POST /formulation-variants, PUT /formulation-variants/:variantId, PUT /formulation-variants/:variantId/components, DELETE /formulation-variants/:variantId |
 | `quotations` | POST /quotations, GET /quotations, GET /quotations/:id |
 | `batches` | POST /batches, GET /batches, GET /batches/:batchNumber, DELETE /batches/:id |
 | `inventory` | GET /inventory, POST /inventory, PATCH /inventory/:id, DELETE /inventory/:id, POST /inventory/reset |
 | `analytics` | GET /analytics/access-log, GET /analytics/summary |
+| `salaryRecords` | GET /salary-records, GET /salary-records/:id, POST /salary-records |
+| `staff` | GET /staff, GET /staff/:id, POST /staff, PUT /staff/:id, DELETE /staff/:id |
+| `vendors` | GET /vendors, GET /vendors/:id, POST /vendors, PUT /vendors/:id, DELETE /vendors/:id |
 
 All endpoints except auth are `superadmin`-only, except product document reads which use `checkProductAccess` for company users.
 
@@ -163,8 +168,11 @@ Integration tests use a real PostgreSQL database (the same one in `.env.local`).
 | `users` | User accounts; roles superadmin or company |
 | `companies` | Client companies; holds `accessToken` + `tokenExpiresAt` for magic-link login |
 | `company_product_access` | Junction: which products each company may view |
+| `company_product_prices` | Per-company special pricing for specific products |
 | `products` | Product line definitions (5 chemical products) |
 | `product_documents` | TDS/MSDS/Formula/Label/COA per product (JSONB body) |
+| `product_formulation_variants` | Product variant headers (e.g. customized formulations) |
+| `formulation_variant_components` | Line items (materials) for formulation variants |
 | `inventory` | Raw materials: price, stock, supplier, reorder threshold |
 | `quotations` | Sales quotations with auto-generated UNIK-YYYY-NNN numbers |
 | `quotation_line_items` | Line items in a quotation (FK → quotations, cascade delete) |
@@ -173,6 +181,9 @@ Integration tests use a real PostgreSQL database (the same one in `.env.local`).
 | `batch_sequences` | Per-company per-day atomic counter for batch numbering |
 | `access_log` | Audit trail: who accessed which product/docType, when, from where |
 | `refresh_tokens` | Valid refresh token bcrypt hashes; null `revokedAt` = still valid |
+| `salary_records` | Staff salary payments and records |
+| `staff` | Employee information |
+| `vendors` | Vendor/supplier information |
 
 ### Seed data
 
