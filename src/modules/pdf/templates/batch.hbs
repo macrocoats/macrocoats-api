@@ -1,0 +1,103 @@
+<div class="document">
+
+  {{!-- Identity --}}
+  <div class="doc-identity no-break">
+    <div class="doc-identity__main">
+      <div class="doc-identity__product">{{productName}}</div>
+      <div class="doc-identity__sub">{{productLine}}</div>
+    </div>
+    <div class="doc-identity__meta">
+      Batch: <strong>{{batchNumber}}</strong><br>
+      Date: {{formatDate batchDate}}<br>
+      Size: <strong>{{batchSize}} {{batchUnit}}</strong>
+    </div>
+  </div>
+
+  {{!-- Batch details --}}
+  <div class="kv-grid no-break">
+    <div>
+      <div class="kv-row"><span class="kv-label">Batch Number</span><span class="kv-value fw-bold col-mono">{{batchNumber}}</span></div>
+      <div class="kv-row"><span class="kv-label">Production Date</span><span class="kv-value">{{formatDate batchDate}}</span></div>
+    </div>
+    <div>
+      <div class="kv-row"><span class="kv-label">Batch Size</span><span class="kv-value fw-bold">{{batchSize}} {{batchUnit}}</span></div>
+      {{#if totalCost}}<div class="kv-row"><span class="kv-label">Total Cost</span><span class="kv-value fw-bold">{{formatCurrency totalCost}}</span></div>{{/if}}
+    </div>
+  </div>
+
+  {{!-- Components --}}
+  <div class="sec-title"><span class="sec-num">1</span>Raw Material Components</div>
+  <table class="doc-table">
+    <thead>
+      <tr>
+        <th style="width:9mm" class="col-center">#</th>
+        <th>Raw Material</th>
+        <th style="width:24mm">Grade / Spec</th>
+        <th style="width:20mm" class="col-num">Quantity</th>
+        <th style="width:16mm" class="col-center">Unit</th>
+        <th style="width:18mm" class="col-num">%</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each components}}
+      <tr>
+        <td class="col-center text-muted">{{sNo}}</td>
+        <td class="fw-semi">{{rawMaterial}}</td>
+        <td class="fs-xs text-muted">{{grade}}</td>
+        <td class="col-num fw-bold">{{formatNumber quantity}}</td>
+        <td class="col-center">{{unit}}</td>
+        <td class="col-num">{{#if percentage}}{{formatNumber percentage}}%{{/if}}</td>
+      </tr>
+      {{/each}}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="3" class="fw-bold text-navy">Total Batch</td>
+        <td class="col-num fw-bold">{{batchSize}}</td>
+        <td class="col-center fw-bold">{{batchUnit}}</td>
+        <td class="col-num fw-bold">100.00%</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  {{!-- Instructions --}}
+  {{#if instructions}}
+  <div class="sec-title" style="margin-top:5mm"><span class="sec-num">2</span>Manufacturing Instructions</div>
+  <ol class="doc-list" style="list-style:decimal;padding-left:5mm">
+    {{#each instructions}}<li style="padding-left:0;padding:1.5mm 0 1.5mm 2mm;border-bottom:1px solid #c8d8e8">{{this}}</li>{{/each}}
+  </ol>
+  {{/if}}
+
+  {{!-- QC Notes --}}
+  {{#if qcNotes}}
+  <div class="remarks-box" style="margin-top:4mm"><strong>QC Notes:</strong> {{qcNotes}}</div>
+  {{/if}}
+
+  {{!-- Signature --}}
+  {{#if signature}}
+  <div class="sig-block no-break" style="margin-top:8mm">
+    {{#if signature.preparedBy}}
+    <div class="sig-slot">
+      <div class="sig-slot__role">Prepared By</div>
+      <div class="sig-slot__space"></div>
+      <div class="sig-slot__name">{{signature.preparedBy}}</div>
+    </div>
+    {{/if}}
+    {{#if signature.checkedBy}}
+    <div class="sig-slot">
+      <div class="sig-slot__role">Checked By</div>
+      <div class="sig-slot__space"></div>
+      <div class="sig-slot__name">{{signature.checkedBy}}</div>
+    </div>
+    {{/if}}
+    {{#if signature.approvedBy}}
+    <div class="sig-slot">
+      <div class="sig-slot__role">Approved By</div>
+      <div class="sig-slot__space"></div>
+      <div class="sig-slot__name">{{signature.approvedBy}}</div>
+    </div>
+    {{/if}}
+  </div>
+  {{/if}}
+
+</div>

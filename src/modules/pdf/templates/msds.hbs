@@ -1,0 +1,351 @@
+<div class="document">
+
+  {{!-- ═══ TITLE BLOCK ═══════════════════════════════════════════════════════ --}}
+  <div class="doc-title-block no-break">
+    <div class="doc-title-block__title">Material Safety Data Sheet</div>
+    <div class="doc-title-block__product">{{productName}}</div>
+    <div class="doc-title-block__sub">
+      {{#if productCode}}SDS Ref: {{productCode}}{{/if}}
+      {{#if revisionDate}}&nbsp;|&nbsp; Rev. Date: {{formatDate revisionDate}}{{/if}}
+      {{#if signalWord}}&nbsp;|&nbsp; Signal Word: {{signalWord}}{{/if}}
+    </div>
+  </div>
+
+  {{!-- ═══ COMPLIANCE RIBBON ═════════════════════════════════════════════════ --}}
+  <div class="compliance-ribbon no-break">
+    <span class="compliance-tag">GHS Compliant</span>
+    <span class="compliance-tag">UN / GHS Rev. 9</span>
+    <span class="compliance-tag">16-Section SDS</span>
+    {{#if signalWord}}<span class="compliance-tag">⚠ {{signalWord}}</span>{{/if}}
+  </div>
+
+  {{!-- ═══ META TABLE ══════════════════════════════════════════════════════════ --}}
+  <table class="meta-table no-break">
+    <tr>
+      <td class="meta-table__label">Product</td>
+      <td>{{productName}}</td>
+      <td class="meta-table__label">Prepared By</td>
+      <td>{{#if signature}}{{signature.preparedBy}}{{/if}}</td>
+    </tr>
+    {{#if productCode}}
+    <tr>
+      <td class="meta-table__label">SDS Reference</td>
+      <td class="col-mono fw-semi">{{productCode}}</td>
+      <td class="meta-table__label">Approved By</td>
+      <td>{{#if signature}}{{signature.approvedBy}}{{/if}}</td>
+    </tr>
+    {{/if}}
+    {{#if revisionDate}}
+    <tr>
+      <td class="meta-table__label">Revision Date</td>
+      <td>{{formatDate revisionDate}}</td>
+      <td class="meta-table__label">Reviewed By</td>
+      <td>{{#if signature}}{{signature.checkedBy}}{{/if}}</td>
+    </tr>
+    {{/if}}
+    {{#if sections.identification.emergency}}
+    <tr>
+      <td class="meta-table__label">Emergency</td>
+      <td colspan="3" style="font-weight:700;color:#B71C1C">☎ {{sections.identification.emergency}}</td>
+    </tr>
+    {{/if}}
+  </table>
+
+  {{!-- ═══ EMERGENCY PANEL ════════════════════════════════════════════════════ --}}
+  {{#if sections.identification.emergency}}
+  <div class="emergency-panel no-break">
+    <div class="emergency-panel__title">⚠ Emergency Contact — 24-Hour Response</div>
+    <div class="emergency-panel__number">{{sections.identification.emergency}}</div>
+  </div>
+  {{/if}}
+
+  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
+  {{!--  SECTION 1 — Product Identification                                    --}}
+  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
+  {{#with sections.identification}}
+  <div class="msds-sec">
+    <div class="sec-title">1. Product Identification</div>
+    <table class="doc-table">
+      <tbody>
+        {{#if productType}}<tr><td class="param-cell" style="width:40mm">Product Type</td><td>{{productType}}</td></tr>{{/if}}
+        {{#if intendedUse}}<tr><td class="param-cell">Intended Use</td><td>{{intendedUse}}</td></tr>{{/if}}
+        {{#if manufacturer}}<tr><td class="param-cell">Manufacturer</td><td>{{manufacturer}}</td></tr>{{/if}}
+      </tbody>
+    </table>
+  </div>
+  {{/with}}
+
+  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
+  {{!--  SECTION 2 — Hazard Identification                                     --}}
+  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
+  {{#with sections.hazards}}
+  <div class="msds-sec">
+    <div class="sec-title">2. Hazard Identification (GHS)</div>
+    {{#if pictograms}}
+    <div class="ghs-row">
+      {{#each pictograms}}<span class="ghs-badge">{{this}}</span>{{/each}}
+    </div>
+    {{/if}}
+    {{#if classifications}}
+    <table class="doc-table" style="margin-bottom:3mm">
+      <thead>
+        <tr>
+          <th>Hazard Class</th>
+          <th style="width:40mm">GHS Category</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each classifications}}
+        <tr>
+          <td class="param-cell">{{class}}</td>
+          <td class="fw-bold fs-xs">{{category}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+    {{/if}}
+    {{#if hStatements}}
+    <div class="callout callout-danger" style="margin-bottom:2mm">
+      <div>
+        <div class="callout__title">Hazard Statements</div>
+        <div class="callout__body">{{hStatements}}</div>
+      </div>
+    </div>
+    {{/if}}
+    {{#if pStatements}}
+    <div class="callout callout-success">
+      <div>
+        <div class="callout__title">Precautionary Statements</div>
+        <div class="callout__body">{{pStatements}}</div>
+      </div>
+    </div>
+    {{/if}}
+  </div>
+  {{/with}}
+
+  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
+  {{!--  SECTION 3 — Composition / Ingredients                                 --}}
+  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
+  {{#with sections.composition}}
+  <div class="msds-sec">
+    <div class="sec-title">3. Composition / Ingredients</div>
+    {{#if ingredients}}
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>Ingredient</th>
+          <th style="width:30%">Function / Purpose</th>
+          <th style="width:18mm" class="col-center">%</th>
+          <th style="width:26mm">GHS Class</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each ingredients}}
+        <tr>
+          <td class="param-cell">{{name}}</td>
+          <td class="fs-xs text-muted">{{description}}</td>
+          <td class="col-center fw-bold col-mono">{{percent}}</td>
+          <td class="fs-xs">{{ghsClass}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+    {{/if}}
+    {{#if note}}<p class="fs-xs text-muted" style="font-style:italic;margin-top:1mm">{{note}}</p>{{/if}}
+  </div>
+  {{/with}}
+
+  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
+  {{!--  SECTION 4 — First Aid Measures                                        --}}
+  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
+  {{#with sections.firstAid}}
+  <div class="msds-sec">
+    <div class="sec-title">4. First Aid Measures</div>
+    <table class="doc-table">
+      <tbody>
+        {{#if eyes}}<tr><td class="param-cell" style="width:40mm">Eye Contact</td><td>{{eyes}}</td></tr>{{/if}}
+        {{#if skin}}<tr><td class="param-cell">Skin Contact</td><td>{{skin}}</td></tr>{{/if}}
+        {{#if inhalation}}<tr><td class="param-cell">Inhalation</td><td>{{inhalation}}</td></tr>{{/if}}
+        {{#if ingestion}}<tr><td class="param-cell">Ingestion</td><td>{{ingestion}}</td></tr>{{/if}}
+      </tbody>
+    </table>
+    {{#if warning}}
+    <div class="callout callout-danger" style="margin-top:2mm">
+      <div class="callout__body">{{warning}}</div>
+    </div>
+    {{/if}}
+  </div>
+  {{/with}}
+
+  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
+  {{!--  SECTION 5 — Fire-Fighting Measures                                    --}}
+  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
+  {{#with sections.fireFighting}}
+  <div class="msds-sec">
+    <div class="sec-title">5. Fire-Fighting Measures</div>
+    <table class="doc-table">
+      <tbody>
+        {{#if flammability}}<tr><td class="param-cell" style="width:40mm">Flammability</td><td>{{flammability}}</td></tr>{{/if}}
+        {{#if extinguishingMedia}}<tr><td class="param-cell">Extinguishing Media</td><td>{{extinguishingMedia}}</td></tr>{{/if}}
+        {{#if fireHazard}}<tr><td class="param-cell">Fire Hazard</td><td>{{fireHazard}}</td></tr>{{/if}}
+        {{#if ppe}}<tr><td class="param-cell">PPE Required</td><td>{{ppe}}</td></tr>{{/if}}
+      </tbody>
+    </table>
+  </div>
+  {{/with}}
+
+  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
+  {{!--  SECTION 6 — Accidental Release Measures                               --}}
+  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
+  {{#if sections.accidentalRelease}}
+  <div class="msds-sec">
+    <div class="sec-title">6. Accidental Release Measures</div>
+    <ul class="doc-list">
+      {{#each sections.accidentalRelease}}<li>{{this}}</li>{{/each}}
+    </ul>
+  </div>
+  {{/if}}
+
+  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
+  {{!--  SECTION 7 — Handling & Storage                                        --}}
+  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
+  {{#with sections.handling}}
+  <div class="msds-sec">
+    <div class="sec-title">7. Handling &amp; Storage</div>
+    <table class="doc-table">
+      <tbody>
+        {{#if handling}}<tr><td class="param-cell" style="width:40mm">Handling</td><td>{{handling}}</td></tr>{{/if}}
+        {{#if storageTemp}}<tr><td class="param-cell">Storage Temperature</td><td>{{storageTemp}}</td></tr>{{/if}}
+        {{#if containers}}<tr><td class="param-cell">Containers</td><td>{{containers}}</td></tr>{{/if}}
+        {{#if segregation}}<tr><td class="param-cell">Segregation</td><td>{{segregation}}</td></tr>{{/if}}
+        {{#if shelfLife}}<tr><td class="param-cell">Shelf Life</td><td>{{shelfLife}}</td></tr>{{/if}}
+      </tbody>
+    </table>
+  </div>
+  {{/with}}
+
+  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
+  {{!--  SECTION 8 — Exposure Controls / PPE                                   --}}
+  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
+  {{#with sections.exposure}}
+  <div class="msds-sec">
+    <div class="sec-title">8. Exposure Controls / Personal Protective Equipment</div>
+    {{#if ppeItems}}
+    <div class="ppe-row" style="margin-bottom:3mm">
+      {{#each ppeItems}}<span class="ppe-badge">🛡 {{this}}</span>{{/each}}
+    </div>
+    {{/if}}
+    {{#if engineering}}
+    <table class="doc-table">
+      <tbody>
+        <tr><td class="param-cell" style="width:40mm">Engineering Controls</td><td>{{engineering}}</td></tr>
+      </tbody>
+    </table>
+    {{/if}}
+  </div>
+  {{/with}}
+
+  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
+  {{!--  SECTION 9 — Physical & Chemical Properties                            --}}
+  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
+  {{#if sections.physical}}
+  <div class="msds-sec">
+    <div class="sec-title">9. Physical &amp; Chemical Properties</div>
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th style="width:45%">Property</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each sections.physical}}
+        <tr>
+          <td class="param-cell">{{key}}</td>
+          <td class="fw-bold col-mono">{{val}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+  {{/if}}
+
+  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
+  {{!--  SECTION 10 — Stability & Reactivity                                   --}}
+  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
+  {{#with sections.stability}}
+  <div class="msds-sec">
+    <div class="sec-title">10. Stability &amp; Reactivity</div>
+    <table class="doc-table">
+      <tbody>
+        {{#if stability}}<tr><td class="param-cell" style="width:40mm">Stability</td><td>{{stability}}</td></tr>{{/if}}
+        {{#if avoid}}<tr><td class="param-cell">Conditions to Avoid</td><td>{{avoid}}</td></tr>{{/if}}
+        {{#if decomposition}}<tr><td class="param-cell">Decomposition Products</td><td>{{decomposition}}</td></tr>{{/if}}
+        {{#if polymerisation}}<tr><td class="param-cell">Hazardous Polymerisation</td><td>{{polymerisation}}</td></tr>{{/if}}
+      </tbody>
+    </table>
+  </div>
+  {{/with}}
+
+  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
+  {{!--  SECTIONS 11–16 — Toxicology · Ecology · Disposal · Transport ·       --}}
+  {{!--  Regulatory · Other Information                                         --}}
+  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
+  {{#if sections.sections11to16}}
+  <div class="msds-sec">
+    <div class="sec-title">11–16. Toxicology · Ecology · Disposal · Transport · Regulatory · Other</div>
+    <table class="doc-table">
+      <tbody>
+        {{#each (objectEntries sections.sections11to16)}}
+        <tr>
+          <td class="param-cell" style="width:40mm">{{key}}</td>
+          <td>{{value}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+  {{/if}}
+
+  {{!-- ═══ AUTHORIZATION ═════════════════════════════════════════════════════ --}}
+  {{#if signature}}
+  <table class="auth-block no-break">
+    <tr class="auth-block__header">
+      {{#if signature.preparedBy}}<td>Prepared By</td>{{/if}}
+      {{#if signature.checkedBy}}<td>Reviewed By</td>{{/if}}
+      {{#if signature.approvedBy}}<td>Approved By</td>{{/if}}
+    </tr>
+    <tr class="auth-block__sig">
+      {{#if signature.preparedBy}}<td><div class="auth-block__sig-line"></div></td>{{/if}}
+      {{#if signature.checkedBy}}<td><div class="auth-block__sig-line"></div></td>{{/if}}
+      {{#if signature.approvedBy}}<td><div class="auth-block__sig-line"></div></td>{{/if}}
+    </tr>
+    <tr class="auth-block__name">
+      {{#if signature.preparedBy}}
+      <td>
+        <div class="auth-block__person">{{signature.preparedBy}}</div>
+        <div class="auth-block__role">SDS Author</div>
+      </td>
+      {{/if}}
+      {{#if signature.checkedBy}}
+      <td>
+        <div class="auth-block__person">{{signature.checkedBy}}</div>
+        <div class="auth-block__role">EHS Manager</div>
+      </td>
+      {{/if}}
+      {{#if signature.approvedBy}}
+      <td>
+        <div class="auth-block__person">{{signature.approvedBy}}</div>
+        <div class="auth-block__role">Technical Director</div>
+      </td>
+      {{/if}}
+    </tr>
+    <tr class="auth-block__date">
+      {{#if signature.preparedBy}}<td>Date: ___________________________</td>{{/if}}
+      {{#if signature.checkedBy}}<td>Date: ___________________________</td>{{/if}}
+      {{#if signature.approvedBy}}<td>Date: ___________________________</td>{{/if}}
+    </tr>
+  </table>
+  {{/if}}
+
+</div>

@@ -1,0 +1,177 @@
+<div class="document">
+
+  {{!-- ═══ TITLE BLOCK ═══════════════════════════════════════════════════════ --}}
+  <div class="doc-title-block no-break">
+    <div class="doc-title-block__title">Certificate of Analysis</div>
+    <div class="doc-title-block__product">{{productName}}</div>
+    <div class="doc-title-block__sub">
+      Batch No: {{batchNumber}}
+      {{#if manufacturingDate}}&nbsp;|&nbsp; Mfg: {{formatDate manufacturingDate}}{{/if}}
+      {{#if expiryDate}}&nbsp;|&nbsp; Exp: {{formatDate expiryDate}}{{/if}}
+    </div>
+  </div>
+
+  {{!-- ═══ COMPLIANCE RIBBON ═════════════════════════════════════════════════ --}}
+  <div class="compliance-ribbon no-break">
+    <span class="compliance-tag">ISO 9001</span>
+    <span class="compliance-tag">GHS Compliant</span>
+    <span class="compliance-tag">Quality Assured</span>
+    <span class="compliance-tag">Macro Coats Pvt Ltd</span>
+  </div>
+
+  {{!-- ═══ INFO CARDS ══════════════════════════════════════════════════════════ --}}
+  <div class="info-cards no-break">
+    <div class="info-card">
+      <div class="info-card__label">Batch Number</div>
+      <div class="info-card__value mono">{{batchNumber}}</div>
+    </div>
+    <div class="info-card">
+      <div class="info-card__label">Manufacturing Date</div>
+      <div class="info-card__value">{{#if manufacturingDate}}{{formatDate manufacturingDate}}{{else}}—{{/if}}</div>
+    </div>
+    {{#if expiryDate}}
+    <div class="info-card">
+      <div class="info-card__label">Expiry Date</div>
+      <div class="info-card__value">{{formatDate expiryDate}}</div>
+    </div>
+    {{/if}}
+    {{#if quantity}}
+    <div class="info-card">
+      <div class="info-card__label">Quantity / Batch Size</div>
+      <div class="info-card__value fw-bold">{{quantity}}</div>
+    </div>
+    {{/if}}
+    {{#if customer}}
+    <div class="info-card">
+      <div class="info-card__label">Customer</div>
+      <div class="info-card__value fw-semi">{{customer.companyName}}</div>
+    </div>
+    {{else}}
+    {{#if signature}}
+    <div class="info-card">
+      <div class="info-card__label">Prepared By</div>
+      <div class="info-card__value">{{signature.preparedBy}}</div>
+    </div>
+    {{/if}}
+    {{/if}}
+    {{#if customer.poNumber}}
+    <div class="info-card">
+      <div class="info-card__label">Purchase Order</div>
+      <div class="info-card__value mono">{{customer.poNumber}}</div>
+    </div>
+    {{else}}
+    {{#if signature}}
+    <div class="info-card">
+      <div class="info-card__label">Approved By</div>
+      <div class="info-card__value">{{signature.approvedBy}}</div>
+    </div>
+    {{/if}}
+    {{/if}}
+  </div>
+
+  {{!-- ═══ 1. QUALITY TEST RESULTS ══════════════════════════════════════════ --}}
+  <div class="sec-title keep-with">1. Quality Test Results</div>
+  <table class="doc-table">
+    <thead>
+      <tr>
+        <th style="width:9mm" class="col-center">#</th>
+        <th>Parameter</th>
+        <th style="width:28mm">Test Method</th>
+        <th style="width:32mm">Specification</th>
+        <th style="width:24mm">Result</th>
+        <th style="width:14mm" class="col-center">Unit</th>
+        <th style="width:18mm" class="col-center">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each testResults}}
+      <tr>
+        <td class="col-center text-muted fs-xs">{{inc @index}}</td>
+        <td class="param-cell">{{parameter}}</td>
+        <td class="fs-xs col-mono text-muted">{{method}}</td>
+        <td class="fs-xs">{{specification}}</td>
+        <td class="fw-bold col-mono">{{result}}</td>
+        <td class="col-center fs-xs text-muted">{{unit}}</td>
+        <td class="col-center">
+          <span class="status-badge {{#if (eq status 'PASS')}}badge-pass{{else if (eq status 'FAIL')}}badge-fail{{else}}badge-na{{/if}}">
+            {{status}}
+          </span>
+        </td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+
+  {{!-- ═══ 2. CONFORMANCE & RELEASE ══════════════════════════════════════════ --}}
+  <div class="sec-title keep-with">2. Conformance &amp; Release Status</div>
+  <div class="conclusion-box conclusion-{{conclusion}} no-break">
+    <div class="conclusion-box__icon">
+      {{#if (eq conclusion 'PASS')}}✓{{else if (eq conclusion 'APPROVED')}}✓{{else}}✗{{/if}}
+    </div>
+    <div>
+      <div class="conclusion-box__label">
+        {{#if (eq conclusion 'PASS')}}PASS — Batch Released for Distribution
+        {{else if (eq conclusion 'APPROVED')}}APPROVED — Batch Released for Distribution
+        {{else}}FAIL — Batch Withheld from Distribution
+        {{/if}}
+      </div>
+      {{#if remarks}}<div class="conclusion-box__sub">{{remarks}}</div>{{/if}}
+    </div>
+  </div>
+
+  {{!-- ═══ 3. AUTHORIZATION & APPROVAL ═══════════════════════════════════════ --}}
+  {{#if signature}}
+  <div class="sec-title keep-with">3. Authorization &amp; Approval</div>
+  <table class="auth-block no-break">
+    <tr class="auth-block__header">
+      {{#if signature.preparedBy}}<td>Prepared By</td>{{/if}}
+      {{#if signature.checkedBy}}<td>Reviewed By</td>{{/if}}
+      {{#if signature.approvedBy}}<td>Approved By</td>{{/if}}
+    </tr>
+    <tr class="auth-block__sig">
+      {{#if signature.preparedBy}}<td><div class="auth-block__sig-line"></div></td>{{/if}}
+      {{#if signature.checkedBy}}<td><div class="auth-block__sig-line"></div></td>{{/if}}
+      {{#if signature.approvedBy}}<td><div class="auth-block__sig-line"></div></td>{{/if}}
+    </tr>
+    <tr class="auth-block__name">
+      {{#if signature.preparedBy}}
+      <td>
+        <div class="auth-block__person">{{signature.preparedBy}}</div>
+        <div class="auth-block__role">QC Analyst</div>
+      </td>
+      {{/if}}
+      {{#if signature.checkedBy}}
+      <td>
+        <div class="auth-block__person">{{signature.checkedBy}}</div>
+        <div class="auth-block__role">QC Manager</div>
+      </td>
+      {{/if}}
+      {{#if signature.approvedBy}}
+      <td>
+        <div class="auth-block__person">{{signature.approvedBy}}</div>
+        <div class="auth-block__role">Technical Director</div>
+      </td>
+      {{/if}}
+    </tr>
+    <tr class="auth-block__date">
+      {{#if signature.preparedBy}}<td>Date: ___________________________</td>{{/if}}
+      {{#if signature.checkedBy}}<td>Date: ___________________________</td>{{/if}}
+      {{#if signature.approvedBy}}<td>Date: ___________________________</td>{{/if}}
+    </tr>
+  </table>
+  {{/if}}
+
+  {{!-- ═══ DIGITAL VERIFICATION ════════════════════════════════════════════ --}}
+  <div class="qr-block no-break">
+    <div class="qr-placeholder">QR<br>CODE<br>VERIFY</div>
+    <div class="qr-info">
+      <div class="qr-info__title">Digital Document Verification</div>
+      <div class="qr-info__text">
+        This Certificate of Analysis is an official quality document issued by Macro Coats Pvt Ltd.<br>
+        Batch Reference: <strong>{{batchNumber}}</strong> &nbsp;|&nbsp; Product: <strong>{{productName}}</strong><br>
+        This is a <strong>controlled document</strong>. It becomes uncontrolled when printed or copied without authorization.
+      </div>
+    </div>
+  </div>
+
+</div>

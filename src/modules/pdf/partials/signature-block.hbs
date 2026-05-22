@@ -1,0 +1,23 @@
+{{#if signature}}
+<div class="signature-block no-break">
+  {{#if signature.preparedBy}}
+  <div class="signature-slot">
+    <div class="signature-slot__label">Prepared By</div>
+    <div class="signature-slot__name">{{signature.preparedBy}}</div>
+    {{#if signature.date}}<div class="text-muted font-sm">{{formatDate signature.date}}</div>{{/if}}
+  </div>
+  {{/if}}
+  {{#if signature.checkedBy}}
+  <div class="signature-slot">
+    <div class="signature-slot__label">Checked By</div>
+    <div class="signature-slot__name">{{signature.checkedBy}}</div>
+  </div>
+  {{/if}}
+  {{#if signature.approvedBy}}
+  <div class="signature-slot">
+    <div class="signature-slot__label">Approved By</div>
+    <div class="signature-slot__name">{{signature.approvedBy}}</div>
+  </div>
+  {{/if}}
+</div>
+{{/if}}

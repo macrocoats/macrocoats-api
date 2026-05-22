@@ -1,0 +1,12 @@
+{{#if customer}}
+<div class="section no-break">
+  <div class="section-title">Bill To</div>
+  <div class="info-row"><span class="info-label">Company</span><span class="info-value font-bold">{{customer.companyName}}</span></div>
+  {{#if customer.contactPerson}}<div class="info-row"><span class="info-label">Contact</span><span class="info-value">{{customer.contactPerson}}</span></div>{{/if}}
+  {{#if customer.addressLine1}}<div class="info-row"><span class="info-label">Address</span><span class="info-value">{{customer.addressLine1}}{{#if customer.addressLine2}}, {{customer.addressLine2}}{{/if}}</span></div>{{/if}}
+  {{#if customer.city}}<div class="info-row"><span class="info-label">City</span><span class="info-value">{{customer.city}}{{#if customer.state}}, {{customer.state}}{{/if}}{{#if customer.pincode}} – {{customer.pincode}}{{/if}}</span></div>{{/if}}
+  {{#if customer.gst}}<div class="info-row"><span class="info-label">GST</span><span class="info-value">{{customer.gst}}</span></div>{{/if}}
+  {{#if customer.phone}}<div class="info-row"><span class="info-label">Phone</span><span class="info-value">{{customer.phone}}</span></div>{{/if}}
+  {{#if customer.email}}<div class="info-row"><span class="info-label">Email</span><span class="info-value">{{customer.email}}</span></div>{{/if}}
+</div>
+{{/if}}

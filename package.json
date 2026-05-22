@@ -5,7 +5,7 @@
   "description": "Macro Coats Product Document Portal — REST API (Fastify + Drizzle + PostgreSQL)",
   "scripts": {
     "dev": "tsx watch --env-file=.env.local src/server.ts",
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && cp -r src/modules/pdf/templates dist/modules/pdf/templates && cp -r src/modules/pdf/partials dist/modules/pdf/partials && cp -r src/modules/pdf/styles dist/modules/pdf/styles",
     "start": "node dist/server.js",
     "db:generate": "node --import tsx node_modules/drizzle-kit/bin.cjs generate",
     "db:migrate": "node --import tsx node_modules/drizzle-kit/bin.cjs migrate",
@@ -23,10 +23,12 @@
     "@fastify/cors": "^9.0.1",
     "bcryptjs": "^2.4.3",
     "drizzle-orm": "^0.38.3",
+    "handlebars": "^4.7.8",
     "fastify": "^4.28.1",
     "ioredis": "^5.4.1",
     "jsonwebtoken": "^9.0.2",
     "postgres": "^3.4.5",
+    "puppeteer": "^22.10.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {

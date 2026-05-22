@@ -20,6 +20,10 @@ const envSchema = z.object({
   COOKIE_SECURE:        z.coerce.boolean().default(false),
 
   ALLOWED_ORIGIN:       z.string().default('http://localhost:5173'),
+
+  PDF_BROWSER_POOL_SIZE:  z.coerce.number().default(3),
+  PDF_PAGE_TIMEOUT_MS:    z.coerce.number().default(30_000),
+  PDF_RENDER_TIMEOUT_MS:  z.coerce.number().default(60_000),
 })
 
 function loadEnv() {

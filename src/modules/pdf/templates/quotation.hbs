@@ -1,0 +1,186 @@
+<div class="document">
+
+  {{!-- ═══ QUOTATION HEADER ════════════════════════════════════════════════════ --}}
+  <div class="quot-header no-break">
+    <div class="quot-header__title">QUOTATION</div>
+    <div class="quot-header__ref">{{#if quotationNumber}}{{quotationNumber}}{{else}}DRAFT{{/if}}</div>
+  </div>
+
+  {{!-- ═══ BILL TO + QUOTATION META ════════════════════════════════════════════ --}}
+  <table class="quot-info-table no-break">
+    <tr>
+      <td class="quot-billto-cell">
+        <div class="quot-section-label">Bill To</div>
+        {{#if customer}}
+          <div class="quot-customer-name">{{customer.companyName}}</div>
+          <div class="quot-customer-detail">
+            {{#if customer.contactPerson}}{{customer.contactPerson}}<br>{{/if}}
+            {{#if customer.addressLine1}}{{customer.addressLine1}}{{#if customer.addressLine2}}, {{customer.addressLine2}}{{/if}}<br>{{/if}}
+            {{#if customer.city}}{{customer.city}}{{#if customer.state}}, {{customer.state}}{{/if}}{{#if customer.pincode}} – {{customer.pincode}}{{/if}}<br>{{/if}}
+            {{#if customer.gst}}GST: {{customer.gst}}<br>{{/if}}
+            {{#if customer.phone}}{{customer.phone}}{{/if}}{{#if customer.email}}&nbsp;&nbsp;·&nbsp;&nbsp;{{customer.email}}{{/if}}
+          </div>
+        {{/if}}
+      </td>
+      <td class="quot-meta-cell">
+        <div class="quot-section-label">Quotation Details</div>
+        <table class="quot-meta-table">
+          <tr>
+            <td class="quot-meta-label">Quotation No.</td>
+            <td class="quot-meta-value highlight">{{#if quotationNumber}}{{quotationNumber}}{{else}}—{{/if}}</td>
+          </tr>
+          <tr>
+            <td class="quot-meta-label">Date</td>
+            <td class="quot-meta-value">{{formatDate quotationDate}}</td>
+          </tr>
+          {{#if validUntil}}
+          <tr>
+            <td class="quot-meta-label">Valid Until</td>
+            <td class="quot-meta-value">{{formatDate validUntil}}</td>
+          </tr>
+          {{/if}}
+        </table>
+      </td>
+    </tr>
+  </table>
+
+  {{!-- ═══ SUBJECT + SALUTATION ═════════════════════════════════════════════════ --}}
+  <div class="quot-subject">
+    <strong>Subject:</strong>&nbsp; Quotation for Surface Treatment Chemicals
+  </div>
+  <div class="quot-salutation">Dear Sir / Madam,</div>
+  <div class="quot-intro">
+    We are pleased to submit our competitive quotation for the following industrial surface treatment
+    chemicals. Our products comply with applicable industry standards and are backed by full technical
+    support from our R&amp;D and application engineering team.
+  </div>
+
+  {{!-- ═══ LINE ITEMS TABLE ══════════════════════════════════════════════════════ --}}
+  <table class="doc-table" style="margin-bottom:0">
+    <thead>
+      <tr>
+        <th class="col-sno">#</th>
+        <th>Product / Description</th>
+        <th style="width:28mm">Product Code</th>
+        <th style="width:13mm" class="col-center">UOM</th>
+        <th style="width:16mm" class="col-num">Qty</th>
+        <th style="width:22mm" class="col-num">Unit Price</th>
+        {{#if items.[0].discount}}<th style="width:14mm" class="col-num">Disc%</th>{{/if}}
+        {{#if items.[0].taxRate}}<th style="width:13mm" class="col-num">Tax%</th>{{/if}}
+        <th style="width:24mm" class="col-num">Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each items}}
+      <tr>
+        <td class="col-sno text-muted">{{sNo}}</td>
+        <td class="fw-semi">{{productName}}</td>
+        <td class="fs-xs col-mono text-muted">{{productCode}}</td>
+        <td class="col-center">{{uom}}</td>
+        <td class="col-num">{{formatNumber quantity 0}}</td>
+        <td class="col-num">{{formatCurrency unitPrice}}</td>
+        {{#if ../items.[0].discount}}<td class="col-num">{{discount}}%</td>{{/if}}
+        {{#if ../items.[0].taxRate}}<td class="col-num">{{taxRate}}%</td>{{/if}}
+        <td class="col-num fw-bold">{{formatCurrency amount}}</td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+
+  {{!-- ═══ FINANCIAL SUMMARY ═════════════════════════════════════════════════════ --}}
+  <div class="summary-box no-break" style="margin-top:0;border-top:none">
+    <div class="summary-box__row">
+      <span class="summary-box__label">Subtotal (Ex-GST)</span>
+      <span>{{formatCurrency subtotal}}</span>
+    </div>
+    {{#if discountAmount}}
+    <div class="summary-box__row">
+      <span class="summary-box__label">Discount</span>
+      <span>− {{formatCurrency discountAmount}}</span>
+    </div>
+    {{/if}}
+    {{#if taxableAmount}}
+    <div class="summary-box__row">
+      <span class="summary-box__label">Taxable Amount</span>
+      <span>{{formatCurrency taxableAmount}}</span>
+    </div>
+    {{/if}}
+    {{#if cgst}}
+    <div class="summary-box__row">
+      <span class="summary-box__label">CGST</span>
+      <span>{{formatCurrency cgst}}</span>
+    </div>
+    {{/if}}
+    {{#if sgst}}
+    <div class="summary-box__row">
+      <span class="summary-box__label">SGST</span>
+      <span>{{formatCurrency sgst}}</span>
+    </div>
+    {{/if}}
+    {{#if igst}}
+    <div class="summary-box__row">
+      <span class="summary-box__label">IGST</span>
+      <span>{{formatCurrency igst}}</span>
+    </div>
+    {{/if}}
+    <div class="summary-box__row" style="font-weight:800;font-size:10.5pt;border-top:2px solid var(--c-primary);padding-top:2mm;margin-top:1mm">
+      <span class="summary-box__label">Total Amount</span>
+      <span>{{formatCurrency totalAmount}}</span>
+    </div>
+  </div>
+
+  {{#if amountInWords}}
+  <div class="amount-words"><strong>Amount in Words:</strong> {{amountInWords}}</div>
+  {{/if}}
+
+  {{#if remarks}}
+  <div class="remarks-box"><strong>Remarks:</strong> {{remarks}}</div>
+  {{/if}}
+
+  {{!-- ═══ COMMERCIAL TERMS ══════════════════════════════════════════════════════ --}}
+  <div class="msds-sec no-break" style="margin-top:5mm">
+    <div class="sec-title">Commercial Terms</div>
+    <table class="quot-terms-table">
+      <tr>
+        <td class="quot-terms-label">Price Basis</td>
+        <td>Rupees per kg, Ex-Works / Ex-Factory, Chennai</td>
+      </tr>
+      <tr>
+        <td class="quot-terms-label">GST</td>
+        <td>Extra as applicable (18% GST on chemicals)</td>
+      </tr>
+      <tr>
+        <td class="quot-terms-label">Packing</td>
+        <td>Standard HDPE drums / carboys</td>
+      </tr>
+      <tr>
+        <td class="quot-terms-label">Delivery</td>
+        <td>Within 7 working days from order confirmation and advance payment</td>
+      </tr>
+      <tr>
+        <td class="quot-terms-label">Payment Terms</td>
+        <td>60 days from date of invoice</td>
+      </tr>
+      <tr>
+        <td class="quot-terms-label">Validity</td>
+        <td>{{#if validUntil}}{{formatDate validUntil}}{{else}}30 days from date of quotation{{/if}}</td>
+      </tr>
+    </table>
+  </div>
+
+  {{!-- ═══ TERMS & CONDITIONS ════════════════════════════════════════════════════ --}}
+  {{#if termsAndConditions}}
+  <div class="terms-box no-break">
+    <div class="terms-box__title">Terms &amp; Conditions</div>
+    <ol>
+      {{#each termsAndConditions}}<li>{{this}}</li>{{/each}}
+    </ol>
+  </div>
+  {{/if}}
+
+  <div class="quot-certification">
+    This is a computer-generated quotation. Prices are valid for the period stated above and subject to change without prior notice.
+    For technical queries: info@macrocoats.in &nbsp;|&nbsp; Ph: 9884080377 / 9444905992
+  </div>
+
+</div>
