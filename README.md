@@ -141,7 +141,7 @@ macrocoats-api/
 │   │   ├── checkProductAccess.ts     # Validates productLine + docType per user role
 │   │   └── logAccess.ts              # Fire-and-forget access_log INSERT (onSend hook)
 │   ├── utils/
-│   │   ├── jwt.ts                    # RS256 sign/verify for access + refresh tokens
+│   │   ├── jwt.ts                    # RS256 sign/verify; tryVerifyAccessToken() returns payload or null
 │   │   ├── crypto.ts                 # bcrypt hash/verify, URL-safe token generation
 │   │   ├── quotNumber.ts             # Atomic UNIK-YYYY-NNN via upsert + RETURNING
 │   │   └── batchNumber.ts            # Atomic XX-YYYYMMDD-NNN via upsert + RETURNING
@@ -159,7 +159,7 @@ macrocoats-api/
 │   │   ├── vendors/                  # Vendor/supplier CRUD
 │   │   ├── analytics/                # Access log query + 30-day summary
 │   │   └── pdf/                      # Server-side PDF (Puppeteer + Handlebars)
-│   │       ├── helpers/              #   Currency, date, Handlebars helpers
+│   │       ├── helpers/              #   currency.helper.ts (amountInWords), date.helper.ts, handlebars.helpers.ts
 │   │       ├── partials/             #   Reusable Handlebars partials
 │   │       ├── styles/               #   PDF-specific CSS
 │   │       ├── templates/            #   Handlebars templates per docType

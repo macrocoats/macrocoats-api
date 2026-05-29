@@ -200,7 +200,7 @@ Integration tests use a real PostgreSQL database (the same one in `.env.local`).
 
 ### Utilities
 
-- `src/utils/jwt.ts` — RS256 sign/verify for access and refresh tokens
+- `src/utils/jwt.ts` — RS256 sign/verify; key function is `tryVerifyAccessToken(token)` which returns the decoded payload or `null` (never throws)
 - `src/utils/crypto.ts` — bcrypt hashing, token generation, username normalization
 - `src/utils/quotNumber.ts` — atomic quotation number generation (UNIK-YYYY-NNN)
 - `src/utils/batchNumber.ts` — atomic batch number generation (XX-YYYYMMDD-NNN)
