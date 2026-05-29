@@ -270,10 +270,7 @@ function buildFooterTemplate(date: string, time: string): string {
       <div class="f-co">Macro Coats Pvt Ltd</div>
       <div class="f-addr">SF.NO 224/11, Kalaimagal Nagar, Pazhanthandalam, Chennai – 600132<br>Ph: 9884080377 / 9444905992 &nbsp;|&nbsp; info@macrocoats.in &nbsp;|&nbsp; GST: 33AARCM7377G1ZY</div>
     </div>
-    <div class="f-mid">
-      <div class="f-ctrl">Controlled Document</div>
-      <div class="f-unc">Uncontrolled When Printed</div>
-    </div>
+    
     <div class="f-right">
       <div class="f-gen">Generated: ${esc(date)} ${esc(time)}</div>
       <div class="f-pg">Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>
