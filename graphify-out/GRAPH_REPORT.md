@@ -1,12 +1,12 @@
-# Graph Report - /Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api  (2026-05-19)
+# Graph Report - /Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api  (2026-05-29)
 
 ## Corpus Check
-- 77 files · ~66,705 words
+- 88 files · ~70,521 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 257 nodes · 391 edges · 29 communities detected
-- Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 30 edges (avg confidence: 0.81)
+- 307 nodes · 475 edges · 32 communities detected
+- Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 34 edges (avg confidence: 0.81)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
@@ -39,26 +39,29 @@
 - [[_COMMUNITY_Community 26|Community 26]]
 - [[_COMMUNITY_Community 27|Community 27]]
 - [[_COMMUNITY_Community 28|Community 28]]
+- [[_COMMUNITY_Community 29|Community 29]]
+- [[_COMMUNITY_Community 30|Community 30]]
+- [[_COMMUNITY_Community 31|Community 31]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `Macro Coats API` - 23 edges
 2. `issueTokens()` - 9 edges
-3. `Auth Module` - 9 edges
-4. `JWT RS256 Authentication` - 8 edges
-5. `Getting Started Guide` - 7 edges
-6. `Products Module` - 6 edges
-7. `RBAC Middleware Stack` - 6 edges
-8. `Seed Scripts` - 6 edges
-9. `Integration Tests` - 6 edges
-10. `main()` - 5 edges
+3. `PDFService` - 9 edges
+4. `TemplateService` - 9 edges
+5. `Auth Module` - 9 edges
+6. `JWT RS256 Authentication` - 8 edges
+7. `Getting Started Guide` - 7 edges
+8. `Products Module` - 6 edges
+9. `RBAC Middleware Stack` - 6 edges
+10. `Seed Scripts` - 6 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `buildApp()` --calls--> `registerCors()`  [INFERRED]
   /Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/app.ts → src/plugins/cors.ts
 - `buildApp()` --calls--> `registerCookies()`  [INFERRED]
   /Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/app.ts → src/plugins/cookie.ts
-- `buildApp()` --calls--> `main()`  [INFERRED]
-  /Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/app.ts → src/server.ts
+- `main()` --calls--> `connectRedis()`  [INFERRED]
+  /Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/server.ts → src/plugins/redis.ts
 - `authenticate()` --calls--> `tryVerifyAccessToken()`  [INFERRED]
   /Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/middleware/authenticate.ts → src/utils/jwt.ts
 - `seedCompanies()` --calls--> `hashPassword()`  [INFERRED]
@@ -79,71 +82,71 @@ Cohesion: 0.06
 Nodes (60): DB Schema Push and Seed, Dev Server, .env.local Configuration, File Map Summary, Getting Started Guide, RS256 Keypair Generation, Key Security Notes, access_log Table (+52 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.13
+Cohesion: 0.11
 Nodes (0): 
 
 ### Community 2 - "Community 2"
-Cohesion: 0.12
-Nodes (19): buildAuthUser(), getMeById(), issueTokens(), loginWithCredentials(), loginWithToken(), revokeRefreshToken(), rotateRefreshToken(), authenticate() (+11 more)
+Cohesion: 0.09
+Nodes (12): formatDate(), formatTime(), nowFormatted(), registerHelpers(), buildFooterTemplate(), buildHeaderTemplate(), docTypeLabel(), esc() (+4 more)
 
 ### Community 3 - "Community 3"
-Cohesion: 0.11
-Nodes (11): seedCompanies(), hashPassword(), seedFormulationVariants(), main(), seedInventory(), seedProducts(), getQuotationById(), toQuotationResponse() (+3 more)
+Cohesion: 0.12
+Nodes (11): seedCompanies(), getCompanyPricing(), upsertCompanyPricing(), hashPassword(), seedFormulationVariants(), main(), seedInventory(), seedProducts() (+3 more)
 
 ### Community 4 - "Community 4"
-Cohesion: 0.12
-Nodes (15): buildSummary(), getAccessSummary(), buildApp(), registerCookies(), registerCors(), cacheKey(), getDocument(), updateDocument() (+7 more)
+Cohesion: 0.14
+Nodes (10): buildSummary(), getAccessSummary(), cacheKey(), getDocument(), updateDocument(), cacheDel(), cacheDelPattern(), cacheGet() (+2 more)
 
 ### Community 5 - "Community 5"
-Cohesion: 0.24
-Nodes (3): getBatchByNumber(), saveCoaSnapshot(), toBatchResponse()
+Cohesion: 0.16
+Nodes (19): buildAuthUser(), getMeById(), issueTokens(), loginWithCredentials(), loginWithToken(), revokeRefreshToken(), rotateRefreshToken(), authenticate() (+11 more)
 
 ### Community 6 - "Community 6"
+Cohesion: 0.17
+Nodes (5): buildApp(), registerCookies(), registerCors(), connectRedis(), main()
+
+### Community 7 - "Community 7"
+Cohesion: 0.22
+Nodes (3): getBatchByNumber(), saveCoaSnapshot(), toBatchResponse()
+
+### Community 8 - "Community 8"
 Cohesion: 0.31
 Nodes (7): computeStockStatus(), createItem(), getAllItems(), getItemById(), resetToDefaults(), toResponse(), updateItem()
 
-### Community 7 - "Community 7"
+### Community 9 - "Community 9"
 Cohesion: 0.28
 Nodes (3): getVariantById(), toVariantResponse(), updateVariant()
 
-### Community 8 - "Community 8"
+### Community 10 - "Community 10"
 Cohesion: 0.36
 Nodes (4): createVendor(), getVendorById(), toResponse(), updateVendor()
 
-### Community 9 - "Community 9"
+### Community 11 - "Community 11"
 Cohesion: 0.36
 Nodes (4): createStaff(), getStaffById(), toResponse(), updateStaff()
 
-### Community 10 - "Community 10"
+### Community 12 - "Community 12"
 Cohesion: 0.33
 Nodes (2): getCompanyById(), toResponse()
 
-### Community 11 - "Community 11"
-Cohesion: 0.47
-Nodes (6): Atomic Counter (quotation_sequences) Rationale, quotNumber.ts Utility, quotation_line_items Table, quotation_sequences Table, Quotations Module, quotations Table
-
-### Community 12 - "Community 12"
-Cohesion: 0.4
-Nodes (0): 
-
 ### Community 13 - "Community 13"
-Cohesion: 0.5
+Cohesion: 0.33
 Nodes (0): 
 
 ### Community 14 - "Community 14"
-Cohesion: 0.67
-Nodes (0): 
+Cohesion: 0.47
+Nodes (6): Atomic Counter (quotation_sequences) Rationale, quotNumber.ts Utility, quotation_line_items Table, quotation_sequences Table, Quotations Module, quotations Table
 
 ### Community 15 - "Community 15"
-Cohesion: 1.0
-Nodes (0): 
+Cohesion: 0.5
+Nodes (2): amountInWords(), wordsBelow1000()
 
 ### Community 16 - "Community 16"
-Cohesion: 1.0
-Nodes (0): 
+Cohesion: 0.5
+Nodes (2): getQuotationById(), toQuotationResponse()
 
 ### Community 17 - "Community 17"
-Cohesion: 1.0
+Cohesion: 0.67
 Nodes (0): 
 
 ### Community 18 - "Community 18"
@@ -190,45 +193,57 @@ Nodes (0):
 Cohesion: 1.0
 Nodes (0): 
 
+### Community 29 - "Community 29"
+Cohesion: 1.0
+Nodes (0): 
+
+### Community 30 - "Community 30"
+Cohesion: 1.0
+Nodes (0): 
+
+### Community 31 - "Community 31"
+Cohesion: 1.0
+Nodes (0): 
+
 ## Knowledge Gaps
 - **15 isolated node(s):** `TypeScript`, `Supertest`, `React + Vite SPA Frontend`, `requireAuth Middleware`, `requireSuperAdmin Middleware` (+10 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **Thin community `Community 15`** (2 nodes): `req()`, `inventory.test.ts`
+- **Thin community `Community 18`** (2 nodes): `req()`, `inventory.test.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 16`** (2 nodes): `request()`, `auth.test.ts`
+- **Thin community `Community 19`** (2 nodes): `request()`, `auth.test.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 17`** (2 nodes): `req()`, `products.test.ts`
+- **Thin community `Community 20`** (2 nodes): `req()`, `products.test.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 18`** (1 nodes): `drizzle.config.ts`
+- **Thin community `Community 21`** (1 nodes): `drizzle.config.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 19`** (1 nodes): `vitest.config.ts`
+- **Thin community `Community 22`** (1 nodes): `vitest.config.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 20`** (1 nodes): `fastify.d.ts`
+- **Thin community `Community 23`** (1 nodes): `fastify.d.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 21`** (1 nodes): `inventory.ts`
+- **Thin community `Community 24`** (1 nodes): `inventory.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 22`** (1 nodes): `salaryRecords.ts`
+- **Thin community `Community 25`** (1 nodes): `salaryRecords.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 23`** (1 nodes): `companyProductAccess.ts`
+- **Thin community `Community 26`** (1 nodes): `companyProductAccess.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 24`** (1 nodes): `staff.ts`
+- **Thin community `Community 27`** (1 nodes): `staff.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 25`** (1 nodes): `vendors.ts`
+- **Thin community `Community 28`** (1 nodes): `vendors.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 26`** (1 nodes): `quotations.ts`
+- **Thin community `Community 29`** (1 nodes): `quotations.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 27`** (1 nodes): `auth.schema.ts`
+- **Thin community `Community 30`** (1 nodes): `auth.schema.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 28`** (1 nodes): `quotations.schema.ts`
+- **Thin community `Community 31`** (1 nodes): `quotations.schema.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Macro Coats API` connect `Community 0` to `Community 11`?**
-  _High betweenness centrality (0.042) - this node is a cross-community bridge._
-- **Why does `rotateCompanyToken()` connect `Community 2` to `Community 10`?**
-  _High betweenness centrality (0.040) - this node is a cross-community bridge._
+- **Why does `authenticate()` connect `Community 5` to `Community 1`?**
+  _High betweenness centrality (0.038) - this node is a cross-community bridge._
+- **Why does `rotateCompanyToken()` connect `Community 5` to `Community 12`?**
+  _High betweenness centrality (0.036) - this node is a cross-community bridge._
 - **Are the 4 inferred relationships involving `issueTokens()` (e.g. with `generateToken()` and `hashToken()`) actually correct?**
   _`issueTokens()` has 4 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `TypeScript`, `Supertest`, `React + Vite SPA Frontend` to the rest of the system?**
@@ -236,6 +251,6 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `Community 0` be split into smaller, more focused modules?**
   _Cohesion score 0.06 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.13 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.11 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.12 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.09 - nodes in this community are weakly interconnected._
