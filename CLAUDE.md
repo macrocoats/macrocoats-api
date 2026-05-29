@@ -101,8 +101,11 @@ Routes never import from other modules' services. Cross-cutting concerns (auth, 
 | `salaryRecords` | GET /salary-records, GET /salary-records/:id, POST /salary-records |
 | `staff` | GET /staff, GET /staff/:id, POST /staff, PUT /staff/:id, DELETE /staff/:id |
 | `vendors` | GET /vendors, GET /vendors/:id, POST /vendors, PUT /vendors/:id, DELETE /vendors/:id |
+| `pdf` | POST /pdf/quotation, POST /pdf/batch-label |
 
 All endpoints except auth are `superadmin`-only, except product document reads which use `checkProductAccess` for company users.
+
+> **Note:** The `pdf` module has a non-standard directory layout — it includes `helpers/`, `partials/`, `styles/`, and `templates/` sub-directories plus `pdf.types.ts` and `template.service.ts` in addition to the standard 3-file pattern. It uses Puppeteer + Handlebars for server-side PDF generation.
 
 ### Middleware
 
@@ -161,7 +164,7 @@ Integration tests use a real PostgreSQL database (the same one in `.env.local`).
 
 ### Database schema
 
-13 tables across `src/db/schema/`:
+19 tables across `src/db/schema/`:
 
 | Table | Purpose |
 |---|---|
@@ -190,7 +193,7 @@ Integration tests use a real PostgreSQL database (the same one in `.env.local`).
 `src/seed/` contains idempotent seed scripts (run via `npm run seed`):
 
 - `index.ts` — entry point; runs all seeds in order
-- `products.seed.ts` — 5 product lines (uniklean-sp, uniklean-fe, uniprotect-oil, uniflow-ecm, unicool-al)
+- `products.seed.ts` — 9 product lines (uniklean-sp, uniklean-fe, uniprotect-oil, uniflow-ecm, unicool-al, unikoat-lt-700, unisolve-h3, unipass, uniktonner)
 - `companies.seed.ts` — test companies (Rane Madras, TVS, Akshaya) with product access mappings
 - `inventory.seed.ts` — 23 factory-default raw materials
 - `reset.ts` — dev-only; drops all tables (invoked by `npm run db:reset`)
