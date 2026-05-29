@@ -25,8 +25,15 @@ Built with **Fastify · TypeScript · Drizzle ORM · PostgreSQL · Redis**.
   - [Products](#products)
   - [Inventory](#inventory)
   - [Quotations](#quotations)
+  - [Batches](#batches)
   - [Companies](#companies)
+  - [Company Pricing](#company-pricing)
+  - [Formulation Variants](#formulation-variants)
+  - [Staff](#staff)
+  - [Salary Records](#salary-records)
+  - [Vendors](#vendors)
   - [Analytics](#analytics)
+  - [PDF Generation](#pdf-generation)
 - [Auth Flow](#auth-flow)
   - [Login Flow](#login-flow)
   - [Magic-Link / QR Token Flow](#magic-link--qr-token-flow)
@@ -38,7 +45,6 @@ Built with **Fastify · TypeScript · Drizzle ORM · PostgreSQL · Redis**.
 - [Testing](#testing)
 - [Production Deployment](#production-deployment)
   - [Security Checklist](#security-checklist)
-  - [Frontend Integration Checklist](#frontend-integration-checklist)
 
 ---
 
@@ -54,9 +60,12 @@ Built with **Fastify · TypeScript · Drizzle ORM · PostgreSQL · Redis**.
 ┌─────────────────────────────────────────────┐
 │           macrocoats-api (Fastify)          │
 │                                             │
-│  /v1/auth        /v1/products               │
-│  /v1/inventory   /v1/quotations             │
-│  /v1/companies   /v1/analytics              │
+│  /v1/auth          /v1/products             │
+│  /v1/inventory     /v1/quotations           │
+│  /v1/batches       /v1/companies            │
+│  /v1/analytics     /v1/staff                │
+│  /v1/vendors       /v1/salary-records       │
+│  /v1/formulation-variants   /v1/pdf         │
 └────────┬──────────────────────┬─────────────┘
          │                      │
          ▼                      ▼
@@ -66,7 +75,7 @@ Built with **Fastify · TypeScript · Drizzle ORM · PostgreSQL · Redis**.
   └─────────────┘       └──────────────┘
 ```
 
-The API is the **single source of truth** for all product documents, inventory prices, user accounts, company access control, and quotation history. The frontend talks only to this API — the MSW mock layer is removed once this backend is live.
+The API is the **single source of truth** for all product documents, inventory prices, user accounts, company access control, quotations, batches, and HR data.
 
 ---
 
@@ -83,6 +92,7 @@ The API is the **single source of truth** for all product documents, inventory p
 | Auth             | JWT RS256 + httpOnly cookies  | —         |
 | Password hashing | bcryptjs (cost 12)            | —         |
 | Validation       | Zod                           | 3.x       |
+| PDF generation   | Puppeteer + Handlebars        | —         |
 | Testing          | Vitest + Supertest            | —         |
 
 ---
@@ -97,7 +107,8 @@ macrocoats-api/
 │   ├── config/
 │   │   └── env.ts                    # Zod-validated env schema (fails fast on startup)
 │   ├── types/
-│   │   ├── index.ts                  # Shared domain types (AuthUser, DocType, etc.)
+│   │   ├── index.ts                  # Shared domain types (AuthUser, DocType, PRODUCT_KEYS, etc.)
+│   │   ├── errors.ts                 # AppErrors enum
 │   │   └── fastify.d.ts              # Module augmentation — adds authUser to FastifyRequest
 │   ├── db/
 │   │   ├── index.ts                  # Drizzle client (postgres-js pool)
@@ -105,13 +116,20 @@ macrocoats-api/
 │   │       ├── users.ts
 │   │       ├── companies.ts
 │   │       ├── companyProductAccess.ts
+│   │       ├── companyProductPrices.ts
 │   │       ├── products.ts
-│   │       ├── productDocuments.ts   # JSONB body — one row per (product, docType)
+│   │       ├── productDocuments.ts       # JSONB body — one row per (product, docType)
+│   │       ├── productFormulationVariants.ts
+│   │       ├── formulationVariantComponents.ts
 │   │       ├── inventory.ts
-│   │       ├── quotations.ts         # + quotation_line_items + quotation_sequences
+│   │       ├── quotations.ts             # + quotation_line_items + quotation_sequences
+│   │       ├── batches.ts                # + batch_sequences; JSONB snapshots
 │   │       ├── accessLog.ts
 │   │       ├── refreshTokens.ts
-│   │       └── index.ts              # Re-exports all schemas
+│   │       ├── salaryRecords.ts
+│   │       ├── staff.ts
+│   │       ├── vendors.ts
+│   │       └── index.ts                  # Re-exports all schemas
 │   ├── plugins/
 │   │   ├── cors.ts                   # @fastify/cors — credentials: true
 │   │   ├── cookie.ts                 # @fastify/cookie + cookie option helpers
@@ -121,29 +139,46 @@ macrocoats-api/
 │   │   ├── requireAuth.ts            # Hard 401 gate — chain after authenticate
 │   │   ├── requireSuperAdmin.ts      # 403 unless role === 'superadmin'
 │   │   ├── checkProductAccess.ts     # Validates productLine + docType per user role
-│   │   └── logAccess.ts              # Fire-and-forget access_log INSERT
+│   │   └── logAccess.ts              # Fire-and-forget access_log INSERT (onSend hook)
 │   ├── utils/
 │   │   ├── jwt.ts                    # RS256 sign/verify for access + refresh tokens
 │   │   ├── crypto.ts                 # bcrypt hash/verify, URL-safe token generation
-│   │   └── quotNumber.ts             # Atomic UNIK-YYYY-NNN via upsert + RETURNING
+│   │   ├── quotNumber.ts             # Atomic UNIK-YYYY-NNN via upsert + RETURNING
+│   │   └── batchNumber.ts            # Atomic XX-YYYYMMDD-NNN via upsert + RETURNING
 │   ├── modules/
 │   │   ├── auth/                     # login, token, refresh, logout, me
 │   │   ├── products/                 # GET + PUT /products/:line/:type
 │   │   ├── inventory/                # CRUD + reset for raw material prices
 │   │   ├── quotations/               # Create + list + get quotations
+│   │   ├── batches/                  # Create, list, get, CoA snapshot, delete
 │   │   ├── companies/                # CRUD + token rotation for client companies
-│   │   └── analytics/                # Access log query + 30-day summary
+│   │   ├── company-pricing/          # Per-company product price overrides
+│   │   ├── formulation-variants/     # Variant headers + component replacement
+│   │   ├── staff/                    # Staff directory CRUD
+│   │   ├── salaryRecords/            # Salary payment records
+│   │   ├── vendors/                  # Vendor/supplier CRUD
+│   │   ├── analytics/                # Access log query + 30-day summary
+│   │   └── pdf/                      # Server-side PDF (Puppeteer + Handlebars)
+│   │       ├── helpers/              #   Currency, date, Handlebars helpers
+│   │       ├── partials/             #   Reusable Handlebars partials
+│   │       ├── styles/               #   PDF-specific CSS
+│   │       ├── templates/            #   Handlebars templates per docType
+│   │       ├── pdf.routes.ts
+│   │       ├── pdf.service.ts
+│   │       ├── pdf.types.ts
+│   │       └── template.service.ts
 │   └── seed/
 │       ├── index.ts                  # Master runner (idempotent)
-│       ├── products.seed.ts          # 5 products × TDS/MSDS/Formula/Label documents
+│       ├── products.seed.ts          # 9 products × 5 doc-type rows each
 │       ├── inventory.seed.ts         # 23 default raw material prices
-│       ├── companies.seed.ts         # 5 companies + users + superadmin
+│       ├── companies.seed.ts         # Test companies + product access + users
+│       ├── formulationVariants.seed.ts # Default formulation variants per product
 │       └── reset.ts                  # Dev-only: drops all tables
 ├── tests/
 │   └── integration/
-│       ├── auth.test.ts              # Login, token, me, logout, refresh
-│       ├── products.test.ts          # Access gates, RBAC per role
-│       └── inventory.test.ts         # CRUD + reset flow
+│       ├── auth.test.ts
+│       ├── products.test.ts
+│       └── inventory.test.ts
 ├── .env.example
 ├── drizzle.config.ts
 ├── package.json
@@ -223,14 +258,14 @@ node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ### 4. Push Schema & Seed
 
 ```bash
-# Create all 9 tables in your Postgres database
+# Create all 19 tables in your Postgres database
 npm run db:push
 
-# Seed products (5 × TDS/MSDS/Formula/Label), inventory (23 items), companies & users
+# Seed products (9 × 5 doc-type rows), inventory (23 items), companies, formulation variants
 npm run seed
 ```
 
-The seed is **idempotent** — safe to run multiple times. It uses `onConflictDoUpdate` throughout.
+The seed is **idempotent** — safe to run multiple times.
 
 Default credentials created by the seed:
 
@@ -243,7 +278,7 @@ Default credentials created by the seed:
 | `tvs`             | `tV5kR2mNpQ8wLxYtA7bZeJ4G`   | company    |
 | `sundaramfasteners` | `sf9Np4xRmKvL7wYtA3bZeJ2Q` | company    |
 
-> ⚠️ **Rotate all these tokens immediately after first production deploy.** Use `POST /v1/companies/:id/rotate-token` for company tokens and update the superadmin password via the DB directly.
+> ⚠️ **Rotate all these tokens immediately after first production deploy.**
 
 ---
 
@@ -252,7 +287,6 @@ Default credentials created by the seed:
 ```bash
 npm run dev
 # Server starts at http://localhost:3001
-# Health check: http://localhost:3001/health
 ```
 
 ---
@@ -277,12 +311,12 @@ All variables are validated by Zod at startup. The server **will not start** if 
 | `COOKIE_DOMAIN`          | —        | `localhost`      | Cookie domain |
 | `COOKIE_SECURE`          | —        | `false`          | Set `true` in production (requires HTTPS) |
 | `ALLOWED_ORIGIN`         | —        | `http://localhost:5173` | CORS allowed origin |
-| `AUTH_RATE_LIMIT_MAX`    | —        | `10`             | Max auth attempts per window |
-| `AUTH_RATE_LIMIT_WINDOW` | —        | `900`            | Rate limit window in seconds (15 min) |
 
 ---
 
 ## Database Schema
+
+19 tables across `src/db/schema/`.
 
 ```
 users ──────────────────────────────────────────────────────────────────┐
@@ -297,35 +331,61 @@ users ────────────────────────�
 companies ───────────────────────────────────────────────────────────── ┤
   │ id, key, display_name, access_token (unique), token_expires_at      │
   │                                                                      │
-  └──< company_product_access                                            │
-         company_id, product_key  (composite PK)                        │
+  ├──< company_product_access                                            │
+  │      company_id, product_key  (composite PK)                        │
+  │                                                                      │
+  └──< company_product_prices                                            │
+         company_id, product_key, price_per_litre                       │
                                                                          │
 products ────────────────────────────────────────────────────────────── ┘
   │ key (PK), display_name, code, category, subtitle, accent_color
   │
-  └──< product_documents
-         id, product_key, doc_type, doc_number, revision
-         body JSONB,  footer JSONB
-         UNIQUE (product_key, doc_type)
+  ├──< product_documents
+  │      id, product_key, doc_type, body JSONB, footer JSONB
+  │      UNIQUE (product_key, doc_type)
+  │
+  └──< product_formulation_variants
+         id, product_key, company_key, variant_name, description
+         │
+         └──< formulation_variant_components
+                id, variant_id, material_name, quantity, unit, notes
 
-inventory_items
+inventory
   id, material, unit, price, stock, supplier, sort_order, is_default
 
 quotations
   │ id, quot_number (unique), customer_name, quot_date, valid_days, valid_until
   │
-  └──< quotation_line_items
-         id, quotation_id, sort_order, catalog_id, description, code, qty, rate
+  ├──< quotation_line_items
+  │      id, quotation_id, sort_order, catalog_id, description, code, qty, rate
+  │
+  └── quotation_sequences
+        year (PK), last_n   ← atomic per-year counter
 
-quotation_sequences
-  year (PK), last_n   ← atomic per-year counter
+batches
+  │ id, batch_number (unique), company_key, product_key, production_date, volume
+  │ formulation_snapshot JSONB, label_snapshot JSONB, coa_snapshot JSONB
+  │ cost_summary JSONB, payment_due_date, payment_term_days
+  │
+  └── batch_sequences
+        company_key, date (composite PK), counter   ← per-company per-day counter
+
+staff
+  id, name, designation, department, phone, email, joined_at
+
+salary_records
+  id, staff_id, month, year, basic, allowances, deductions, net, paid_on, notes
+
+vendors
+  id, name, contact, phone, email, address, notes
 ```
 
 **Key design decisions:**
-- Product document bodies are stored as **JSONB** — each docType has a different shape, and JSONB avoids 20+ columns of nullable fields while still being queryable.
-- Refresh tokens are **hashed with bcrypt** (cost 10) before storage — a leaked DB dump cannot be used to forge sessions.
-- The `quotation_sequences` table uses an `INSERT ... ON CONFLICT DO UPDATE ... RETURNING` pattern for a **lock-free atomic counter** — no deadlocks under concurrent quotation generation.
-- `is_default` on `inventory_items` marks the 23 factory-seeded rows so that "reset to defaults" deletes only user-added rows.
+- Product document bodies are stored as **JSONB** — each docType has a different shape, avoiding nullable column sprawl.
+- Refresh tokens are **hashed with bcrypt** before storage — a leaked DB dump cannot forge sessions.
+- Quotation and batch sequence counters use **`INSERT ... ON CONFLICT DO UPDATE ... RETURNING`** for lock-free atomic increments.
+- Batch records capture **JSONB snapshots** at creation — formulation, label, and cost data are frozen at production time.
+- `is_default` on `inventory` marks factory-seeded rows for the "reset to defaults" operation.
 
 ---
 
@@ -336,7 +396,7 @@ quotation_sequences
 http://localhost:3001/v1
 ```
 
-All request bodies are JSON. All responses are JSON. Authentication uses httpOnly cookies set on login — no `Authorization` header required.
+All request bodies are JSON. Authentication uses httpOnly cookies — no `Authorization` header required.
 
 ---
 
@@ -368,29 +428,7 @@ All request bodies are JSON. All responses are JSON. Authentication uses httpOnl
 // Sets: accessToken (15m) + refreshToken (7d) as httpOnly cookies
 ```
 
-Username matching is **case-insensitive and space-insensitive** — `"Sundaram Fasteners"` → `sundaramfasteners`.
-
-#### POST `/auth/token`
-```json
-// Request
-{ "token": "r7Kx9mNpQ2wLvYtA8bZeJ3dF" }
-
-// Response 200
-{
-  "user": { ... },
-  "redirectTo": "/products/uniklean-sp/tds"
-}
-```
-
-#### Error responses
-
-| Code | Error key              | Meaning |
-|------|------------------------|---------|
-| 400  | `VALIDATION_ERROR`     | Missing or invalid fields |
-| 401  | `INVALID_CREDENTIALS`  | Wrong username/password |
-| 401  | `TOKEN_INVALID`        | Magic-link token not found or expired |
-| 401  | `NOT_AUTHENTICATED`    | No valid cookie |
-| 429  | `TOO_MANY_REQUESTS`    | Rate limit exceeded (10 attempts / 15 min) |
+Username matching is **case-insensitive and space-insensitive**.
 
 ---
 
@@ -402,29 +440,11 @@ Username matching is **case-insensitive and space-insensitive** — `"Sundaram F
 | GET    | `/products/:productLine/:docType` | Required  | see RBAC    | Fetch a document |
 | PUT    | `/products/:productLine/:docType` | Required  | superadmin  | Update a document |
 
-**Valid `productLine` values:** `uniklean-sp` · `uniklean-fe` · `uniprotect-oil` · `uniflow-ecm` · `unicool-al`
+**Valid `productLine` values:** `uniklean-sp` · `uniklean-fe` · `uniprotect-oil` · `uniflow-ecm` · `unicool-al` · `unikoat-lt-700` · `unisolve-h3` · `unipass` · `uniktonner`
 
 **Valid `docType` values:** `tds` · `msds` · `formula` · `label` · `coa`
 
-#### GET `/products/:productLine/:docType`
-```json
-// Response 200 (TDS example)
-{
-  "productName": "UNIKLEAN-SP",
-  "subtitle": "Industrial Surface Cleaner & Metal Conditioner",
-  "accentColor": "#1e6b5a",
-  "docNumber": "TDS-USP-001",
-  "revision": "Rev 01 — Apr 2026",
-  "company": "Macro Coats Pvt Ltd",
-  "location": "Chennai · India",
-  "contact": "info@macrocoats.in",
-  "phone": "+91-9884080377",
-  "grade": "Industrial Grade",
-  "description": "...",
-  "sections": { ... },
-  "footer": { "left": "...", "center": "...", "right": "..." }
-}
-```
+Company users may only access `tds` and `msds` for products in their `allowedProducts` list. `formula`, `label`, and `coa` require superadmin.
 
 | Code | Error key               | Meaning |
 |------|-------------------------|---------|
@@ -446,22 +466,6 @@ All endpoints require `superadmin` role.
 | DELETE | `/inventory/:id`      | Delete item |
 | POST   | `/inventory/reset`    | Remove user-added items; restore 23 defaults |
 
-#### Inventory item shape
-```json
-{
-  "id":        "uuid",
-  "material":  "Sodium Nitrite (NaNO₂)",
-  "unit":      "Kg",
-  "price":     48.00,
-  "stock":     "",
-  "supplier":  "",
-  "sortOrder": 17,
-  "updatedAt": "2026-04-24T10:00:00.000Z"
-}
-```
-
-`unit` must be `"Kg"` or `"L"`.
-
 ---
 
 ### Quotations
@@ -471,47 +475,42 @@ All endpoints require `superadmin` role.
 | Method | Path                | Description |
 |--------|---------------------|-------------|
 | POST   | `/quotations`       | Create quotation (auto-assigns `UNIK-YYYY-NNN`) |
-| GET    | `/quotations`       | List quotations (paginated, filterable) |
+| GET    | `/quotations`       | List quotations (paginated, filterable by `customerName`) |
 | GET    | `/quotations/:id`   | Fetch a single quotation with line items |
 
-#### POST `/quotations`
-```json
-// Request
-{
-  "customerName": "Rane Group",
-  "quotDate": "2026-04-24",
-  "validDays": 30,
-  "lineItems": [
-    {
-      "catalogId": 6,
-      "description": "Iron Phosphate",
-      "code": "UNI-IRON PHOSPHATE",
-      "qty": 500,
-      "rate": 130
-    }
-  ]
-}
+---
 
-// Response 201
+### Batches
+
+All endpoints require `superadmin` role.
+
+| Method | Path                               | Description |
+|--------|------------------------------------|-------------|
+| POST   | `/batches`                         | Create batch record with JSONB snapshots |
+| GET    | `/batches`                         | List batches (filterable, paginated) |
+| GET    | `/batches/:batchNumber`            | Full batch detail including snapshots |
+| PATCH  | `/batches/:batchNumber/coa`        | Save CoA snapshot to an existing batch |
+| DELETE | `/batches/:batchNumber/coa`        | Clear CoA snapshot |
+| DELETE | `/batches/:id`                     | Permanently delete batch record |
+
+#### POST `/batches`
+
+Batch creation captures three immutable JSONB snapshots at the moment of production:
+
+```json
 {
-  "id": "uuid",
-  "quotNumber": "UNIK-2026-001",
-  "customerName": "Rane Group",
-  "quotDate": "2026-04-24",
-  "validDays": 30,
-  "validUntil": "2026-05-24",
-  "createdAt": "2026-04-24T10:00:00.000Z",
-  "lineItems": [ { ... } ]
+  "companyKey": "rane",
+  "productKey": "uniklean-sp",
+  "productionDate": "2026-05-01",
+  "volume": 200,
+  "formulationSnapshot": { ... },
+  "labelSnapshot": { "batchNumber": "RA-20260501-001", ... },
+  "costSummary": { "totalCost": 4200, "costPerLitre": 21, ... },
+  "paymentTermDays": 45
 }
 ```
 
-#### GET `/quotations` query params
-
-| Param          | Type   | Description |
-|----------------|--------|-------------|
-| `page`         | number | Page number (default: 1) |
-| `limit`        | number | Per page, max 100 (default: 20) |
-| `customerName` | string | Partial match filter |
+The `batchNumber` (`XX-YYYYMMDD-NNN`) is generated atomically by the server.
 
 ---
 
@@ -528,37 +527,73 @@ All endpoints require `superadmin` role.
 | POST   | `/companies/:id/rotate-token`   | Revoke old token, generate new one |
 | DELETE | `/companies/:id`                | Delete company + cascade all access rows |
 
-#### POST `/companies`
-```json
-// Request
-{
-  "key": "toyota",
-  "displayName": "Toyota India",
-  "allowedProducts": ["uniklean-sp", "uniklean-fe"],
-  "tokenExpiresAt": "2027-01-01T00:00:00Z"   // optional
-}
+---
 
-// Response 201
-{
-  "id": "uuid",
-  "key": "toyota",
-  "displayName": "Toyota India",
-  "allowedProducts": ["uniklean-sp", "uniklean-fe"],
-  "accessToken": "<generated-token>",
-  "tokenExpiresAt": "2027-01-01T00:00:00.000Z",
-  "createdAt": "..."
-}
-```
+### Company Pricing
 
-Creating a company also creates a companion `users` row with `role: 'company'`. The initial password for the company user is the access token.
+All endpoints require `superadmin` role.
 
-#### POST `/companies/:id/rotate-token`
-```json
-// Response 200
-{ "accessToken": "<new-token>" }
-```
+| Method | Path                       | Description |
+|--------|----------------------------|-------------|
+| GET    | `/companies/:id/pricing`   | Get custom product pricing for a company |
+| PUT    | `/companies/:id/pricing`   | Upsert price overrides for one or more products |
 
-Send the new token to the company for use in `/access/:token` QR links or direct login.
+---
+
+### Formulation Variants
+
+| Method | Path                                          | Auth | Description |
+|--------|-----------------------------------------------|------|-------------|
+| GET    | `/formulation-variants?productKey=<key>`      | Any  | List variants for a product |
+| GET    | `/formulation-variants/:variantId`            | Any  | Single variant with components |
+| POST   | `/formulation-variants`                       | SA   | Create variant header |
+| PUT    | `/formulation-variants/:variantId`            | SA   | Update variant header |
+| PUT    | `/formulation-variants/:variantId/components` | SA   | Replace component list |
+| DELETE | `/formulation-variants/:variantId`            | SA   | Delete variant |
+
+SA = superadmin required. "Any" = any logged-in user.
+
+Returns 409 if a variant already exists for the same `productKey` + `companyKey` combination.
+
+---
+
+### Staff
+
+All endpoints require `superadmin` role.
+
+| Method | Path            | Description |
+|--------|-----------------|-------------|
+| GET    | `/staff`        | List all staff members |
+| GET    | `/staff/:id`    | Get staff member by id |
+| POST   | `/staff`        | Add a new staff member |
+| PUT    | `/staff/:id`    | Update staff member |
+| DELETE | `/staff/:id`    | Remove staff member |
+
+---
+
+### Salary Records
+
+All endpoints require `superadmin` role.
+
+| Method | Path                    | Description |
+|--------|-------------------------|-------------|
+| GET    | `/salary-records`       | List all salary records (filterable by staff, month, year) |
+| GET    | `/salary-records/:id`   | Get a single salary record |
+| POST   | `/salary-records`       | Create a salary payment record |
+
+---
+
+### Vendors
+
+All endpoints require `superadmin` role.
+
+| Method | Path              | Description |
+|--------|-------------------|-------------|
+| GET    | `/vendors`        | List all vendors |
+| GET    | `/vendors/:id`    | Get vendor by id |
+| POST   | `/vendors`        | Add a new vendor |
+| PUT    | `/vendors/:id`    | Update vendor |
+| DELETE | `/vendors/:id`    | Remove vendor |
 
 ---
 
@@ -582,21 +617,21 @@ All endpoints require `superadmin` role.
 | `page`       | number | Default: 1 |
 | `limit`      | number | Max 500, default: 50 |
 
-#### GET `/analytics/summary`
-```json
-{
-  "windowDays": 30,
-  "byCompany": [
-    { "companyKey": "rane", "accesses": 142 }
-  ],
-  "byProduct": [
-    { "productKey": "uniklean-sp", "accesses": 89 }
-  ],
-  "daily": [
-    { "day": "2026-04-01", "accesses": 12 }
-  ]
-}
-```
+---
+
+### PDF Generation
+
+All endpoints require `superadmin` role. Responses are `application/pdf` with a `Content-Disposition: attachment` header.
+
+| Method | Path              | Description |
+|--------|-------------------|-------------|
+| POST   | `/pdf/quotation`  | Generate quotation PDF |
+| POST   | `/pdf/tds`        | Generate TDS document PDF |
+| POST   | `/pdf/msds`       | Generate MSDS document PDF |
+| POST   | `/pdf/coa`        | Generate CoA document PDF |
+| POST   | `/pdf/batch`      | Generate batch record PDF |
+
+PDFs are rendered server-side using Puppeteer + Handlebars templates. The module lives at `src/modules/pdf/` and has a non-standard directory layout (templates/, partials/, styles/, helpers/).
 
 ---
 
@@ -612,7 +647,7 @@ Browser                           API
   │                                │ 3. bcrypt.compare(password, hash)
   │                                │ 4. Build AuthUser (load company + product access)
   │                                │ 5. Generate raw refreshToken (32-byte base64url)
-  │                                │ 6. Store bcrypt(refreshToken) in refresh_tokens table
+  │                                │ 6. Store bcrypt(refreshToken) in refresh_tokens
   │                                │ 7. Sign accessToken (RS256, 15m)
   │                                │ 8. Sign refreshToken JWT wrapping token id
   │<── 200 { user } ───────────────│
@@ -633,8 +668,6 @@ Browser                           API
   │<── 200 { user, redirectTo } ───│
   │    Set-Cookie: accessToken     │
   │    Set-Cookie: refreshToken    │
-  │                                │
-  ├─ Redirect to redirectTo ───────│
 ```
 
 ### Token Refresh Flow
@@ -668,7 +701,7 @@ requireSuperAdmin    → 403 if role ≠ 'superadmin'  (admin-only routes)
     │  OR
 checkProductAccess   → 403 if company user lacks access to productLine or docType
     │
-logAccess            → fire-and-forget INSERT into access_log
+logAccess            → fire-and-forget INSERT into access_log (onSend hook)
     │
 route handler
 ```
@@ -677,19 +710,25 @@ route handler
 
 ## Role-Based Access Control
 
-| Resource                   | `superadmin` | `company` |
-|----------------------------|:------------:|:---------:|
-| Dashboard / index          | ✅           | ❌        |
-| TDS, MSDS (allowed product) | ✅           | ✅        |
-| TDS, MSDS (blocked product) | ✅           | ❌        |
-| Formula / Label / CoA      | ✅           | ❌        |
-| Inventory CRUD             | ✅           | ❌        |
-| Rates & Quotations         | ✅           | ❌        |
-| Company management         | ✅           | ❌        |
-| Analytics                  | ✅           | ❌        |
-| Public safety portal (`/safety/:line`) | ✅ | ✅ (no auth) |
+| Resource                            | `superadmin` | `company` |
+|-------------------------------------|:------------:|:---------:|
+| Dashboard / all tools               | ✅           | ❌        |
+| TDS, MSDS (allowed product)         | ✅           | ✅        |
+| TDS, MSDS (not in allowedProducts)  | ✅           | ❌        |
+| Formula / Label / CoA               | ✅           | ❌        |
+| Inventory CRUD                      | ✅           | ❌        |
+| Quotations                          | ✅           | ❌        |
+| Batches                             | ✅           | ❌        |
+| Companies & pricing                 | ✅           | ❌        |
+| Formulation variants (read)         | ✅           | ✅        |
+| Formulation variants (write)        | ✅           | ❌        |
+| Staff / salary records              | ✅           | ❌        |
+| Vendors                             | ✅           | ❌        |
+| Analytics                           | ✅           | ❌        |
+| PDF generation                      | ✅           | ❌        |
+| Public safety portal (`/safety/:line`) | ✅       | ✅ (no auth) |
 
-Company product access is stored in `company_product_access` and loaded into the JWT payload at login. The API validates access independently of the frontend — the frontend RBAC guards are a UX layer only.
+Company product access is stored in `company_product_access` and embedded in the JWT at login. The API validates access independently of the frontend — frontend guards are a UX layer only.
 
 ---
 
@@ -707,7 +746,7 @@ GET /products/:line/:type
 
 Cache is **invalidated** on `PUT /products/:line/:type`.
 
-Redis is **entirely optional** — if `REDIS_URL` is not set the server starts normally and all reads go directly to Postgres. This means you can go to production without Redis initially and add it later with zero code changes.
+Redis is **entirely optional** — if `REDIS_URL` is not set, all reads go directly to Postgres. Add Redis later with zero code changes.
 
 ---
 
@@ -733,20 +772,17 @@ Redis is **entirely optional** — if `REDIS_URL` is not set the server starts n
 
 ## Testing
 
-Integration tests live in `tests/integration/`. They run against a **real PostgreSQL database** — not mocks. This is intentional: the project's CLAUDE.md notes that mock-DB tests led to a production incident where a migration passed tests but failed in prod.
+Integration tests live in `tests/integration/`. They run against a **real PostgreSQL database** — never mocks. Run `npm run seed` before running tests.
 
 ```bash
-# Ensure your .env.local points to a test database, then:
+npm run seed
 npm test
+
+# Single file
+npx vitest run tests/integration/auth.test.ts
 ```
 
-Test files:
-
-| File | Covers |
-|------|--------|
-| `auth.test.ts`      | Login, token, me, logout, refresh, rate limit |
-| `products.test.ts`  | RBAC per role, access gates, 401/403/404 cases |
-| `inventory.test.ts` | Full CRUD cycle, reset, validation errors |
+Tests run sequentially (`singleFork: true`) because they share DB state. Never add `parallel` or `concurrent` to vitest config.
 
 ---
 
@@ -758,32 +794,14 @@ Test files:
 - [ ] Set `COOKIE_DOMAIN` to your actual domain (e.g. `macrocoats.in`)
 - [ ] Set `ALLOWED_ORIGIN` to the exact frontend URL
 - [ ] Rotate all seed tokens via `POST /v1/companies/:id/rotate-token` for each company
-- [ ] Change the superadmin password in the DB (`UPDATE users SET password_hash = ... WHERE username = 'admin'`)
+- [ ] Change the superadmin password in the DB
 - [ ] Remove or restrict the `db:reset` script from production builds
 - [ ] Ensure `private.pem` is never committed to source control (it is in `.gitignore`)
-- [ ] Set `NODE_ENV=production` — disables pino-pretty, enables prod optimisations
+- [ ] Set `NODE_ENV=production`
 - [ ] Set up Postgres with SSL (`?sslmode=require` in `DATABASE_URL`)
-- [ ] Deploy behind a reverse proxy (nginx/Caddy) — set `trustProxy: true` is already enabled
-
-### Frontend Integration Checklist
-
-When pointing the Vite frontend at this API, make these changes in the frontend codebase:
-
-1. **Remove MSW** — delete `src/mocks/`, remove the MSW boot from `src/main.jsx`
-2. **Enable cookie credentials** — `axios.defaults.withCredentials = true`
-3. **Replace hardcoded auth** — `LoginPage` calls `POST /v1/auth/login`; `AccessPage` calls `POST /v1/auth/token`
-4. **Session rehydration** — on app load, call `GET /v1/auth/me` to restore user instead of relying on Zustand `persist`
-5. **Move inventory off localStorage** — `useInventoryStore` should use React Query (`GET /v1/inventory`) with optimistic mutations
-6. **Persist quotations** — `RatesPage` should call `POST /v1/quotations` instead of `localStorage` counter
-7. **Set `VITE_API_URL`** in `.env.local`:
-   ```bash
-   VITE_API_URL=http://localhost:3001/v1
-   VITE_API_MODE=live   # remove 'mock' to skip MSW boot
-   ```
+- [ ] Deploy behind a reverse proxy (nginx/Caddy) — `trustProxy: true` is already enabled
 
 ---
-
-## Contact
 
 **Macro Coats Pvt Ltd** · Chennai · India
 `info@macrocoats.in` · `+91-9884080377`
