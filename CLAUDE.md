@@ -24,7 +24,7 @@ npm run db:push        # push schema to DB (dev, no migration files)
 npm run db:generate    # generate Drizzle migration files
 npm run db:migrate     # run pending migrations
 npm run db:studio      # open Drizzle Studio GUI
-npm run seed           # idempotent seed (products, inventory, companies)
+npm run seed           # idempotent seed (products, inventory, companies, formulation-variants)
 npm run db:reset       # dev-only: drop all tables
 
 # Build
@@ -95,13 +95,13 @@ Routes never import from other modules' services. Cross-cutting concerns (auth, 
 | `company-pricing` | GET /companies/:id/pricing, PUT /companies/:id/pricing |
 | `formulation-variants` | GET /formulation-variants, GET /formulation-variants/:variantId, POST /formulation-variants, PUT /formulation-variants/:variantId, PUT /formulation-variants/:variantId/components, DELETE /formulation-variants/:variantId |
 | `quotations` | POST /quotations, GET /quotations, GET /quotations/:id |
-| `batches` | POST /batches, GET /batches, GET /batches/:batchNumber, DELETE /batches/:id |
+| `batches` | POST /batches, GET /batches, GET /batches/:batchNumber, PATCH /batches/:batchNumber/coa, DELETE /batches/:batchNumber/coa, DELETE /batches/:id |
 | `inventory` | GET /inventory, POST /inventory, PATCH /inventory/:id, DELETE /inventory/:id, POST /inventory/reset |
 | `analytics` | GET /analytics/access-log, GET /analytics/summary |
 | `salaryRecords` | GET /salary-records, GET /salary-records/:id, POST /salary-records |
 | `staff` | GET /staff, GET /staff/:id, POST /staff, PUT /staff/:id, DELETE /staff/:id |
 | `vendors` | GET /vendors, GET /vendors/:id, POST /vendors, PUT /vendors/:id, DELETE /vendors/:id |
-| `pdf` | POST /pdf/quotation, POST /pdf/batch-label |
+| `pdf` | POST /pdf/quotation, POST /pdf/tds, POST /pdf/msds, POST /pdf/coa, POST /pdf/batch |
 
 All endpoints except auth are `superadmin`-only, except product document reads which use `checkProductAccess` for company users.
 
@@ -109,7 +109,7 @@ All endpoints except auth are `superadmin`-only, except product document reads w
 
 ### Middleware
 
-Four preHandler / hook functions in `src/middleware/`:
+Five middleware functions in `src/middleware/`:
 
 - **`authenticate.ts`** — global `onRequest`; reads `accessToken` cookie, decodes RS256 JWT, sets `request.authUser` or null. Never throws.
 - **`requireAuth.ts`** — preHandler; returns 401 if `request.authUser` is null.
@@ -172,7 +172,7 @@ Integration tests use a real PostgreSQL database (the same one in `.env.local`).
 | `companies` | Client companies; holds `accessToken` + `tokenExpiresAt` for magic-link login |
 | `company_product_access` | Junction: which products each company may view |
 | `company_product_prices` | Per-company special pricing for specific products |
-| `products` | Product line definitions (5 chemical products) |
+| `products` | Product line definitions (9 chemical products) |
 | `product_documents` | TDS/MSDS/Formula/Label/COA per product (JSONB body) |
 | `product_formulation_variants` | Product variant headers (e.g. customized formulations) |
 | `formulation_variant_components` | Line items (materials) for formulation variants |
@@ -195,6 +195,7 @@ Integration tests use a real PostgreSQL database (the same one in `.env.local`).
 - `index.ts` — entry point; runs all seeds in order
 - `products.seed.ts` — 9 product lines (uniklean-sp, uniklean-fe, uniprotect-oil, uniflow-ecm, unicool-al, unikoat-lt-700, unisolve-h3, unipass, uniktonner)
 - `companies.seed.ts` — test companies (Rane Madras, TVS, Akshaya) with product access mappings
+- `formulationVariants.seed.ts` — formulation variant headers and components
 - `inventory.seed.ts` — 23 factory-default raw materials
 - `reset.ts` — dev-only; drops all tables (invoked by `npm run db:reset`)
 
