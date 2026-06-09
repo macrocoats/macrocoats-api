@@ -23,6 +23,9 @@ export const PRODUCT_KEYS = [
   'unisolve-h3',
   'unipass',
   'uniktonner',
+  'corroklean',
+  'corrcut-100',
+  'corrucut-500',
 ] as const
 export type ProductKey = typeof PRODUCT_KEYS[number]
 
