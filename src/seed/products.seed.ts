@@ -2627,17 +2627,17 @@ const DOCS: Array<{
     },
     body: {
       grade:       'Industrial Grade',
-      description: 'CORROKLEAN is a fast-drying, alcohol-based cleaning and degreasing fluid formulated for the removal of light oils, greases, fingerprints, flux residues, and ionic surface contaminants from metal and general industrial substrates. Used neat or diluted 1:1 with DI water, it delivers rapid, residue-free cleaning at ambient temperature by dip or spray application. The fast-evaporating alcohol carrier leaves no film or residue, making it suitable for pre-inspection, pre-coating, and precision cleaning stages.',
+      description: 'CORROKLEAN is a fast-drying, solvent-based cleaning and degreasing fluid formulated for the removal of light oils, greases, fingerprints, flux residues, and ionic surface contaminants from metal and general industrial substrates. Used neat or diluted 1:1 with DI water, it delivers rapid, residue-free cleaning at ambient temperature by dip or spray application. The fast-evaporating solvent carrier leaves no film or residue, making it suitable for pre-inspection, pre-coating, and precision cleaning stages.',
       sections: {
         features: [
-          { head: 'Fast-Drying Formula',       body: 'Alcohol-based carrier evaporates rapidly at ambient temperature — surface dry within 2–5 minutes with no wiping or rinsing required' },
+          { head: 'Fast-Drying Formula',       body: 'Solvent carrier evaporates rapidly at ambient temperature — surface dry within 2–5 minutes with no wiping or rinsing required' },
           { head: 'Residue-Free Cleaning',     body: 'Leaves no oily film or residue after evaporation — ideal for inspection, bonding, and pre-coating applications' },
           { head: 'Ready-to-Use',              body: 'Supplied as a ready-to-use concentrate; use neat for heavy soils or dilute 1:1 with DI water for light-duty cleaning' },
           { head: 'Multi-surface Compatible',  body: 'Suitable for mild steel, stainless steel, aluminium, copper alloys, glass, and most plastics — verify compatibility on sensitive substrates' },
         ],
         physicalProperties: [
           { property: 'Appearance',           value: 'Clear, colourless liquid',  unit: '—',    method: 'Visual' },
-          { property: 'Odour',                value: 'Characteristic alcohol / solvent', unit: '—', method: 'Organoleptic' },
+          { property: 'Odour',                value: 'Characteristic solvent odour', unit: '—', method: 'Organoleptic' },
           { property: 'Flash Point',          value: '15 – 20',                   unit: '°C',   method: 'ASTM D56' },
           { property: 'Density (25 °C)',      value: '0.85 – 0.90',               unit: 'g/mL', method: 'ISO 2811' },
           { property: 'Boiling Point',        value: '80 – 84',                   unit: '°C',   method: '—' },
@@ -2686,7 +2686,7 @@ const DOCS: Array<{
       signalWord: 'Warning',
       sections: {
         identification: {
-          productType:  'Alcohol-based metal and surface cleaning and degreasing fluid',
+          productType:  'Solvent-based metal and surface cleaning and degreasing fluid',
           intendedUse:  'Fast-drying surface cleaning and degreasing of metal and general industrial substrates; applied by dip or spray',
           manufacturer: 'Macro Coats Pvt Ltd, Chennai, Tamil Nadu, India',
           emergency:    'AIIMS Poison Control: 1800-11-6117 (Toll-Free)',
@@ -2718,7 +2718,7 @@ const DOCS: Array<{
         },
         fireFighting: {
           flammability:       'Highly flammable liquid — flash point ~15–20 °C (GHS Cat 2)',
-          extinguishingMedia: 'CO₂, dry powder, alcohol-resistant foam. Do NOT use direct water jet on burning liquid.',
+          extinguishingMedia: 'CO₂, dry powder, foam. Do NOT use direct water jet on burning liquid.',
           fireHazard:         'Flammable vapours may travel to ignition source and flash back. Can form explosive vapour-air mixtures.',
           ppe:                'SCBA and full fire-resistant protective clothing.',
         },
@@ -2744,7 +2744,7 @@ const DOCS: Array<{
         },
         physical: [
           { key: 'Appearance',       val: 'Clear, colourless liquid' },
-          { key: 'Odour',            val: 'Characteristic alcohol / solvent' },
+          { key: 'Odour',            val: 'Characteristic solvent odour' },
           { key: 'Flash Point',      val: '~15 – 20 °C (ASTM D56)' },
           { key: 'Density (25 °C)',  val: '0.85 – 0.90 g/mL' },
           { key: 'Boiling Point',    val: '80 – 84 °C' },
