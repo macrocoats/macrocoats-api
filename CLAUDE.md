@@ -109,10 +109,9 @@ All endpoints except auth are `superadmin`-only, except product document reads w
 
 ### Middleware
 
-Five middleware functions in `src/middleware/`:
+Four middleware files in `src/middleware/` (five functions):
 
-- **`authenticate.ts`** — global `onRequest`; reads `accessToken` cookie, decodes RS256 JWT, sets `request.authUser` or null. Never throws.
-- **`requireAuth.ts`** — preHandler; returns 401 if `request.authUser` is null.
+- **`authenticate.ts`** — global `onRequest`; reads `accessToken` cookie, decodes RS256 JWT, sets `request.authUser` or null. Never throws. Also exports `requireAuth` preHandler (returns 401 if `request.authUser` is null).
 - **`requireSuperAdmin.ts`** — preHandler; returns 403 if `request.authUser.role !== 'superadmin'`.
 - **`checkProductAccess.ts`** — preHandler; returns 403 if company user requests a `RESTRICTED_DOC_TYPE` (formula/label/coa) or a product not in their `allowedProducts`.
 - **`logAccess.ts`** — `onSend` hook; fire-and-forget INSERT into `access_log` after response is sent. Captures userId, companyKey, productKey, docType, IP, userAgent. Never blocks response; errors silently.
