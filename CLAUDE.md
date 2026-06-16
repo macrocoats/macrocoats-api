@@ -176,7 +176,7 @@ Integration tests use a real PostgreSQL database (the same one in `.env.local`).
 | `product_documents` | TDS/MSDS/Formula/Label/COA per product (JSONB body) |
 | `product_formulation_variants` | Product variant headers (e.g. customized formulations) |
 | `formulation_variant_components` | Line items (materials) for formulation variants |
-| `inventory` | Raw materials: price, stock, supplier, reorder threshold |
+| `inventory_items` | Raw materials: price, stock, supplier, reorder threshold |
 | `quotations` | Sales quotations with auto-generated UNIK-YYYY-NNN numbers |
 | `quotation_line_items` | Line items in a quotation (FK → quotations, cascade delete) |
 | `quotation_sequences` | Per-year atomic counter for quotation numbering |
@@ -184,7 +184,7 @@ Integration tests use a real PostgreSQL database (the same one in `.env.local`).
 | `batch_sequences` | Per-company per-day atomic counter for batch numbering |
 | `access_log` | Audit trail: who accessed which product/docType, when, from where |
 | `refresh_tokens` | Valid refresh token bcrypt hashes; null `revokedAt` = still valid |
-| `salary_records` | Staff salary payments and records |
+| `employee_salary_records` | Staff salary payments and records |
 | `staff` | Employee information |
 | `vendors` | Vendor/supplier information |
 
@@ -222,7 +222,7 @@ Always use Drizzle's generator — **never hand-write migration SQL files**. Han
 
 **Before generating a new migration:**
 - Run `npm run db:studio` or inspect the DB to check if the column/table already exists — avoid duplicate-column errors from re-applying changes that were applied manually earlier.
-- Check `drizzle/` folder: every `.sql` file must have a matching entry in `drizzle/meta/_journal.json`. If they are out of sync, resolve that before generating new migrations.
+- Check `src/db/migrations/` folder: every `.sql` file must have a matching entry in `src/db/migrations/meta/_journal.json`. If they are out of sync, resolve that before generating new migrations.
 
 ### Entity relationship rules
 
@@ -234,7 +234,7 @@ Always use Drizzle's generator — **never hand-write migration SQL files**. Han
 
 If a migration left tables partially created or the journal is out of sync:
 1. Inspect actual DB state: `npm run db:studio`
-2. Compare against `drizzle/meta/_journal.json` to identify unregistered files
+2. Compare against `src/db/migrations/meta/_journal.json` to identify unregistered files
 3. Use `npm run db:generate` to create a corrective migration — do not manually edit `.sql` files in `drizzle/`
 4. As a last resort in dev only: `npm run db:reset` then `npm run db:migrate` then `npm run seed`
 
