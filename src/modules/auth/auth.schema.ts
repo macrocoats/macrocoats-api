@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 export const loginSchema = z.object({
-  username: z.string().min(1).max(80),
+  username: z.string().min(1).max(30).regex(/^[a-z0-9_.-]+$/),
   password: z.string().min(1).max(200),
 })
 

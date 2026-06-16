@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, text, timestamp, index } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
 import { companies } from './companies.js'
 import { accessLog } from './accessLog.js'
@@ -13,7 +13,9 @@ export const users = pgTable('users', {
   companyId:    uuid('company_id').references(() => companies.id, { onDelete: 'set null' }),
   createdAt:    timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt:    timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
-})
+}, (t) => [
+  index('users_company_id_idx').on(t.companyId),
+])
 
 export const usersRelations = relations(users, ({ one, many }) => ({
   company:       one(companies, { fields: [users.companyId], references: [companies.id] }),

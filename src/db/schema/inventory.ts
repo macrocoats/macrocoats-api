@@ -4,6 +4,7 @@ import { users } from './users.js'
 
 export const inventoryItems = pgTable('inventory_items', {
   id:        uuid('id').primaryKey().defaultRandom(),
+  // TODO: add functional index `lower(material)` via manual migration for case-insensitive batch deduction lookups
   material:  text('material').notNull(),
   unit:      text('unit', { enum: ['Kg', 'L'] }).notNull(),
   price:     numeric('price', { precision: 10, scale: 2 }).notNull().default('0'),

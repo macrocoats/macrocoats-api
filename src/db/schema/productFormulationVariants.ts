@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, boolean, timestamp, unique, jsonb } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, text, boolean, timestamp, unique, jsonb, index } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
 import { products } from './products.js'
 import { companies } from './companies.js'
@@ -16,6 +16,8 @@ export const productFormulationVariants = pgTable('product_formulation_variants'
   createdAt:   timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [
   unique('pfv_product_company_unique').on(t.productKey, t.companyId),
+  index('pfv_product_key_idx').on(t.productKey),
+  index('pfv_company_id_idx').on(t.companyId),
 ])
 
 export const productFormulationVariantsRelations = relations(productFormulationVariants, ({ one, many }) => ({

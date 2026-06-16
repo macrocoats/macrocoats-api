@@ -47,6 +47,10 @@ export async function cacheDel(key: string): Promise<void> {
 export async function cacheDelPattern(pattern: string): Promise<void> {
   const redis = getRedis()
   if (!redis) return
-  const keys = await redis.keys(pattern)
-  if (keys.length) await redis.del(...keys)
+  let cursor = '0'
+  do {
+    const [next, keys] = await redis.scan(cursor, 'MATCH', pattern, 'COUNT', 100)
+    cursor = next
+    if (keys.length) await redis.del(...keys)
+  } while (cursor !== '0')
 }

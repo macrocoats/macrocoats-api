@@ -15,6 +15,8 @@ export const accessLog = pgTable('access_log', {
 }, (t) => [
   index('access_log_at_idx').on(t.at),
   index('access_log_company_key_idx').on(t.companyKey),
+  index('access_log_user_id_idx').on(t.userId),
+  index('access_log_at_company_key_idx').on(t.at, t.companyKey),
 ])
 
 export const accessLogRelations = relations(accessLog, ({ one }) => ({

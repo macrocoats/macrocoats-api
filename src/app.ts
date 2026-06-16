@@ -27,6 +27,7 @@ export async function buildApp() {
         : undefined,
     },
     trustProxy: true,   // needed for accurate req.ip behind nginx/load balancer
+    bodyLimit:  1_048_576,   // 1 MB — prevent oversized JSONB payloads
   })
 
   // ── Core plugins ──────────────────────────────────────────────────────────

@@ -1,6 +1,6 @@
 import { eq, ilike, and, gte, lte, desc, count, sql } from 'drizzle-orm'
 import { db } from '../../db/index.js'
-import { batches, inventoryItems } from '../../db/schema/index.js'
+import { batches } from '../../db/schema/index.js'
 import { nextBatchNumber } from '../../utils/batchNumber.js'
 import type { CreateBatchBody, ListBatchesQuery, SaveCoaSnapshotBody } from './batches.schema.js'
 
@@ -31,23 +31,26 @@ export async function createBatch(data: CreateBatchBody, createdBy: string | nul
     const productionDate = new Date().toISOString().slice(0, 10)
 
     // ── Inventory deduction ────────────────────────────────────────────────
-    for (const component of data.formulationSnapshot.components) {
-      if (!component.quantityUsed || component.quantityUsed <= 0) continue
+    // Single atomic VALUES-CTE UPDATE eliminates the N+1 loop and the
+    // read-modify-write race: `stock_qty = stock_qty - qty` is a delta applied
+    // at the row lock level, so two concurrent batch creations using the same
+    // material will serialize correctly instead of silently overwriting each other.
+    const activeComponents = data.formulationSnapshot.components.filter(
+      (c) => c.quantityUsed && c.quantityUsed > 0,
+    )
 
-      const [item] = await tx
-        .select({ id: inventoryItems.id, stockQty: inventoryItems.stockQty })
-        .from(inventoryItems)
-        .where(sql`lower(${inventoryItems.material}) = lower(${component.name})`)
-        .limit(1)
-
-      if (!item || item.stockQty === null) continue  // not tracked — skip
-
-      const remaining = Number(item.stockQty) - component.quantityUsed
-
-      await tx
-        .update(inventoryItems)
-        .set({ stockQty: String(remaining) })
-        .where(eq(inventoryItems.id, item.id))
+    if (activeComponents.length > 0) {
+      const valuesList = sql.join(
+        activeComponents.map((c) => sql`(${c.name.toLowerCase()}, ${c.quantityUsed}::numeric)`),
+        sql`, `,
+      )
+      await tx.execute(sql`
+        UPDATE inventory_items AS t
+        SET    stock_qty = t.stock_qty - v.qty
+        FROM  (VALUES ${valuesList}) AS v(name, qty)
+        WHERE  lower(t.material) = v.name
+          AND  t.stock_qty IS NOT NULL
+      `)
     }
 
     const labelSnapshotWithBatch = {

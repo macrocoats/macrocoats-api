@@ -126,10 +126,13 @@ export async function rotateRefreshToken(
     return null
   }
 
-  // Look up the refresh token row by id (jti)
-  const [rtRow] = await db
-    .select()
-    .from(refreshTokens)
+  // Atomically revoke in a single statement — eliminates the token replay window.
+  // Two concurrent /auth/refresh requests with the same token will serialize at the
+  // row lock; only the first UPDATE finds revoked_at IS NULL and wins. The second
+  // gets 0 rows back and returns null, even if both requests arrive simultaneously.
+  const [revoked] = await db
+    .update(refreshTokens)
+    .set({ revokedAt: new Date() })
     .where(
       and(
         eq(refreshTokens.id, payload.jti),
@@ -137,21 +140,15 @@ export async function rotateRefreshToken(
         gt(refreshTokens.expiresAt, new Date()),
       ),
     )
+    .returning({ userId: refreshTokens.userId, tokenHash: refreshTokens.tokenHash })
 
-  if (!rtRow) return null
+  if (!revoked) return null
 
-  // Verify the raw token against the stored hash
-  const valid = await verifyTokenHash(rawOldRefresh, rtRow.tokenHash)
+  // Verify the raw token against the hash of the row we just revoked.
+  const valid = await verifyTokenHash(rawOldRefresh, revoked.tokenHash)
   if (!valid) return null
 
-  // Revoke old token
-  await db
-    .update(refreshTokens)
-    .set({ revokedAt: new Date() })
-    .where(eq(refreshTokens.id, rtRow.id))
-
-  // Load user and issue new pair
-  const [user] = await db.select().from(users).where(eq(users.id, rtRow.userId))
+  const [user] = await db.select().from(users).where(eq(users.id, revoked.userId))
   if (!user) return null
 
   return issueTokens(user)

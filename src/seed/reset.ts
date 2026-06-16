@@ -17,11 +17,8 @@ async function reset() {
   console.log('⚠️  Resetting database (development only)...')
 
   await db.execute(sql`
-    DROP TABLE IF EXISTS
-      access_log, refresh_tokens, quotation_line_items, quotation_sequences,
-      quotations, inventory_items, product_documents, company_product_access,
-      products, users, companies
-    CASCADE
+    DROP SCHEMA public CASCADE;
+    CREATE SCHEMA public;
   `)
 
   console.log('   Tables dropped. Run `npm run db:push` then `npm run seed`.')

@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, integer, timestamp, unique } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, text, integer, timestamp, unique, index } from 'drizzle-orm/pg-core'
 
 export const salaryRecords = pgTable('employee_salary_records', {
   id:              uuid('id').primaryKey().defaultRandom(),
@@ -26,6 +26,7 @@ export const salaryRecords = pgTable('employee_salary_records', {
   createdAt:       timestamp('created_at',   { withTimezone: true }).notNull().defaultNow(),
 }, (t) => ({
   uniqPerMonth: unique('uq_salary_record_staff_month_year').on(t.staffId, t.month, t.year),
+  srStaffIdx:   index('sr_staff_id_idx').on(t.staffId),
 }))
 
 export type SalaryRecord    = typeof salaryRecords.$inferSelect

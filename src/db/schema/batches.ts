@@ -27,6 +27,7 @@ export const batches = pgTable('batches', {
   createdAt:           timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [
   index('batches_company_name_idx').on(t.companyName),
+  index('batches_created_by_idx').on(t.createdBy),
 ])
 
 export const batchesRelations = relations(batches, ({ one }) => ({

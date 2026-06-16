@@ -34,7 +34,9 @@ export const quotationLineItems = pgTable('quotation_line_items', {
   code:         text('code').notNull(),
   qty:          numeric('qty', { precision: 12, scale: 3 }),  // nullable
   rate:         numeric('rate', { precision: 10, scale: 2 }).notNull(),
-})
+}, (t) => [
+  index('qli_quotation_id_idx').on(t.quotationId),
+])
 
 export const quotationLineItemsRelations = relations(quotationLineItems, ({ one }) => ({
   quotation: one(quotations, { fields: [quotationLineItems.quotationId], references: [quotations.id] }),
