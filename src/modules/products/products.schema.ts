@@ -17,5 +17,11 @@ export const updateDocumentSchema = z.object({
   }).optional(),
 })
 
-export type ProductParams    = z.infer<typeof productParamsSchema>
+export const transitionStatusSchema = z.object({
+  status: z.enum(['draft', 'pending_review', 'qa_review', 'published', 'archived']),
+  notes:  z.string().optional(),
+})
+
+export type ProductParams      = z.infer<typeof productParamsSchema>
 export type UpdateDocumentBody = z.infer<typeof updateDocumentSchema>
+export type TransitionStatusBody = z.infer<typeof transitionStatusSchema>

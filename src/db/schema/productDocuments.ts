@@ -14,6 +14,10 @@ export const productDocuments = pgTable(
     /** Complete sections object stored as JSONB — shape varies by docType */
     body:       json('body').notNull().$type<Record<string, unknown>>(),
     footer:     json('footer').notNull().$type<{ left: string; center: string; right: string }>(),
+    status:     text('status', { enum: ['draft', 'pending_review', 'qa_review', 'published', 'archived'] })
+                  .notNull()
+                  .default('published'),
+    createdAt:  timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt:  timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
     updatedBy:  uuid('updated_by').references(() => users.id, { onDelete: 'set null' }),
   },
