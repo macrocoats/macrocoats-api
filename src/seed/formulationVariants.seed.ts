@@ -337,6 +337,23 @@ const HIGH_IPA_COMPONENTS = [
   { materialName: 'Ammonium Hydroxide', percentage: 0.01,  unit: 'L' as const },  // ~20 mL per 100 L
 ]
 
+/**
+ * Low Foam Rust Inhibiting Variant for UNIKLEAN SP.
+ * Percentage-based; DM Water is auto-calculated (~88.18%) so the 8 active
+ * components below (summing to 11.82%) are preserved exactly as specified.
+ */
+const UNIKLEAN_SP_LOW_FOAM_COMPONENTS = [
+  { materialName: 'DM Water',              percentage: null, unit: 'L'  as const },  // auto-calc ~88.18%
+  { materialName: 'TEA',                   percentage: 5.09, unit: 'Kg' as const },
+  { materialName: 'LAE-9',                percentage: 1.70, unit: 'Kg' as const },
+  { materialName: 'LAE-7',                percentage: 1.02, unit: 'Kg' as const },
+  { materialName: 'Sodium Nitrite',         percentage: 1.70, unit: 'Kg' as const },
+  { materialName: 'Sodium Benzoate',        percentage: 1.36, unit: 'Kg' as const },
+  { materialName: 'Sodium Gluconate',       percentage: 0.68, unit: 'Kg' as const },
+  { materialName: 'Sodium Molybdate',       percentage: 0.07, unit: 'Kg' as const },
+  { materialName: 'Silicone-Free Defoamer', percentage: 0.20, unit: 'Kg' as const },
+]
+
 export async function seedFormulationVariants() {
   console.log('🌱 Seeding formulation variants...')
 
@@ -394,6 +411,52 @@ export async function seedFormulationVariants() {
         console.log(`   ✅ Created UNIROLS Standard variant for UNIKOAT LT 700 (id: ${variant.id})`)
         console.log('   ℹ️  Placeholder components inserted — update via /formulation-variants admin UI')
       }
+    }
+  }
+
+  // ── UNIKLEAN SP — Low Foam Rust Inhibiting Variant ───────────────────────
+  const [uniklenSpProduct] = await db
+    .select()
+    .from(products)
+    .where(eq(products.key, 'uniklean-sp'))
+
+  if (!uniklenSpProduct) {
+    console.warn('   ⚠️  Product uniklean-sp not found — skipping Low Foam Rust Inhibiting Variant seed')
+  } else {
+    const [existingLowFoam] = await db
+      .select()
+      .from(productFormulationVariants)
+      .where(
+        and(
+          eq(productFormulationVariants.productKey, 'uniklean-sp'),
+          eq(productFormulationVariants.variantName, 'UNIKLEAN SP – Low Foam Rust Inhibiting Variant'),
+        ),
+      )
+
+    if (existingLowFoam) {
+      console.log(`   ↩️  Low Foam Rust Inhibiting Variant for UNIKLEAN SP already exists (id: ${existingLowFoam.id})`)
+    } else {
+      const [lowFoamVariant] = await db
+        .insert(productFormulationVariants)
+        .values({
+          productKey:  'uniklean-sp',
+          companyId:   null,
+          variantName: 'UNIKLEAN SP – Low Foam Rust Inhibiting Variant',
+          isDefault:   false,
+        })
+        .returning()
+
+      await db.insert(formulationVariantComponents).values(
+        UNIKLEAN_SP_LOW_FOAM_COMPONENTS.map((c, i) => ({
+          variantId:    lowFoamVariant.id,
+          materialName: c.materialName,
+          percentage:   c.percentage !== null ? String(c.percentage) : null,
+          unit:         c.unit,
+          sortOrder:    i,
+        })),
+      )
+
+      console.log(`   ✅ Created Low Foam Rust Inhibiting Variant for UNIKLEAN SP (id: ${lowFoamVariant.id})`)
     }
   }
 

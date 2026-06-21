@@ -90,7 +90,7 @@ Routes never import from other modules' services. Cross-cutting concerns (auth, 
 | Module | Endpoints |
 |---|---|
 | `auth` | POST /auth/login, /auth/token, /auth/refresh, /auth/logout; GET /auth/me |
-| `products` | GET /products, GET /products/:productLine/:docType, PUT /products/:productLine/:docType |
+| `products` | GET /products, GET /products/expiry-summary, GET /products/:productLine/:docType, PUT /products/:productLine/:docType, PATCH /products/:productLine/:docType/status, GET /products/:productLine/:docType/audit |
 | `companies` | GET /companies, GET /companies/:id, POST /companies, PATCH /companies/:id, POST /companies/:id/rotate-token, DELETE /companies/:id |
 | `company-pricing` | GET /companies/:id/pricing, PUT /companies/:id/pricing |
 | `formulation-variants` | GET /formulation-variants, GET /formulation-variants/:variantId, POST /formulation-variants, PUT /formulation-variants/:variantId, PUT /formulation-variants/:variantId/components, DELETE /formulation-variants/:variantId |
@@ -103,7 +103,7 @@ Routes never import from other modules' services. Cross-cutting concerns (auth, 
 | `vendors` | GET /vendors, GET /vendors/:id, POST /vendors, PUT /vendors/:id, DELETE /vendors/:id |
 | `pdf` | POST /pdf/quotation, POST /pdf/tds, POST /pdf/msds, POST /pdf/coa, POST /pdf/batch |
 
-All endpoints except auth are `superadmin`-only, except product document reads which use `checkProductAccess` for company users.
+All endpoints except auth are `superadmin`-only, except product document reads which use `checkProductAccess` for company users. Within `products`, only `GET /products/:productLine/:docType` uses `checkProductAccess` — every other `products` endpoint (including status transitions, audit trail, and expiry summary) is `requireSuperAdmin`-only. `GET /products/expiry-summary` is registered before the `/:productLine/:docType` route so the literal segment `expiry-summary` never matches as a `:productLine` param.
 
 > **Note:** The `pdf` module has a non-standard directory layout — it includes `helpers/`, `partials/`, `styles/`, and `templates/` sub-directories plus `pdf.types.ts` and `template.service.ts` in addition to the standard 3-file pattern. It uses Puppeteer + Handlebars for server-side PDF generation.
 
@@ -138,7 +138,24 @@ Two roles: `superadmin` and `company`.
 
 ### Product documents (JSONB)
 
-`product_documents` stores each `(product_key, doc_type)` pair as a single row. The `body` column is `JSONB` with a shape that varies per docType (TDS, MSDS, Formula etc. all differ). `footer` is always `{ left, center, right }`. There is a unique constraint on `(product_key, doc_type)`.
+`product_documents` stores each `(product_key, doc_type)` pair as a single row. The `body` column is `JSONB` with a shape that varies per docType (TDS, MSDS, Formula etc. all differ). `footer` is always `{ left, center, right }`. There is a unique constraint on `(product_key, doc_type)`. Each row also carries `status` (default `published`), `createdAt`, `updatedAt`, `updatedBy` — see "Document approval workflow" below.
+
+### Document approval workflow
+
+`product_documents.status` is a linear approval state machine (`STATUS_TRANSITIONS` in `products.service.ts`):
+
+```
+draft → pending_review → qa_review → published → archived
+          ↑                  ↓
+          └── pending_review ┘   (qa_review can bounce back to pending_review)
+draft ← archived                  (archived can only return to draft)
+```
+
+- `transitionDocumentStatus(productLine, docType, newStatus, userId, notes?)` validates the requested transition against the document's current status. Return contract: `null` if the document doesn't exist (route returns 404), the string literal `'invalid_transition'` if the transition isn't in the allowed list for the current status (route returns 409 `AppErrors.INVALID_STATUS_TRANSITION`), otherwise the updated document.
+- Both `updateDocument` (PUT) and `transitionDocumentStatus` (PATCH .../status) write their DB update and an `document_audit_log` row inside the same `db.transaction()` — never insert the audit row outside the transaction.
+- `getDocument(productLine, docType, role)` enforces that **company** role users get `null` (→ 404) for any document whose `status !== 'published'`, regardless of `checkProductAccess`/`allowedProducts`. Redis caching is bypassed entirely for `role === 'company'` requests (`cacheable = role !== 'company'`) so a cached superadmin response of a draft document can never leak to a company user.
+- `listAuditTrail(productLine, docType)` returns all `document_audit_log` rows for that document (newest first), left-joined to `users` for `userName`. Returns `null` if the document doesn't exist.
+- `listExpirySummary()` computes a `reviewState` per document from `updatedAt` age, independent of `status`: `'expired'` (>365 days), `'due'` (>335 days), else `'ok'`.
 
 ### Redis caching
 
@@ -163,7 +180,7 @@ Integration tests use a real PostgreSQL database (the same one in `.env.local`).
 
 ### Database schema
 
-19 tables across `src/db/schema/`:
+20 tables across `src/db/schema/`:
 
 | Table | Purpose |
 |---|---|
@@ -172,7 +189,8 @@ Integration tests use a real PostgreSQL database (the same one in `.env.local`).
 | `company_product_access` | Junction: which products each company may view |
 | `company_product_prices` | Per-company special pricing for specific products |
 | `products` | Product line definitions (9 chemical products) |
-| `product_documents` | TDS/MSDS/Formula/Label/COA per product (JSONB body) |
+| `product_documents` | TDS/MSDS/Formula/Label/COA per product (JSONB body); also carries `status`, `createdAt`, `updatedAt`, `updatedBy` |
+| `document_audit_log` | Per-document history: created/updated/status_changed events, who, when, notes |
 | `product_formulation_variants` | Product variant headers (e.g. customized formulations) |
 | `formulation_variant_components` | Line items (materials) for formulation variants |
 | `inventory_items` | Raw materials: price, stock, supplier, reorder threshold |
