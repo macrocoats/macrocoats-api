@@ -7,7 +7,7 @@
 /* ─── Design tokens ──────────────────────────────────────────────────────── */
 :root {
   /* ── Brand palette ── */
-  --c-primary:     #163B6D;   /* deep corporate blue — headers, titles     */
+  --c-primary:     #123A6D;   /* deep corporate blue — headers, titles     */
   --c-secondary:   #2D4D7A;   /* medium blue — section headings             */
   --c-accent:      #4E7BAF;   /* accent blue — rules, borders, badges       */
 
@@ -36,7 +36,7 @@
 
   /* ── Borders ── */
   --c-border:      #C5D3E8;   /* standard cell border                       */
-  --c-border-dark: #163B6D;   /* header / emphasis border                   */
+  --c-border-dark: #123A6D;   /* header / emphasis border                   */
   --c-divider:     #DDE4F0;   /* section dividers                           */
 
   /* ── Callout borders ── */
@@ -93,7 +93,7 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
    DOCUMENT TITLE BLOCK  (COA / MSDS / TDS — centered, page 1)
    ═══════════════════════════════════════════════════════════════════════════ */
 .doc-title-block {
-  background: linear-gradient(135deg, #163B6D 0%, #2D4D7A 100%);
+  background: linear-gradient(135deg, #123A6D 0%, #2D4D7A 100%);
   padding: 5mm 6mm 5mm;
   text-align: center;
   margin-bottom: 5mm;
@@ -256,14 +256,15 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
 .sec-title {
   font-family: var(--font-heading);
   font-size: 9.5pt;
-  font-weight: 700;
-  color: var(--c-white);
-  background: var(--c-secondary);
-  padding: 2mm 3.5mm 2mm 3mm;
+  font-weight: 800;
+  color: var(--c-primary);
+  background: transparent;
+  padding: 0 0 1mm;
   margin-bottom: 3mm;
   margin-top: 1mm;
   letter-spacing: .04em;
   text-transform: uppercase;
+  border-bottom: 2px solid var(--c-primary);
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
@@ -312,8 +313,9 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
 .doc-table tfoot  { display: table-footer-group; }
 
 .doc-table thead tr {
-  background: var(--c-primary);
-  color: var(--c-white);
+  background: var(--c-bg-meta);
+  border-top: 1.5px solid var(--c-primary);
+  border-bottom: 1.5px solid var(--c-primary);
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
@@ -321,11 +323,12 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
 .doc-table thead th {
   font-family: var(--font-table);
   font-size: var(--fs-xs);
-  font-weight: 600;
+  font-weight: 800;
   text-align: left;
-  padding: 2.5mm 3mm;
+  padding: 2mm 3mm;
   letter-spacing: .02em;
-  border: 1px solid rgba(255,255,255,.12);
+  color: var(--c-primary);
+  text-transform: uppercase;
   white-space: nowrap;
 }
 
@@ -339,7 +342,7 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
 
 .doc-table tbody td {
   padding: 2mm 3mm;
-  border: 1px solid var(--c-border);
+  border-bottom: 0.5px solid #ebebeb;
   vertical-align: middle;
   line-height: 1.45;
   font-size: var(--fs-sm);

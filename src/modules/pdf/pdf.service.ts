@@ -100,7 +100,7 @@ class PDFService {
       payload['productCode'] ?? payload['quotationNumber'] ?? payload['batchNumber'] ?? '',
     );
     const headerHtml = buildHeaderTemplate(docTitle, productName, docNumber);
-    const footerHtml = buildFooterTemplate(date, time);
+    const footerHtml = buildFooterTemplate(date, time, docTitle, productName);
 
     const entry = await this.acquireBrowser();
     let page: Page | null = null;
@@ -202,79 +202,58 @@ function buildHeaderTemplate(
 <style>
   html { font-size: 10pt; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; }
+  body { font-family: 'Inter', Arial, 'Helvetica Neue', Helvetica, sans-serif; }
   .hw { width: 100%; background: #ffffff; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-  .hb { display: flex; justify-content: space-between; align-items: center; padding: 3mm 14mm 2.5mm 14mm; gap: 4mm; }
-  .h-logo-box {
-    width: 12mm; height: 12mm; background: #163B6D;
-    display: flex; align-items: center; justify-content: center;
-    border-radius: 2px; flex-shrink: 0;
-    -webkit-print-color-adjust: exact !important;
-  }
-  .h-logo-text { color: #ffffff; font-size: 12pt; font-weight: 800; font-style: italic; line-height: 1; letter-spacing: -.02em; }
-  .h-center { flex: 1; padding-left: 3mm; border-left: 1px solid #C5D3E8; }
-  .h-company { font-size: 11pt; font-weight: 800; font-style: italic; color: #163B6D; line-height: 1.1; }
-  .h-tagline { font-size: 6.5pt; color: #5C6470; margin-top: 0.5mm; font-style: italic; }
+  .hb { display: flex; justify-content: space-between; align-items: flex-start; padding: 3mm 14mm 2.5mm 14mm; gap: 4mm; }
+  .h-left { flex: 1; min-width: 0; }
+  .h-company { font-size: 13pt; font-weight: 800; color: #123A6D; line-height: 1.1; letter-spacing: -.02em; }
+  .h-tagline { font-size: 6.5pt; font-weight: 700; color: #5C6470; margin-top: 0.5mm; text-transform: uppercase; letter-spacing: .05em; }
+  .h-addr { font-size: 6.5pt; color: #5C6470; margin-top: 1.5mm; line-height: 1.5; }
   .h-subdoc  { font-size: 7pt; color: #2D4D7A; margin-top: 1mm; font-weight: 700; letter-spacing: .02em; }
   .h-right { text-align: right; flex-shrink: 0; border-left: 1px solid #C5D3E8; padding-left: 3mm; }
   .h-row { font-size: 6.5pt; line-height: 1.65; color: #5C6470; }
-  .h-row b { color: #163B6D; font-weight: 700; }
-  .h-rule  { height: 2px; background: #163B6D; margin: 0 14mm; -webkit-print-color-adjust: exact !important; }
-  .h-rule2 { height: 1px; background: #4E7BAF; margin: 1px 14mm 0; -webkit-print-color-adjust: exact !important; }
+  .h-row b { color: #123A6D; font-weight: 700; }
+  .h-rule  { height: 2px; background: #123A6D; margin: 0 14mm; -webkit-print-color-adjust: exact !important; }
 </style>
 <div class="hw">
   <div class="hb">
-    <div class="h-logo-box"><span class="h-logo-text">MC</span></div>
-    <div class="h-center">
-      <div class="h-company">Macro Coats Pvt Ltd</div>
+    <div class="h-left">
+      <div class="h-company">Macro Coats</div>
       <div class="h-tagline">Specialty Surface Treatment Chemicals</div>
+      <div class="h-addr">SF.NO 224/11, Kalaimagal Nagar, Pazhanthandalam, Chennai - 600132, Tamil Nadu, India</div>
       ${subLine ? `<div class="h-subdoc">${subLine}</div>` : ''}
     </div>
     <div class="h-right">
-      <div class="h-row"><b>GST:</b> 33AARCM7377G1ZY</div>
-      <div class="h-row"><b>Ph:</b> 9884080377 / 9444905992</div>
+      <div class="h-row"><b>GSTIN:</b> 33AARCM7377G1ZY</div>
+      <div class="h-row"><b>Ph:</b> +91 98840 80377</div>
       <div class="h-row"><b>Email:</b> info@macrocoats.in</div>
     </div>
   </div>
   <div class="h-rule"></div>
-  <div class="h-rule2"></div>
 </div>`;
 }
 
 // ─── Puppeteer footer template ────────────────────────────────────────────────
 
-function buildFooterTemplate(date: string, time: string): string {
+function buildFooterTemplate(date: string, time: string, docTitle: string, productName: string): string {
+  const leftParts = ['Macro Coats', productName, docTitle].filter(Boolean).map(esc);
   return `
 <style>
-  html { font-size: 9pt; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  html { font-size: 7.5pt; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; }
+  body { font-family: 'Inter', Arial, 'Helvetica Neue', Helvetica, sans-serif; }
   .fw { width: 100%; padding: 0 14mm; }
-  .f-rule  { height: 2px; background: #163B6D; margin-bottom: 1px; -webkit-print-color-adjust: exact !important; }
-  .f-rule2 { height: 1px; background: #4E7BAF; margin-bottom: 2mm; -webkit-print-color-adjust: exact !important; }
-  .fb { display: flex; justify-content: space-between; align-items: flex-start; }
-  .f-co  { font-size: 7pt; font-weight: 700; font-style: italic; color: #163B6D; line-height: 1.3; }
-  .f-addr { font-size: 6pt; color: #5C6470; line-height: 1.55; margin-top: 0.3mm; }
-  .f-mid { text-align: center; }
-  .f-ctrl { font-size: 6.5pt; font-weight: 700; color: #163B6D; text-transform: uppercase; letter-spacing: .05em; }
-  .f-unc  { font-size: 5.5pt; color: #8A9099; font-style: italic; margin-top: 0.3mm; }
-  .f-right { text-align: right; }
-  .f-gen  { font-size: 6pt; color: #5C6470; }
-  .f-pg   { font-size: 7pt; font-weight: 700; color: #163B6D; margin-top: 0.5mm; }
+  .f-rule { height: 0.5px; background: #ccc; margin-bottom: 1mm; }
+  .fb { display: flex; justify-content: space-between; align-items: baseline; }
+  .f-left { font-size: 7.5pt; color: #888; letter-spacing: .02em; }
+  .f-left b { color: #5C6470; }
+  .f-right { font-size: 7.5pt; color: #888; }
 </style>
 <div class="fw">
   <div class="f-rule"></div>
-  <div class="f-rule2"></div>
   <div class="fb">
-    <div>
-      <div class="f-co">Macro Coats Pvt Ltd</div>
-      <div class="f-addr">SF.NO 224/11, Kalaimagal Nagar, Pazhanthandalam, Chennai – 600132<br>Ph: 9884080377 / 9444905992 &nbsp;|&nbsp; info@macrocoats.in &nbsp;|&nbsp; GST: 33AARCM7377G1ZY</div>
-    </div>
-    
-    <div class="f-right">
-      <div class="f-gen">Generated: ${esc(date)} ${esc(time)}</div>
-      <div class="f-pg">Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>
-    </div>
+    <div class="f-left"><b>${leftParts[0]}</b> &nbsp;·&nbsp; ${leftParts.slice(1).join(' &nbsp;·&nbsp; ')} &nbsp;·&nbsp; Generated ${esc(date)} ${esc(time)}</div>
+    <div class="f-right">Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>
   </div>
 </div>`;
 }
