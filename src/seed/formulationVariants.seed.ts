@@ -354,6 +354,24 @@ const UNIKLEAN_SP_LOW_FOAM_COMPONENTS = [
   { materialName: 'Silicone-Free Defoamer', percentage: 0.20, unit: 'Kg' as const },
 ]
 
+/**
+ * Heavy Duty Alkaline SMS Variant for UNIKLEAN SP.
+ * Percentage-based (% w/v); Water is auto-calculated (~84.48%).
+ * Reference batch: 100 L. Active components sum to 15.52%.
+ * Uses Sodium Metasilicate as primary builder for heavy alkaline degreasing,
+ * Sodium Nitrite for flash rust protection, Alphox 200 for low-foam surfactancy.
+ */
+const UNIKLEAN_SP_HEAVY_DUTY_SMS_COMPONENTS = [
+  { materialName: 'Water',                             percentage: null, unit: 'L'  as const },  // auto-calc ~84.48%
+  { materialName: 'Sodium Metasilicate (SMS)',          percentage: 5.50, unit: 'Kg' as const },
+  { materialName: 'Soda Ash (Sodium Carbonate)',        percentage: 5.00, unit: 'Kg' as const },
+  { materialName: 'Trisodium Phosphate (TSP)',          percentage: 3.50, unit: 'Kg' as const },
+  { materialName: 'EDTA Disodium',                     percentage: 0.50, unit: 'Kg' as const },
+  { materialName: 'Alphox 200 (Non-ionic Surfactant)', percentage: 0.20, unit: 'Kg' as const },
+  { materialName: 'Sodium Nitrite (NaNO₂)',            percentage: 0.80, unit: 'Kg' as const },
+  { materialName: 'Non-silicone Defoamer',             percentage: 0.02, unit: 'Kg' as const },
+]
+
 export async function seedFormulationVariants() {
   console.log('🌱 Seeding formulation variants...')
 
@@ -457,6 +475,48 @@ export async function seedFormulationVariants() {
       )
 
       console.log(`   ✅ Created Low Foam Rust Inhibiting Variant for UNIKLEAN SP (id: ${lowFoamVariant.id})`)
+    }
+  }
+
+  // ── UNIKLEAN SP — Heavy Duty Alkaline SMS Variant ─────────────────────────
+  if (!uniklenSpProduct) {
+    console.warn('   ⚠️  Product uniklean-sp not found — skipping Heavy Duty Alkaline SMS Variant seed')
+  } else {
+    const HEAVY_DUTY_SMS_NAME = 'UNIKLEAN SP – Heavy Duty Alkaline SMS Variant'
+    const [existingHeavyDutySMS] = await db
+      .select()
+      .from(productFormulationVariants)
+      .where(
+        and(
+          eq(productFormulationVariants.productKey, 'uniklean-sp'),
+          eq(productFormulationVariants.variantName, HEAVY_DUTY_SMS_NAME),
+        ),
+      )
+
+    if (existingHeavyDutySMS) {
+      console.log(`   ↩️  Heavy Duty Alkaline SMS Variant for UNIKLEAN SP already exists (id: ${existingHeavyDutySMS.id})`)
+    } else {
+      const [heavyDutySMSVariant] = await db
+        .insert(productFormulationVariants)
+        .values({
+          productKey:  'uniklean-sp',
+          companyId:   null,
+          variantName: HEAVY_DUTY_SMS_NAME,
+          isDefault:   false,
+        })
+        .returning()
+
+      await db.insert(formulationVariantComponents).values(
+        UNIKLEAN_SP_HEAVY_DUTY_SMS_COMPONENTS.map((c, i) => ({
+          variantId:    heavyDutySMSVariant.id,
+          materialName: c.materialName,
+          percentage:   c.percentage !== null ? String(c.percentage) : null,
+          unit:         c.unit,
+          sortOrder:    i,
+        })),
+      )
+
+      console.log(`   ✅ Created Heavy Duty Alkaline SMS Variant for UNIKLEAN SP (id: ${heavyDutySMSVariant.id})`)
     }
   }
 

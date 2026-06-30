@@ -19,6 +19,7 @@ function toBatchResponse(row: typeof batches.$inferSelect) {
     paymentTermDays:     row.paymentTermDays ?? 45,
     variantId:           row.variantId ?? null,
     variantName:         row.variantName ?? null,
+    batchType:           row.batchType,
     coaSnapshot:         row.coaSnapshot ?? null,
     notes:               row.notes ?? null,
     createdAt:           row.createdAt.toISOString(),
@@ -73,6 +74,7 @@ export async function createBatch(data: CreateBatchBody, createdBy: string | nul
         paymentTermDays:     data.paymentTermDays ?? 45,
         variantId:           data.variantId ?? null,
         variantName:         data.variantName ?? null,
+        batchType:           data.batchType ?? 'Production',
         notes:               data.notes ?? null,
         createdBy:           createdBy ?? undefined,
       })
@@ -88,6 +90,7 @@ export async function listBatches(query: ListBatchesQuery) {
   const conditions = []
   if (query.companyName) conditions.push(ilike(batches.companyName, `%${query.companyName}%`))
   if (query.productCode) conditions.push(eq(batches.productCode, query.productCode))
+  if (query.batchType)   conditions.push(eq(batches.batchType, query.batchType))
   if (query.dateFrom)    conditions.push(gte(batches.productionDate, query.dateFrom))
   if (query.dateTo)      conditions.push(lte(batches.productionDate, query.dateTo))
 

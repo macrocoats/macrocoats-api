@@ -1,5 +1,8 @@
 import { z } from 'zod'
 
+export const BATCH_TYPES = ['Production', 'Trial'] as const
+export type BatchType = typeof BATCH_TYPES[number]
+
 const formulationComponentSchema = z.object({
   name:             z.string(),
   percentage:       z.number(),
@@ -44,6 +47,7 @@ export const createBatchSchema = z.object({
   variantId:           z.string().uuid().nullable().optional(),
   variantName:         z.string().nullable().optional(),
   notes:               z.string().max(2000).optional(),
+  batchType:           z.enum(BATCH_TYPES).optional().default('Production'),
 })
 
 const coaTestSchema = z.object({
@@ -67,6 +71,7 @@ export type SaveCoaSnapshotBody = z.infer<typeof saveCoaSnapshotSchema>
 export const listBatchesQuerySchema = z.object({
   companyName: z.string().optional(),
   productCode: z.string().optional(),
+  batchType:   z.enum(BATCH_TYPES).optional(),
   dateFrom:    z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   dateTo:      z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   page:        z.coerce.number().int().min(1).default(1),

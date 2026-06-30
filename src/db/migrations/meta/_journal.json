@@ -85,6 +85,13 @@
       "when": 1781874868594,
       "tag": "0011_remarkable_sister_grimm",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1782475353269,
+      "tag": "0012_right_zarda",
+      "breakpoints": true
     }
   ]
 }
