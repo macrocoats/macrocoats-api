@@ -177,6 +177,7 @@ Integration tests use a real PostgreSQL database (the same one in `.env.local`).
 - `labelSnapshot` — label data including the assigned batchNumber
 - `costSummary` — cost breakdown
 - `paymentDueDate`, `paymentTermDays` (default 45) — payment tracking
+- `batchType` — `'Production'` (default) or `'Trial'`; filterable via `listBatches` query param
 
 ### Database schema
 
@@ -197,7 +198,7 @@ Integration tests use a real PostgreSQL database (the same one in `.env.local`).
 | `quotations` | Sales quotations with auto-generated UNIK-YYYY-NNN numbers |
 | `quotation_line_items` | Line items in a quotation (FK → quotations, cascade delete) |
 | `quotation_sequences` | Per-year atomic counter for quotation numbering |
-| `batches` | Manufacturing batch records with formulation/label/cost snapshots |
+| `batches` | Manufacturing batch records with formulation/label/cost snapshots; `batchType` column (`'Production'` \| `'Trial'`, default `'Production'`) |
 | `batch_sequences` | Per-company per-day atomic counter for batch numbering |
 | `access_log` | Audit trail: who accessed which product/docType, when, from where |
 | `refresh_tokens` | Valid refresh token bcrypt hashes; null `revokedAt` = still valid |
