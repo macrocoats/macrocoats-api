@@ -372,6 +372,25 @@ const UNIKLEAN_SP_HEAVY_DUTY_SMS_COMPONENTS = [
   { materialName: 'Non-silicone Defoamer',             percentage: 0.02, unit: 'Kg' as const },
 ]
 
+/**
+ * Enhanced Flash Rust Protection Variant for UNIKLEAN SP.
+ * Reference batch: 150 L. Active components sum to ~13.95% (water is balance).
+ * Sodium Nitrite (1.20%) is the primary flash rust inhibitor;
+ * Sodium Molybdate (0.08%, rounded from specified 0.075%) is the secondary inhibitor.
+ * LAE-9 provides low-foam non-ionic wetting and emulsification.
+ */
+const UNIKLEAN_SP_ENHANCED_FLASH_RUST_COMPONENTS = [
+  { materialName: 'DM Water',                    percentage: null, unit: 'L'  as const },  // auto-calc balance
+  { materialName: 'Sodium Metasilicate (SMS)',    percentage: 4.50, unit: 'Kg' as const },
+  { materialName: 'Soda Ash (Sodium Carbonate)', percentage: 4.00, unit: 'Kg' as const },
+  { materialName: 'Trisodium Phosphate (TSP)',   percentage: 3.50, unit: 'Kg' as const },
+  { materialName: 'LAE-9',                       percentage: 0.15, unit: 'Kg' as const },
+  { materialName: 'Sodium Nitrite',              percentage: 1.20, unit: 'Kg' as const },
+  { materialName: 'Sodium Gluconate',            percentage: 0.50, unit: 'Kg' as const },
+  { materialName: 'Sodium Molybdate',            percentage: 0.08, unit: 'Kg' as const },  // 0.075% rounded to 2dp
+  { materialName: 'Non-silicone Defoamer',       percentage: 0.02, unit: 'Kg' as const },
+]
+
 export async function seedFormulationVariants() {
   console.log('🌱 Seeding formulation variants...')
 
@@ -517,6 +536,48 @@ export async function seedFormulationVariants() {
       )
 
       console.log(`   ✅ Created Heavy Duty Alkaline SMS Variant for UNIKLEAN SP (id: ${heavyDutySMSVariant.id})`)
+    }
+  }
+
+  // ── UNIKLEAN SP — Enhanced Flash Rust Protection Variant ─────────────────
+  const ENHANCED_FLASH_RUST_NAME = 'UNIKLEAN SP – Enhanced Flash Rust Protection Variant'
+  if (!uniklenSpProduct) {
+    console.warn('   ⚠️  Product uniklean-sp not found — skipping Enhanced Flash Rust Protection Variant seed')
+  } else {
+    const [existingEnhancedFlashRust] = await db
+      .select()
+      .from(productFormulationVariants)
+      .where(
+        and(
+          eq(productFormulationVariants.productKey, 'uniklean-sp'),
+          eq(productFormulationVariants.variantName, ENHANCED_FLASH_RUST_NAME),
+        ),
+      )
+
+    if (existingEnhancedFlashRust) {
+      console.log(`   ↩️  Enhanced Flash Rust Protection Variant for UNIKLEAN SP already exists (id: ${existingEnhancedFlashRust.id})`)
+    } else {
+      const [enhancedFlashRustVariant] = await db
+        .insert(productFormulationVariants)
+        .values({
+          productKey:  'uniklean-sp',
+          companyId:   null,
+          variantName: ENHANCED_FLASH_RUST_NAME,
+          isDefault:   false,
+        })
+        .returning()
+
+      await db.insert(formulationVariantComponents).values(
+        UNIKLEAN_SP_ENHANCED_FLASH_RUST_COMPONENTS.map((c, i) => ({
+          variantId:    enhancedFlashRustVariant.id,
+          materialName: c.materialName,
+          percentage:   c.percentage !== null ? String(c.percentage) : null,
+          unit:         c.unit,
+          sortOrder:    i,
+        })),
+      )
+
+      console.log(`   ✅ Created Enhanced Flash Rust Protection Variant for UNIKLEAN SP (id: ${enhancedFlashRustVariant.id})`)
     }
   }
 
