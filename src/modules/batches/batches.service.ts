@@ -1,4 +1,4 @@
-import { eq, ilike, and, gte, lte, desc, count, sql } from 'drizzle-orm'
+import { eq, ilike, and, gte, lte, desc, count, sql, isNull, isNotNull } from 'drizzle-orm'
 import { db } from '../../db/index.js'
 import { batches } from '../../db/schema/index.js'
 import { nextBatchNumber } from '../../utils/batchNumber.js'
@@ -17,6 +17,7 @@ function toBatchResponse(row: typeof batches.$inferSelect) {
     costSummary:         row.costSummary,
     paymentDueDate:      row.paymentDueDate ?? null,
     paymentTermDays:     row.paymentTermDays ?? 45,
+    paidAt:              row.paidAt ? row.paidAt.toISOString() : null,
     variantId:           row.variantId ?? null,
     variantName:         row.variantName ?? null,
     batchType:           row.batchType,
@@ -93,6 +94,8 @@ export async function listBatches(query: ListBatchesQuery) {
   if (query.batchType)   conditions.push(eq(batches.batchType, query.batchType))
   if (query.dateFrom)    conditions.push(gte(batches.productionDate, query.dateFrom))
   if (query.dateTo)      conditions.push(lte(batches.productionDate, query.dateTo))
+  if (query.paid === 'true')  conditions.push(isNotNull(batches.paidAt))
+  if (query.paid === 'false') conditions.push(isNull(batches.paidAt))
 
   const where = conditions.length > 0 ? and(...conditions) : undefined
 
@@ -127,6 +130,15 @@ export async function saveCoaSnapshot(batchNumber: string, snapshot: SaveCoaSnap
   const [row] = await db
     .update(batches)
     .set({ coaSnapshot: snapshot })
+    .where(eq(batches.batchNumber, batchNumber))
+    .returning()
+  return row ? toBatchResponse(row) : null
+}
+
+export async function setPaymentStatus(batchNumber: string, paid: boolean) {
+  const [row] = await db
+    .update(batches)
+    .set({ paidAt: paid ? new Date() : null })
     .where(eq(batches.batchNumber, batchNumber))
     .returning()
   return row ? toBatchResponse(row) : null

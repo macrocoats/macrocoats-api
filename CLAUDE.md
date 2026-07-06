@@ -95,7 +95,7 @@ Routes never import from other modules' services. Cross-cutting concerns (auth, 
 | `company-pricing` | GET /companies/:id/pricing, PUT /companies/:id/pricing |
 | `formulation-variants` | GET /formulation-variants, GET /formulation-variants/:variantId, POST /formulation-variants, PUT /formulation-variants/:variantId, PUT /formulation-variants/:variantId/components, DELETE /formulation-variants/:variantId |
 | `quotations` | POST /quotations, GET /quotations, GET /quotations/:id |
-| `batches` | POST /batches, GET /batches, GET /batches/:batchNumber, PATCH /batches/:batchNumber/coa, DELETE /batches/:batchNumber/coa, DELETE /batches/:id |
+| `batches` | POST /batches, GET /batches, GET /batches/:batchNumber, PATCH /batches/:batchNumber/coa, DELETE /batches/:batchNumber/coa, PATCH /batches/:batchNumber/payment, DELETE /batches/:id |
 | `inventory` | GET /inventory, POST /inventory, PATCH /inventory/:id, DELETE /inventory/:id, POST /inventory/reset |
 | `analytics` | GET /analytics/access-log, GET /analytics/summary |
 | `salaryRecords` | GET /salary-records, GET /salary-records/:id, POST /salary-records |
@@ -177,6 +177,7 @@ Integration tests use a real PostgreSQL database (the same one in `.env.local`).
 - `labelSnapshot` — label data including the assigned batchNumber
 - `costSummary` — cost breakdown
 - `paymentDueDate`, `paymentTermDays` (default 45) — payment tracking
+- `paidAt` — nullable timestamp; `NULL` = unpaid, set to `now()` when payment is marked done via `PATCH /batches/:batchNumber/payment` (`{ paid: boolean }`, toggleable). `listBatches` accepts a `paid=true|false` query filter (`isNotNull`/`isNull` on `paidAt`)
 - `batchType` — `'Production'` (default) or `'Trial'`; filterable via `listBatches` query param
 
 ### Database schema

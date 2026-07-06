@@ -19,6 +19,7 @@ export const batches = pgTable('batches', {
   costSummary:         jsonb('cost_summary').notNull(),
   paymentDueDate:      text('payment_due_date'),
   paymentTermDays:     integer('payment_term_days').default(45),
+  paidAt:              timestamp('paid_at', { withTimezone: true }),
   variantId:           uuid('variant_id').references(() => productFormulationVariants.id, { onDelete: 'set null' }),
   variantName:         text('variant_name'),
   batchType:           text('batch_type').notNull().default('Production'),

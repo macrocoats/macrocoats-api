@@ -92,6 +92,13 @@
       "when": 1782475353269,
       "tag": "0012_right_zarda",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1783340263581,
+      "tag": "0013_good_makkari",
+      "breakpoints": true
     }
   ]
 }

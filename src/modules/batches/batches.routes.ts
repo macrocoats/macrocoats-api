@@ -2,8 +2,8 @@ import type { FastifyInstance } from 'fastify'
 import { authenticate, requireAuth } from '../../middleware/authenticate.js'
 import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js'
 import { AppErrors } from '../../types/errors.js'
-import { createBatchSchema, listBatchesQuerySchema, saveCoaSnapshotSchema } from './batches.schema.js'
-import { createBatch, listBatches, getBatchByNumber, deleteBatch, saveCoaSnapshot, clearCoaSnapshot } from './batches.service.js'
+import { createBatchSchema, listBatchesQuerySchema, saveCoaSnapshotSchema, setPaymentStatusSchema } from './batches.schema.js'
+import { createBatch, listBatches, getBatchByNumber, deleteBatch, saveCoaSnapshot, clearCoaSnapshot, setPaymentStatus } from './batches.service.js'
 
 const preHandler = [authenticate, requireAuth, requireSuperAdmin]
 
@@ -45,6 +45,18 @@ export async function batchRoutes(app: FastifyInstance) {
     }
 
     const batch = await saveCoaSnapshot(request.params.batchNumber, body.data)
+    if (!batch) return reply.code(404).send({ error: AppErrors.BATCH_NOT_FOUND })
+    return reply.send(batch)
+  })
+
+  // ── PATCH /batches/:batchNumber/payment ──────────────────────────────────
+  app.patch<{ Params: { batchNumber: string } }>('/:batchNumber/payment', { preHandler }, async (request, reply) => {
+    const body = setPaymentStatusSchema.safeParse(request.body)
+    if (!body.success) {
+      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
+    }
+
+    const batch = await setPaymentStatus(request.params.batchNumber, body.data.paid)
     if (!batch) return reply.code(404).send({ error: AppErrors.BATCH_NOT_FOUND })
     return reply.send(batch)
   })

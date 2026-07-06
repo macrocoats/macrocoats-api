@@ -68,10 +68,17 @@ export const saveCoaSnapshotSchema = z.object({
 
 export type SaveCoaSnapshotBody = z.infer<typeof saveCoaSnapshotSchema>
 
+export const setPaymentStatusSchema = z.object({
+  paid: z.boolean(),
+})
+
+export type SetPaymentStatusBody = z.infer<typeof setPaymentStatusSchema>
+
 export const listBatchesQuerySchema = z.object({
   companyName: z.string().optional(),
   productCode: z.string().optional(),
   batchType:   z.enum(BATCH_TYPES).optional(),
+  paid:        z.enum(['true', 'false']).optional(),
   dateFrom:    z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   dateTo:      z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   page:        z.coerce.number().int().min(1).default(1),
