@@ -14,7 +14,7 @@ const PRODUCTS = [
   { key: 'uniktonner',    displayName: 'UNIKTONNER',    code: 'TN',  category: 'Tonnage Additive / Accelerator',   subtitle: 'Nitrite-Based Phosphating Accelerator Solution',                 accentColor: '#8b2500' },
   { key: 'corroklean',   displayName: 'CORROKLEAN',   code: 'CK',  category: 'Alkaline Cleaner',                 subtitle: 'Heavy-Duty Alkaline Metal Cleaner & Degreaser',                   accentColor: '#2a5c7a' },
   { key: 'corrcut-100',  displayName: 'CORRCUT 100',  code: 'CR',  category: 'Rust Preventive Oil',              subtitle: 'Light-Bodied Mineral Oil Based Rust Preventive',                  accentColor: '#4a2d5c' },
-  { key: 'corrucut-500', displayName: 'CORROCUT',    code: 'CC-1000', category: 'Corrosion Preventive Fluid',       subtitle: 'Fast-Drying Dearomatized Hydrocarbon Rust Preventive',            accentColor: '#3d5a6e' },
+  { key: 'corrucut-500', displayName: 'CORRUCUT 500', code: 'CC',  category: 'Corrosion Preventive Fluid',       subtitle: 'Fast-Drying Dearomatized Hydrocarbon Rust Preventive',            accentColor: '#3d5a6e' },
 ]
 
 // ── Document data ──────────────────────────────────────────────────────────────
@@ -3181,16 +3181,16 @@ const DOCS: Array<{
   {
     productKey: 'corrucut-500',
     docType:    'tds',
-    docNumber:  'TDS-CORR-001',
+    docNumber:  'TDS-UCC-001',
     revision:   'Rev 01 — Jun 2026',
     footer: {
-      left:   'TDS-CORR-001 Rev 01 · Jun 2026',
+      left:   'TDS-UCC-001 Rev 01 · Jun 2026',
       center: 'This Technical Data Sheet is for guidance only. Performance figures are typical values obtained under controlled conditions. © Macro Coats Pvt Ltd',
       right:  'Macro Coats Pvt Ltd · Chennai · India\nPage 1 of 1',
     },
     body: {
       grade:       'Industrial Grade',
-      description: 'CORROCUT is a highly engineered, premium-grade dearomatized hydrocarbon-based corrosion preventive fluid formulated specifically for multi-metal industrial protection. Enhanced with advanced polar water-displacing additives and high-performance petroleum sulfonates, it forms a resilient, thin, non-staining protective film over components. Designed for severe industrial handling environments, CORROCUT offers exceptional salt-spray resistance and fast moisture shedding without leaving a gummy residue, facilitating seamless inter-operational handling, transit, and indoor storage.',
+      description: 'CORRUCUT 500 is a highly engineered, premium-grade dearomatized hydrocarbon-based corrosion preventive fluid formulated specifically for multi-metal industrial protection. Enhanced with advanced polar water-displacing additives and high-performance petroleum sulfonates, it forms a resilient, thin, non-staining protective film over components. Designed for severe industrial handling environments, CORRUCUT 500 offers exceptional salt-spray resistance and fast moisture shedding without leaving a gummy residue, facilitating seamless inter-operational handling, transit, and indoor storage.',
       sections: {
         features: [
           { head: 'Superior Moisture Displacement',  body: 'Rapidly separates water grids from metallic surfaces, preventing flash rusting on freshly machined parts.' },
@@ -3221,7 +3221,7 @@ const DOCS: Array<{
         ],
         application: [
           { step: '1', name: 'Pre-clean surface',   param: 'Dry, rust-free, grease-free substrate', value: 'Essential for maximum protection life' },
-          { step: '2', name: 'Apply CORROCUT',      param: 'Dip, spray, or brush',                 value: 'Ensure uniform coverage; 15–30 s dip time' },
+          { step: '2', name: 'Apply CORRUCUT 500',  param: 'Dip, spray, or brush',                 value: 'Ensure uniform coverage; 15–30 s dip time' },
           { step: '3', name: 'Drain',                param: 'Vertical draining',                    value: '15–30 min' },
           { step: '4', name: 'Allow film to cure',   param: 'Air dry at ambient temperature',       value: '20–30 min, tack-free' },
           { step: '5', name: 'Remove before use',    param: 'Alkaline degreaser or mineral spirits', value: 'Wash off prior to further processing' },
@@ -3236,7 +3236,7 @@ const DOCS: Array<{
           { label: 'Outdoor Covered',         val: '3–6 Months' },
           { label: 'Water displacement',      val: 'Passes (IS 1154)' },
         ],
-        safetyNote: 'Flammable liquid — keep away from ignition sources and heat. Ensure adequate ventilation during application. Refer explicitly to the official CORROCUT_SDS_Elite.pdf document for detailed protective equipment guidelines before deployment.',
+        safetyNote: 'Flammable liquid — keep away from ignition sources and heat. Ensure adequate ventilation during application. Refer explicitly to the official CORRUCUT 500 Safety Data Sheet for detailed protective equipment guidelines before deployment.',
       },
     },
   },
