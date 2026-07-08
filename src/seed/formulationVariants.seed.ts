@@ -99,6 +99,31 @@ const TDS_OVERRIDES_HIGH_IPA = {
   safetyNote: 'Flammable liquid — flash point 26 – 38 °C. High IPA content — keep away from all ignition sources. Use only in well-ventilated areas. Refer to SDS-UCL-001.',
 }
 
+const TDS_OVERRIDES_PGME_ENHANCED = {
+  physicalProperties: [
+    { property: 'Appearance',             value: 'Clear, colourless liquid',      unit: '—',    method: 'Visual' },
+    { property: 'Odour',                  value: 'Mild alcohol with faint ether note', unit: '—', method: '—' },
+    { property: 'Flash Point',            value: '35 – 45',                       unit: '°C',   method: 'Pensky-Martens' },
+    { property: 'Density',                value: '0.95 – 0.98',                   unit: 'g/mL', method: 'ISO 2811' },
+    { property: 'Evaporation Rate',       value: 'Moderate to fast',              unit: '—',    method: 'vs diethyl ether = 1' },
+    { property: 'Dry Time',               value: '20 – 60',                       unit: 's',    method: 'Ambient, cotton wipe' },
+    { property: 'Residue on Evaporation', value: '1.0 – 3.0%',                   unit: '—',    method: 'ASTM D2369' },
+  ],
+  composition: [
+    { name: 'Deionised Water',                       function: 'Primary carrier and cooling medium',                                    percent: '~ 82%', compat: 'All substrates' },
+    { name: 'Isopropyl Alcohol (IPA)',               function: 'Fast evaporation, cooling, improved drying',                            percent: '15%',   compat: 'Metals, aluminium' },
+    { name: 'Propylene Glycol',                      function: 'Lubricity, corrosion protection, evaporation control',                  percent: '~ 2%',  compat: 'Metals, plastics' },
+    { name: 'Propylene Glycol Methyl Ether (PGME)',  function: 'Wetting agent, residue reduction, improved surface finish and chip flushing', percent: '~ 1%', compat: 'Metals, aluminium' },
+  ],
+  performance: [
+    { label: 'Evaporation residue',      val: '1.0 – 3.0% (ASTM D2369) — lubricity film' },
+    { label: 'Dry time',                val: '20 – 60 s (ambient)' },
+    { label: 'Wetting / chip flushing',  val: 'Improved wetting and chip flushing on aluminium' },
+    { label: 'Aluminium compatibility',  val: 'No staining or etching at ambient' },
+  ],
+  safetyNote: 'Flammable liquid — flash point 35 – 45 °C. Keep away from heat, sparks, and open flames. Use in well-ventilated area. Refer to SDS-UCL-001.',
+}
+
 /* ── MSDS overrides — UNICool AL variants ─────────────────────────────────── */
 
 const MSDS_OVERRIDES_PEG_GLYCOL = {
@@ -260,6 +285,59 @@ const MSDS_OVERRIDES_HIGH_IPA = {
   },
 }
 
+const MSDS_OVERRIDES_PGME_ENHANCED = {
+  signalWord: 'Warning',
+  hazards: {
+    pictograms:      ['flammable', 'irritant'],
+    classifications: [
+      { class: 'Flammable Liquid',      category: 'Cat 3',       tagType: 'warn' },
+      { class: 'Eye Irritation',        category: 'Cat 2',       tagType: 'warn' },
+      { class: 'Specific Target Organ', category: 'Cat 3 (CNS)', tagType: 'warn' },
+    ],
+    hStatements: 'H226 — Flammable liquid and vapour. H319 — Causes serious eye irritation. H336 — May cause drowsiness or dizziness.',
+    pStatements: 'P210 · P233 · P261 · P280 · P305+P351+P338 · P370+P378',
+  },
+  composition: {
+    ingredients: [
+      { name: 'Water',                                description: 'Primary carrier and cooling medium',                       percent: '~ 82%', ghsClass: '—',         tagType: 'safe' },
+      { name: 'Isopropyl Alcohol (IPA)',              description: 'Fast evaporation, cooling, improved drying',               percent: '15%',   ghsClass: 'Flammable', tagType: 'warn' },
+      { name: 'Propylene Glycol',                     description: 'Lubricity, corrosion protection, evaporation control',     percent: '~ 2%',  ghsClass: '—',         tagType: 'safe' },
+      { name: 'Propylene Glycol Methyl Ether (PGME)', description: 'Wetting agent, residue reduction, improved surface finish', percent: '~ 1%', ghsClass: 'Flammable', tagType: 'warn' },
+    ],
+    note: 'Exact formulation is proprietary. Functional ingredient descriptions are provided for safety and emergency purposes only.',
+  },
+  fireFighting: {
+    flammability:       'Flammable liquid. Flash point 35 – 45 °C (Pensky-Martens).',
+    extinguishingMedia: 'CO₂, dry powder, alcohol-resistant foam.',
+    fireHazard:         'Alcohol and glycol ether vapours may accumulate in enclosed spaces and ignite. Avoid vapour accumulation.',
+    ppe:                'SCBA and fire-resistant clothing for enclosed-space fires.',
+  },
+  physical: [
+    { key: 'Appearance',    val: 'Clear, colourless liquid' },
+    { key: 'Odour',         val: 'Mild alcohol with faint ether note' },
+    { key: 'Flash Point',   val: '35 – 45 °C' },
+    { key: 'Density',       val: '0.95 – 0.98 g/mL' },
+    { key: 'pH',            val: '6.5 – 8.5' },
+    { key: 'Solubility',    val: 'Fully miscible with water' },
+    { key: 'Evaporation',   val: 'Moderate to fast' },
+    { key: 'Boiling Point', val: '82 – 100 °C' },
+  ],
+  accidentalRelease: [
+    'Eliminate ignition sources — flammable vapour risk at elevated temperatures',
+    'Ventilate area well to prevent vapour accumulation',
+    'Contain spill with inert absorbent material (sand, vermiculite)',
+    'Prevent runoff from entering drains or waterways',
+    'Collect spilled material and dispose per CPCB/SPCB guidelines',
+  ],
+  handling: {
+    handling:    'Keep away from ignition sources. Use in well-ventilated areas. Avoid contact with eyes and skin.',
+    storageTemp: '5 °C – 35 °C; cool, dry, ventilated area; away from heat and direct sunlight',
+    containers:  'HDPE bottles or jerrycans; keep tightly sealed when not in use',
+    segregation: 'Store separately from oxidising agents, strong acids, and strong alkalis',
+    shelfLife:   '24 months from date of manufacture in original sealed containers',
+  },
+}
+
 /* ── CoA tests — UNICool AL variants ─────────────────────────────────────── */
 
 const COA_TESTS_PEG_GLYCOL = [
@@ -290,6 +368,16 @@ const COA_TESTS_HIGH_IPA = [
   { parameter: 'Evaporation Residue',      method: 'ASTM D2369',          specification: '≤ 0.001 %',                        result: '', status: 'Pass' },
   { parameter: 'Dry Time (ambient)',       method: 'Cotton Wipe Method',  specification: '15 – 40 s',                        result: '', status: 'Pass' },
   { parameter: 'Aluminium Compatibility',  method: 'Coupon test (24 h)',  specification: 'No staining, no etching',          result: '', status: 'Pass' },
+]
+
+const COA_TESTS_PGME_ENHANCED = [
+  { parameter: 'Appearance',               method: 'Visual',              specification: 'Clear, colourless liquid',  result: '', status: 'Pass' },
+  { parameter: 'pH (neat, 25 °C)',         method: 'pH Electrode',        specification: '6.5 – 8.5',                result: '', status: 'Pass' },
+  { parameter: 'Flash Point',              method: 'Pensky-Martens (PM)', specification: '35 – 45 °C',               result: '', status: 'Pass' },
+  { parameter: 'Specific Gravity (25 °C)', method: 'ISO 2811',            specification: '0.95 – 0.98',              result: '', status: 'Pass' },
+  { parameter: 'Evaporation Residue',      method: 'ASTM D2369',          specification: '1.0 – 3.0 %',              result: '', status: 'Pass' },
+  { parameter: 'Dry Time (ambient)',       method: 'Cotton Wipe Method',  specification: '20 – 60 s',                result: '', status: 'Pass' },
+  { parameter: 'Aluminium Compatibility',  method: 'Coupon test (24 h)',  specification: 'No staining, no etching',  result: '', status: 'Pass' },
 ]
 
 /**
@@ -335,6 +423,23 @@ const HIGH_IPA_COMPONENTS = [
   { materialName: 'IPA',                 percentage: 20.00, unit: 'L' as const },
   { materialName: 'LAE-9',              percentage: 0.01,  unit: 'L' as const },  // ~20 mL per 100 L
   { materialName: 'Ammonium Hydroxide', percentage: 0.01,  unit: 'L' as const },  // ~20 mL per 100 L
+]
+
+/**
+ * PGME Enhanced Variant for UNICool AL.
+ * Percentage-based; Water is auto-calculated (100 − 18.20 = 81.80%).
+ * Optimised for aluminium machining: IPA for fast drying, Propylene Glycol
+ * for lubricity and corrosion protection, PGME (Dowanol PM) for wetting,
+ * residue reduction, and chip flushing. All components stored in litres.
+ * Material names match inventory_items exactly so batch inventory deduction
+ * (exact lower-case match in batches.service.ts) and FormulaPage price
+ * matching both resolve.
+ */
+const PGME_ENHANCED_COMPONENTS = [
+  { materialName: 'Water',                                 percentage: null,  unit: 'L' as const },  // auto-calc 81.80%
+  { materialName: 'IPA (Isopropyl Alcohol)',               percentage: 15.00, unit: 'L' as const },
+  { materialName: 'Propylene Glycol (PG)',                 percentage: 2.10,  unit: 'L' as const },
+  { materialName: 'Propylene Glycol Methyl Ether (PGME)',  percentage: 1.10,  unit: 'L' as const },
 ]
 
 /**
@@ -742,5 +847,57 @@ export async function seedFormulationVariants() {
     )
 
     console.log(`   ✅ Created High IPA Variant for UNICool AL (id: ${highIPAVariant.id})`)
+  }
+
+  // ── UNICool AL — PGME Enhanced Variant ───────────────────────────────────
+  const PGME_ENHANCED_NAME = 'UNICool AL – PGME Enhanced Variant'
+  const [existingPGME] = await db
+    .select()
+    .from(productFormulationVariants)
+    .where(
+      and(
+        eq(productFormulationVariants.productKey, 'unicool-al'),
+        eq(productFormulationVariants.variantName, PGME_ENHANCED_NAME),
+      ),
+    )
+
+  if (existingPGME) {
+    console.log(`   ↩️  PGME Enhanced Variant for UNICool AL already exists (id: ${existingPGME.id})`)
+    if (!existingPGME.coaTests || !existingPGME.tdsOverrides || !existingPGME.msdsOverrides) {
+      await db
+        .update(productFormulationVariants)
+        .set({
+          coaTests:      existingPGME.coaTests      ?? COA_TESTS_PGME_ENHANCED,
+          tdsOverrides:  existingPGME.tdsOverrides  ?? TDS_OVERRIDES_PGME_ENHANCED,
+          msdsOverrides: existingPGME.msdsOverrides ?? MSDS_OVERRIDES_PGME_ENHANCED,
+        })
+        .where(eq(productFormulationVariants.id, existingPGME.id))
+      console.log('   ✅ Backfilled coaTests / tdsOverrides / msdsOverrides for PGME Enhanced Variant')
+    }
+  } else {
+    const [pgmeVariant] = await db
+      .insert(productFormulationVariants)
+      .values({
+        productKey:    'unicool-al',
+        companyId:     null,
+        variantName:   PGME_ENHANCED_NAME,
+        isDefault:     false,
+        coaTests:      COA_TESTS_PGME_ENHANCED,
+        tdsOverrides:  TDS_OVERRIDES_PGME_ENHANCED,
+        msdsOverrides: MSDS_OVERRIDES_PGME_ENHANCED,
+      })
+      .returning()
+
+    await db.insert(formulationVariantComponents).values(
+      PGME_ENHANCED_COMPONENTS.map((c, i) => ({
+        variantId:    pgmeVariant.id,
+        materialName: c.materialName,
+        percentage:   c.percentage !== null ? String(c.percentage) : null,
+        unit:         c.unit,
+        sortOrder:    i,
+      })),
+    )
+
+    console.log(`   ✅ Created PGME Enhanced Variant for UNICool AL (id: ${pgmeVariant.id})`)
   }
 }

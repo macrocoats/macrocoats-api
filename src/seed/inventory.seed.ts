@@ -154,6 +154,8 @@ export const DEFAULT_INVENTORY = [
   // ── Solvents (additional) ────────────────────────────────────────────────────
   { material: 'Isopropyl Acetate',                  unit: 'L'  as const, price: '0',   sortOrder: 49 },
   { material: 'Exxol 32D',                          unit: 'L'  as const, price: '0',   sortOrder: 50 },
+  // PGME / Dowanol PM — wetting agent for UNICool AL PGME Enhanced Variant
+  { material: 'Propylene Glycol Methyl Ether (PGME)', unit: 'L' as const, price: '0',  sortOrder: 60 },
 
   // ── Biocides ─────────────────────────────────────────────────────────────────
   { material: 'Biocide Yellow',                     unit: 'L'  as const, price: '0',   sortOrder: 51 },
