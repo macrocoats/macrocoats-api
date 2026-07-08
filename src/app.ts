@@ -16,6 +16,7 @@ import { salaryRecordRoutes } from './modules/salaryRecords/salaryRecords.routes
 import { formulationVariantRoutes } from './modules/formulation-variants/formulation-variants.routes.js'
 import { companyPricingRoutes } from './modules/company-pricing/company-pricing.routes.js'
 import { pdfRoutes } from './modules/pdf/pdf.routes.js'
+import { optimizerRoutes } from './modules/optimizer/optimizer.routes.js'
 import { AppErrors } from './types/errors.js'
 
 export async function buildApp() {
@@ -56,6 +57,7 @@ export async function buildApp() {
   await app.register(formulationVariantRoutes,    { prefix: `${prefix}/formulation-variants` })
   await app.register(companyPricingRoutes,        { prefix: `${prefix}/companies` })
   await app.register(pdfRoutes,                   { prefix: `${prefix}/pdf` })
+  await app.register(optimizerRoutes,             { prefix: `${prefix}/optimizer` })
 
   // ── Global error handler ──────────────────────────────────────────────────
   app.setErrorHandler((error, _request, reply) => {

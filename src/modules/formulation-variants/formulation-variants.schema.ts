@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { PRODUCT_KEYS } from '../../types/index.js'
+import { VARIANT_STATUSES } from '../optimizer/optimizer.types.js'
 
 export const componentBodySchema = z.object({
   materialName: z.string().min(1),
@@ -13,7 +14,14 @@ export const createVariantSchema = z.object({
   companyId:   z.string().uuid().nullable(),
   variantName: z.string().min(1).max(200),
   isDefault:   z.boolean().default(false),
+  status:            z.enum(VARIANT_STATUSES as unknown as [string, ...string[]]).default('approved'),
+  sourceVariantId:   z.string().uuid().nullable().optional(),
+  optimizationMeta:  z.record(z.unknown()).nullable().optional(),
   components:  z.array(componentBodySchema).min(1),
+})
+
+export const transitionStatusSchema = z.object({
+  status: z.enum(VARIANT_STATUSES as unknown as [string, ...string[]]),
 })
 
 export const updateVariantSchema = z.object({
@@ -38,3 +46,4 @@ export type ComponentBody      = z.infer<typeof componentBodySchema>
 export type CreateVariantBody  = z.infer<typeof createVariantSchema>
 export type UpdateVariantBody  = z.infer<typeof updateVariantSchema>
 export type ReplaceComponentsBody = z.infer<typeof replaceComponentsSchema>
+export type TransitionStatusBody  = z.infer<typeof transitionStatusSchema>

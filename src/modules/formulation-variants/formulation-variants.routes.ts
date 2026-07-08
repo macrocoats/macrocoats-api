@@ -6,6 +6,7 @@ import {
   createVariantSchema,
   updateVariantSchema,
   replaceComponentsSchema,
+  transitionStatusSchema,
 } from './formulation-variants.schema.js'
 import {
   listVariantsForProduct,
@@ -14,7 +15,9 @@ import {
   updateVariant,
   replaceComponents,
   deleteVariant,
+  transitionVariantStatus,
 } from './formulation-variants.service.js'
+import type { VariantStatus } from '../optimizer/optimizer.types.js'
 
 const adminHandler = [authenticate, requireAuth, requireSuperAdmin]
 const readHandler  = [authenticate, requireAuth]
@@ -49,7 +52,12 @@ export async function formulationVariantRoutes(app: FastifyInstance) {
       return reply.code(201).send({ data: variant })
     } catch (err: any) {
       if (err?.code === '23505') {
-        return reply.code(409).send({ error: 'VARIANT_EXISTS', message: 'A variant for this product+company already exists.' })
+        // Only the partial unique index on (productKey, companyId) WHERE is_default
+        // can fire now — multiple non-default variants per product+company are allowed.
+        return reply.code(409).send({
+          error: 'VARIANT_EXISTS',
+          message: 'A default variant for this product+company already exists. Only one default variant is allowed per product+company.',
+        })
       }
       throw err
     }
@@ -79,6 +87,28 @@ export async function formulationVariantRoutes(app: FastifyInstance) {
 
     const components = await replaceComponents(request.params.variantId, body.data.components)
     return reply.send({ data: components })
+  })
+
+  // ── PATCH /formulation-variants/:variantId/status ──────────────────────────
+  app.patch<{ Params: { variantId: string } }>('/:variantId/status', { preHandler: adminHandler }, async (request, reply) => {
+    const body = transitionStatusSchema.safeParse(request.body)
+    if (!body.success) {
+      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
+    }
+
+    const result = await transitionVariantStatus(request.params.variantId, body.data.status as VariantStatus)
+
+    if (result === null) {
+      return reply.code(404).send({ error: 'VARIANT_NOT_FOUND' })
+    }
+    if (result === 'invalid_transition') {
+      return reply.code(409).send({
+        error: AppErrors.INVALID_STATUS_TRANSITION,
+        message: `Cannot transition variant to status '${body.data.status}' from its current status.`,
+      })
+    }
+
+    return reply.send({ data: result })
   })
 
   // ── DELETE /formulation-variants/:variantId ───────────────────────────────

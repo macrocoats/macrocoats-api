@@ -6,6 +6,7 @@ import {
   companies,
 } from '../../db/schema/index.js'
 import { cacheGet, cacheSet, cacheDel } from '../../plugins/redis.js'
+import { VARIANT_STATUS_TRANSITIONS, type VariantStatus } from '../optimizer/optimizer.types.js'
 import type { CreateVariantBody, UpdateVariantBody, ComponentBody } from './formulation-variants.schema.js'
 
 function toComponentResponse(row: typeof formulationVariantComponents.$inferSelect) {
@@ -31,10 +32,14 @@ function toVariantResponse(
     companyDisplayName,
     variantName:        row.variantName,
     isDefault:          row.isDefault,
+    status:             row.status,
+    sourceVariantId:    row.sourceVariantId ?? null,
+    optimizationMeta:   (row.optimizationMeta as Record<string, unknown> | null) ?? null,
     coaTests:     (row.coaTests     as Record<string, unknown>[] | null) ?? null,
     tdsOverrides:  (row.tdsOverrides  as Record<string, unknown>   | null) ?? null,
     msdsOverrides: (row.msdsOverrides as Record<string, unknown>   | null) ?? null,
     createdAt:          row.createdAt.toISOString(),
+    updatedAt:          row.updatedAt.toISOString(),
     components,
   }
 }
@@ -124,6 +129,9 @@ export async function createVariant(data: CreateVariantBody) {
         companyId:   data.companyId ?? null,
         variantName: data.variantName,
         isDefault:   data.isDefault,
+        status:            (data.status ?? 'approved') as typeof productFormulationVariants.$inferInsert.status,
+        sourceVariantId:   data.sourceVariantId ?? null,
+        optimizationMeta:  data.optimizationMeta ?? null,
       })
       .returning()
 
@@ -164,6 +172,8 @@ export async function updateVariant(variantId: string, data: UpdateVariantBody) 
 
   if (!Object.keys(patch).length) return getVariantById(variantId)
 
+  patch.updatedAt = new Date()
+
   const [updated] = await db
     .update(productFormulationVariants)
     .set(patch)
@@ -171,6 +181,38 @@ export async function updateVariant(variantId: string, data: UpdateVariantBody) 
     .returning({ productKey: productFormulationVariants.productKey })
 
   if (updated) await cacheDel(`variants:${updated.productKey}`)
+
+  return getVariantById(variantId)
+}
+
+/**
+ * Validates and applies a variant status transition against
+ * VARIANT_STATUS_TRANSITIONS (optimizer.types.ts).
+ *
+ * Return contract mirrors products.service.ts transitionDocumentStatus:
+ * - `null` — variant not found (route → 404)
+ * - `'invalid_transition'` — not allowed from the current status (route → 409)
+ * - otherwise — the updated variant response
+ */
+export async function transitionVariantStatus(variantId: string, newStatus: VariantStatus) {
+  const [existing] = await db
+    .select({ status: productFormulationVariants.status, productKey: productFormulationVariants.productKey })
+    .from(productFormulationVariants)
+    .where(eq(productFormulationVariants.id, variantId))
+
+  if (!existing) return null
+
+  const allowedNextStatuses = VARIANT_STATUS_TRANSITIONS[existing.status as VariantStatus] ?? []
+  if (!allowedNextStatuses.includes(newStatus)) {
+    return 'invalid_transition' as const
+  }
+
+  await db
+    .update(productFormulationVariants)
+    .set({ status: newStatus, updatedAt: new Date() })
+    .where(eq(productFormulationVariants.id, variantId))
+
+  await cacheDel(`variants:${existing.productKey}`)
 
   return getVariantById(variantId)
 }

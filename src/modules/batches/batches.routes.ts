@@ -15,8 +15,19 @@ export async function batchRoutes(app: FastifyInstance) {
       return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
     }
 
-    const batch = await createBatch(body.data, request.authUser?.id ?? null)
-    return reply.code(201).send(batch)
+    const result = await createBatch(body.data, request.authUser?.id ?? null)
+
+    if ('code' in result && result.code === 'VARIANT_NOT_FOUND') {
+      return reply.code(404).send({ error: 'VARIANT_NOT_FOUND' })
+    }
+    if ('code' in result && result.code === 'VARIANT_NOT_USABLE') {
+      return reply.code(409).send({
+        error: 'VARIANT_NOT_USABLE',
+        message: `Variant '${result.variantName}' is not approved for production use (status: ${result.status})`,
+      })
+    }
+
+    return reply.code(201).send(result)
   })
 
   // ── GET /batches ──────────────────────────────────────────────────────────

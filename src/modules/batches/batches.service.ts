@@ -1,7 +1,8 @@
 import { eq, ilike, and, gte, lte, desc, count, sql, isNull, isNotNull } from 'drizzle-orm'
 import { db } from '../../db/index.js'
-import { batches } from '../../db/schema/index.js'
+import { batches, productFormulationVariants } from '../../db/schema/index.js'
 import { nextBatchNumber } from '../../utils/batchNumber.js'
+import { USABLE_VARIANT_STATUSES, type VariantStatus } from '../optimizer/optimizer.types.js'
 import type { CreateBatchBody, ListBatchesQuery, SaveCoaSnapshotBody } from './batches.schema.js'
 
 function toBatchResponse(row: typeof batches.$inferSelect) {
@@ -27,7 +28,34 @@ function toBatchResponse(row: typeof batches.$inferSelect) {
   }
 }
 
-export async function createBatch(data: CreateBatchBody, createdBy: string | null) {
+/**
+ * Discriminated result for createBatch — mirrors the null/'invalid_transition'/data
+ * convention used elsewhere (e.g. transitionDocumentStatus, transitionVariantStatus),
+ * but createBatch needs to carry extra context (variant name + status) for the 409
+ * error message, so it returns a tagged object instead of a bare string literal.
+ */
+export type CreateBatchResult =
+  | ReturnType<typeof toBatchResponse>
+  | { code: 'VARIANT_NOT_FOUND' }
+  | { code: 'VARIANT_NOT_USABLE'; variantName: string; status: VariantStatus }
+
+export async function createBatch(data: CreateBatchBody, createdBy: string | null): Promise<CreateBatchResult> {
+  // ── Variant approval gate ────────────────────────────────────────────────
+  // AI-suggested / draft / reviewed variants must never reach production —
+  // only 'approved' and 'production' variants may back a batch.
+  if (data.variantId) {
+    const [variant] = await db
+      .select({ variantName: productFormulationVariants.variantName, status: productFormulationVariants.status })
+      .from(productFormulationVariants)
+      .where(eq(productFormulationVariants.id, data.variantId))
+
+    if (!variant) return { code: 'VARIANT_NOT_FOUND' }
+
+    if (!USABLE_VARIANT_STATUSES.includes(variant.status as VariantStatus)) {
+      return { code: 'VARIANT_NOT_USABLE', variantName: variant.variantName, status: variant.status as VariantStatus }
+    }
+  }
+
   return db.transaction(async (tx) => {
     const batchNumber    = await nextBatchNumber(tx as unknown as typeof db, data.companyName)
     const productionDate = new Date().toISOString().slice(0, 10)

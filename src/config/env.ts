@@ -24,6 +24,8 @@ const envSchema = z.object({
   PDF_BROWSER_POOL_SIZE:  z.coerce.number().default(3),
   PDF_PAGE_TIMEOUT_MS:    z.coerce.number().default(30_000),
   PDF_RENDER_TIMEOUT_MS:  z.coerce.number().default(60_000),
+
+  AI_PROVIDER:          z.enum(['heuristic', 'openai', 'azure-openai', 'local']).default('heuristic'),
 })
 
 function loadEnv() {

@@ -1,5 +1,5 @@
-import { pgTable, uuid, text, boolean, timestamp, unique, jsonb, index } from 'drizzle-orm/pg-core'
-import { relations } from 'drizzle-orm'
+import { pgTable, uuid, text, boolean, timestamp, jsonb, index, uniqueIndex, type AnyPgColumn } from 'drizzle-orm/pg-core'
+import { relations, sql } from 'drizzle-orm'
 import { products } from './products.js'
 import { companies } from './companies.js'
 import { formulationVariantComponents } from './formulationVariantComponents.js'
@@ -10,12 +10,22 @@ export const productFormulationVariants = pgTable('product_formulation_variants'
   companyId:   uuid('company_id').references(() => companies.id, { onDelete: 'cascade' }),
   variantName: text('variant_name').notNull(),
   isDefault:   boolean('is_default').notNull().default(false),
+  /** AI Formulation Optimizer approval workflow — see VARIANT_STATUS_TRANSITIONS in modules/optimizer/optimizer.types.ts */
+  status:      text('status', { enum: ['draft', 'ai_suggested', 'reviewed', 'approved', 'production'] })
+                 .notNull()
+                 .default('approved'),
+  /** Nullable self-reference — the variant this row was generated/optimized from. AI recommendations never mutate an existing variant; they only ever produce a new row that points back here. */
+  sourceVariantId: uuid('source_variant_id').references((): AnyPgColumn => productFormulationVariants.id, { onDelete: 'set null' }),
+  /** { goals, targets, acceptedRecommendations, provider, generatedAt } — set only for AI-generated variants. */
+  optimizationMeta: jsonb('optimization_meta'),
   coaTests:    jsonb('coa_tests'),
   tdsOverrides: jsonb('tds_overrides'),
   msdsOverrides: jsonb('msds_overrides'),
   createdAt:   timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt:   timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [
-  unique('pfv_product_company_unique').on(t.productKey, t.companyId),
+  // Multiple variants per product+company are now allowed; only one may be the DEFAULT.
+  uniqueIndex('pfv_product_company_default_unique').on(t.productKey, t.companyId).where(sql`is_default = true`),
   index('pfv_product_key_idx').on(t.productKey),
   index('pfv_company_id_idx').on(t.companyId),
 ])
