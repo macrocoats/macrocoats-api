@@ -17,6 +17,7 @@ import { formulationVariantRoutes } from './modules/formulation-variants/formula
 import { companyPricingRoutes } from './modules/company-pricing/company-pricing.routes.js'
 import { pdfRoutes } from './modules/pdf/pdf.routes.js'
 import { optimizerRoutes } from './modules/optimizer/optimizer.routes.js'
+import { costIntelligenceRoutes } from './modules/cost-intelligence/cost-intelligence.routes.js'
 import { AppErrors } from './types/errors.js'
 
 export async function buildApp() {
@@ -58,6 +59,7 @@ export async function buildApp() {
   await app.register(companyPricingRoutes,        { prefix: `${prefix}/companies` })
   await app.register(pdfRoutes,                   { prefix: `${prefix}/pdf` })
   await app.register(optimizerRoutes,             { prefix: `${prefix}/optimizer` })
+  await app.register(costIntelligenceRoutes,      { prefix: `${prefix}/cost-intelligence` })
 
   // ── Global error handler ──────────────────────────────────────────────────
   app.setErrorHandler((error, _request, reply) => {

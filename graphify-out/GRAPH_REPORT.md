@@ -1,12 +1,12 @@
 # Graph Report - /Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api  (2026-07-08)
 
 ## Corpus Check
-- 97 files · ~99,897 words
+- 100 files · ~104,000 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 405 nodes · 685 edges · 29 communities detected
-- Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 58 edges (avg confidence: 0.81)
+- 422 nodes · 719 edges · 29 communities detected
+- Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 60 edges (avg confidence: 0.81)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
@@ -43,8 +43,8 @@
 ## God Nodes (most connected - your core abstractions)
 1. `Macro Coats API` - 35 edges
 2. `JWT RS256 Authentication` - 12 edges
-3. `Auth Module` - 11 edges
-4. `generateRecommendations()` - 10 edges
+3. `generateRecommendations()` - 11 edges
+4. `Auth Module` - 11 edges
 5. `Batches Module` - 10 edges
 6. `issueTokens()` - 9 edges
 7. `PDFService` - 9 edges
@@ -73,47 +73,47 @@
 
 ### Community 0 - "Community 0"
 Cohesion: 0.04
-Nodes (71): Entity Relationship Rules (staff/vendors standalone), Environment Variables (Zod-validated at startup), Integration Testing (real PostgreSQL, singleFork), Drizzle Migration Workflow (canonical), Module Layout (routes/service/schema per module), Product Documents JSONB Storage, Redis Caching (optional, doc 300s TTL), Feature: Advanced Inventory Module (+63 more)
+Nodes (68): Entity Relationship Rules (staff/vendors standalone), Integration Testing (real PostgreSQL, singleFork), Drizzle Migration Workflow (canonical), Module Layout (routes/service/schema per module), Product Documents JSONB Storage, Redis Caching (optional, doc 300s TTL), Feature: Advanced Inventory Module, Feature: Batch Traceability System (+60 more)
 
 ### Community 1 - "Community 1"
 Cohesion: 0.07
 Nodes (4): buildApp(), registerCookies(), registerCors(), main()
 
 ### Community 2 - "Community 2"
-Cohesion: 0.08
-Nodes (43): RBAC Roles (superadmin / company), Request Lifecycle (onRequest to preHandler to handler), Two-Token RS256 Auth System (access + refresh), Feature: Activity Logs (audit trail), Feature: Advanced Search, Feature: Client Portal (company-scoped access), Feature: Mobile Operator Mode, Feature: Profit Intelligence Dashboard (+35 more)
+Cohesion: 0.07
+Nodes (46): Environment Variables (Zod-validated at startup), RBAC Roles (superadmin / company), Request Lifecycle (onRequest to preHandler to handler), Two-Token RS256 Auth System (access + refresh), Feature: Activity Logs (audit trail), Feature: Advanced Search, Feature: Client Portal (company-scoped access), Feature: Mobile Operator Mode (+38 more)
 
 ### Community 3 - "Community 3"
 Cohesion: 0.08
 Nodes (15): amountInWords(), wordsBelow1000(), formatDate(), formatTime(), nowFormatted(), registerHelpers(), buildFooterTemplate(), buildHeaderTemplate() (+7 more)
 
 ### Community 4 - "Community 4"
+Cohesion: 0.11
+Nodes (20): buildSummary(), getAccessSummary(), deleteVariant(), getVariantById(), listVariantsForProduct(), replaceComponents(), toComponentResponse(), toVariantResponse() (+12 more)
+
+### Community 5 - "Community 5"
 Cohesion: 0.09
 Nodes (15): seedCompanies(), hashPassword(), seedFormulationVariants(), main(), seedInventory(), seedProducts(), getQuotationById(), toQuotationResponse() (+7 more)
 
-### Community 5 - "Community 5"
-Cohesion: 0.12
-Nodes (20): buildSummary(), getAccessSummary(), deleteVariant(), getVariantById(), listVariantsForProduct(), replaceComponents(), toComponentResponse(), toVariantResponse() (+12 more)
-
 ### Community 6 - "Community 6"
+Cohesion: 0.18
+Nodes (20): applyRecommendations(), generateRecommendations(), money(), pct(), round2(), getAIProvider(), classifyRole(), densityFor() (+12 more)
+
+### Community 7 - "Community 7"
 Cohesion: 0.15
 Nodes (19): buildAuthUser(), getMeById(), issueTokens(), loginWithCredentials(), loginWithToken(), revokeRefreshToken(), rotateRefreshToken(), authenticate() (+11 more)
 
-### Community 7 - "Community 7"
+### Community 8 - "Community 8"
+Cohesion: 0.25
+Nodes (11): buildBatchConditions(), buildComparisonSide(), formatMoney(), getAlerts(), getComparison(), getMaterials(), getOverview(), listBatchCosts() (+3 more)
+
+### Community 9 - "Community 9"
 Cohesion: 0.19
 Nodes (4): getCompanyById(), toResponse(), getCompanyPricing(), upsertCompanyPricing()
 
-### Community 8 - "Community 8"
+### Community 10 - "Community 10"
 Cohesion: 0.21
 Nodes (0): 
-
-### Community 9 - "Community 9"
-Cohesion: 0.3
-Nodes (10): getAIProvider(), analyzeFormulation(), buildPriceContext(), computeVariantCostPerL(), enrichComponents(), loadHistoricalVariants(), loadVariantWithComponents(), normalizeName() (+2 more)
-
-### Community 10 - "Community 10"
-Cohesion: 0.41
-Nodes (10): applyRecommendations(), generateRecommendations(), money(), pct(), round2(), classifyRole(), densityFor(), isIPA() (+2 more)
 
 ### Community 11 - "Community 11"
 Cohesion: 0.24
@@ -219,9 +219,9 @@ Nodes (1): Feature: AI Formulation Optimizer
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Macro Coats API` connect `Community 0` to `Community 2`, `Community 12`?**
-  _High betweenness centrality (0.071) - this node is a cross-community bridge._
-- **Are the 5 inferred relationships involving `generateRecommendations()` (e.g. with `analyzeFormulation()` and `normalizeMaterialName()`) actually correct?**
-  _`generateRecommendations()` has 5 INFERRED edges - model-reasoned connections that need verification._
+  _High betweenness centrality (0.066) - this node is a cross-community bridge._
+- **Are the 6 inferred relationships involving `generateRecommendations()` (e.g. with `analyzeFormulation()` and `normalizeMaterialName()`) actually correct?**
+  _`generateRecommendations()` has 6 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `TypeScript`, `Supertest`, `React + Vite SPA Frontend` to the rest of the system?**
   _35 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
@@ -229,6 +229,6 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `Community 1` be split into smaller, more focused modules?**
   _Cohesion score 0.07 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.08 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07 - nodes in this community are weakly interconnected._
 - **Should `Community 3` be split into smaller, more focused modules?**
   _Cohesion score 0.08 - nodes in this community are weakly interconnected._

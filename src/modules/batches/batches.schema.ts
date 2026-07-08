@@ -29,6 +29,7 @@ const costSummarySchema = z.object({
   lossAdjustmentPerL:   z.number(),
   transportCostPerL:    z.number(),
   handlingBufferPerL:   z.number(),
+  packagingCostPerL:    z.number().optional(),
   productionCostPerL:   z.number(),
   sellingPricePerL:     z.number(),
   profitPerL:           z.number(),
