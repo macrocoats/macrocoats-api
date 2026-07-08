@@ -93,7 +93,7 @@ Routes never import from other modules' services. Cross-cutting concerns (auth, 
 | `products` | GET /products, GET /products/expiry-summary, GET /products/:productLine/:docType, PUT /products/:productLine/:docType, PATCH /products/:productLine/:docType/status, GET /products/:productLine/:docType/audit |
 | `companies` | GET /companies, GET /companies/:id, POST /companies, PATCH /companies/:id, POST /companies/:id/rotate-token, DELETE /companies/:id |
 | `company-pricing` | GET /companies/:id/pricing, PUT /companies/:id/pricing |
-| `formulation-variants` | GET /formulation-variants, GET /formulation-variants/:variantId, POST /formulation-variants, PUT /formulation-variants/:variantId, PUT /formulation-variants/:variantId/components, DELETE /formulation-variants/:variantId |
+| `formulation-variants` | GET /formulation-variants, GET /formulation-variants/:variantId, POST /formulation-variants, PUT /formulation-variants/:variantId, PUT /formulation-variants/:variantId/components, PATCH /formulation-variants/:variantId/status, DELETE /formulation-variants/:variantId |
 | `quotations` | POST /quotations, GET /quotations, GET /quotations/:id |
 | `batches` | POST /batches, GET /batches, GET /batches/:batchNumber, PATCH /batches/:batchNumber/coa, DELETE /batches/:batchNumber/coa, PATCH /batches/:batchNumber/payment, DELETE /batches/:id |
 | `inventory` | GET /inventory, POST /inventory, PATCH /inventory/:id, DELETE /inventory/:id, POST /inventory/reset |
@@ -102,10 +102,14 @@ Routes never import from other modules' services. Cross-cutting concerns (auth, 
 | `staff` | GET /staff, GET /staff/:id, POST /staff, PUT /staff/:id, DELETE /staff/:id |
 | `vendors` | GET /vendors, GET /vendors/:id, POST /vendors, PUT /vendors/:id, DELETE /vendors/:id |
 | `pdf` | POST /pdf/quotation, POST /pdf/tds, POST /pdf/msds, POST /pdf/coa, POST /pdf/batch |
+| `optimizer` | POST /optimizer/analyze |
+| `cost-intelligence` | GET /cost-intelligence/overview, /trends, /batches, /materials, /alerts, /profitability, /comparison |
 
 All endpoints except auth are `superadmin`-only, except product document reads which use `checkProductAccess` for company users. Within `products`, only `GET /products/:productLine/:docType` uses `checkProductAccess` — every other `products` endpoint (including status transitions, audit trail, and expiry summary) is `requireSuperAdmin`-only. `GET /products/expiry-summary` is registered before the `/:productLine/:docType` route so the literal segment `expiry-summary` never matches as a `:productLine` param.
 
 > **Note:** The `pdf` module has a non-standard directory layout — it includes `helpers/`, `partials/`, `styles/`, and `templates/` sub-directories plus `pdf.types.ts` and `template.service.ts` in addition to the standard 3-file pattern. It uses Puppeteer + Handlebars for server-side PDF generation.
+
+> **Note:** The `optimizer` module (AI Formulation Optimizer) also deviates from the 3-file pattern — it adds `optimizer.types.ts` and an `ai/` sub-directory housing the AI-provider abstraction (`getAIProvider`). It also exports `VARIANT_STATUS_TRANSITIONS` (see "Formulation variant approval workflow" below), which `formulation-variants` imports.
 
 ### Middleware
 
@@ -157,6 +161,24 @@ draft ← archived                  (archived can only return to draft)
 - `listAuditTrail(productLine, docType)` returns all `document_audit_log` rows for that document (newest first), left-joined to `users` for `userName`. Returns `null` if the document doesn't exist.
 - `listExpirySummary()` computes a `reviewState` per document from `updatedAt` age, independent of `status`: `'expired'` (>365 days), `'due'` (>335 days), else `'ok'`.
 
+### Formulation variant approval workflow
+
+`product_formulation_variants.status` is a second linear state machine, defined as `VARIANT_STATUS_TRANSITIONS` in `src/modules/optimizer/optimizer.types.ts`:
+
+```
+draft → reviewed → approved → production
+ai_suggested → reviewed | draft      (AI-generated variants enter here)
+reviewed → draft                     (bounce back)
+approved → reviewed                  (bounce back)
+production → approved                (bounce back)
+```
+
+`transitionVariantStatus(variantId, newStatus)` in `formulation-variants.service.ts` mirrors the return contract of `transitionDocumentStatus`: `null` (→ 404), `'invalid_transition'` (→ 409), or the updated variant. Variants created directly via POST default to `approved`; variants saved from the AI Optimizer start at `ai_suggested`.
+
+### AI Formulation Optimizer
+
+`POST /optimizer/analyze` (superadmin-only) takes a product/variant's component list plus optimization goals, enriches components with inventory prices (name-normalized: `'LAE 9'` ≡ `'LAE-9'`), and calls an AI provider (`src/modules/optimizer/ai/`) to produce recommendations and financial impact. Suggested variants can then be saved through the normal `formulation-variants` module with status `ai_suggested` and promoted via the approval workflow above.
+
 ### Redis caching
 
 Redis is entirely optional. `src/plugins/redis.ts` exports `cacheGet/cacheSet/cacheDel/cacheDelPattern` helpers that no-op silently when `REDIS_URL` is not set. Product documents are cached at key `doc:{productLine}:{docType}` with a 300s TTL, invalidated on PUT.
@@ -175,7 +197,7 @@ Integration tests use a real PostgreSQL database (the same one in `.env.local`).
 
 - `formulationSnapshot` — full formulation at time of batch creation
 - `labelSnapshot` — label data including the assigned batchNumber
-- `costSummary` — cost breakdown
+- `costSummary` — cost breakdown (per-litre component/loss/transport/handling costs, optional `packagingCostPerL`, selling price, profit)
 - `paymentDueDate`, `paymentTermDays` (default 45) — payment tracking
 - `paidAt` — nullable timestamp; `NULL` = unpaid, set to `now()` when payment is marked done via `PATCH /batches/:batchNumber/payment` (`{ paid: boolean }`, toggleable). `listBatches` accepts a `paid=true|false` query filter (`isNotNull`/`isNull` on `paidAt`)
 - `batchType` — `'Production'` (default) or `'Trial'`; filterable via `listBatches` query param
@@ -190,7 +212,7 @@ Integration tests use a real PostgreSQL database (the same one in `.env.local`).
 | `companies` | Client companies; holds `accessToken` + `tokenExpiresAt` for magic-link login |
 | `company_product_access` | Junction: which products each company may view |
 | `company_product_prices` | Per-company special pricing for specific products |
-| `products` | Product line definitions (9 chemical products) |
+| `products` | Product line definitions (12 chemical products) |
 | `product_documents` | TDS/MSDS/Formula/Label/COA per product (JSONB body); also carries `status`, `createdAt`, `updatedAt`, `updatedBy` |
 | `document_audit_log` | Per-document history: created/updated/status_changed events, who, when, notes |
 | `product_formulation_variants` | Product variant headers (e.g. customized formulations) |
@@ -212,7 +234,7 @@ Integration tests use a real PostgreSQL database (the same one in `.env.local`).
 `src/seed/` contains idempotent seed scripts (run via `npm run seed`):
 
 - `index.ts` — entry point; runs all seeds in order
-- `products.seed.ts` — 9 product lines (uniklean-sp, uniklean-fe, uniprotect-oil, uniflow-ecm, unicool-al, unikoat-lt-700, unisolve-h3, unipass, uniktonner)
+- `products.seed.ts` — 12 product lines (uniklean-sp, uniklean-fe, uniprotect-oil, uniflow-ecm, unicool-al, unikoat-lt-700, unisolve-h3, unipass, uniktonner, corroklean, corrcut-100, corrucut-500)
 - `companies.seed.ts` — test companies (Rane Madras, TVS, Akshaya) with product access mappings
 - `formulationVariants.seed.ts` — formulation variant headers and components
 - `inventory.seed.ts` — 23 factory-default raw materials
