@@ -29,6 +29,8 @@ export const AppErrors = {
   STAFF_NOT_FOUND:         'STAFF_NOT_FOUND',
   // Salary records
   SALARY_RECORD_NOT_FOUND: 'SALARY_RECORD_NOT_FOUND',
+  // Hazard profiles
+  HAZARD_PROFILE_NOT_FOUND: 'HAZARD_PROFILE_NOT_FOUND',
 } as const
 
 export type AppError = typeof AppErrors[keyof typeof AppErrors]

@@ -1,4 +1,4 @@
-import { eq, inArray } from 'drizzle-orm'
+import { eq, and, or, isNull, inArray } from 'drizzle-orm'
 import { db } from '../../db/index.js'
 import {
   productFormulationVariants,
@@ -20,12 +20,20 @@ function toComponentResponse(row: typeof formulationVariantComponents.$inferSele
   }
 }
 
+/**
+ * `includeInternal=true` returns the full row (components, optimizationMeta, coaTests,
+ * tdsOverrides, msdsOverrides, sourceVariantId) — real formulation data.
+ * `includeInternal=false` returns only the fields the frontend's VariantSelector
+ * needs to render a dropdown (id/name/status/isDefault/companyDisplayName) — this
+ * is what non-superadmin GET responses use, per the leak #2 fix (§7 of the plan).
+ */
 function toVariantResponse(
   row: typeof productFormulationVariants.$inferSelect,
   companyDisplayName: string | null,
   components: ReturnType<typeof toComponentResponse>[],
+  includeInternal: boolean,
 ) {
-  return {
+  const base = {
     id:                 row.id,
     productKey:         row.productKey,
     companyId:          row.companyId ?? null,
@@ -33,26 +41,51 @@ function toVariantResponse(
     variantName:        row.variantName,
     isDefault:          row.isDefault,
     status:             row.status,
+    createdAt:          row.createdAt.toISOString(),
+    updatedAt:          row.updatedAt.toISOString(),
+  }
+
+  if (!includeInternal) return base
+
+  return {
+    ...base,
     sourceVariantId:    row.sourceVariantId ?? null,
     optimizationMeta:   (row.optimizationMeta as Record<string, unknown> | null) ?? null,
     coaTests:     (row.coaTests     as Record<string, unknown>[] | null) ?? null,
     tdsOverrides:  (row.tdsOverrides  as Record<string, unknown>   | null) ?? null,
     msdsOverrides: (row.msdsOverrides as Record<string, unknown>   | null) ?? null,
-    createdAt:          row.createdAt.toISOString(),
-    updatedAt:          row.updatedAt.toISOString(),
     components,
   }
 }
 
-export async function listVariantsForProduct(productKey: string) {
+function nonSuperadminScope(companyId: string | null | undefined) {
+  return companyId
+    ? or(isNull(productFormulationVariants.companyId), eq(productFormulationVariants.companyId, companyId))
+    : isNull(productFormulationVariants.companyId)
+}
+
+export async function listVariantsForProduct(
+  productKey: string,
+  scope: { role?: string; companyId?: string | null } = {},
+) {
+  const isSuperadmin = scope.role === 'superadmin'
   const cacheKey = `variants:${productKey}`
-  const cached = await cacheGet<ReturnType<typeof toVariantResponse>[]>(cacheKey)
-  if (cached) return cached
+
+  // Only the unscoped (superadmin) view is cached — company-scoped queries vary
+  // per requester, so caching them would need a companyId-keyed cache matrix
+  // for little benefit at this data volume.
+  if (isSuperadmin) {
+    const cached = await cacheGet<ReturnType<typeof toVariantResponse>[]>(cacheKey)
+    if (cached) return cached
+  }
+
+  const conditions = [eq(productFormulationVariants.productKey, productKey)]
+  if (!isSuperadmin) conditions.push(nonSuperadminScope(scope.companyId)!)
 
   const variants = await db
     .select()
     .from(productFormulationVariants)
-    .where(eq(productFormulationVariants.productKey, productKey))
+    .where(and(...conditions))
 
   if (!variants.length) return []
 
@@ -88,14 +121,26 @@ export async function listVariantsForProduct(productKey: string) {
       v,
       v.companyId ? (companyMap.get(v.companyId) ?? null) : null,
       componentsByVariant.get(v.id) ?? [],
+      isSuperadmin,
     ),
   )
 
-  await cacheSet(cacheKey, result, 300)
+  if (isSuperadmin) await cacheSet(cacheKey, result, 300)
   return result
 }
 
-export async function getVariantById(variantId: string) {
+/**
+ * `includeInternal` defaults to `true` because most callers are either
+ * superadmin-only admin routes (create/update/replace/transition) or the
+ * internal server-to-server reuse from `products.service.ts` (§5 — the
+ * variant-aware TDS/MSDS derivation), which always needs the raw components
+ * to run its own sanitization logic regardless of the outer request's role.
+ * Only the two non-superadmin-facing HTTP GET routes in *this* module pass
+ * `false` explicitly. We always fetch the full row/components from the DB
+ * regardless of `includeInternal` — trimming only happens in the response
+ * shape — so there's a single query path here rather than two.
+ */
+export async function getVariantById(variantId: string, includeInternal = true) {
   const [variant] = await db
     .select()
     .from(productFormulationVariants)
@@ -117,7 +162,7 @@ export async function getVariantById(variantId: string) {
     .from(formulationVariantComponents)
     .where(eq(formulationVariantComponents.variantId, variantId))
 
-  return toVariantResponse(variant, companyDisplayName, comps.map(toComponentResponse))
+  return toVariantResponse(variant, companyDisplayName, comps.map(toComponentResponse), includeInternal)
 }
 
 export async function createVariant(data: CreateVariantBody) {
@@ -158,7 +203,7 @@ export async function createVariant(data: CreateVariantBody) {
     }
 
     await cacheDel(`variants:${variant.productKey}`)
-    return toVariantResponse(variant, companyDisplayName, inserted.map(toComponentResponse))
+    return toVariantResponse(variant, companyDisplayName, inserted.map(toComponentResponse), true)
   })
 }
 
@@ -170,7 +215,7 @@ export async function updateVariant(variantId: string, data: UpdateVariantBody) 
   if (data.tdsOverrides  !== undefined) patch.tdsOverrides  = data.tdsOverrides
   if (data.msdsOverrides !== undefined) patch.msdsOverrides = data.msdsOverrides
 
-  if (!Object.keys(patch).length) return getVariantById(variantId)
+  if (!Object.keys(patch).length) return getVariantById(variantId, true)
 
   patch.updatedAt = new Date()
 
@@ -182,7 +227,7 @@ export async function updateVariant(variantId: string, data: UpdateVariantBody) 
 
   if (updated) await cacheDel(`variants:${updated.productKey}`)
 
-  return getVariantById(variantId)
+  return getVariantById(variantId, true)
 }
 
 /**
@@ -214,7 +259,7 @@ export async function transitionVariantStatus(variantId: string, newStatus: Vari
 
   await cacheDel(`variants:${existing.productKey}`)
 
-  return getVariantById(variantId)
+  return getVariantById(variantId, true)
 }
 
 export async function replaceComponents(variantId: string, components: ComponentBody[]) {

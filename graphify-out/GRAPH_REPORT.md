@@ -1,12 +1,12 @@
-# Graph Report - /Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api  (2026-07-08)
+# Graph Report - /Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api  (2026-07-10)
 
 ## Corpus Check
-- 100 files · ~104,000 words
+- 110 files · ~112,653 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 422 nodes · 719 edges · 29 communities detected
-- Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 60 edges (avg confidence: 0.81)
+- 453 nodes · 796 edges · 29 communities detected
+- Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 78 edges (avg confidence: 0.81)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
@@ -43,14 +43,14 @@
 ## God Nodes (most connected - your core abstractions)
 1. `Macro Coats API` - 35 edges
 2. `JWT RS256 Authentication` - 12 edges
-3. `generateRecommendations()` - 11 edges
-4. `Auth Module` - 11 edges
-5. `Batches Module` - 10 edges
-6. `issueTokens()` - 9 edges
-7. `PDFService` - 9 edges
-8. `TemplateService` - 9 edges
-9. `Products Module` - 9 edges
-10. `cacheDel()` - 8 edges
+3. `cacheDel()` - 11 edges
+4. `generateRecommendations()` - 11 edges
+5. `Auth Module` - 11 edges
+6. `applyVariantOverride()` - 10 edges
+7. `Batches Module` - 10 edges
+8. `issueTokens()` - 9 edges
+9. `PDFService` - 9 edges
+10. `TemplateService` - 9 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `Redis Cache` --semantically_similar_to--> `Redis Caching (optional, doc 300s TTL)`  [INFERRED] [semantically similar]
@@ -73,71 +73,71 @@
 
 ### Community 0 - "Community 0"
 Cohesion: 0.04
-Nodes (68): Entity Relationship Rules (staff/vendors standalone), Integration Testing (real PostgreSQL, singleFork), Drizzle Migration Workflow (canonical), Module Layout (routes/service/schema per module), Product Documents JSONB Storage, Redis Caching (optional, doc 300s TTL), Feature: Advanced Inventory Module, Feature: Batch Traceability System (+60 more)
+Nodes (67): Entity Relationship Rules (staff/vendors standalone), Integration Testing (real PostgreSQL, singleFork), Drizzle Migration Workflow (canonical), Module Layout (routes/service/schema per module), Product Documents JSONB Storage, Redis Caching (optional, doc 300s TTL), Feature: Advanced Inventory Module, Feature: Batch Traceability System (+59 more)
 
 ### Community 1 - "Community 1"
 Cohesion: 0.07
-Nodes (4): buildApp(), registerCookies(), registerCors(), main()
+Nodes (36): buildSummary(), getAccessSummary(), buildInternalComposition(), buildInternalHazardBreakdown(), buildMsdsIngredientDisclosure(), buildSanitizedTdsComposition(), deriveHazardAggregate(), lookupProfile() (+28 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.07
-Nodes (46): Environment Variables (Zod-validated at startup), RBAC Roles (superadmin / company), Request Lifecycle (onRequest to preHandler to handler), Two-Token RS256 Auth System (access + refresh), Feature: Activity Logs (audit trail), Feature: Advanced Search, Feature: Client Portal (company-scoped access), Feature: Mobile Operator Mode (+38 more)
+Nodes (9): buildApp(), getCompanyPricing(), upsertCompanyPricing(), registerCookies(), registerCors(), forceStatus(), req(), connectRedis() (+1 more)
 
 ### Community 3 - "Community 3"
+Cohesion: 0.07
+Nodes (47): Environment Variables (Zod-validated at startup), RBAC Roles (superadmin / company), Request Lifecycle (onRequest to preHandler to handler), Two-Token RS256 Auth System (access + refresh), Feature: Activity Logs (audit trail), Feature: Advanced Search, Feature: Client Portal (company-scoped access), Feature: Mobile Operator Mode (+39 more)
+
+### Community 4 - "Community 4"
 Cohesion: 0.08
 Nodes (15): amountInWords(), wordsBelow1000(), formatDate(), formatTime(), nowFormatted(), registerHelpers(), buildFooterTemplate(), buildHeaderTemplate() (+7 more)
 
-### Community 4 - "Community 4"
-Cohesion: 0.11
-Nodes (20): buildSummary(), getAccessSummary(), deleteVariant(), getVariantById(), listVariantsForProduct(), replaceComponents(), toComponentResponse(), toVariantResponse() (+12 more)
-
 ### Community 5 - "Community 5"
-Cohesion: 0.09
-Nodes (15): seedCompanies(), hashPassword(), seedFormulationVariants(), main(), seedInventory(), seedProducts(), getQuotationById(), toQuotationResponse() (+7 more)
+Cohesion: 0.14
+Nodes (20): applyRecommendations(), generateRecommendations(), money(), pct(), round2(), getAIProvider(), classifyRole(), densityFor() (+12 more)
 
 ### Community 6 - "Community 6"
-Cohesion: 0.18
-Nodes (20): applyRecommendations(), generateRecommendations(), money(), pct(), round2(), getAIProvider(), classifyRole(), densityFor() (+12 more)
+Cohesion: 0.1
+Nodes (12): seedCompanies(), hashPassword(), seedFormulationVariants(), seedHazardProfiles(), main(), seedInventory(), seedProducts(), getQuotationById() (+4 more)
 
 ### Community 7 - "Community 7"
 Cohesion: 0.15
 Nodes (19): buildAuthUser(), getMeById(), issueTokens(), loginWithCredentials(), loginWithToken(), revokeRefreshToken(), rotateRefreshToken(), authenticate() (+11 more)
 
 ### Community 8 - "Community 8"
-Cohesion: 0.25
+Cohesion: 0.23
 Nodes (11): buildBatchConditions(), buildComparisonSide(), formatMoney(), getAlerts(), getComparison(), getMaterials(), getOverview(), listBatchCosts() (+3 more)
 
 ### Community 9 - "Community 9"
 Cohesion: 0.19
-Nodes (4): getCompanyById(), toResponse(), getCompanyPricing(), upsertCompanyPricing()
+Nodes (0): 
 
 ### Community 10 - "Community 10"
 Cohesion: 0.21
-Nodes (0): 
-
-### Community 11 - "Community 11"
-Cohesion: 0.24
 Nodes (4): getBatchByNumber(), saveCoaSnapshot(), setPaymentStatus(), toBatchResponse()
 
-### Community 12 - "Community 12"
+### Community 11 - "Community 11"
 Cohesion: 0.31
 Nodes (11): Batch Numbering (XX-YYYYMMDD-NNN atomic), Quotation Numbering (UNIK-YYYY-NNN atomic), Atomic Counter Rationale (INSERT ON CONFLICT lock-free), batchNumber.ts Utility (XX-YYYYMMDD-NNN), batch_sequences Table, quotNumber.ts Utility, quotNumber.ts Utility (UNIK-YYYY-NNN), quotation_line_items Table (+3 more)
 
-### Community 13 - "Community 13"
-Cohesion: 0.36
+### Community 12 - "Community 12"
+Cohesion: 0.31
 Nodes (7): computeStockStatus(), createItem(), getAllItems(), getItemById(), resetToDefaults(), toResponse(), updateItem()
 
-### Community 14 - "Community 14"
-Cohesion: 0.43
+### Community 13 - "Community 13"
+Cohesion: 0.36
 Nodes (4): createStaff(), getStaffById(), toResponse(), updateStaff()
 
+### Community 14 - "Community 14"
+Cohesion: 0.36
+Nodes (4): createVendor(), getVendorById(), toResponse(), updateVendor()
+
 ### Community 15 - "Community 15"
-Cohesion: 0.4
-Nodes (0): 
+Cohesion: 0.29
+Nodes (2): getCompanyById(), toResponse()
 
 ### Community 16 - "Community 16"
-Cohesion: 1.0
-Nodes (2): forceStatus(), req()
+Cohesion: 0.4
+Nodes (0): 
 
 ### Community 17 - "Community 17"
 Cohesion: 1.0
@@ -218,8 +218,10 @@ Nodes (1): Feature: AI Formulation Optimizer
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Macro Coats API` connect `Community 0` to `Community 2`, `Community 12`?**
-  _High betweenness centrality (0.066) - this node is a cross-community bridge._
+- **Why does `Macro Coats API` connect `Community 0` to `Community 11`, `Community 3`?**
+  _High betweenness centrality (0.057) - this node is a cross-community bridge._
+- **Are the 9 inferred relationships involving `cacheDel()` (e.g. with `updateDocument()` and `transitionDocumentStatus()`) actually correct?**
+  _`cacheDel()` has 9 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 6 inferred relationships involving `generateRecommendations()` (e.g. with `analyzeFormulation()` and `normalizeMaterialName()`) actually correct?**
   _`generateRecommendations()` has 6 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `TypeScript`, `Supertest`, `React + Vite SPA Frontend` to the rest of the system?**
@@ -230,5 +232,3 @@ _Questions this graph is uniquely positioned to answer:_
   _Cohesion score 0.07 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
   _Cohesion score 0.07 - nodes in this community are weakly interconnected._
-- **Should `Community 3` be split into smaller, more focused modules?**
-  _Cohesion score 0.08 - nodes in this community are weakly interconnected._

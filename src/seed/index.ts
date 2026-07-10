@@ -9,6 +9,7 @@ import { seedProducts }             from './products.seed.js'
 import { seedInventory }            from './inventory.seed.js'
 import { seedCompanies }            from './companies.seed.js'
 import { seedFormulationVariants }  from './formulationVariants.seed.js'
+import { seedHazardProfiles }       from './hazardProfiles.seed.js'
 
 async function main() {
   console.log('🚀 Starting seed...\n')
@@ -17,6 +18,7 @@ async function main() {
   await seedInventory()
   await seedCompanies()
   await seedFormulationVariants()
+  await seedHazardProfiles()
 
   console.log('\n✅ Seed complete.')
   process.exit(0)

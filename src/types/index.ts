@@ -33,3 +33,6 @@ export const DOC_TYPES: DocType[] = ['tds', 'msds', 'formula', 'label', 'coa']
 
 /** Doc types restricted to superadmin only */
 export const RESTRICTED_DOC_TYPES: DocType[] = ['formula', 'label', 'coa']
+
+export const DOCUMENT_VIEW_MODES = ['customer', 'internal'] as const
+export type DocumentViewMode = typeof DOCUMENT_VIEW_MODES[number]

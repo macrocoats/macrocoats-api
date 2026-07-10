@@ -1,9 +1,14 @@
 import { z } from 'zod'
-import { PRODUCT_KEYS, DOC_TYPES } from '../../types/index.js'
+import { PRODUCT_KEYS, DOC_TYPES, DOCUMENT_VIEW_MODES } from '../../types/index.js'
 
 export const productParamsSchema = z.object({
   productLine: z.enum(PRODUCT_KEYS as [string, ...string[]]),
   docType:     z.enum(DOC_TYPES as [string, ...string[]]),
+})
+
+export const documentQuerySchema = z.object({
+  variantId: z.string().uuid().optional(),
+  view:      z.enum(DOCUMENT_VIEW_MODES).optional(),
 })
 
 export const updateDocumentSchema = z.object({
@@ -23,5 +28,6 @@ export const transitionStatusSchema = z.object({
 })
 
 export type ProductParams      = z.infer<typeof productParamsSchema>
+export type DocumentQuery      = z.infer<typeof documentQuerySchema>
 export type UpdateDocumentBody = z.infer<typeof updateDocumentSchema>
 export type TransitionStatusBody = z.infer<typeof transitionStatusSchema>

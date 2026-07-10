@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify'
 import { authenticate, requireAuth } from '../../middleware/authenticate.js'
 import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js'
 import { AppErrors } from '../../types/errors.js'
+import { resolveCompanyId } from '../../utils/resolveCompanyId.js'
 import {
   createVariantSchema,
   updateVariantSchema,
@@ -29,14 +30,47 @@ export async function formulationVariantRoutes(app: FastifyInstance) {
     if (!productKey) {
       return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, message: 'productKey query param is required' })
     }
-    const variants = await listVariantsForProduct(productKey)
+
+    const role = request.authUser?.role
+    if (role !== 'superadmin') {
+      const allowed = request.authUser?.allowedProducts ?? []
+      if (!allowed.includes(productKey)) {
+        return reply.code(403).send({ error: AppErrors.PRODUCT_ACCESS_DENIED })
+      }
+    }
+
+    const companyId = role !== 'superadmin' ? await resolveCompanyId(request.authUser?.companyName) : null
+    const variants = await listVariantsForProduct(productKey, { role, companyId })
     return reply.send({ data: variants })
   })
 
   // ── GET /formulation-variants/:variantId ──────────────────────────────────
   app.get<{ Params: { variantId: string } }>('/:variantId', { preHandler: readHandler }, async (request, reply) => {
-    const variant = await getVariantById(request.params.variantId)
+    const role = request.authUser?.role
+    const includeInternal = role === 'superadmin'
+
+    // Always fetch first (existing 404-if-missing check stays first, per plan) —
+    // the trimmed/full shape is decided by includeInternal below, but companyId
+    // survives trimming so the ownership check afterward still works.
+    const variant = await getVariantById(request.params.variantId, includeInternal)
     if (!variant) return reply.code(404).send({ error: 'VARIANT_NOT_FOUND' })
+
+    if (role !== 'superadmin') {
+      const allowed = request.authUser?.allowedProducts ?? []
+      if (!allowed.includes(variant.productKey)) {
+        return reply.code(403).send({ error: AppErrors.PRODUCT_ACCESS_DENIED })
+      }
+
+      if (variant.companyId) {
+        const companyId = await resolveCompanyId(request.authUser?.companyName)
+        if (variant.companyId !== companyId) {
+          // 404, not 403 — avoids confirming to a company user that another
+          // tenant's variant exists for this product.
+          return reply.code(404).send({ error: 'VARIANT_NOT_FOUND' })
+        }
+      }
+    }
+
     return reply.send({ data: variant })
   })
 
