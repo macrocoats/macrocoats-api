@@ -1942,7 +1942,7 @@ const DOCS: Array<{
       composition: [
         { srNo: 1, name: 'Phosphoric Acid',                   casNo: '7664-38-2',   baseQty: 33.24, unit: 'L', percentWV: 23.87, function: 'Rust removal / acid cleaning — primary active ingredient',   density: 1.685, unitPrice: 0 },
         { srNo: 2, name: 'Water',                              casNo: '7732-18-5',   baseQty: 100, unit: 'L',  percentWV: 71.82, function: 'Base medium / carrier — balance to final volume',             density: 1.000, unitPrice: 0 },
-        { srNo: 3, name: 'Alphox 200',                        casNo: 'Proprietary',  baseQty: 1.5, unit: 'L',  percentWV: 1.08,  function: 'Emulsifier / surfactant — enhances surface penetration',     density: 1.020, unitPrice: 0 },
+        { srNo: 3, name: 'Alphox 200',                        casNo: '68439-50-9',  baseQty: 1.5, unit: 'L',  percentWV: 1.08,  function: 'Emulsifier / surfactant — enhances surface penetration',     density: 1.020, unitPrice: 0 },
         { srNo: 4, name: 'LAE 9 (Lauryl Alcohol Ethoxylate)', casNo: '9002-92-0',   baseQty: 1.5, unit: 'L',  percentWV: 1.08,  function: 'Wetting & degreasing agent — non-ionic surfactant',          density: 1.010, unitPrice: 0 },
         { srNo: 5, name: 'TEA (Triethanolamine)',             casNo: '102-71-6',    baseQty: 3,   unit: 'L',  percentWV: 2.15,  function: 'Neutralizing agent / pH control — improves compatibility',  density: 1.124, unitPrice: 0 },
       ],

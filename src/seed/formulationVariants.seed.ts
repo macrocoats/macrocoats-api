@@ -124,6 +124,30 @@ const TDS_OVERRIDES_PGME_ENHANCED = {
   safetyNote: 'Flammable liquid — flash point 35 – 45 °C. Keep away from heat, sparks, and open flames. Use in well-ventilated area. Refer to SDS-UCL-001.',
 }
 
+const TDS_OVERRIDES_PG_HIGH_LUBRICITY = {
+  physicalProperties: [
+    { property: 'Appearance',             value: 'Clear, colourless liquid',       unit: '—',    method: 'Visual' },
+    { property: 'Odour',                  value: 'Mild, faint ether note',         unit: '—',    method: '—' },
+    { property: 'Flash Point',            value: '> 90',                           unit: '°C',   method: 'Pensky-Martens' },
+    { property: 'Density',                value: '1.00 – 1.02',                    unit: 'g/mL', method: 'ISO 2811' },
+    { property: 'Evaporation Rate',       value: 'Slow (water-based)',             unit: '—',    method: 'vs diethyl ether = 1' },
+    { property: 'Dry Time',               value: '90 – 200',                       unit: 's',    method: 'Ambient, cotton wipe' },
+    { property: 'Residue on Evaporation', value: '2.0 – 4.5%',                    unit: '—',    method: 'ASTM D2369' },
+  ],
+  composition: [
+    { name: 'Deionised Water',                                     function: 'Primary cooling medium',                                                percent: '95.60%', compat: 'All substrates' },
+    { name: 'Propylene Glycol (PG)',                                function: 'Lubricity, corrosion protection, evaporation control',                 percent: '2.80%',  compat: 'Metals, aluminium' },
+    { name: 'Propylene Glycol Methyl Ether (Dowanol PM)',          function: 'Wetting agent, residue reduction, chip flushing, improved surface finish', percent: '1.60%', compat: 'Metals, aluminium' },
+  ],
+  performance: [
+    { label: 'Evaporation residue',     val: '2.0 – 4.5% (ASTM D2369) — lubricity film' },
+    { label: 'Dry time',               val: '90 – 200 s (ambient)' },
+    { label: 'Wetting / chip flushing', val: 'Enhanced wetting and chip flushing for aluminium machining' },
+    { label: 'Aluminium compatibility', val: 'No staining or etching at ambient' },
+  ],
+  safetyNote: 'Water-based formulation — non-flammable at ambient (flash point > 90 °C). Avoid contact with eyes and skin. Use in ventilated area. Refer to SDS-UCL-001.',
+}
+
 /* ── MSDS overrides — UNICool AL variants ─────────────────────────────────── */
 
 const MSDS_OVERRIDES_PEG_GLYCOL = {
@@ -338,6 +362,56 @@ const MSDS_OVERRIDES_PGME_ENHANCED = {
   },
 }
 
+const MSDS_OVERRIDES_PG_HIGH_LUBRICITY = {
+  signalWord: 'Warning',
+  hazards: {
+    pictograms:      ['irritant'],
+    classifications: [
+      { class: 'Eye Irritation', category: 'Cat 2B', tagType: 'warn' },
+    ],
+    hStatements: 'H320 — Causes eye irritation.',
+    pStatements: 'P264 · P280 · P305+P351+P338 · P337+P313',
+  },
+  composition: {
+    ingredients: [
+      { name: 'Water',                                            description: 'Primary cooling medium',                                              percent: '95.60%', ghsClass: '—',        tagType: 'safe' },
+      { name: 'Propylene Glycol (PG)',                             description: 'Lubricity, corrosion protection, evaporation control',                percent: '2.80%',  ghsClass: '—',        tagType: 'safe' },
+      { name: 'Propylene Glycol Methyl Ether (Dowanol PM)',       description: 'Wetting agent, residue reduction, chip flushing, improved surface finish', percent: '1.60%', ghsClass: 'Irritant', tagType: 'warn' },
+    ],
+    note: 'Exact formulation is proprietary. Functional ingredient descriptions are provided for safety and emergency purposes only.',
+  },
+  fireFighting: {
+    flammability:       'Non-flammable aqueous formulation. Flash point > 90 °C (Pensky-Martens).',
+    extinguishingMedia: 'Water fog, CO₂, dry powder, foam — use media appropriate to surrounding fire.',
+    fireHazard:         'No unusual fire hazard. Product itself does not sustain combustion.',
+    ppe:                'Standard fire-fighting PPE; SCBA for large fires in enclosed spaces.',
+  },
+  physical: [
+    { key: 'Appearance',    val: 'Clear, colourless liquid' },
+    { key: 'Odour',         val: 'Mild, faint ether note' },
+    { key: 'Flash Point',   val: '> 90 °C' },
+    { key: 'Density',       val: '1.00 – 1.02 g/mL' },
+    { key: 'pH',            val: '7.0 – 8.5' },
+    { key: 'Solubility',    val: 'Fully miscible with water' },
+    { key: 'Evaporation',   val: 'Slow' },
+    { key: 'Boiling Point', val: '95 – 100 °C' },
+  ],
+  accidentalRelease: [
+    'Wipe or mop up spillage — floors may become slippery',
+    'Ventilate area to disperse any vapour',
+    'Contain spill with inert absorbent material (sand, vermiculite)',
+    'Prevent runoff from entering drains or waterways',
+    'Collect spilled material and dispose per CPCB/SPCB guidelines',
+  ],
+  handling: {
+    handling:    'Avoid contact with eyes and skin. Use in well-ventilated area. Wash hands after handling.',
+    storageTemp: '5 °C – 35 °C; cool, dry, ventilated area; away from direct sunlight',
+    containers:  'HDPE bottles or jerrycans; keep tightly sealed when not in use',
+    segregation: 'Store separately from strong oxidising agents',
+    shelfLife:   '24 months from date of manufacture in original sealed containers',
+  },
+}
+
 /* ── CoA tests — UNICool AL variants ─────────────────────────────────────── */
 
 const COA_TESTS_PEG_GLYCOL = [
@@ -377,6 +451,16 @@ const COA_TESTS_PGME_ENHANCED = [
   { parameter: 'Specific Gravity (25 °C)', method: 'ISO 2811',            specification: '0.95 – 0.98',              result: '', status: 'Pass' },
   { parameter: 'Evaporation Residue',      method: 'ASTM D2369',          specification: '1.0 – 3.0 %',              result: '', status: 'Pass' },
   { parameter: 'Dry Time (ambient)',       method: 'Cotton Wipe Method',  specification: '20 – 60 s',                result: '', status: 'Pass' },
+  { parameter: 'Aluminium Compatibility',  method: 'Coupon test (24 h)',  specification: 'No staining, no etching',  result: '', status: 'Pass' },
+]
+
+const COA_TESTS_PG_HIGH_LUBRICITY = [
+  { parameter: 'Appearance',               method: 'Visual',              specification: 'Clear, colourless liquid',  result: '', status: 'Pass' },
+  { parameter: 'pH (neat, 25 °C)',         method: 'pH Electrode',        specification: '7.0 – 8.5',                result: '', status: 'Pass' },
+  { parameter: 'Flash Point',              method: 'Pensky-Martens (PM)', specification: '> 90 °C',                  result: '', status: 'Pass' },
+  { parameter: 'Specific Gravity (25 °C)', method: 'ISO 2811',            specification: '1.00 – 1.02',              result: '', status: 'Pass' },
+  { parameter: 'Evaporation Residue',      method: 'ASTM D2369',          specification: '2.0 – 4.5 %',              result: '', status: 'Pass' },
+  { parameter: 'Dry Time (ambient)',       method: 'Cotton Wipe Method',  specification: '90 – 200 s',                result: '', status: 'Pass' },
   { parameter: 'Aluminium Compatibility',  method: 'Coupon test (24 h)',  specification: 'No staining, no etching',  result: '', status: 'Pass' },
 ]
 
@@ -440,6 +524,24 @@ const PGME_ENHANCED_COMPONENTS = [
   { materialName: 'IPA (Isopropyl Alcohol)',               percentage: 15.00, unit: 'L' as const },
   { materialName: 'Propylene Glycol (PG)',                 percentage: 2.10,  unit: 'L' as const },
   { materialName: 'Propylene Glycol Methyl Ether (PGME)',  percentage: 1.10,  unit: 'L' as const },
+]
+
+/**
+ * PG High Lubricity Variant for UNICool AL.
+ * Percentage-based; Water is auto-calculated (100 − 4.40 = 95.60%).
+ * Optimised for aluminium machining requiring enhanced lubricity, excellent
+ * wetting, and a residue-free finish, without any alcohol content: Propylene
+ * Glycol for lubricity/corrosion protection/evaporation control, Propylene
+ * Glycol Methyl Ether (Dowanol PM) for wetting, residue reduction, chip
+ * flushing, and improved surface finish. All components stored in litres.
+ * "Dowanol PM" is kept as a distinct inventory SKU from the existing "(PGME)"
+ * item (see inventory.seed.ts) — material names match inventory_items
+ * exactly so batch inventory deduction and FormulaPage price matching resolve.
+ */
+const PG_HIGH_LUBRICITY_COMPONENTS = [
+  { materialName: 'Water',                                            percentage: null, unit: 'L' as const },  // auto-calc 95.60%
+  { materialName: 'Propylene Glycol (PG)',                            percentage: 2.80, unit: 'L' as const },
+  { materialName: 'Propylene Glycol Methyl Ether (Dowanol PM)',      percentage: 1.60, unit: 'L' as const },
 ]
 
 /**
@@ -899,5 +1001,57 @@ export async function seedFormulationVariants() {
     )
 
     console.log(`   ✅ Created PGME Enhanced Variant for UNICool AL (id: ${pgmeVariant.id})`)
+  }
+
+  // ── UNICool AL — PG High Lubricity Variant ───────────────────────────────
+  const PG_HIGH_LUBRICITY_NAME = 'UNICool AL – PG High Lubricity Variant'
+  const [existingPGHighLubricity] = await db
+    .select()
+    .from(productFormulationVariants)
+    .where(
+      and(
+        eq(productFormulationVariants.productKey, 'unicool-al'),
+        eq(productFormulationVariants.variantName, PG_HIGH_LUBRICITY_NAME),
+      ),
+    )
+
+  if (existingPGHighLubricity) {
+    console.log(`   ↩️  PG High Lubricity Variant for UNICool AL already exists (id: ${existingPGHighLubricity.id})`)
+    if (!existingPGHighLubricity.coaTests || !existingPGHighLubricity.tdsOverrides || !existingPGHighLubricity.msdsOverrides) {
+      await db
+        .update(productFormulationVariants)
+        .set({
+          coaTests:      existingPGHighLubricity.coaTests      ?? COA_TESTS_PG_HIGH_LUBRICITY,
+          tdsOverrides:  existingPGHighLubricity.tdsOverrides  ?? TDS_OVERRIDES_PG_HIGH_LUBRICITY,
+          msdsOverrides: existingPGHighLubricity.msdsOverrides ?? MSDS_OVERRIDES_PG_HIGH_LUBRICITY,
+        })
+        .where(eq(productFormulationVariants.id, existingPGHighLubricity.id))
+      console.log('   ✅ Backfilled coaTests / tdsOverrides / msdsOverrides for PG High Lubricity Variant')
+    }
+  } else {
+    const [pgHighLubricityVariant] = await db
+      .insert(productFormulationVariants)
+      .values({
+        productKey:    'unicool-al',
+        companyId:     null,
+        variantName:   PG_HIGH_LUBRICITY_NAME,
+        isDefault:     false,
+        coaTests:      COA_TESTS_PG_HIGH_LUBRICITY,
+        tdsOverrides:  TDS_OVERRIDES_PG_HIGH_LUBRICITY,
+        msdsOverrides: MSDS_OVERRIDES_PG_HIGH_LUBRICITY,
+      })
+      .returning()
+
+    await db.insert(formulationVariantComponents).values(
+      PG_HIGH_LUBRICITY_COMPONENTS.map((c, i) => ({
+        variantId:    pgHighLubricityVariant.id,
+        materialName: c.materialName,
+        percentage:   c.percentage !== null ? String(c.percentage) : null,
+        unit:         c.unit,
+        sortOrder:    i,
+      })),
+    )
+
+    console.log(`   ✅ Created PG High Lubricity Variant for UNICool AL (id: ${pgHighLubricityVariant.id})`)
   }
 }
