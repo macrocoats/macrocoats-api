@@ -19,6 +19,8 @@ import { companyPricingRoutes } from './modules/company-pricing/company-pricing.
 import { pdfRoutes } from './modules/pdf/pdf.routes.js'
 import { optimizerRoutes } from './modules/optimizer/optimizer.routes.js'
 import { costIntelligenceRoutes } from './modules/cost-intelligence/cost-intelligence.routes.js'
+import { finishedGoodsRoutes } from './modules/finished-goods/finished-goods.routes.js'
+import { dispatchRoutes } from './modules/dispatch/dispatch.routes.js'
 import { AppErrors } from './types/errors.js'
 
 export async function buildApp() {
@@ -62,6 +64,8 @@ export async function buildApp() {
   await app.register(pdfRoutes,                   { prefix: `${prefix}/pdf` })
   await app.register(optimizerRoutes,             { prefix: `${prefix}/optimizer` })
   await app.register(costIntelligenceRoutes,      { prefix: `${prefix}/cost-intelligence` })
+  await app.register(finishedGoodsRoutes,         { prefix: `${prefix}/finished-goods` })
+  await app.register(dispatchRoutes,              { prefix: `${prefix}/dispatches` })
 
   // ── Global error handler ──────────────────────────────────────────────────
   app.setErrorHandler((error, _request, reply) => {
