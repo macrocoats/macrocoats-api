@@ -26,6 +26,11 @@ export const inventoryItemResponseSchema = z.object({
   updatedAt:         z.string(),
 })
 
+export const receiptPricesQuerySchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+})
+
 export type CreateInventoryItemBody = z.infer<typeof createInventoryItemSchema>
 export type UpdateInventoryItemBody = z.infer<typeof updateInventoryItemSchema>
 export type StockStatus = 'unknown' | 'out_of_stock' | 'low' | 'in_stock'
+export type ReceiptPricesQuery = z.infer<typeof receiptPricesQuerySchema>

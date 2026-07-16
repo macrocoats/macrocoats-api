@@ -2,9 +2,9 @@ import type { FastifyInstance } from 'fastify'
 import { authenticate, requireAuth } from '../../middleware/authenticate.js'
 import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js'
 import { AppErrors } from '../../types/errors.js'
-import { createInventoryItemSchema, updateInventoryItemSchema } from './inventory.schema.js'
+import { createInventoryItemSchema, updateInventoryItemSchema, receiptPricesQuerySchema } from './inventory.schema.js'
 import {
-  getAllItems, createItem, updateItem, deleteItem, resetToDefaults,
+  getAllItems, createItem, updateItem, deleteItem, resetToDefaults, getReceiptDatePrices,
 } from './inventory.service.js'
 
 const preHandler = [authenticate, requireAuth, requireSuperAdmin]
@@ -14,6 +14,20 @@ export async function inventoryRoutes(app: FastifyInstance) {
   app.get('/', { preHandler }, async (_request, reply) => {
     const items = await getAllItems()
     return reply.send({ items })
+  })
+
+  // ── GET /inventory/receipt-prices ─────────────────────────────────────────
+  // Literal path segment — registered ahead of any future `/:id`-shaped GET
+  // route so `receipt-prices` never gets swallowed as an :id param (same
+  // ordering concern documented for products' /expiry-summary).
+  app.get('/receipt-prices', { preHandler }, async (request, reply) => {
+    const query = receiptPricesQuerySchema.safeParse(request.query)
+    if (!query.success) {
+      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: query.error.flatten() })
+    }
+
+    const prices = await getReceiptDatePrices(query.data.date)
+    return reply.send({ data: prices })
   })
 
   // ── POST /inventory ───────────────────────────────────────────────────────

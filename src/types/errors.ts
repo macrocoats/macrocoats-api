@@ -25,6 +25,11 @@ export const AppErrors = {
   ITEM_NOT_FOUND:          'ITEM_NOT_FOUND',
   // Vendors
   VENDOR_NOT_FOUND:        'VENDOR_NOT_FOUND',
+  // Vendor material prices
+  VENDOR_PRICE_INVALID_EFFECTIVE_DATE: 'VENDOR_PRICE_INVALID_EFFECTIVE_DATE',
+  // Purchase entries
+  PURCHASE_ENTRY_NOT_FOUND: 'PURCHASE_ENTRY_NOT_FOUND',
+  PRICE_NOT_AVAILABLE:      'PRICE_NOT_AVAILABLE',
   // Staff
   STAFF_NOT_FOUND:         'STAFF_NOT_FOUND',
   // Salary records

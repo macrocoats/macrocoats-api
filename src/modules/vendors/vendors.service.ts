@@ -2,8 +2,17 @@ import { eq, asc } from 'drizzle-orm'
 import { db } from '../../db/index.js'
 import { vendors } from '../../db/schema/index.js'
 import { z } from 'zod'
-import { phoneNumbersSchema, chemicalSchema, bankDetailsSchema } from './vendors.schema.js'
+import { phoneNumbersSchema, bankDetailsSchema } from './vendors.schema.js'
 import type { CreateVendorInput, UpdateVendorInput } from './vendors.schema.js'
+
+// `chemicals` was removed from the create/update API surface (vendors.schema.ts)
+// but the DB column and existing rows remain — this local schema is only for
+// parsing/validating legacy data on read, never accepted as input anymore.
+const chemicalSchema = z.object({
+  chemicalName: z.string().min(1),
+  rate:         z.number().min(0),
+  unit:         z.enum(['L', 'kg']),
+})
 
 function toResponse(row: typeof vendors.$inferSelect) {
   return {
@@ -45,7 +54,9 @@ export async function createVendor(data: CreateVendorInput) {
       contactPerson: data.contactPerson ?? null,
       phoneNumbers:  data.phoneNumbers ?? [],
       bankDetails:   data.bankDetails ?? null,
-      chemicals:     data.chemicals ?? [],
+      // `chemicals` is no longer part of the create API — new vendors always
+      // start with an empty array; existing rows keep their historical data.
+      chemicals:     [],
     })
     .returning()
 
@@ -62,7 +73,8 @@ export async function updateVendor(id: string, data: UpdateVendorInput) {
   if (data.contactPerson !== undefined) patch.contactPerson = data.contactPerson ?? null
   if (data.phoneNumbers  !== undefined) patch.phoneNumbers  = data.phoneNumbers
   if (data.bankDetails   !== undefined) patch.bankDetails   = data.bankDetails ?? null
-  if (data.chemicals     !== undefined) patch.chemicals     = data.chemicals
+  // `chemicals` is no longer accepted via the update API — never patched here;
+  // existing values are left untouched on the row.
 
   const [row] = await db
     .update(vendors)

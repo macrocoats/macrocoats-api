@@ -1,0 +1,1 @@
+ALTER TABLE "batches" ADD COLUMN "batch_type" text DEFAULT 'Production' NOT NULL;

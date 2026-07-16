@@ -1,0 +1,1 @@
+ALTER TABLE "batches" ADD COLUMN "paid_at" timestamp with time zone;

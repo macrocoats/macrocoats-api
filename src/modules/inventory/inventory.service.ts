@@ -1,6 +1,8 @@
 import { eq, asc } from 'drizzle-orm'
 import { db } from '../../db/index.js'
 import { inventoryItems } from '../../db/schema/index.js'
+import { getLatestPurchaseEntryPrice } from '../purchase-entries/purchase-entries.service.js'
+import { getBestEffectiveVendorPrice } from '../vendor-prices/vendor-prices.service.js'
 import type { CreateInventoryItemBody, UpdateInventoryItemBody, StockStatus } from './inventory.schema.js'
 
 function computeStockStatus(stockQty: string | null, threshold: number): StockStatus {
@@ -104,4 +106,49 @@ export async function resetToDefaults() {
     .where(eq(inventoryItems.isDefault, false))
 
   return getAllItems()
+}
+
+/**
+ * Fuzzy-normalizes a material name for cross-source matching: lowercase,
+ * trim, collapse runs of hyphens/underscores/whitespace to a single space.
+ * Same regex as cost-intelligence.service.ts::normalizeMaterialName and
+ * optimizer.service.ts::normalizeName — duplicated locally rather than
+ * imported to avoid an unsanctioned cross-module coupling.
+ */
+function normalizeMaterialName(name: string): string {
+  return name.trim().toLowerCase().replace(/[-_\s]+/g, ' ')
+}
+
+export type ReceiptPriceSource = 'purchase_entry' | 'vendor_price' | 'inventory_current'
+
+/**
+ * For every inventory item, resolves the best-known unit price as of `date`:
+ *   1. Nearest purchase_entries row (purchaseDate <= date) for that material.
+ *   2. Best (lowest) active vendor_material_prices row across all vendors.
+ *   3. Fallback: inventory_items.price (today's price) — always available.
+ * Returned map is keyed by normalized material name so callers (e.g. a batch
+ * formulation snapshot) can look up by fuzzy-matched component name.
+ */
+export async function getReceiptDatePrices(
+  date: string,
+): Promise<Record<string, { price: number; source: ReceiptPriceSource }>> {
+  const items = await db.select().from(inventoryItems)
+
+  const entries = await Promise.all(items.map(async (item) => {
+    const key = normalizeMaterialName(item.material)
+
+    const purchasePrice = await getLatestPurchaseEntryPrice(item.id, date)
+    if (purchasePrice !== null) {
+      return [key, { price: purchasePrice, source: 'purchase_entry' as const }] as const
+    }
+
+    const vendorPrice = await getBestEffectiveVendorPrice(item.id, date)
+    if (vendorPrice !== null) {
+      return [key, { price: vendorPrice, source: 'vendor_price' as const }] as const
+    }
+
+    return [key, { price: Number(item.price), source: 'inventory_current' as const }] as const
+  }))
+
+  return Object.fromEntries(entries)
 }
