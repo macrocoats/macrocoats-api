@@ -6,7 +6,7 @@ Reference for the PostgreSQL schema and Drizzle migration workflow. See `CLAUDE.
 
 ## Database schema
 
-20 tables across `src/db/schema/`:
+26 tables across `src/db/schema/`:
 
 | Table | Purpose |
 |---|---|
@@ -30,6 +30,12 @@ Reference for the PostgreSQL schema and Drizzle migration workflow. See `CLAUDE.
 | `employee_salary_records` | Staff salary payments and records |
 | `staff` | Employee information |
 | `vendors` | Vendor/supplier information |
+| `vendor_material_prices` | Date-effective vendor pricing per inventory item; at most one currently-active row (`effective_to IS NULL`) per `(vendor, material)` |
+| `purchase_entries` | Purchase receipts logged against an inventory item; `unitPrice` is the actual price paid, `suggestedUnitPrice`/`priceSource` retain what auto-lookup from `vendor_material_prices` returned for audit |
+| `ingredient_hazard_profiles` | Reference dictionary mapping real raw-material names to IP-safe generic descriptions and GHS hazard data; used to sanitize TDS/MSDS composition sections for non-superadmin roles |
+| `finished_goods` | Finished-goods inventory per batch: produced/dispatched/reserved quantities and status (`Available` → `Partially Dispatched` → `Fully Dispatched`, or `Cancelled`) |
+| `dispatches` | Dispatch records against a batch/company, with transport details (JSONB) and void tracking (`voidedAt`/`voidReason`) |
+| `dispatch_sequences` | Per-day atomic counter for dispatch numbering |
 
 ## Migration workflow (canonical)
 

@@ -96,11 +96,16 @@ Routes never import from other modules' services. Cross-cutting concerns (auth, 
 | `formulation-variants` | GET /formulation-variants, GET /formulation-variants/:variantId, POST /formulation-variants, PUT /formulation-variants/:variantId, PUT /formulation-variants/:variantId/components, PATCH /formulation-variants/:variantId/status, DELETE /formulation-variants/:variantId |
 | `quotations` | POST /quotations, GET /quotations, GET /quotations/:id |
 | `batches` | POST /batches, GET /batches, GET /batches/:batchNumber, PATCH /batches/:batchNumber/coa, DELETE /batches/:batchNumber/coa, PATCH /batches/:batchNumber/payment, DELETE /batches/:id |
-| `inventory` | GET /inventory, POST /inventory, PATCH /inventory/:id, DELETE /inventory/:id, POST /inventory/reset |
+| `inventory` | GET /inventory, GET /inventory/receipt-prices, POST /inventory, PATCH /inventory/:id, DELETE /inventory/:id, POST /inventory/reset |
 | `analytics` | GET /analytics/access-log, GET /analytics/summary |
 | `salaryRecords` | GET /salary-records, GET /salary-records/:id, POST /salary-records |
 | `staff` | GET /staff, GET /staff/:id, POST /staff, PUT /staff/:id, DELETE /staff/:id |
 | `vendors` | GET /vendors, GET /vendors/:id, POST /vendors, PUT /vendors/:id, DELETE /vendors/:id |
+| `vendor-prices` | GET /vendors/:vendorId/prices, GET /vendors/:vendorId/prices/active, GET /vendors/:vendorId/prices/effective, POST /vendors/:vendorId/prices |
+| `purchase-entries` | GET /purchase-entries, GET /purchase-entries/:id, POST /purchase-entries |
+| `hazard-profiles` | GET /hazard-profiles, GET /hazard-profiles/:id, POST /hazard-profiles, PUT /hazard-profiles/:id, DELETE /hazard-profiles/:id (soft-delete) |
+| `finished-goods` | GET /finished-goods, GET /finished-goods/summary, GET /finished-goods/:batchNumber, POST /finished-goods/backfill/:batchNumber, PATCH /finished-goods/:id/status |
+| `dispatch` | POST /dispatches, GET /dispatches, GET /dispatches/summary, GET /dispatches/:dispatchNumber, PATCH /dispatches/:id/void |
 | `pdf` | POST /pdf/quotation, POST /pdf/tds, POST /pdf/msds, POST /pdf/coa, POST /pdf/batch |
 | `optimizer` | POST /optimizer/analyze |
 | `cost-intelligence` | GET /cost-intelligence/overview, /trends, /batches, /materials, /alerts, /profitability, /comparison |
@@ -110,6 +115,8 @@ All endpoints except auth are `superadmin`-only, except product document reads w
 > **Note:** The `pdf` module has a non-standard directory layout — see `src/modules/pdf/CLAUDE.md` for its structure and conventions.
 
 > **Note:** The `optimizer` module (AI Formulation Optimizer) also deviates from the 3-file pattern — see `src/modules/optimizer/CLAUDE.md` for its structure, including the `VARIANT_STATUS_TRANSITIONS` export that `formulation-variants` imports (see "Formulation variant approval workflow" below).
+
+> **Note:** `document-sanitization` is a service-only module (`*.service.ts` + `*.types.ts`, no `*.routes.ts`) — it is not registered in `app.ts` and exposes no endpoints. It's consumed directly by other modules to derive IP-safe TDS/MSDS composition and hazard sections (via `ingredient_hazard_profiles`) for non-superadmin roles.
 
 ### Middleware
 
@@ -204,7 +211,7 @@ Integration tests use a real PostgreSQL database (the same one in `.env.local`).
 
 ### Database schema
 
-See `DATABASE.md` for the full 20-table schema reference, the canonical migration workflow, entity relationship rules, and failed-migration recovery steps.
+See `DATABASE.md` for the full 26-table schema reference, the canonical migration workflow, entity relationship rules, and failed-migration recovery steps.
 
 ### Seed data
 
