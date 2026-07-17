@@ -1,8 +1,9 @@
-<div class="document">
+<div class="document coa-document">
 
   {{!-- ═══ TITLE BLOCK ═══════════════════════════════════════════════════════ --}}
   <div class="doc-title-block no-break">
     <div class="doc-title-block__title">Certificate of Analysis</div>
+    {{#if productCode}}<div class="coa-document__certno">Certificate No: {{productCode}}</div>{{/if}}
     <div class="doc-title-block__product">{{productName}}</div>
     <div class="doc-title-block__sub">
       Batch No: {{batchNumber}}
@@ -169,6 +170,9 @@
         This Certificate of Analysis is an official quality document issued by Macro Coats Pvt Ltd.<br>
         Batch Reference: <strong>{{batchNumber}}</strong> &nbsp;|&nbsp; Product: <strong>{{productName}}</strong><br>
       </div>
+    </div>
+    <div class="coa-seal-placeholder">
+      COMPANY<br>SEAL
     </div>
   </div>
 

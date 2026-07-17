@@ -207,7 +207,21 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   INFO CARDS GRID  (COA premium metadata)
+   COA — title-block certificate number
+   Scoped to .coa-document so it never leaks into the shared .doc-title-block
+   used by tds.hbs / msds.hbs.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.coa-document .doc-title-block__certno {
+  font-family: var(--font-table);
+  font-size: 8pt;
+  font-weight: 700;
+  letter-spacing: .08em;
+  color: #B8D4F0;
+  margin-bottom: 1.5mm;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   INFO CARDS GRID  (COA premium metadata — exclusive to coa.hbs)
    ═══════════════════════════════════════════════════════════════════════════ */
 .info-cards {
   display: grid;
@@ -222,6 +236,7 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
   border-top: 3px solid var(--c-accent);
   border-radius: 2px;
   padding: 2.5mm 3.5mm;
+  box-shadow: 0 1px 2px rgba(18,58,109,0.06);
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
@@ -804,6 +819,27 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
   font-size: 7.5pt;
   color: var(--c-muted);
   line-height: 1.5;
+}
+
+/* ─── COA: official seal placeholder — exclusive to coa.hbs ────────────────── */
+.coa-seal-placeholder {
+  width: 20mm;
+  height: 20mm;
+  border: 2px dashed var(--c-accent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-table);
+  font-size: 6.5pt;
+  font-weight: 700;
+  letter-spacing: .05em;
+  color: var(--c-accent);
+  text-align: center;
+  flex-shrink: 0;
+  margin-left: auto;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

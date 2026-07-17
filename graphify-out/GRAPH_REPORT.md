@@ -1,7 +1,7 @@
 # Graph Report - /Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api  (2026-07-16)
 
 ## Corpus Check
-- 130 files · ~126,864 words
+- 130 files · ~129,821 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
