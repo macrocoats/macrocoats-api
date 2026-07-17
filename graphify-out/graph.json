@@ -80,7 +80,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/tests/integration/purchase-entries.test.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_tests_integration_purchase_entries_test_ts",
-      "community": 16,
+      "community": 1,
       "norm_label": "purchase-entries.test.ts"
     },
     {
@@ -89,7 +89,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/tests/integration/purchase-entries.test.ts",
       "source_location": "L57",
       "id": "purchase_entries_test_req",
-      "community": 16,
+      "community": 1,
       "norm_label": "req()"
     },
     {
@@ -98,7 +98,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/tests/integration/purchase-entries.test.ts",
       "source_location": "L59",
       "id": "purchase_entries_test_getstockqty",
-      "community": 16,
+      "community": 1,
       "norm_label": "getstockqty()"
     },
     {
@@ -197,7 +197,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/app.ts",
       "source_location": "L28",
       "id": "app_buildapp",
-      "community": 3,
+      "community": 11,
       "norm_label": "buildapp()"
     },
     {
@@ -206,7 +206,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/server.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_server_ts",
-      "community": 3,
+      "community": 11,
       "norm_label": "server.ts"
     },
     {
@@ -215,7 +215,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/server.ts",
       "source_location": "L6",
       "id": "server_main",
-      "community": 3,
+      "community": 11,
       "norm_label": "main()"
     },
     {
@@ -269,7 +269,7 @@
       "source_file": "src/middleware/logAccess.ts",
       "source_location": "L1",
       "id": "src_middleware_logaccess_ts",
-      "community": 15,
+      "community": 16,
       "norm_label": "logaccess.ts"
     },
     {
@@ -278,7 +278,7 @@
       "source_file": "src/middleware/logAccess.ts",
       "source_location": "L14",
       "id": "logaccess_logaccess",
-      "community": 15,
+      "community": 16,
       "norm_label": "logaccess()"
     },
     {
@@ -305,7 +305,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/seed/companies.seed.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_seed_companies_seed_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "companies.seed.ts"
     },
     {
@@ -314,7 +314,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/seed/companies.seed.ts",
       "source_location": "L87",
       "id": "companies_seed_seedcompanies",
-      "community": 4,
+      "community": 3,
       "norm_label": "seedcompanies()"
     },
     {
@@ -323,7 +323,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/seed/formulationVariants.seed.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_seed_formulationvariants_seed_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "formulationvariants.seed.ts"
     },
     {
@@ -332,7 +332,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/seed/formulationVariants.seed.ts",
       "source_location": "L601",
       "id": "formulationvariants_seed_seedformulationvariants",
-      "community": 4,
+      "community": 3,
       "norm_label": "seedformulationvariants()"
     },
     {
@@ -341,7 +341,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/seed/products.seed.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_seed_products_seed_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "products.seed.ts"
     },
     {
@@ -350,7 +350,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/seed/products.seed.ts",
       "source_location": "L3471",
       "id": "products_seed_seedproducts",
-      "community": 4,
+      "community": 3,
       "norm_label": "seedproducts()"
     },
     {
@@ -359,7 +359,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/seed/hazardProfiles.seed.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_seed_hazardprofiles_seed_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "hazardprofiles.seed.ts"
     },
     {
@@ -368,7 +368,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/seed/hazardProfiles.seed.ts",
       "source_location": "L65",
       "id": "hazardprofiles_seed_cls",
-      "community": 4,
+      "community": 3,
       "norm_label": "cls()"
     },
     {
@@ -377,7 +377,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/seed/hazardProfiles.seed.ts",
       "source_location": "L791",
       "id": "hazardprofiles_seed_seedhazardprofiles",
-      "community": 4,
+      "community": 3,
       "norm_label": "seedhazardprofiles()"
     },
     {
@@ -386,7 +386,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/seed/reset.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_seed_reset_ts",
-      "community": 3,
+      "community": 11,
       "norm_label": "reset.ts"
     },
     {
@@ -395,7 +395,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/seed/reset.ts",
       "source_location": "L16",
       "id": "reset_reset",
-      "community": 3,
+      "community": 11,
       "norm_label": "reset()"
     },
     {
@@ -404,7 +404,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/seed/index.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_seed_index_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "index.ts"
     },
     {
@@ -413,7 +413,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/seed/index.ts",
       "source_location": "L14",
       "id": "index_main",
-      "community": 4,
+      "community": 3,
       "norm_label": "main()"
     },
     {
@@ -422,7 +422,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/seed/inventory.seed.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_seed_inventory_seed_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "inventory.seed.ts"
     },
     {
@@ -431,7 +431,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/seed/inventory.seed.ts",
       "source_location": "L182",
       "id": "inventory_seed_seedinventory",
-      "community": 4,
+      "community": 3,
       "norm_label": "seedinventory()"
     },
     {
@@ -467,7 +467,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/config/env.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_config_env_ts",
-      "community": 3,
+      "community": 11,
       "norm_label": "env.ts"
     },
     {
@@ -476,7 +476,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/config/env.ts",
       "source_location": "L31",
       "id": "env_loadenv",
-      "community": 3,
+      "community": 11,
       "norm_label": "loadenv()"
     },
     {
@@ -503,7 +503,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/plugins/redis.ts",
       "source_location": "L9",
       "id": "redis_connectredis",
-      "community": 3,
+      "community": 11,
       "norm_label": "connectredis()"
     },
     {
@@ -566,7 +566,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/plugins/cookie.ts",
       "source_location": "L5",
       "id": "cookie_registercookies",
-      "community": 3,
+      "community": 11,
       "norm_label": "registercookies()"
     },
     {
@@ -575,7 +575,7 @@
       "source_file": "src/plugins/cors.ts",
       "source_location": "L1",
       "id": "src_plugins_cors_ts",
-      "community": 3,
+      "community": 11,
       "norm_label": "cors.ts"
     },
     {
@@ -584,7 +584,7 @@
       "source_file": "src/plugins/cors.ts",
       "source_location": "L5",
       "id": "cors_registercors",
-      "community": 3,
+      "community": 11,
       "norm_label": "registercors()"
     },
     {
@@ -665,7 +665,7 @@
       "source_file": "src/utils/quotNumber.ts",
       "source_location": "L1",
       "id": "src_utils_quotnumber_ts",
-      "community": 15,
+      "community": 16,
       "norm_label": "quotnumber.ts"
     },
     {
@@ -674,7 +674,7 @@
       "source_file": "src/utils/quotNumber.ts",
       "source_location": "L12",
       "id": "quotnumber_nextquotnumber",
-      "community": 15,
+      "community": 16,
       "norm_label": "nextquotnumber()"
     },
     {
@@ -710,7 +710,7 @@
       "source_file": "src/utils/crypto.ts",
       "source_location": "L6",
       "id": "crypto_hashpassword",
-      "community": 4,
+      "community": 3,
       "norm_label": "hashpassword()"
     },
     {
@@ -764,7 +764,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/utils/dispatchNumber.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_utils_dispatchnumber_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "dispatchnumber.ts"
     },
     {
@@ -773,7 +773,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/utils/dispatchNumber.ts",
       "source_location": "L12",
       "id": "dispatchnumber_nextdispatchnumber",
-      "community": 4,
+      "community": 3,
       "norm_label": "nextdispatchnumber()"
     },
     {
@@ -782,7 +782,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/scripts/migrateVendorChemicalsToPrices.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_scripts_migratevendorchemicalstoprices_ts",
-      "community": 12,
+      "community": 13,
       "norm_label": "migratevendorchemicalstoprices.ts"
     },
     {
@@ -791,7 +791,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/scripts/migrateVendorChemicalsToPrices.ts",
       "source_location": "L62",
       "id": "migratevendorchemicalstoprices_normalizematerialname",
-      "community": 12,
+      "community": 13,
       "norm_label": "normalizematerialname()"
     },
     {
@@ -800,7 +800,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/scripts/migrateVendorChemicalsToPrices.ts",
       "source_location": "L142",
       "id": "migratevendorchemicalstoprices_isrealunitmismatch",
-      "community": 12,
+      "community": 13,
       "norm_label": "isrealunitmismatch()"
     },
     {
@@ -809,7 +809,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/scripts/migrateVendorChemicalsToPrices.ts",
       "source_location": "L149",
       "id": "migratevendorchemicalstoprices_computematches",
-      "community": 12,
+      "community": 13,
       "norm_label": "computematches()"
     },
     {
@@ -818,7 +818,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/scripts/migrateVendorChemicalsToPrices.ts",
       "source_location": "L217",
       "id": "migratevendorchemicalstoprices_printreport",
-      "community": 12,
+      "community": 13,
       "norm_label": "printreport()"
     },
     {
@@ -827,7 +827,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/scripts/migrateVendorChemicalsToPrices.ts",
       "source_location": "L246",
       "id": "migratevendorchemicalstoprices_findsuperadminid",
-      "community": 12,
+      "community": 13,
       "norm_label": "findsuperadminid()"
     },
     {
@@ -836,7 +836,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/scripts/migrateVendorChemicalsToPrices.ts",
       "source_location": "L255",
       "id": "migratevendorchemicalstoprices_todateonly",
-      "community": 12,
+      "community": 13,
       "norm_label": "todateonly()"
     },
     {
@@ -845,7 +845,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/scripts/migrateVendorChemicalsToPrices.ts",
       "source_location": "L260",
       "id": "migratevendorchemicalstoprices_applymatches",
-      "community": 12,
+      "community": 13,
       "norm_label": "applymatches()"
     },
     {
@@ -854,7 +854,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/scripts/migrateVendorChemicalsToPrices.ts",
       "source_location": "L308",
       "id": "migratevendorchemicalstoprices_run",
-      "community": 12,
+      "community": 13,
       "norm_label": "run()"
     },
     {
@@ -863,7 +863,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/scripts/updateStock.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_scripts_updatestock_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "updatestock.ts"
     },
     {
@@ -872,7 +872,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/scripts/updateStock.ts",
       "source_location": "L79",
       "id": "updatestock_run",
-      "community": 4,
+      "community": 3,
       "norm_label": "run()"
     },
     {
@@ -881,7 +881,7 @@
       "source_file": "src/db/index.ts",
       "source_location": "L1",
       "id": "src_db_index_ts",
-      "community": 15,
+      "community": 16,
       "norm_label": "index.ts"
     },
     {
@@ -1034,7 +1034,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/db/schema/index.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_db_schema_index_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "index.ts"
     },
     {
@@ -1178,7 +1178,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/vendors/vendors.schema.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_modules_vendors_vendors_schema_ts",
-      "community": 4,
+      "community": 14,
       "norm_label": "vendors.schema.ts"
     },
     {
@@ -1205,7 +1205,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/vendors/vendors.service.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_modules_vendors_vendors_service_ts",
-      "community": 4,
+      "community": 14,
       "norm_label": "vendors.service.ts"
     },
     {
@@ -1214,7 +1214,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/vendors/vendors.service.ts",
       "source_location": "L17",
       "id": "vendors_service_toresponse",
-      "community": 4,
+      "community": 14,
       "norm_label": "toresponse()"
     },
     {
@@ -1223,7 +1223,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/vendors/vendors.service.ts",
       "source_location": "L32",
       "id": "vendors_service_listvendors",
-      "community": 4,
+      "community": 14,
       "norm_label": "listvendors()"
     },
     {
@@ -1232,7 +1232,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/vendors/vendors.service.ts",
       "source_location": "L41",
       "id": "vendors_service_getvendorbyid",
-      "community": 4,
+      "community": 14,
       "norm_label": "getvendorbyid()"
     },
     {
@@ -1241,7 +1241,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/vendors/vendors.service.ts",
       "source_location": "L46",
       "id": "vendors_service_createvendor",
-      "community": 4,
+      "community": 14,
       "norm_label": "createvendor()"
     },
     {
@@ -1250,7 +1250,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/vendors/vendors.service.ts",
       "source_location": "L66",
       "id": "vendors_service_updatevendor",
-      "community": 4,
+      "community": 14,
       "norm_label": "updatevendor()"
     },
     {
@@ -1259,7 +1259,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/vendors/vendors.service.ts",
       "source_location": "L88",
       "id": "vendors_service_deletevendor",
-      "community": 4,
+      "community": 14,
       "norm_label": "deletevendor()"
     },
     {
@@ -1943,7 +1943,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/company-pricing/company-pricing.service.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_modules_company_pricing_company_pricing_service_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "company-pricing.service.ts"
     },
     {
@@ -1952,7 +1952,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/company-pricing/company-pricing.service.ts",
       "source_location": "L6",
       "id": "company_pricing_service_getcompanypricing",
-      "community": 4,
+      "community": 3,
       "norm_label": "getcompanypricing()"
     },
     {
@@ -1961,7 +1961,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/company-pricing/company-pricing.service.ts",
       "source_location": "L19",
       "id": "company_pricing_service_upsertcompanypricing",
-      "community": 4,
+      "community": 3,
       "norm_label": "upsertcompanypricing()"
     },
     {
@@ -1988,7 +1988,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/company-pricing/company-pricing.schema.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_modules_company_pricing_company_pricing_schema_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "company-pricing.schema.ts"
     },
     {
@@ -1997,7 +1997,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/salaryRecords/salaryRecords.service.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_modules_salaryrecords_salaryrecords_service_ts",
-      "community": 14,
+      "community": 3,
       "norm_label": "salaryrecords.service.ts"
     },
     {
@@ -2006,7 +2006,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/salaryRecords/salaryRecords.service.ts",
       "source_location": "L6",
       "id": "salaryrecords_service_toresponse",
-      "community": 14,
+      "community": 3,
       "norm_label": "toresponse()"
     },
     {
@@ -2015,7 +2015,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/salaryRecords/salaryRecords.service.ts",
       "source_location": "L34",
       "id": "salaryrecords_service_savesalaryrecord",
-      "community": 14,
+      "community": 3,
       "norm_label": "savesalaryrecord()"
     },
     {
@@ -2024,7 +2024,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/salaryRecords/salaryRecords.service.ts",
       "source_location": "L90",
       "id": "salaryrecords_service_listsalaryrecords",
-      "community": 14,
+      "community": 3,
       "norm_label": "listsalaryrecords()"
     },
     {
@@ -2033,7 +2033,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/salaryRecords/salaryRecords.service.ts",
       "source_location": "L109",
       "id": "salaryrecords_service_getsalaryrecordbyid",
-      "community": 14,
+      "community": 3,
       "norm_label": "getsalaryrecordbyid()"
     },
     {
@@ -2042,7 +2042,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/salaryRecords/salaryRecords.schema.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_modules_salaryrecords_salaryrecords_schema_ts",
-      "community": 14,
+      "community": 3,
       "norm_label": "salaryrecords.schema.ts"
     },
     {
@@ -2087,7 +2087,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/dispatch/dispatch.schema.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_modules_dispatch_dispatch_schema_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "dispatch.schema.ts"
     },
     {
@@ -2096,7 +2096,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/dispatch/dispatch.service.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_modules_dispatch_dispatch_service_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "dispatch.service.ts"
     },
     {
@@ -2105,7 +2105,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/dispatch/dispatch.service.ts",
       "source_location": "L8",
       "id": "dispatch_service_todispatchresponse",
-      "community": 4,
+      "community": 3,
       "norm_label": "todispatchresponse()"
     },
     {
@@ -2114,7 +2114,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/dispatch/dispatch.service.ts",
       "source_location": "L51",
       "id": "dispatch_service_tojoinedresponse",
-      "community": 4,
+      "community": 3,
       "norm_label": "tojoinedresponse()"
     },
     {
@@ -2123,7 +2123,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/dispatch/dispatch.service.ts",
       "source_location": "L107",
       "id": "dispatch_service_createdispatch",
-      "community": 4,
+      "community": 3,
       "norm_label": "createdispatch()"
     },
     {
@@ -2132,7 +2132,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/dispatch/dispatch.service.ts",
       "source_location": "L165",
       "id": "dispatch_service_voiddispatch",
-      "community": 4,
+      "community": 3,
       "norm_label": "voiddispatch()"
     },
     {
@@ -2141,7 +2141,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/dispatch/dispatch.service.ts",
       "source_location": "L183",
       "id": "dispatch_service_listdispatches",
-      "community": 4,
+      "community": 3,
       "norm_label": "listdispatches()"
     },
     {
@@ -2150,7 +2150,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/dispatch/dispatch.service.ts",
       "source_location": "L218",
       "id": "dispatch_service_getdispatchbynumber",
-      "community": 4,
+      "community": 3,
       "norm_label": "getdispatchbynumber()"
     },
     {
@@ -2159,7 +2159,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/dispatch/dispatch.service.ts",
       "source_location": "L227",
       "id": "dispatch_service_getdispatchsummary",
-      "community": 4,
+      "community": 3,
       "norm_label": "getdispatchsummary()"
     },
     {
@@ -2168,133 +2168,142 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_modules_pdf_pdf_service_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "pdf.service.ts"
+    },
+    {
+      "label": "getLogoDataUri()",
+      "file_type": "code",
+      "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
+      "source_location": "L23",
+      "id": "pdf_service_getlogodatauri",
+      "community": 4,
+      "norm_label": "getlogodatauri()"
     },
     {
       "label": "PDFService",
       "file_type": "code",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L17",
+      "source_location": "L31",
       "id": "pdf_service_pdfservice",
-      "community": 3,
+      "community": 4,
       "norm_label": "pdfservice"
     },
     {
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L26",
+      "source_location": "L40",
       "id": "pdf_service_pdfservice_constructor",
-      "community": 3,
+      "community": 4,
       "norm_label": ".constructor()"
     },
     {
       "label": ".getInstance()",
       "file_type": "code",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L28",
+      "source_location": "L42",
       "id": "pdf_service_pdfservice_getinstance",
-      "community": 3,
+      "community": 4,
       "norm_label": ".getinstance()"
     },
     {
       "label": ".launchBrowser()",
       "file_type": "code",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L35",
+      "source_location": "L49",
       "id": "pdf_service_pdfservice_launchbrowser",
-      "community": 3,
+      "community": 4,
       "norm_label": ".launchbrowser()"
     },
     {
       "label": ".acquireBrowser()",
       "file_type": "code",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L46",
+      "source_location": "L60",
       "id": "pdf_service_pdfservice_acquirebrowser",
-      "community": 3,
+      "community": 4,
       "norm_label": ".acquirebrowser()"
     },
     {
       "label": ".releaseBrowser()",
       "file_type": "code",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L69",
+      "source_location": "L83",
       "id": "pdf_service_pdfservice_releasebrowser",
-      "community": 3,
+      "community": 4,
       "norm_label": ".releasebrowser()"
     },
     {
       "label": ".generatePDF()",
       "file_type": "code",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L75",
+      "source_location": "L89",
       "id": "pdf_service_pdfservice_generatepdf",
-      "community": 3,
+      "community": 4,
       "norm_label": ".generatepdf()"
     },
     {
       "label": ".toStream()",
       "file_type": "code",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L145",
+      "source_location": "L162",
       "id": "pdf_service_pdfservice_tostream",
-      "community": 3,
+      "community": 4,
       "norm_label": ".tostream()"
     },
     {
       "label": ".shutdown()",
       "file_type": "code",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L152",
+      "source_location": "L169",
       "id": "pdf_service_pdfservice_shutdown",
-      "community": 3,
+      "community": 4,
       "norm_label": ".shutdown()"
     },
     {
       "label": "docTypeLabel()",
       "file_type": "code",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L160",
+      "source_location": "L177",
       "id": "pdf_service_doctypelabel",
-      "community": 3,
+      "community": 4,
       "norm_label": "doctypelabel()"
     },
     {
       "label": "wrapBody()",
       "file_type": "code",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L174",
+      "source_location": "L191",
       "id": "pdf_service_wrapbody",
-      "community": 3,
+      "community": 4,
       "norm_label": "wrapbody()"
     },
     {
       "label": "buildHeaderTemplate()",
       "file_type": "code",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L189",
+      "source_location": "L231",
       "id": "pdf_service_buildheadertemplate",
-      "community": 3,
+      "community": 4,
       "norm_label": "buildheadertemplate()"
     },
     {
       "label": "buildFooterTemplate()",
       "file_type": "code",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L238",
+      "source_location": "L324",
       "id": "pdf_service_buildfootertemplate",
-      "community": 3,
+      "community": 4,
       "norm_label": "buildfootertemplate()"
     },
     {
       "label": "esc()",
       "file_type": "code",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L261",
+      "source_location": "L380",
       "id": "pdf_service_esc",
-      "community": 3,
+      "community": 4,
       "norm_label": "esc()"
     },
     {
@@ -2330,7 +2339,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/test-render.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_modules_pdf_test_render_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "test-render.ts"
     },
     {
@@ -2339,7 +2348,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/test-render.ts",
       "source_location": "L8",
       "id": "test_render_testrender",
-      "community": 3,
+      "community": 4,
       "norm_label": "testrender()"
     },
     {
@@ -2348,7 +2357,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/template.service.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_modules_pdf_template_service_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "template.service.ts"
     },
     {
@@ -2357,7 +2366,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/template.service.ts",
       "source_location": "L12",
       "id": "template_service_templateservice",
-      "community": 3,
+      "community": 4,
       "norm_label": "templateservice"
     },
     {
@@ -2366,7 +2375,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/template.service.ts",
       "source_location": "L18",
       "id": "template_service_templateservice_constructor",
-      "community": 3,
+      "community": 4,
       "norm_label": ".constructor()"
     },
     {
@@ -2375,7 +2384,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/template.service.ts",
       "source_location": "L20",
       "id": "template_service_templateservice_getinstance",
-      "community": 3,
+      "community": 4,
       "norm_label": ".getinstance()"
     },
     {
@@ -2384,7 +2393,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/template.service.ts",
       "source_location": "L25",
       "id": "template_service_templateservice_init",
-      "community": 3,
+      "community": 4,
       "norm_label": ".init()"
     },
     {
@@ -2393,7 +2402,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/template.service.ts",
       "source_location": "L32",
       "id": "template_service_templateservice_loadpartials",
-      "community": 3,
+      "community": 4,
       "norm_label": ".loadpartials()"
     },
     {
@@ -2402,7 +2411,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/template.service.ts",
       "source_location": "L50",
       "id": "template_service_templateservice_rendertemplate",
-      "community": 3,
+      "community": 4,
       "norm_label": ".rendertemplate()"
     },
     {
@@ -2411,7 +2420,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/template.service.ts",
       "source_location": "L56",
       "id": "template_service_templateservice_gettemplate",
-      "community": 3,
+      "community": 4,
       "norm_label": ".gettemplate()"
     },
     {
@@ -2420,7 +2429,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/template.service.ts",
       "source_location": "L72",
       "id": "template_service_templateservice_getcss",
-      "community": 3,
+      "community": 4,
       "norm_label": ".getcss()"
     },
     {
@@ -2429,7 +2438,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/template.service.ts",
       "source_location": "L84",
       "id": "template_service_templateservice_bustcache",
-      "community": 3,
+      "community": 4,
       "norm_label": ".bustcache()"
     },
     {
@@ -2438,7 +2447,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.types.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_modules_pdf_pdf_types_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "pdf.types.ts"
     },
     {
@@ -2447,7 +2456,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.types.ts",
       "source_location": "L205",
       "id": "pdf_types_pdferror",
-      "community": 3,
+      "community": 4,
       "norm_label": "pdferror"
     },
     {
@@ -2456,7 +2465,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.types.ts",
       "source_location": "L206",
       "id": "pdf_types_pdferror_constructor",
-      "community": 3,
+      "community": 4,
       "norm_label": ".constructor()"
     },
     {
@@ -2465,7 +2474,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/helpers/handlebars.helpers.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_modules_pdf_helpers_handlebars_helpers_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "handlebars.helpers.ts"
     },
     {
@@ -2474,7 +2483,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/helpers/handlebars.helpers.ts",
       "source_location": "L5",
       "id": "handlebars_helpers_registerhelpers",
-      "community": 3,
+      "community": 4,
       "norm_label": "registerhelpers()"
     },
     {
@@ -2483,7 +2492,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/helpers/date.helper.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_modules_pdf_helpers_date_helper_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "date.helper.ts"
     },
     {
@@ -2492,7 +2501,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/helpers/date.helper.ts",
       "source_location": "L1",
       "id": "date_helper_formatdate",
-      "community": 3,
+      "community": 4,
       "norm_label": "formatdate()"
     },
     {
@@ -2501,7 +2510,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/helpers/date.helper.ts",
       "source_location": "L8",
       "id": "date_helper_formattime",
-      "community": 3,
+      "community": 4,
       "norm_label": "formattime()"
     },
     {
@@ -2510,7 +2519,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/helpers/date.helper.ts",
       "source_location": "L15",
       "id": "date_helper_nowformatted",
-      "community": 3,
+      "community": 4,
       "norm_label": "nowformatted()"
     },
     {
@@ -2519,7 +2528,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/helpers/currency.helper.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_modules_pdf_helpers_currency_helper_ts",
-      "community": 3,
+      "community": 4,
       "norm_label": "currency.helper.ts"
     },
     {
@@ -2528,7 +2537,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/helpers/currency.helper.ts",
       "source_location": "L1",
       "id": "currency_helper_formatcurrency",
-      "community": 3,
+      "community": 4,
       "norm_label": "formatcurrency()"
     },
     {
@@ -2537,7 +2546,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/helpers/currency.helper.ts",
       "source_location": "L6",
       "id": "currency_helper_formatnumber",
-      "community": 3,
+      "community": 4,
       "norm_label": "formatnumber()"
     },
     {
@@ -2546,7 +2555,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/helpers/currency.helper.ts",
       "source_location": "L21",
       "id": "currency_helper_wordsbelow1000",
-      "community": 3,
+      "community": 4,
       "norm_label": "wordsbelow1000()"
     },
     {
@@ -2555,7 +2564,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/helpers/currency.helper.ts",
       "source_location": "L27",
       "id": "currency_helper_amountinwords",
-      "community": 3,
+      "community": 4,
       "norm_label": "amountinwords()"
     },
     {
@@ -2825,7 +2834,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/staff/staff.schema.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_modules_staff_staff_schema_ts",
-      "community": 13,
+      "community": 15,
       "norm_label": "staff.schema.ts"
     },
     {
@@ -2852,7 +2861,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/staff/staff.service.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_modules_staff_staff_service_ts",
-      "community": 13,
+      "community": 15,
       "norm_label": "staff.service.ts"
     },
     {
@@ -2861,7 +2870,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/staff/staff.service.ts",
       "source_location": "L6",
       "id": "staff_service_toresponse",
-      "community": 13,
+      "community": 15,
       "norm_label": "toresponse()"
     },
     {
@@ -2870,7 +2879,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/staff/staff.service.ts",
       "source_location": "L22",
       "id": "staff_service_liststaff",
-      "community": 13,
+      "community": 15,
       "norm_label": "liststaff()"
     },
     {
@@ -2879,7 +2888,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/staff/staff.service.ts",
       "source_location": "L27",
       "id": "staff_service_getstaffbyid",
-      "community": 13,
+      "community": 15,
       "norm_label": "getstaffbyid()"
     },
     {
@@ -2888,7 +2897,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/staff/staff.service.ts",
       "source_location": "L32",
       "id": "staff_service_createstaff",
-      "community": 13,
+      "community": 15,
       "norm_label": "createstaff()"
     },
     {
@@ -2897,7 +2906,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/staff/staff.service.ts",
       "source_location": "L50",
       "id": "staff_service_updatestaff",
-      "community": 13,
+      "community": 15,
       "norm_label": "updatestaff()"
     },
     {
@@ -2906,7 +2915,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/staff/staff.service.ts",
       "source_location": "L73",
       "id": "staff_service_deletestaff",
-      "community": 13,
+      "community": 15,
       "norm_label": "deletestaff()"
     },
     {
@@ -2942,7 +2951,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/quotations/quotations.service.ts",
       "source_location": "L1",
       "id": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_modules_quotations_quotations_service_ts",
-      "community": 4,
+      "community": 3,
       "norm_label": "quotations.service.ts"
     },
     {
@@ -2951,7 +2960,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/quotations/quotations.service.ts",
       "source_location": "L7",
       "id": "quotations_service_toquotationresponse",
-      "community": 4,
+      "community": 3,
       "norm_label": "toquotationresponse()"
     },
     {
@@ -2960,7 +2969,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/quotations/quotations.service.ts",
       "source_location": "L31",
       "id": "quotations_service_createquotation",
-      "community": 4,
+      "community": 3,
       "norm_label": "createquotation()"
     },
     {
@@ -2969,7 +2978,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/quotations/quotations.service.ts",
       "source_location": "L71",
       "id": "quotations_service_listquotations",
-      "community": 4,
+      "community": 3,
       "norm_label": "listquotations()"
     },
     {
@@ -2978,7 +2987,7 @@
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/quotations/quotations.service.ts",
       "source_location": "L108",
       "id": "quotations_service_getquotationbyid",
-      "community": 4,
+      "community": 3,
       "norm_label": "getquotationbyid()"
     },
     {
@@ -3842,7 +3851,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "quotations module",
       "id": "readme_quotations_module"
     },
@@ -4063,7 +4072,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "quotations table",
       "id": "readme_quotations_table"
     },
@@ -4076,7 +4085,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "quotation_line_items table",
       "id": "readme_quotation_line_items_table"
     },
@@ -4089,7 +4098,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "quotation_sequences table",
       "id": "readme_quotation_sequences_table"
     },
@@ -4141,7 +4150,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "quotnumber.ts utility",
       "id": "readme_quot_number_ts"
     },
@@ -4362,7 +4371,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "atomic counter rationale (insert on conflict lock-free)",
       "id": "readme_atomic_counter_rationale"
     },
@@ -4635,7 +4644,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "batch_sequences table",
       "id": "readme_batch_sequences_table"
     },
@@ -4726,7 +4735,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "quotnumber.ts utility (unik-yyyy-nnn)",
       "id": "readme_quot_number_utils"
     },
@@ -4739,7 +4748,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "batchnumber.ts utility (xx-yyyymmdd-nnn)",
       "id": "readme_batch_number_utils"
     },
@@ -4947,7 +4956,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "quotation numbering (unik-yyyy-nnn atomic)",
       "id": "claude_quotation_numbering"
     },
@@ -4960,7 +4969,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 11,
+      "community": 12,
       "norm_label": "batch numbering (xx-yyyymmdd-nnn atomic)",
       "id": "claude_batch_numbering"
     },
@@ -11235,7 +11244,19 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L17",
+      "source_location": "L23",
+      "weight": 1.0,
+      "_src": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_modules_pdf_pdf_service_ts",
+      "_tgt": "pdf_service_getlogodatauri",
+      "source": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_modules_pdf_pdf_service_ts",
+      "target": "pdf_service_getlogodatauri",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
+      "source_location": "L31",
       "weight": 1.0,
       "_src": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_modules_pdf_pdf_service_ts",
       "_tgt": "pdf_service_pdfservice",
@@ -11247,7 +11268,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L160",
+      "source_location": "L177",
       "weight": 1.0,
       "_src": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_modules_pdf_pdf_service_ts",
       "_tgt": "pdf_service_doctypelabel",
@@ -11259,7 +11280,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L174",
+      "source_location": "L191",
       "weight": 1.0,
       "_src": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_modules_pdf_pdf_service_ts",
       "_tgt": "pdf_service_wrapbody",
@@ -11271,7 +11292,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L189",
+      "source_location": "L231",
       "weight": 1.0,
       "_src": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_modules_pdf_pdf_service_ts",
       "_tgt": "pdf_service_buildheadertemplate",
@@ -11283,7 +11304,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L238",
+      "source_location": "L324",
       "weight": 1.0,
       "_src": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_modules_pdf_pdf_service_ts",
       "_tgt": "pdf_service_buildfootertemplate",
@@ -11295,7 +11316,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L261",
+      "source_location": "L380",
       "weight": 1.0,
       "_src": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_modules_pdf_pdf_service_ts",
       "_tgt": "pdf_service_esc",
@@ -11328,10 +11349,22 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
+      "source_location": "L96",
+      "weight": 1.0,
+      "_src": "pdf_service_pdfservice_generatepdf",
+      "_tgt": "pdf_service_getlogodatauri",
+      "source": "pdf_service_getlogodatauri",
+      "target": "pdf_service_pdfservice_generatepdf",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L26",
+      "source_location": "L40",
       "weight": 1.0,
       "_src": "pdf_service_pdfservice",
       "_tgt": "pdf_service_pdfservice_constructor",
@@ -11343,7 +11376,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L28",
+      "source_location": "L42",
       "weight": 1.0,
       "_src": "pdf_service_pdfservice",
       "_tgt": "pdf_service_pdfservice_getinstance",
@@ -11355,7 +11388,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L35",
+      "source_location": "L49",
       "weight": 1.0,
       "_src": "pdf_service_pdfservice",
       "_tgt": "pdf_service_pdfservice_launchbrowser",
@@ -11367,7 +11400,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L46",
+      "source_location": "L60",
       "weight": 1.0,
       "_src": "pdf_service_pdfservice",
       "_tgt": "pdf_service_pdfservice_acquirebrowser",
@@ -11379,7 +11412,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L69",
+      "source_location": "L83",
       "weight": 1.0,
       "_src": "pdf_service_pdfservice",
       "_tgt": "pdf_service_pdfservice_releasebrowser",
@@ -11391,7 +11424,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L75",
+      "source_location": "L89",
       "weight": 1.0,
       "_src": "pdf_service_pdfservice",
       "_tgt": "pdf_service_pdfservice_generatepdf",
@@ -11403,7 +11436,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L145",
+      "source_location": "L162",
       "weight": 1.0,
       "_src": "pdf_service_pdfservice",
       "_tgt": "pdf_service_pdfservice_tostream",
@@ -11415,7 +11448,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L152",
+      "source_location": "L169",
       "weight": 1.0,
       "_src": "pdf_service_pdfservice",
       "_tgt": "pdf_service_pdfservice_shutdown",
@@ -11427,7 +11460,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L63",
+      "source_location": "L77",
       "weight": 1.0,
       "_src": "pdf_service_pdfservice_acquirebrowser",
       "_tgt": "pdf_service_pdfservice_launchbrowser",
@@ -11439,7 +11472,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L105",
+      "source_location": "L122",
       "weight": 1.0,
       "_src": "pdf_service_pdfservice_generatepdf",
       "_tgt": "pdf_service_pdfservice_acquirebrowser",
@@ -11451,7 +11484,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L141",
+      "source_location": "L158",
       "weight": 1.0,
       "_src": "pdf_service_pdfservice_generatepdf",
       "_tgt": "pdf_service_pdfservice_releasebrowser",
@@ -11463,7 +11496,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L84",
+      "source_location": "L100",
       "weight": 1.0,
       "_src": "pdf_service_pdfservice_generatepdf",
       "_tgt": "pdf_service_doctypelabel",
@@ -11475,7 +11508,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L91",
+      "source_location": "L107",
       "weight": 1.0,
       "_src": "pdf_service_pdfservice_generatepdf",
       "_tgt": "pdf_service_wrapbody",
@@ -11487,7 +11520,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L102",
+      "source_location": "L119",
       "weight": 1.0,
       "_src": "pdf_service_pdfservice_generatepdf",
       "_tgt": "pdf_service_buildheadertemplate",
@@ -11499,7 +11532,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L103",
+      "source_location": "L120",
       "weight": 1.0,
       "_src": "pdf_service_pdfservice_generatepdf",
       "_tgt": "pdf_service_buildfootertemplate",
@@ -11571,7 +11604,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L195",
+      "source_location": "L238",
       "weight": 1.0,
       "_src": "pdf_service_buildheadertemplate",
       "_tgt": "pdf_service_esc",
@@ -11583,7 +11616,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L255",
+      "source_location": "L350",
       "weight": 1.0,
       "_src": "pdf_service_buildfootertemplate",
       "_tgt": "pdf_service_esc",

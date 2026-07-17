@@ -14,6 +14,20 @@ interface PoolEntry {
   createdAt: number;
 }
 
+// TDS/MSDS/CoA get the branded letterhead (logo + expanded meta); all other
+// doc types keep the pre-existing header/footer byte-for-byte.
+const BRANDED_LETTERHEAD_DOC_TYPES: ReadonlySet<DocType> = new Set(['tds', 'msds', 'coa']);
+
+let logoDataUriCache: string | null = null;
+
+async function getLogoDataUri(): Promise<string> {
+  if (logoDataUriCache) return logoDataUriCache;
+  const logoPath = path.resolve(__dirname, 'assets', 'macro-coats-logo.png');
+  const buf = await fs.readFile(logoPath);
+  logoDataUriCache = `data:image/png;base64,${buf.toString('base64')}`;
+  return logoDataUriCache;
+}
+
 class PDFService {
   private static instance: PDFService;
 
@@ -78,6 +92,8 @@ class PDFService {
     options: PDFOptions = {},
   ): Promise<RenderResult> {
     const { date, time } = nowFormatted();
+    const branded = BRANDED_LETTERHEAD_DOC_TYPES.has(docType);
+    const logoDataUri = branded ? await getLogoDataUri() : null;
 
     const ctx: Record<string, unknown> = {
       ...payload,
@@ -88,7 +104,7 @@ class PDFService {
     try {
       const css  = await templateService.getCSS();
       const body = await templateService.renderTemplate(docType, ctx);
-      html = wrapBody(body, css);
+      html = wrapBody(body, css, branded ? logoDataUri : null);
     } catch (err) {
       if (err instanceof PDFError) throw err;
       throw new PDFError('Template render failed', 'RENDER_FAILED', err);
@@ -99,8 +115,9 @@ class PDFService {
     const docNumber   = String(
       payload['productCode'] ?? payload['quotationNumber'] ?? payload['batchNumber'] ?? '',
     );
-    const headerHtml = buildHeaderTemplate(docTitle, productName, docNumber);
-    const footerHtml = buildFooterTemplate(date, time, docTitle, productName);
+    const revisionDate = String(payload['revisionDate'] ?? '');
+    const headerHtml = buildHeaderTemplate(docTitle, productName, docNumber, { docType, logoDataUri, revisionDate });
+    const footerHtml = buildFooterTemplate(date, time, docTitle, productName, { docType });
 
     const entry = await this.acquireBrowser();
     let page: Page | null = null;
@@ -171,16 +188,41 @@ function docTypeLabel(docType: DocType): string {
 
 // ─── HTML wrapper ─────────────────────────────────────────────────────────────
 
-function wrapBody(body: string, css: string): string {
+function wrapBody(body: string, css: string, watermarkDataUri?: string | null): string {
+  const watermarkCss = watermarkDataUri
+    ? `
+  .doc-watermark {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 999;
+  }
+  .doc-watermark img {
+    width: 45%;
+    max-width: 100mm;
+    opacity: 0.06;
+    filter: grayscale(1);
+    transform: rotate(-28deg);
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }`
+    : '';
+  const watermarkHtml = watermarkDataUri
+    ? `<div class="doc-watermark"><img src="${watermarkDataUri}" alt="" /></div>`
+    : '';
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>${css}</style>
+  <style>${css}${watermarkCss}</style>
 </head>
-<body>${body}</body>
+<body>${watermarkHtml}${body}</body>
 </html>`;
 }
 
@@ -190,6 +232,7 @@ function buildHeaderTemplate(
   docTitle: string,
   productName: string,
   docNumber: string,
+  opts: { docType: DocType; logoDataUri?: string | null; revisionDate?: string },
 ): string {
   const subParts = [
     docTitle    ? esc(docTitle)    : '',
@@ -198,7 +241,10 @@ function buildHeaderTemplate(
   ].filter(Boolean);
   const subLine = subParts.join(' &nbsp;|&nbsp; ');
 
-  return `
+  const branded = BRANDED_LETTERHEAD_DOC_TYPES.has(opts.docType) && !!opts.logoDataUri;
+
+  if (!branded) {
+    return `
 <style>
   html { font-size: 10pt; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -231,13 +277,62 @@ function buildHeaderTemplate(
   </div>
   <div class="h-rule"></div>
 </div>`;
+  }
+
+  // ── Branded letterhead — TDS / MSDS only ──────────────────────────────────
+  const revLine = opts.revisionDate
+    ? `<div class="h-row"><b>Rev. Date:</b> ${esc(opts.revisionDate)}</div>`
+    : '';
+
+  return `
+<style>
+  html { font-size: 10pt; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', Arial, 'Helvetica Neue', Helvetica, sans-serif; }
+  .hw { width: 100%; background: #ffffff; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .hb { display: flex; align-items: center; padding: 3mm 14mm 2.5mm 14mm; gap: 4mm; }
+  .h-logo { height: 13mm; width: auto; max-width: 40mm; object-fit: contain; flex-shrink: 0; }
+  .h-left { flex: 1; min-width: 0; border-left: 1px solid #C5D3E8; padding-left: 4mm; }
+  .h-company { font-size: 12.5pt; font-weight: 800; color: #123A6D; line-height: 1.1; letter-spacing: -.02em; }
+  .h-tagline { font-size: 7.5pt; font-weight: 700; color: #5C6470; margin-top: 0.5mm; text-transform: uppercase; letter-spacing: .06em; }
+  .h-subdoc  { font-size: 8pt; color: #2D4D7A; margin-top: 1.5mm; font-weight: 700; letter-spacing: .02em; }
+  .h-right { text-align: right; flex-shrink: 0; border-left: 1px solid #C5D3E8; padding-left: 3mm; }
+  .h-row { font-size: 7.5pt; line-height: 1.6; color: #5C6470; }
+  .h-row b { color: #123A6D; font-weight: 700; }
+  .h-rule  { height: 2px; background: #123A6D; margin: 0 14mm; -webkit-print-color-adjust: exact !important; }
+</style>
+<div class="hw">
+  <div class="hb">
+    <img class="h-logo" src="${opts.logoDataUri}" />
+    <div class="h-left">
+      <div class="h-company">Macro Coats Pvt. Ltd.</div>
+      <div class="h-tagline">Metal Surface Treatment Specialists</div>
+      ${subLine ? `<div class="h-subdoc">${subLine}</div>` : ''}
+    </div>
+    <div class="h-right">
+      <div class="h-row"><b>Email:</b> info@macrocoats.in</div>
+      <div class="h-row"><b>Web:</b> www.macrocoats.in</div>
+      ${revLine}
+    </div>
+  </div>
+  <div class="h-rule"></div>
+</div>`;
 }
 
 // ─── Puppeteer footer template ────────────────────────────────────────────────
 
-function buildFooterTemplate(date: string, time: string, docTitle: string, productName: string): string {
+function buildFooterTemplate(
+  date: string,
+  time: string,
+  docTitle: string,
+  productName: string,
+  opts: { docType: DocType },
+): string {
   const leftParts = ['Macro Coats', productName, docTitle].filter(Boolean).map(esc);
-  return `
+  const branded = BRANDED_LETTERHEAD_DOC_TYPES.has(opts.docType);
+
+  if (!branded) {
+    return `
 <style>
   html { font-size: 7.5pt; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -255,6 +350,30 @@ function buildFooterTemplate(date: string, time: string, docTitle: string, produ
     <div class="f-left"><b>${leftParts[0]}</b> &nbsp;·&nbsp; ${leftParts.slice(1).join(' &nbsp;·&nbsp; ')} &nbsp;·&nbsp; Generated ${esc(date)} ${esc(time)}</div>
     <div class="f-right">Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>
   </div>
+</div>`;
+  }
+
+  // ── Branded footer — TDS / MSDS only ──────────────────────────────────────
+  return `
+<style>
+  html { font-size: 7.5pt; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', Arial, 'Helvetica Neue', Helvetica, sans-serif; }
+  .fw { width: 100%; padding: 0 14mm; }
+  .f-rule { height: 0.5px; background: #ccc; margin-bottom: 1mm; }
+  .fb { display: flex; justify-content: space-between; align-items: baseline; }
+  .f-left { font-size: 7.5pt; color: #888; letter-spacing: .02em; }
+  .f-left b { color: #123A6D; }
+  .f-right { font-size: 7.5pt; color: #888; text-align: right; }
+  .f-tag { font-size: 6.5pt; color: #A6ADB4; letter-spacing: .03em; margin-top: 0.5mm; text-transform: uppercase; }
+</style>
+<div class="fw">
+  <div class="f-rule"></div>
+  <div class="fb">
+    <div class="f-left"><b>${leftParts[0]}</b> &nbsp;·&nbsp; ${leftParts.slice(1).join(' &nbsp;·&nbsp; ')} &nbsp;·&nbsp; www.macrocoats.in</div>
+    <div class="f-right">Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>
+  </div>
+  <div class="f-tag">This document is computer generated &nbsp;·&nbsp; Confidential &nbsp;·&nbsp; Generated ${esc(date)} ${esc(time)}</div>
 </div>`;
 }
 

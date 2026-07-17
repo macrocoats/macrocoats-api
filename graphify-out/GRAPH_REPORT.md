@@ -1,11 +1,11 @@
-# Graph Report - /Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api  (2026-07-16)
+# Graph Report - /Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api  (2026-07-17)
 
 ## Corpus Check
-- 130 files · ~129,821 words
+- 130 files · ~134,832 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 525 nodes · 926 edges · 29 communities detected
+- 526 nodes · 928 edges · 29 communities detected
 - Extraction: 91% EXTRACTED · 9% INFERRED · 0% AMBIGUOUS · INFERRED: 79 edges (avg confidence: 0.81)
 - Token cost: 0 input · 0 output
 
@@ -77,7 +77,7 @@ Nodes (114): Entity Relationship Rules (staff/vendors standalone), Environment V
 
 ### Community 1 - "Community 1"
 Cohesion: 0.07
-Nodes (0): 
+Nodes (2): getStockQty(), req()
 
 ### Community 2 - "Community 2"
 Cohesion: 0.08
@@ -85,11 +85,11 @@ Nodes (36): buildSummary(), getAccessSummary(), buildInternalComposition(), buil
 
 ### Community 3 - "Community 3"
 Cohesion: 0.06
-Nodes (20): buildApp(), registerCookies(), registerCors(), amountInWords(), wordsBelow1000(), formatDate(), formatTime(), nowFormatted() (+12 more)
+Nodes (16): seedCompanies(), getCompanyPricing(), upsertCompanyPricing(), hashPassword(), getDispatchByNumber(), toJoinedResponse(), seedFormulationVariants(), seedHazardProfiles() (+8 more)
 
 ### Community 4 - "Community 4"
-Cohesion: 0.06
-Nodes (17): seedCompanies(), getCompanyPricing(), upsertCompanyPricing(), hashPassword(), getDispatchByNumber(), toJoinedResponse(), seedFormulationVariants(), seedHazardProfiles() (+9 more)
+Cohesion: 0.08
+Nodes (16): amountInWords(), wordsBelow1000(), formatDate(), formatTime(), nowFormatted(), registerHelpers(), buildFooterTemplate(), buildHeaderTemplate() (+8 more)
 
 ### Community 5 - "Community 5"
 Cohesion: 0.09
@@ -116,28 +116,28 @@ Cohesion: 0.23
 Nodes (11): buildBatchConditions(), buildComparisonSide(), formatMoney(), getAlerts(), getComparison(), getMaterials(), getOverview(), listBatchCosts() (+3 more)
 
 ### Community 11 - "Community 11"
+Cohesion: 0.18
+Nodes (5): buildApp(), registerCookies(), registerCors(), connectRedis(), main()
+
+### Community 12 - "Community 12"
 Cohesion: 0.31
 Nodes (11): Batch Numbering (XX-YYYYMMDD-NNN atomic), Quotation Numbering (UNIK-YYYY-NNN atomic), Atomic Counter Rationale (INSERT ON CONFLICT lock-free), batchNumber.ts Utility (XX-YYYYMMDD-NNN), batch_sequences Table, quotNumber.ts Utility, quotNumber.ts Utility (UNIK-YYYY-NNN), quotation_line_items Table (+3 more)
 
-### Community 12 - "Community 12"
+### Community 13 - "Community 13"
 Cohesion: 0.39
 Nodes (7): applyMatches(), computeMatches(), findSuperadminId(), isRealUnitMismatch(), normalizeMaterialName(), printReport(), run()
 
-### Community 13 - "Community 13"
+### Community 14 - "Community 14"
+Cohesion: 0.36
+Nodes (4): createVendor(), getVendorById(), toResponse(), updateVendor()
+
+### Community 15 - "Community 15"
 Cohesion: 0.36
 Nodes (4): createStaff(), getStaffById(), toResponse(), updateStaff()
 
-### Community 14 - "Community 14"
-Cohesion: 0.47
-Nodes (3): getSalaryRecordById(), saveSalaryRecord(), toResponse()
-
-### Community 15 - "Community 15"
+### Community 16 - "Community 16"
 Cohesion: 0.4
 Nodes (0): 
-
-### Community 16 - "Community 16"
-Cohesion: 1.0
-Nodes (2): getStockQty(), req()
 
 ### Community 17 - "Community 17"
 Cohesion: 1.0
@@ -216,7 +216,7 @@ Nodes (1): Feature: AI Formulation Optimizer
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Macro Coats API` connect `Community 0` to `Community 11`?**
+- **Why does `Macro Coats API` connect `Community 0` to `Community 12`?**
   _High betweenness centrality (0.042) - this node is a cross-community bridge._
 - **Are the 9 inferred relationships involving `cacheDel()` (e.g. with `updateDocument()` and `transitionDocumentStatus()`) actually correct?**
   _`cacheDel()` has 9 INFERRED edges - model-reasoned connections that need verification._

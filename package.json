@@ -5,7 +5,7 @@
   "description": "Macro Coats Product Document Portal — REST API (Fastify + Drizzle + PostgreSQL)",
   "scripts": {
     "dev": "tsx watch --env-file=.env.local src/server.ts",
-    "build": "tsc -p tsconfig.build.json && cp -r src/modules/pdf/templates dist/modules/pdf/templates && cp -r src/modules/pdf/partials dist/modules/pdf/partials && cp -r src/modules/pdf/styles dist/modules/pdf/styles",
+    "build": "tsc -p tsconfig.build.json && cp -r src/modules/pdf/templates dist/modules/pdf/templates && cp -r src/modules/pdf/partials dist/modules/pdf/partials && cp -r src/modules/pdf/styles dist/modules/pdf/styles && cp -r src/modules/pdf/assets dist/modules/pdf/assets",
     "start": "node dist/server.js",
     "db:generate": "node --import tsx node_modules/drizzle-kit/bin.cjs generate",
     "db:migrate": "node --import tsx node_modules/drizzle-kit/bin.cjs migrate",

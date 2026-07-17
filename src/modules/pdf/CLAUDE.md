@@ -22,7 +22,22 @@ styles/
   document.css            Shared CSS injected into every rendered template
 templates/
   batch.hbs, coa.hbs, msds.hbs, quotation.hbs, tds.hbs
+assets/
+  macro-coats-logo.png    Embedded as a base64 data URI in the Puppeteer header
+                          template (see `getLogoDataUri()` in pdf.service.ts) —
+                          the `build` script must keep copying this dir to dist/
 ```
+
+## Branded letterhead (TDS / MSDS / CoA)
+
+`pdf.service.ts` has two header/footer variants gated by `BRANDED_LETTERHEAD_DOC_TYPES`
+(currently `tds`, `msds`, `coa`): a branded variant (logo, "Metal Surface Treatment
+Specialists" tagline, Email/Web only — no address/GST/phone, expanded footer with
+"computer generated"/"Confidential"/Page X of Y) and the original plain variant for
+every other doc type (`quotation`, `batch`, `salary`). When adding a doc type to the
+branded set, verify the other doc types still render byte-identical to before —
+`buildHeaderTemplate`/`buildFooterTemplate` branch on `opts.docType` precisely to
+guarantee this.
 
 ## Service split
 
