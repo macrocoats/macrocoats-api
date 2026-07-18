@@ -107,10 +107,12 @@ Routes never import from other modules' services. Cross-cutting concerns (auth, 
 | `purchase-entries` | GET /purchase-entries, GET /purchase-entries/:id, POST /purchase-entries |
 | `hazard-profiles` | GET /hazard-profiles, GET /hazard-profiles/:id, POST /hazard-profiles, PUT /hazard-profiles/:id, DELETE /hazard-profiles/:id (soft-delete) |
 | `finished-goods` | GET /finished-goods, GET /finished-goods/summary, GET /finished-goods/:batchNumber, POST /finished-goods/backfill/:batchNumber, PATCH /finished-goods/:id/status |
-| `dispatch` | POST /dispatches, GET /dispatches, GET /dispatches/summary, GET /dispatches/:dispatchNumber, PATCH /dispatches/:id/void |
+| `dispatch` | POST /dispatches, GET /dispatches, GET /dispatches/summary, GET /dispatches/:dispatchNumber, PATCH /dispatches/:id, PATCH /dispatches/:id/void |
 | `pdf` | POST /pdf/quotation, POST /pdf/tds, POST /pdf/msds, POST /pdf/coa, POST /pdf/batch |
 | `optimizer` | POST /optimizer/analyze |
 | `cost-intelligence` | GET /cost-intelligence/overview, /trends, /batches, /materials, /alerts, /profitability, /comparison |
+| `customer-purchase-orders` | POST /customer-purchase-orders, GET /customer-purchase-orders, GET /customer-purchase-orders/dashboard-summary, GET /customer-purchase-orders/analytics, GET /customer-purchase-orders/search, GET /customer-purchase-orders/from-quotation/:quotationId, GET /customer-purchase-orders/:id, PUT /customer-purchase-orders/:id, PATCH /customer-purchase-orders/:id/status, DELETE /customer-purchase-orders/:id (soft-delete), POST /customer-purchase-orders/:id/batches, DELETE /customer-purchase-orders/:id/batches/:linkId, GET/POST /customer-purchase-orders/:id/timeline, POST/GET /customer-purchase-orders/:id/documents, GET /customer-purchase-orders/:id/documents/:docId/download, DELETE /customer-purchase-orders/:id/documents/:docId |
+| `investor-dashboard` | GET /investor-dashboard/executive-kpis, GET /investor-dashboard/sales-analytics, GET /investor-dashboard/projections |
 
 All endpoints except auth are `superadmin`-only, except product document reads which use `checkProductAccess` for company users. Within `products`, only `GET /products/:productLine/:docType` uses `checkProductAccess` — every other `products` endpoint (including status transitions, audit trail, and expiry summary) is `requireSuperAdmin`-only. `GET /products/expiry-summary` is registered before the `/:productLine/:docType` route so the literal segment `expiry-summary` never matches as a `:productLine` param.
 
@@ -125,6 +127,31 @@ All endpoints except auth are `superadmin`-only, except product document reads w
 > **Note:** The `optimizer` module (AI Formulation Optimizer) also deviates from the 3-file pattern — see `src/modules/optimizer/CLAUDE.md` for its structure, including the `VARIANT_STATUS_TRANSITIONS` export that `formulation-variants` imports (see "Formulation variant approval workflow" below).
 
 > **Note:** `document-sanitization` is a service-only module (`*.service.ts` + `*.types.ts`, no `*.routes.ts`) — it is not registered in `app.ts` and exposes no endpoints. It's consumed directly by other modules to derive IP-safe TDS/MSDS composition and hazard sections (via `ingredient_hazard_profiles`) for non-superadmin roles.
+
+### Customer purchase orders (customer-purchase-orders)
+
+Sales orders received from customers — tracks a customer PO from receipt through production, batch manufacturing, and dispatch to completion. This is a separate, more operational concern from `company_documents` above: they coexist deliberately (see the "company_documents" note there) rather than one superseding the other. Not an accounting/invoicing entity — no GST, no ledger; payment tracking stays on `batches`.
+
+- **Tables:** `customer_purchase_orders` (header, soft-deleted via `deletedAt`), `customer_purchase_order_items`, `customer_purchase_order_documents` (attachments with version history via `supersedesDocumentId`), `customer_purchase_order_batches` (batch↔item links — the join that makes Customer Order → Batch → CoA → Label → Dispatch traceability possible), `customer_purchase_order_timeline` (append-only event log), `customer_purchase_order_sequences` (atomic `CPO-YYYY-NNN` counter, mirrors `quotation_sequences`).
+- **`customer_purchase_orders` is the first table in this codebase to use soft delete** (`deletedAt` timestamp, filtered `WHERE deleted_at IS NULL`) — every other module either hard-deletes or uses a status flag (e.g. `finished_goods.status = 'Cancelled'`).
+- **Status is a mixed manual/automatic state machine.** `draft`→`confirmed`→`production_planned`→`in_production` are the only manually-settable transitions (`PATCH .../status`, validated against `STATUS_TRANSITIONS` in `customer-purchase-orders.service.ts`); `in_production`→`partially_produced`→`ready_for_dispatch`→`partially_dispatched`→`completed` are auto-recomputed by `recomputeStatus()` from item-level production/dispatch aggregates, called after every batch-link and dispatch event. `cancelled` is manual and terminal from any non-terminal state.
+- **Dispatch integration:** `dispatches` carries two nullable FKs — `customerPurchaseOrderId` and `customerPurchaseOrderItemId` (mirrors the existing nullable `quotationId` pattern) — rather than a parallel dispatch table, so it reuses the proven atomic stock-safe `incrementDispatchedQuantity`/`reverseDispatchedQuantity` logic in `finished-goods.service.ts`. `dispatch.service.ts` calls `recordDispatchAgainstOrder`/`reverseDispatchAgainstOrder` (from `customer-purchase-orders.service.ts`) inside the same transaction as dispatch create/void/quantity-update.
+- **Batch linking auto-populates timeline events:** linking a batch always fires `batch_linked` + `label_generated` (every batch has a `labelSnapshot`); if the batch's `coaSnapshot` is already set, `qc_completed` + `coa_generated` fire too — this is how the full "QC Completed → CoA Generated → Label Generated" timeline chain gets populated without the `batches` module needing to know about customer-order timelines.
+- **Quotation conversion is prefill-only, not persisted.** `GET /customer-purchase-orders/from-quotation/:quotationId` returns the quotation header + a best-effort customer match (`companies.displayName` ILIKE `quotations.customerName`) — it never returns line items, because the quotation rate catalogue doesn't map onto real `products.key` values (same reconciliation gap documented for "Generate Batch" in `safteyDataSheet/src/pages/Rates/CLAUDE.md`). The frontend prefills the header only and leaves items for manual entry.
+- Upload route follows the same two-phase multipart pattern as `company-documents` (see above).
+- **`priority`** — `low`/`normal`/`high`/`urgent`, default `normal`. Set on create, editable via the same PUT full-replace as other header fields while the order is `draft`/`confirmed`; not a workflow-driving field, purely a manual triage/sort hint surfaced on the list page, Kanban board, and detail page.
+- **`GET /customer-purchase-orders/analytics`** (Order Management Dashboard) — read-only aggregations, nothing stored: orders-by-customer and orders-by-product (top 10 by value/quantity, excludes cancelled), a 12-month zero-filled orders-by-month series, avg production lead time (`po_received` → first `batch_linked` timeline event), avg dispatch lead time (first non-voided dispatch date → `completed` timeline event), and completion rate (`completed` ÷ non-cancelled orders). All four lead-time/breakdown subqueries explicitly join back to `customer_purchase_orders` and filter `deleted_at IS NULL` — a soft-deleted order's timeline/dispatch rows are not purged, so omitting that join lets deleted orders' data leak into the averages.
+- `listOrders()` additionally returns per-order `priority`, `productSummary` (single product name, or `"N products"` for multi-item orders), and `totalQuantityProduced`/`totalQuantityDispatched`/`totalQuantityPending` — aggregated via `LEFT JOIN` subqueries over `customer_purchase_order_batches` and non-voided `dispatches`, not stored columns.
+
+### Investor Dashboard (investor-dashboard)
+
+Read-only business-intelligence layer over existing operational tables — nothing is stored, every figure is derived on request. All three routes are `requireSuperAdmin`-only, `{data: ...}` envelope.
+
+- **"Sales"/"Revenue" means Customer PO order value** (confirmed+ status, excludes cancelled), never invoiced/recognized revenue — this system has no accounting/invoicing layer by design (see root `CLAUDE.md`). Every date-keyed figure groups by `customer_po_date` (the date on the customer's actual PO), not `created_at`, matching the fix applied to the Order Management Dashboard's "Orders by Month" chart.
+- **`dashboardFilterSchema`** (`range`: `today`/`week`/`month`/`quarter`/`year`/`custom`, plus optional `from`/`to`/`customerId`/`productKey`) drives `GET /executive-kpis` and `GET /sales-analytics`. `resolveWindow()` in the service turns `range` into a concrete `[from, to]` — `custom` requires both `from` and `to` (enforced by a Zod `.refine`). Date formatting throughout the module uses local `getFullYear()/getMonth()/getDate()` components, never `Date.toISOString()`, which converts to UTC first and shifts a local-midnight date backward by a day whenever the server timezone is ahead of UTC (e.g. IST, UTC+5:30) — this was a real bug caught and fixed during this module's initial build.
+- **`GET /executive-kpis`** returns two families of figures: fixed-period ones (`currentMonthSales`/`quarterlySales`/`ytdSales`/`pendingOrderValue`) that always reflect the current calendar month/quarter/year regardless of the `range` filter, and filter-scoped ones (`ordersReceived`/`ordersCompleted`/`activeCustomers`/`averageOrderValue`/`productsSold`/`productionVolume`/`customerGrowthPct`) that respect `range`/`customerId`/`productKey`. `customerGrowthPct` compares customers whose *first-ever* order date falls in the selected window against an equal-length prior window.
+- **`GET /sales-analytics`** returns `monthlyTrend`/`quarterlyTrend`/`yearlyTrend` (12 months / 8 quarters / 5 years, zero-filled via `generate_series`), plus top-10 `salesByCustomer`/`salesByProduct`/`salesByRegion` breakdowns. `salesByRegion` is a `companies.state` proxy — there is no dedicated region field in the schema yet.
+- **`GET /projections`** (`projectionsQuerySchema`: `conversionRate`, 0–1, default 0.3) computes linear run-rate estimates — clearly labeled as estimates, not a forecasting engine. Month/quarter/year-to-date actuals are extrapolated to `projectedMonthlyRevenue`/`projectedQuarterlyRevenue`/`projectedAnnualRevenue` by dividing by elapsed days and multiplying by the period's total days. `expectedRevenueFromOpenOrders` sums each open order item's `GREATEST(ordered - dispatched, 0) * unitPrice`. `pipelineValue` sums `qty * rate` across line items of quotations from the last 90 days that aren't yet linked to a non-cancelled order via `reference_quotation_id` — quotation line-item `qty` is nullable (many real quotations are rate-only with no committed quantity), so a quotation with no `qty` filled in contributes 0 to the pipeline; this is expected data behavior, not a bug. `pipelineUpside = pipelineValue * conversionRate` is a client-adjustable what-if, never persisted.
 
 ### Middleware
 
@@ -208,7 +235,7 @@ Integration tests use a real PostgreSQL database (the same one in `.env.local`).
 
 ### Batch numbering
 
-`batch_sequences` uses the same lock-free atomic pattern (in `src/utils/batchNumber.ts`). `nextBatchNumber(db, companyName)` produces `XX-YYYYMMDD-NNN` where XX is the first 2 chars of the company name (uppercase), YYYYMMDD is the production date, and NNN is a per-company per-day counter. Each batch also captures JSONB snapshots at creation time:
+`batch_sequences` uses the same lock-free atomic pattern (in `src/utils/batchNumber.ts`). `nextBatchNumber(db, companyName, productionDate?)` produces `XX-YYYYMMDD-NNN` where XX is the first 2 chars of the company name (uppercase), YYYYMMDD is the production date, and NNN is a per-company per-day counter. `POST /batches` accepts an optional `productionDate` (defaults to today when omitted) so historical/backfilled batches can be recorded with their real production date rather than the entry date — both the batch row and its batch number reflect the same date. Each batch also captures JSONB snapshots at creation time:
 
 - `formulationSnapshot` — full formulation at time of batch creation
 - `labelSnapshot` — label data including the assigned batchNumber
@@ -219,7 +246,7 @@ Integration tests use a real PostgreSQL database (the same one in `.env.local`).
 
 ### Database schema
 
-See `DATABASE.md` for the full 26-table schema reference, the canonical migration workflow, entity relationship rules, and failed-migration recovery steps.
+See `DATABASE.md` for the full 33-table schema reference, the canonical migration workflow, entity relationship rules, and failed-migration recovery steps.
 
 ### Seed data
 
@@ -247,6 +274,7 @@ See `DATABASE.md` for the full 26-table schema reference, the canonical migratio
 - `src/utils/crypto.ts` — bcrypt hashing, token generation, username normalization
 - `src/utils/quotNumber.ts` — atomic quotation number generation (UNIK-YYYY-NNN)
 - `src/utils/batchNumber.ts` — atomic batch number generation (XX-YYYYMMDD-NNN)
+- `src/utils/customerOrderNumber.ts` — atomic customer PO number generation (CPO-YYYY-NNN)
 
 ---
 

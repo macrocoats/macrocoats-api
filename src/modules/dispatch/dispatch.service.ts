@@ -3,15 +3,18 @@ import { db, type DB } from '../../db/index.js'
 import { dispatches } from '../../db/schema/index.js'
 import { nextDispatchNumber } from '../../utils/dispatchNumber.js'
 import { incrementDispatchedQuantity, reverseDispatchedQuantity } from '../finished-goods/finished-goods.service.js'
-import type { CreateDispatchBody, ListDispatchesQuery } from './dispatch.schema.js'
+import { recordDispatchAgainstOrder, reverseDispatchAgainstOrder } from '../customer-purchase-orders/customer-purchase-orders.service.js'
+import type { CreateDispatchBody, UpdateDispatchBody, ListDispatchesQuery } from './dispatch.schema.js'
 
 function toDispatchResponse(row: typeof dispatches.$inferSelect) {
   return {
-    id:               row.id,
-    dispatchNumber:   row.dispatchNumber,
-    batchId:          row.batchId,
-    companyId:        row.companyId,
-    quotationId:      row.quotationId ?? null,
+    id:                          row.id,
+    dispatchNumber:              row.dispatchNumber,
+    batchId:                     row.batchId,
+    companyId:                   row.companyId,
+    quotationId:                 row.quotationId ?? null,
+    customerPurchaseOrderId:     row.customerPurchaseOrderId ?? null,
+    customerPurchaseOrderItemId: row.customerPurchaseOrderItemId ?? null,
     invoiceNumber:    row.invoiceNumber ?? null,
     dispatchDate:     row.dispatchDate,
     quantity:         Number(row.quantity),
@@ -34,6 +37,8 @@ interface DispatchJoinRow {
   batchId:          string
   companyId:        string
   quotationId:      string | null
+  customerPurchaseOrderId:     string | null
+  customerPurchaseOrderItemId: string | null
   invoiceNumber:    string | null
   dispatchDate:     string
   quantity:         string
@@ -57,6 +62,8 @@ function toJoinedResponse(row: DispatchJoinRow) {
     companyId:        row.companyId,
     companyName:      row.companyName,
     quotationId:      row.quotationId,
+    customerPurchaseOrderId:     row.customerPurchaseOrderId,
+    customerPurchaseOrderItemId: row.customerPurchaseOrderItemId,
     invoiceNumber:    row.invoiceNumber,
     dispatchDate:     row.dispatchDate,
     quantity:         Number(row.quantity),
@@ -78,6 +85,8 @@ const SELECT_COLUMNS = sql`
   d.batch_id          AS "batchId",
   d.company_id        AS "companyId",
   d.quotation_id      AS "quotationId",
+  d.customer_purchase_order_id      AS "customerPurchaseOrderId",
+  d.customer_purchase_order_item_id AS "customerPurchaseOrderItemId",
   d.invoice_number    AS "invoiceNumber",
   d.dispatch_date     AS "dispatchDate",
   d.quantity,
@@ -144,6 +153,8 @@ export async function createDispatch(data: CreateDispatchBody, createdBy: string
         batchId:          data.batchId,
         companyId:        data.companyId,
         quotationId:      data.quotationId ?? null,
+        customerPurchaseOrderId:     data.customerPurchaseOrderId ?? null,
+        customerPurchaseOrderItemId: data.customerPurchaseOrderItemId ?? null,
         invoiceNumber:    data.invoiceNumber ?? null,
         dispatchDate:     data.dispatchDate,
         quantity:         String(data.quantity),
@@ -152,6 +163,92 @@ export async function createDispatch(data: CreateDispatchBody, createdBy: string
         createdBy,
       })
       .returning()
+
+    if (row.customerPurchaseOrderId && row.customerPurchaseOrderItemId) {
+      await recordDispatchAgainstOrder(
+        tx as unknown as DB, row.customerPurchaseOrderId, row.customerPurchaseOrderItemId,
+        row.id, Number(row.quantity), createdBy,
+      )
+    }
+
+    return toDispatchResponse(row)
+  })
+}
+
+export type UpdateDispatchResult =
+  | DispatchRow
+  | { code: 'DISPATCH_NOT_FOUND' }
+  | { code: 'DISPATCH_ALREADY_VOIDED' }
+  | { code: 'DISPATCH_BATCH_CANCELLED' }
+  | { code: 'INSUFFICIENT_STOCK'; available: number }
+
+/**
+ * Edits a non-voided dispatch. `batchId` can never be changed here — reassigning
+ * a dispatch to a different batch would require moving stock between two
+ * unrelated finished-goods rows; the supported path for that is void + re-create.
+ * When `quantity` changes, the old amount is freed from the batch's
+ * dispatched_quantity and the new amount is re-validated against available
+ * stock in the same transaction (mirrors createDispatch's guard).
+ */
+export async function updateDispatch(id: string, data: UpdateDispatchBody, _updatedBy: string): Promise<UpdateDispatchResult> {
+  return db.transaction(async (tx) => {
+    const [dispatch] = await tx.select().from(dispatches).where(eq(dispatches.id, id))
+    if (!dispatch) return { code: 'DISPATCH_NOT_FOUND' as const }
+    if (dispatch.voidedAt) return { code: 'DISPATCH_ALREADY_VOIDED' as const }
+
+    const oldQuantity = Number(dispatch.quantity)
+    const quantityChanged = data.quantity !== undefined && data.quantity !== oldQuantity
+
+    if (quantityChanged) {
+      const [fgRow] = await tx.execute<{ status: string }>(sql`
+        SELECT status FROM finished_goods WHERE batch_id = ${dispatch.batchId}
+      `)
+      if (!fgRow || fgRow.status === 'Cancelled') {
+        return { code: 'DISPATCH_BATCH_CANCELLED' as const }
+      }
+
+      // Free the old amount first so the re-validation below checks against
+      // true availability rather than double-counting this dispatch's own stake.
+      await reverseDispatchedQuantity(tx as unknown as DB, dispatch.batchId, oldQuantity)
+      const updatedFg = await incrementDispatchedQuantity(tx as unknown as DB, dispatch.batchId, data.quantity!)
+
+      if (!updatedFg) {
+        const rows = await tx.execute<{
+          producedQuantity:   string
+          dispatchedQuantity: string
+          reservedQuantity:   string
+        }>(sql`
+          SELECT produced_quantity   AS "producedQuantity",
+                 dispatched_quantity AS "dispatchedQuantity",
+                 reserved_quantity   AS "reservedQuantity"
+          FROM finished_goods
+          WHERE batch_id = ${dispatch.batchId}
+        `)
+        const fg = rows[0]
+        const available = fg
+          ? Number(fg.producedQuantity) - Number(fg.dispatchedQuantity) - Number(fg.reservedQuantity)
+          : 0
+        return { code: 'INSUFFICIENT_STOCK' as const, available }
+      }
+    }
+
+    const [row] = await tx
+      .update(dispatches)
+      .set({
+        companyId:        data.companyId ?? dispatch.companyId,
+        quotationId:      data.quotationId !== undefined ? data.quotationId : dispatch.quotationId,
+        invoiceNumber:    data.invoiceNumber !== undefined ? data.invoiceNumber : dispatch.invoiceNumber,
+        dispatchDate:     data.dispatchDate ?? dispatch.dispatchDate,
+        quantity:         data.quantity !== undefined ? String(data.quantity) : dispatch.quantity,
+        transportDetails: data.transportDetails !== undefined ? data.transportDetails : dispatch.transportDetails,
+        remarks:          data.remarks !== undefined ? data.remarks : dispatch.remarks,
+      })
+      .where(eq(dispatches.id, id))
+      .returning()
+
+    if (quantityChanged && row.customerPurchaseOrderId) {
+      await reverseDispatchAgainstOrder(tx as unknown as DB, row.customerPurchaseOrderId)
+    }
 
     return toDispatchResponse(row)
   })
@@ -175,6 +272,10 @@ export async function voidDispatch(id: string, reason: string, _voidedBy: string
       .set({ voidedAt: new Date(), voidReason: reason })
       .where(eq(dispatches.id, id))
       .returning()
+
+    if (row.customerPurchaseOrderId) {
+      await reverseDispatchAgainstOrder(tx as unknown as DB, row.customerPurchaseOrderId)
+    }
 
     return toDispatchResponse(row)
   })

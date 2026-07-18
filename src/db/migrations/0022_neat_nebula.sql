@@ -1,0 +1,1 @@
+ALTER TABLE "customer_purchase_orders" ADD COLUMN "priority" text DEFAULT 'normal' NOT NULL;

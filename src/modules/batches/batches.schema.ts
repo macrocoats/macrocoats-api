@@ -43,6 +43,13 @@ export const createBatchSchema = z.object({
   formulationSnapshot: z.object({ components: z.array(formulationComponentSchema) }),
   labelSnapshot:       labelSnapshotSchema,
   costSummary:         costSummarySchema,
+  // Defaults to today (server-side) when omitted — see createBatch() in
+  // batches.service.ts. Accepted so historical/backfilled batches can be
+  // recorded with their real production date instead of the entry date.
+  productionDate:      z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(
+                          (d) => d <= new Date().toISOString().slice(0, 10),
+                          { message: 'productionDate cannot be in the future' },
+                        ).optional(),
   paymentDueDate:      z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   paymentTermDays:     z.number().int().positive().optional().default(45),
   variantId:           z.string().uuid().nullable().optional(),

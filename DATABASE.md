@@ -6,7 +6,7 @@ Reference for the PostgreSQL schema and Drizzle migration workflow. See `CLAUDE.
 
 ## Database schema
 
-27 tables across `src/db/schema/`:
+33 tables across `src/db/schema/`:
 
 | Table | Purpose |
 |---|---|
@@ -37,6 +37,12 @@ Reference for the PostgreSQL schema and Drizzle migration workflow. See `CLAUDE.
 | `dispatches` | Dispatch records against a batch/company, with transport details (JSONB) and void tracking (`voidedAt`/`voidReason`) |
 | `dispatch_sequences` | Per-day atomic counter for dispatch numbering |
 | `company_documents` | Purchase orders a customer company has sent to Macro Coats (sales orders received); flat document repository — order number/date/amount plus the uploaded file, no status workflow |
+| `customer_purchase_orders` | Operational sales-order header: customer, PO number/date, status (mixed manual/auto state machine), priority (low/normal/high/urgent), totals. First table using soft delete (`deletedAt`) |
+| `customer_purchase_order_items` | Line items (product/variant/qty/price) for a customer PO; `amount` computed server-side |
+| `customer_purchase_order_documents` | Attachments on a customer PO (PO PDF, email confirmation, drawings, specs) with version history via `supersedesDocumentId` |
+| `customer_purchase_order_batches` | Junction: links a manufactured batch to the customer PO item it was produced against — the traceability chain |
+| `customer_purchase_order_timeline` | Append-only event log per customer PO (po_received, status_changed, batch_linked, dispatched, etc.) |
+| `customer_purchase_order_sequences` | Per-year atomic counter for customer PO numbering (CPO-YYYY-NNN) |
 
 ## Migration workflow (canonical)
 
@@ -57,7 +63,7 @@ Always use Drizzle's generator — **never hand-write migration SQL files**. Han
 ## Entity relationship rules
 
 - **Staff** and **Vendors** are standalone entities — they are NOT linked to the `companies` table and have no FK to it.
-- `companies` links only to: `users`, `company_product_access`, `quotations`, `batches`, `access_log`.
+- `companies` links only to: `users`, `company_product_access`, `quotations`, `batches`, `access_log`, `company_documents`, `customer_purchase_orders`.
 - When building new modules, confirm relationship assumptions before writing the schema — do not assume a new entity belongs to a company unless the user explicitly says so.
 
 ## Recovery from a failed migration

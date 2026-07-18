@@ -158,6 +158,8 @@ export const DEFAULT_INVENTORY = [
   { material: 'Propylene Glycol Methyl Ether (PGME)', unit: 'L' as const, price: '0',  sortOrder: 60 },
   // Dowanol PM — kept as a distinct SKU from PGME for UNICool AL PG High Lubricity Variant
   { material: 'Propylene Glycol Methyl Ether (Dowanol PM)', unit: 'L' as const, price: '0', sortOrder: 61 },
+  // Dowanol DPM — distinct chemical from Dowanol PM (dipropylene vs propylene glycol methyl ether); coupling solvent for UNIKLEAN-SF
+  { material: 'Dipropylene Glycol Methyl Ether (Dowanol DPM)', unit: 'L' as const, price: '0', sortOrder: 62 },
 
   // ── Biocides ─────────────────────────────────────────────────────────────────
   { material: 'Biocide Yellow',                     unit: 'L'  as const, price: '0',   sortOrder: 51 },

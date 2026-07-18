@@ -15,6 +15,7 @@ const PRODUCTS = [
   { key: 'corroklean',   displayName: 'CORROKLEAN',   code: 'CK',  category: 'Alkaline Cleaner',                 subtitle: 'Heavy-Duty Alkaline Metal Cleaner & Degreaser',                   accentColor: '#2a5c7a' },
   { key: 'corrcut-100',  displayName: 'CORRCUT 100',  code: 'CR',  category: 'Rust Preventive Oil',              subtitle: 'Light-Bodied Mineral Oil Based Rust Preventive',                  accentColor: '#4a2d5c' },
   { key: 'corrucut-500', displayName: 'CORRUCUT 500', code: 'CC',  category: 'Corrosion Preventive Fluid',       subtitle: 'Fast-Drying Dearomatized Hydrocarbon Rust Preventive',            accentColor: '#3d5a6e' },
+  { key: 'uniklean-sf',  displayName: 'UNIKLEAN-SF',  code: 'SF',  category: 'Industrial Cleaner',               subtitle: 'Low-Foam Heavy Duty Alkaline Cleaner Concentrate',                accentColor: '#1c7a6e' },
 ]
 
 // ── Document data ──────────────────────────────────────────────────────────────
@@ -3456,6 +3457,287 @@ const DOCS: Array<{
         { parameter: 'Salt Spray Resistance (96 h)',      method: 'ASTM B117',           specification: 'No rust formation in 96 h',           result: 'No rust observed at 96 h',       status: 'Pass' },
       ],
       statement: 'We hereby certify that the above batch of CORRUCUT 500 has been manufactured, tested, and inspected in accordance with our internal quality specifications. All parameters conform to the product specification and the product is approved for release.',
+      approvals: {
+        preparedBy: 'Quality Analyst — Macro Coats',
+        reviewedBy: 'QC Manager — Macro Coats',
+        approvedBy: 'Operations Head — Macro Coats',
+      },
+    },
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // UNIKLEAN-SF
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    productKey: 'uniklean-sf',
+    docType:    'tds',
+    docNumber:  'TDS-USF-001',
+    revision:   'Rev 01 — Jul 2026',
+    footer: {
+      left:   'TDS-USF-001 Rev 01 · Jul 2026',
+      center: 'This Technical Data Sheet is for guidance only. Performance figures are typical values obtained under controlled conditions and may vary in practice. © Macro Coats Pvt Ltd',
+      right:  'Macro Coats Pvt Ltd · Chennai · India\nPage 1 of 1',
+    },
+    body: {
+      grade:       'Industrial Grade',
+      description: 'UNIKLEAN-SF is a concentrated low-foaming alkaline cleaner formulated for immersion and spray cleaning systems. It is designed to remove heavy grease, machining oils, carbonized oil deposits, and shop contaminants from ferrous components while maintaining low foam and excellent bath stability.',
+      sections: {
+        features: [
+          { head: 'Low-Foam Performance',      body: 'Engineered nonionic surfactant system maintains low foam under high-agitation spray or immersion cleaning, protecting pumps and enabling stable bath operation' },
+          { head: 'Heavy-Duty Degreasing',      body: 'Silicate/carbonate alkaline builder system rapidly emulsifies and lifts machining oils, greases, and carbonized oil deposits from ferrous components' },
+          { head: 'Excellent Bath Stability',   body: 'Sodium gluconate sequesters hardness ions, preventing scale build-up and maintaining consistent cleaning performance over extended bath life' },
+          { head: 'Dual-Process Compatible',    body: 'Formulated for both immersion and spray cleaning systems at working concentrations of 6 – 8%' },
+        ],
+        physicalProperties: [
+          { property: 'Appearance',                value: 'Clear to pale straw liquid', unit: '—',      method: 'Visual' },
+          { property: 'Odour',                     value: 'Mild, characteristic',       unit: '—',      method: 'Organoleptic' },
+          { property: 'pH (1% Solution)',          value: '12.0 – 13.0',                unit: '—',      method: 'pH electrode, 25 °C' },
+          { property: 'Density (25 °C)',           value: '1.15 – 1.20',                unit: 'g/mL',   method: 'ISO 2811' },
+          { property: 'Working Concentration',     value: '6 – 8',                      unit: '% v/v',  method: 'Titration / dosing control' },
+          { property: 'Working Temperature',       value: '55 – 70',                    unit: '°C',     method: '—' },
+          { property: 'Foam Height (working conc.)', value: '< 10',                     unit: 'mm',     method: 'ASTM D3519' },
+          { property: 'Solubility',                value: 'Fully miscible with water',  unit: '—',      method: '—' },
+        ],
+        composition: [
+          { name: 'Silicate / carbonate builder system', function: 'Primary alkalinity source — oil emulsification and carbonized deposit removal', percent: '—', compat: 'Ferrous metals' },
+          { name: 'Low-foam nonionic surfactant',         function: 'Wetting and degreasing aid with low-foam stabilization for spray/immersion',       percent: '—', compat: 'All process types' },
+          { name: 'Sequestering agent (gluconate)',       function: 'Hardness control and bath stability',                                              percent: '—', compat: '—' },
+          { name: 'Water',                                function: 'Carrier / diluent',                                                                percent: 'Balance', compat: '—' },
+        ],
+        application: [
+          { step: '1', name: 'Prepare Tank',       param: 'Fill tank with water',                    value: 'Use the Working Solution Calculator to size concentrate/water for the tank' },
+          { step: '2', name: 'Add Concentrate',    param: 'Add UNIKLEAN-SF slowly with agitation',    value: '6% standard / 8% heavy duty' },
+          { step: '3', name: 'Heat Bath',          param: 'Heat to working temperature',              value: '55 – 70 °C' },
+          { step: '4', name: 'Immerse / Spray',    param: 'Immersion or spray application',           value: '5 – 15 min contact time depending on soil load' },
+          { step: '5', name: 'Rinse',              param: 'Water rinse',                              value: 'Remove residual cleaner before next process stage' },
+        ],
+        packaging: [
+          { size: '25',  unit: 'L', type: 'HDPE drum' },
+          { size: '50',  unit: 'L', type: 'HDPE drum' },
+          { size: '200', unit: 'L', type: 'HDPE drum' },
+        ],
+        performance: [
+          { label: 'Carbonized Oil Removal (8%, 70 °C)', val: '> 95 % (Internal IM-003)' },
+          { label: 'Foam Height (working conc., agitated)', val: '< 10 mm (ASTM D3519)' },
+          { label: 'Bath Stability (continuous use)',    val: 'Stable pH over 8 h production cycle' },
+          { label: 'Flash Rust (post-rinse, MS panels)', val: 'None within 2 h at ambient with adequate rinse' },
+        ],
+        safetyNote: 'Concentrated alkaline product — corrosive to skin and eyes at full strength. Always add concentrate to water, never the reverse. Refer to the current SDS (SDS-USF-001) for full hazard information and PPE requirements.',
+      },
+    },
+  },
+
+  {
+    productKey: 'uniklean-sf',
+    docType:    'msds',
+    docNumber:  'SDS-USF-001',
+    revision:   'Rev 01 — Jul 2026',
+    footer: {
+      left:   'SDS-USF-001 Rev 01 · Jul 2026',
+      center: 'This Safety Data Sheet is provided in good faith based on current knowledge. Information does not constitute a guarantee of specific product properties. © Macro Coats Pvt Ltd',
+      right:  'Macro Coats Pvt Ltd · Chennai · India\nGHS Rev 9 Compliant · Page 1 of 1',
+    },
+    body: {
+      signalWord: 'Danger',
+      sections: {
+        identification: {
+          productType:  'Low-foam heavy duty alkaline cleaner concentrate for immersion and spray cleaning systems',
+          intendedUse:  'Removal of heavy grease, machining oils, carbonized oil deposits, and shop contaminants from ferrous components by immersion or spray',
+          manufacturer: 'Macro Coats Pvt Ltd, Chennai, Tamil Nadu, India',
+          emergency:    'AIIMS Poison Control: 1800-11-6117 (Toll-Free)',
+        },
+        hazards: {
+          pictograms:      ['corrosive', 'irritant', 'environment'],
+          classifications: [
+            { class: 'Skin Corrosion',             category: 'Cat 1B', tagType: 'danger' },
+            { class: 'Serious Eye Damage',         category: 'Cat 1',  tagType: 'danger' },
+            { class: 'Aquatic Toxicity (Chronic)', category: 'Cat 3',  tagType: 'warn'   },
+          ],
+          hStatements: 'H314 — Causes severe skin burns and eye damage. H412 — Harmful to aquatic life with long lasting effects.',
+          pStatements: 'P260 · P264 · P273 · P280 · P301+P330+P331 · P303+P361+P353 · P305+P351+P338 · P310 · P501',
+        },
+        composition: {
+          ingredients: [
+            { name: 'Silicate / carbonate builder system', description: 'Primary alkalinity source — oil emulsification and carbonized deposit removal', ghsClass: 'Corrosive', tagType: 'danger' },
+            { name: 'Low-foam nonionic surfactant',         description: 'Wetting and degreasing aid with low-foam stabilization',                          ghsClass: 'Irritant',  tagType: 'warn'   },
+            { name: 'Sequestering agent (gluconate)',       description: 'Hardness control / bath stability',                                                ghsClass: 'None',      tagType: 'safe'   },
+            { name: 'Water',                                description: 'Carrier / diluent',                                                                ghsClass: 'None',      tagType: 'safe'   },
+          ],
+          note: 'Exact formulation is proprietary. Functional ingredient descriptions are provided for safety and emergency purposes only.',
+        },
+        firstAid: {
+          eyes:       'Flush with running water for ≥20 min, holding eyelids open. Seek immediate medical attention — risk of permanent damage.',
+          skin:       'Remove contaminated clothing immediately. Wash with copious water for ≥20 min. Seek medical attention.',
+          inhalation: 'Move to fresh air. If breathing is difficult, give supplemental oxygen. Seek medical attention.',
+          ingestion:  'Rinse mouth with water. Do NOT induce vomiting — may cause further burns. Call AIIMS Poison Control: 1800-11-6117.',
+          warning:    '⚠ Alkali burns can be deceptive — pain may be delayed. Always seek medical attention for eye/skin exposure.',
+        },
+        fireFighting: {
+          flammability:       'Not flammable (aqueous solution)',
+          extinguishingMedia: 'Any extinguishing agent suitable for surrounding fire',
+          fireHazard:         'Thermal decomposition may generate irritating vapours',
+          ppe:                'Full SCBA and chemical-resistant clothing',
+        },
+        accidentalRelease: [
+          'Evacuate non-essential personnel; ventilate area',
+          'Wear full PPE (chemical goggles, face shield, alkali-resistant gloves, apron)',
+          'Contain spill with sand or vermiculite; avoid runoff to drains',
+          'Neutralise with dilute acid (citric or acetic) before disposal',
+          'Prevent entry into waterways — toxic to aquatic organisms',
+          'Dispose as per local CPCB/SPCB guidelines',
+        ],
+        handling: {
+          handling:     'Dilute concentrate carefully — always add concentrate to water, not vice versa. Handle in well-ventilated areas.',
+          storageTemp:  '10 °C – 35 °C; store in cool, dry place; protect from frost',
+          containers:   'Sealed HDPE or polypropylene containers; segregate from acids',
+          segregation:  'Store separately from acids, ammonium salts, and oxidising agents',
+          shelfLife:    '24 months from date of manufacture (sealed, stored correctly)',
+        },
+        exposure: {
+          ppeItems:    ['Chemical Goggles', 'Face Shield', 'Alkali-resist. Gloves', 'PVC Apron', 'Rubber Boots'],
+          engineering: 'Exhaust ventilation for spray application. Eyewash station within 10 s. Emergency shower near handling area.',
+        },
+        physical: [
+          { key: 'Appearance',    val: 'Clear to pale straw liquid' },
+          { key: 'Odour',         val: 'Mild, characteristic' },
+          { key: 'pH (1% Sol.)',  val: '12.0 – 13.0' },
+          { key: 'Density',       val: '~1.15 – 1.20 g/mL' },
+          { key: 'Flash Point',   val: 'None (aqueous)' },
+          { key: 'Boiling Point', val: '~102 °C' },
+          { key: 'Solubility',    val: 'Fully miscible with water' },
+          { key: 'Viscosity',     val: 'Low (water-like)' },
+        ],
+        stability: {
+          stability:      'Stable under recommended storage conditions',
+          avoid:          'Strong acids, oxidising agents, ammonium compounds',
+          decomposition:  'May emit irritating vapours on strong heating',
+          polymerisation: 'Will not occur',
+        },
+        sections11to16: {
+          'Skin / Eye': 'Alkaline burns — corrosive to skin and eyes at full concentration. Diluted working solutions (6 – 8%) are irritating.',
+          Aquatic:      'H412 — surfactants and alkali harmful to aquatic life with long lasting effects',
+          Disposal:     'Neutralise to pH 6–9 before discharge. Dispose per CPCB/SPCB norms (E.P. Act 1986)',
+          Regulatory:   'MSIHC Rules 1989 · Factories Act 1948 · Hazardous Waste Rules 2016 · GHS Rev 9',
+          'Other Info': 'SDS Rev 01 issued Jul 2026. Next review: Jul 2028 or upon formulation change.',
+        },
+      },
+    },
+  },
+
+  {
+    productKey: 'uniklean-sf',
+    docType:    'formula',
+    docNumber:  'FRM-USF-001',
+    revision:   'Rev 01 — Jul 2026',
+    footer: {
+      left:   'FRM-USF-001 Rev 01 · Jul 2026',
+      center: 'CONFIDENTIAL — This formulation sheet is the proprietary information of Macro Coats Pvt Ltd. Unauthorised reproduction or disclosure is prohibited.',
+      right:  'Macro Coats Pvt Ltd · Chennai · India\nPage 1 of 1',
+    },
+    body: {
+      classification:      'CONFIDENTIAL — Internal Use Only',
+      batchSize:            '100 L (reference)',
+      formulaType:          'liquid',
+      referenceBatchSize:   100,
+      batchUnit:            'L',
+      totalActivePercent:   47,
+      overview: 'UNIKLEAN-SF is a low-foaming alkaline cleaner concentrate formulated for immersion and spray cleaning systems, combining a silicate/carbonate builder system with a low-foam nonionic surfactant and a gluconate sequestrant for bath stability.',
+      composition: [
+        { srNo: 1, name: 'Sodium Metasilicate (SMS)',                       casNo: '6834-92-0',  baseQty: 25,   unit: 'kg', percentWV: 25,   function: 'Strong alkalinity, oil emulsification, carbonized deposit removal',            density: null,  unitPrice: 50  },
+        { srNo: 2, name: 'Soda Ash (Sodium Carbonate)',                     casNo: '497-19-8',   baseQty: 12,   unit: 'kg', percentWV: 12,   function: 'Alkalinity builder and buffering',                                              density: null,  unitPrice: 65  },
+        { srNo: 3, name: 'Dipropylene Glycol Methyl Ether (Dowanol DPM)',   casNo: '34590-94-8', baseQty: 5,    unit: 'L',  percentWV: 5,    function: 'Coupling solvent — enhances oil/grease solvency and carbonized deposit penetration', density: 0.951, unitPrice: 0   },
+        { srNo: 4, name: 'LAE-9 (Lauryl Alcohol Ethoxylate)',               casNo: '9002-92-0',  baseQty: 3,    unit: 'L',  percentWV: 3,    function: 'Low-foam nonionic surfactant — wetting and degreasing aid',                    density: 0.95,  unitPrice: 600 },
+        { srNo: 5, name: 'Sodium Gluconate',                                casNo: '527-07-1',   baseQty: 2,    unit: 'kg', percentWV: 2,    function: 'Sequestering agent — hardness control and bath stability',                     density: null,  unitPrice: 75  },
+        { srNo: 6, name: 'DM Water',                                       casNo: '7732-18-5',  baseQty: null, unit: 'L',  percentWV: null, function: 'Carrier — balance to final volume',                                             density: null,  unitPrice: 0   },
+      ],
+      preparation: [
+        { step: 1, title: 'Water Charging',             detail: 'Add 50–55% of the required DM water to the mixing tank and start agitation.' },
+        { step: 2, title: 'Dissolve Alkaline Builders', detail: 'Add Sodium Metasilicate and Soda Ash sequentially, allowing complete dissolution before adding the next chemical.' },
+        { step: 3, title: 'Add Coupling Solvent',       detail: 'Add Dowanol DPM slowly with continuous mixing.' },
+        { step: 4, title: 'Add Surfactant',             detail: 'Slowly add LAE-9 while stirring gently to avoid foaming.' },
+        { step: 5, title: 'Add Sequestrant',            detail: 'Add Sodium Gluconate and mix until fully dissolved.' },
+        { step: 6, title: 'Final Volume Adjustment',    detail: 'Add DM water to reach the final batch volume and mix for 10–15 minutes until homogeneous.' },
+      ],
+      operatingConditions: [
+        { param: 'Bath Concentration',    value: '6 – 8 %' },
+        { param: 'Operating Temperature', value: '55 – 70 °C' },
+        { param: 'Bath pH',               value: '12.0 – 13.0' },
+        { param: 'Contact Time',          value: '5 – 15 minutes' },
+        { param: 'Application Method',    value: 'Immersion or spray wash' },
+      ],
+      applications: {
+        removes:    ['Heavy grease', 'Machining oils', 'Carbonized oil deposits', 'Shop contaminants'],
+        usedBefore: ['Inspection / QC', 'Phosphating', 'Painting / powder coating', 'Assembly'],
+      },
+    },
+  },
+
+  {
+    productKey: 'uniklean-sf',
+    docType:    'label',
+    docNumber:  'LBL-USF-001',
+    revision:   'Rev 01 — Jul 2026',
+    footer: { left: '', center: '', right: '' },
+    body: {
+      signalWord: 'DANGER',
+      unNo: 'UN 1760',
+      hCodes: [
+        { code: 'H314', text: 'Causes severe skin burns and eye damage' },
+        { code: 'H412', text: 'Harmful to aquatic life with long lasting effects' },
+      ],
+      pCodes: [
+        { code: 'P260',            text: 'Do not breathe fumes or vapours' },
+        { code: 'P264',            text: 'Wash hands thoroughly after handling' },
+        { code: 'P273',            text: 'Avoid release to the environment' },
+        { code: 'P280',            text: 'Wear protective gloves and eye/face protection' },
+        { code: 'P301+P330+P331', text: 'If swallowed, rinse mouth; do NOT induce vomiting' },
+        { code: 'P303+P361+P353', text: 'If on skin or hair, remove clothing; rinse skin with water' },
+        { code: 'P305+P351+P338', text: 'If in eyes, rinse cautiously with water for ≥20 min' },
+        { code: 'P310',            text: 'Immediately call a POISON CENTER or doctor' },
+      ],
+      firstAid: {
+        skin:       'Remove clothing. Wash with copious water for ≥20 min. Seek medical attention.',
+        eyes:       'Flush with running water for ≥20 min. Seek immediate medical attention — risk of permanent damage.',
+        ingestion:  'Rinse mouth. Do NOT induce vomiting. Call 1800-11-6117 immediately.',
+        inhalation: 'Move to fresh air. If breathing difficult, give oxygen. Seek medical attention.',
+      },
+      directions: [
+        'Dilute 6% in water for standard cleaning; up to 8% for heavy carbonized oil removal',
+        'Apply at 55–70 °C by immersion or spray',
+        'Allow 5–15 min contact time depending on soil load',
+        'Rinse thoroughly with clean water before next process stage',
+      ],
+      storage:  ['Store at 10°C – 35°C', 'Keep away from direct sunlight and frost', 'Keep away from children', 'Dispose per local regulations (CPCB)'],
+      products: ['UNIKLEAN-SF'],
+    },
+  },
+
+  {
+    productKey: 'uniklean-sf',
+    docType:    'coa',
+    docNumber:  'COA-USF-001',
+    revision:   'Rev 01 — Jul 2026',
+    footer: {
+      left:   'COA-USF-001 Rev 01 · Jul 2026',
+      center: 'CONFIDENTIAL — For authorised recipients only · Macro Coats Pvt Ltd',
+      right:  'Macro Coats Pvt Ltd · Chennai · India',
+    },
+    body: {
+      batchNumber:    'USF-20260718-001',
+      batchSize:      '100 L',
+      productionDate: '18 Jul 2026',
+      expiryDate:     'Jul 2028',
+      grade:          'Industrial Grade',
+      appearance:     'Clear to pale straw liquid',
+      tests: [
+        { parameter: 'Appearance',                     method: 'Visual',       specification: 'Clear to pale straw liquid', result: 'Clear, pale straw',  status: 'Pass' },
+        { parameter: 'Odour',                          method: 'Organoleptic', specification: 'Mild, characteristic',       result: 'Mild, characteristic', status: 'Pass' },
+        { parameter: 'pH (1% Solution)',                method: 'pH Electrode', specification: '12.0 – 13.0',               result: '12.6',                status: 'Pass' },
+        { parameter: 'Specific Gravity (25 °C)',        method: 'ISO 2811',     specification: '1.15 – 1.20',               result: '1.178',               status: 'Pass' },
+        { parameter: 'Foam Height (working conc.)',     method: 'ASTM D3519',   specification: '< 10 mm',                   result: '6 mm',                status: 'Pass' },
+        { parameter: 'Total Alkalinity (as Na₂CO₃)',  method: 'Titration',     specification: '36.0 – 40.0 %',             result: '37.9 %',              status: 'Pass' },
+      ],
+      statement: 'We hereby certify that the above batch of UNIKLEAN-SF has been manufactured, tested, and inspected in accordance with our internal quality specifications. All parameters conform to the product specification and the product is approved for release.',
       approvals: {
         preparedBy: 'Quality Analyst — Macro Coats',
         reviewedBy: 'QC Manager — Macro Coats',

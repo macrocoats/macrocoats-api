@@ -50,13 +50,26 @@ const SIMPLE_COMPOSITION_PRODUCT_LINES: ReadonlySet<string> = new Set([
 ]);
 
 let logoDataUriCache: string | null = null;
+let watermarkDataUriCache: string | null = null;
 
+async function loadDataUri(cache: string | null, filename: string): Promise<string> {
+  if (cache) return cache;
+  const filePath = path.resolve(__dirname, 'assets', filename);
+  const buf = await fs.readFile(filePath);
+  return `data:image/png;base64,${buf.toString('base64')}`;
+}
+
+// Header logo (all header/footer treatments) — the icon-only mark.
 async function getLogoDataUri(): Promise<string> {
-  if (logoDataUriCache) return logoDataUriCache;
-  const logoPath = path.resolve(__dirname, 'assets', 'macro-coats-logo.png');
-  const buf = await fs.readFile(logoPath);
-  logoDataUriCache = `data:image/png;base64,${buf.toString('base64')}`;
+  logoDataUriCache = await loadDataUri(logoDataUriCache, 'macro-coats-logo.png');
   return logoDataUriCache;
+}
+
+// Page watermark (tds/msds/coa) — the full lockup with wordmark, per p1.png.
+// Deliberately a different asset from the header logo — keep them decoupled.
+async function getWatermarkDataUri(): Promise<string> {
+  watermarkDataUriCache = await loadDataUri(watermarkDataUriCache, 'p1.png');
+  return watermarkDataUriCache;
 }
 
 interface PhysicalRow { key?: string; val?: string }
@@ -172,7 +185,8 @@ class PDFService {
     const printMatched   = PRINT_MATCHED_DOC_TYPES.has(docType);
     const legacyBranded  = !printMatched && LEGACY_BRANDED_DOC_TYPES.has(docType);
     const watermarked    = WATERMARK_DOC_TYPES.has(docType);
-    const logoDataUri    = (printMatched || legacyBranded) ? await getLogoDataUri() : null;
+    const logoDataUri      = (printMatched || legacyBranded) ? await getLogoDataUri() : null;
+    const watermarkDataUri = watermarked ? await getWatermarkDataUri() : null;
 
     const ctx: Record<string, unknown> = {
       ...payload,
@@ -184,7 +198,7 @@ class PDFService {
     try {
       const css  = await templateService.getCSS();
       const body = await templateService.renderTemplate(docType, ctx);
-      html = wrapBody(body, css, watermarked ? logoDataUri : null);
+      html = wrapBody(body, css, watermarkDataUri);
     } catch (err) {
       if (err instanceof PDFError) throw err;
       throw new PDFError('Template render failed', 'RENDER_FAILED', err);

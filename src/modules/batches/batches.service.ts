@@ -58,8 +58,8 @@ export async function createBatch(data: CreateBatchBody, createdBy: string | nul
   }
 
   return db.transaction(async (tx) => {
-    const batchNumber    = await nextBatchNumber(tx as unknown as typeof db, data.companyName)
-    const productionDate = new Date().toISOString().slice(0, 10)
+    const productionDate = data.productionDate ?? new Date().toISOString().slice(0, 10)
+    const batchNumber    = await nextBatchNumber(tx as unknown as typeof db, data.companyName, productionDate)
 
     // ── Inventory deduction ────────────────────────────────────────────────
     // Single atomic VALUES-CTE UPDATE eliminates the N+1 loop and the

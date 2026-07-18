@@ -3,15 +3,15 @@ import type { DB } from '../db/index.js'
 import { batchSequences } from '../db/schema/index.js'
 
 /**
- * Atomically generates the next batch number for a given company on the current day.
- * Format: XX-YYYYMMDD-NNN  (e.g. RA-20260426-001)
+ * Atomically generates the next batch number for a given company on the given
+ * production date (defaults to today when omitted).
+ * Format: XX-YYYYMMDD-NNN  (e.g. RA-20260426-001) — YYYYMMDD is the production date.
  *
  * Uses INSERT ... ON CONFLICT DO UPDATE to prevent race conditions.
  * Must be called inside a transaction.
  */
-export async function nextBatchNumber(db: DB, companyName: string): Promise<string> {
-  const now = new Date()
-  const dateKey = now.toISOString().slice(0, 10).replace(/-/g, '')  // '20260426'
+export async function nextBatchNumber(db: DB, companyName: string, productionDate?: string): Promise<string> {
+  const dateKey = (productionDate ?? new Date().toISOString().slice(0, 10)).replace(/-/g, '')  // '20260426'
   const companyCode = companyName.trim().substring(0, 2).toUpperCase()
 
   const result = await db

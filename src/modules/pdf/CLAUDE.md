@@ -28,9 +28,16 @@ styles/
 templates/
   batch.hbs, coa.hbs, msds.hbs, quotation.hbs, tds.hbs
 assets/
-  macro-coats-logo.png    Embedded as a base64 data URI in the Puppeteer header
-                          template (see `getLogoDataUri()` in pdf.service.ts) —
-                          the `build` script must keep copying this dir to dist/
+  macro-coats-logo.png    Icon-only mark, embedded as a base64 data URI in the
+                          Puppeteer header template (see `getLogoDataUri()` in
+                          pdf.service.ts) — used for header logos only.
+  p1.png                  Full lockup (icon + "MACRO COATS" wordmark), embedded
+                          as a base64 data URI for the page watermark only (see
+                          `getWatermarkDataUri()` in pdf.service.ts) — a
+                          deliberately different asset from the header logo;
+                          mirrors safteyDataSheet/src/assets/p1.png, which the
+                          frontend's .print-watermark uses for the same reason.
+                          The `build` script must keep copying this dir to dist/.
 ```
 
 ## Header/footer: three treatments, gated by docType

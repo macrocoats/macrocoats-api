@@ -25,6 +25,8 @@ import { dispatchRoutes } from './modules/dispatch/dispatch.routes.js'
 import { vendorPriceRoutes } from './modules/vendor-prices/vendor-prices.routes.js'
 import { purchaseEntryRoutes } from './modules/purchase-entries/purchase-entries.routes.js'
 import { companyDocumentRoutes } from './modules/company-documents/company-documents.routes.js'
+import { customerPurchaseOrderRoutes } from './modules/customer-purchase-orders/customer-purchase-orders.routes.js'
+import { investorDashboardRoutes } from './modules/investor-dashboard/investor-dashboard.routes.js'
 import { AppErrors } from './types/errors.js'
 
 export async function buildApp() {
@@ -74,6 +76,8 @@ export async function buildApp() {
   await app.register(vendorPriceRoutes,           { prefix: `${prefix}/vendors` })
   await app.register(purchaseEntryRoutes,         { prefix: `${prefix}/purchase-entries` })
   await app.register(companyDocumentRoutes,       { prefix: `${prefix}/companies` })
+  await app.register(customerPurchaseOrderRoutes, { prefix: `${prefix}/customer-purchase-orders` })
+  await app.register(investorDashboardRoutes,     { prefix: `${prefix}/investor-dashboard` })
 
   // ── Global error handler ──────────────────────────────────────────────────
   app.setErrorHandler((error, _request, reply) => {

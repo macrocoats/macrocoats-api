@@ -26,6 +26,7 @@ export const PRODUCT_KEYS = [
   'corroklean',
   'corrcut-100',
   'corrucut-500',
+  'uniklean-sf',
 ] as const
 export type ProductKey = typeof PRODUCT_KEYS[number]
 
