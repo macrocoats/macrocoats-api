@@ -4,7 +4,7 @@ import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js'
 import { AppErrors } from '../../types/errors.js'
 import { createVendorSchema, updateVendorSchema } from './vendors.schema.js'
 import {
-  listVendors, getVendorById, createVendor, updateVendor, deleteVendor, getVendorPurchaseSummary,
+  listVendors, getVendorById, createVendor, updateVendor, deleteVendor,
 } from './vendors.service.js'
 
 const preHandler = [authenticate, requireAuth, requireSuperAdmin]
@@ -52,14 +52,5 @@ export async function vendorRoutes(app: FastifyInstance) {
     const deleted = await deleteVendor(request.params.id)
     if (!deleted) return reply.code(404).send({ error: AppErrors.VENDOR_NOT_FOUND })
     return reply.code(204).send()
-  })
-
-  // ── GET /vendors/:id/purchase-summary ─────────────────────────────────────
-  app.get<{ Params: { id: string } }>('/:id/purchase-summary', { preHandler }, async (request, reply) => {
-    const vendor = await getVendorById(request.params.id)
-    if (!vendor) return reply.code(404).send({ error: AppErrors.VENDOR_NOT_FOUND })
-
-    const summary = await getVendorPurchaseSummary(request.params.id)
-    return reply.send({ data: summary })
   })
 }

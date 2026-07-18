@@ -6,7 +6,7 @@ Reference for the PostgreSQL schema and Drizzle migration workflow. See `CLAUDE.
 
 ## Database schema
 
-32 tables across `src/db/schema/`:
+27 tables across `src/db/schema/`:
 
 | Table | Purpose |
 |---|---|
@@ -36,12 +36,7 @@ Reference for the PostgreSQL schema and Drizzle migration workflow. See `CLAUDE.
 | `finished_goods` | Finished-goods inventory per batch: produced/dispatched/reserved quantities and status (`Available` → `Partially Dispatched` → `Fully Dispatched`, or `Cancelled`) |
 | `dispatches` | Dispatch records against a batch/company, with transport details (JSONB) and void tracking (`voidedAt`/`voidReason`) |
 | `dispatch_sequences` | Per-day atomic counter for dispatch numbering |
-| `purchase_orders` | Purchase order headers with auto-generated PO-YYYY-NNNN numbers; tracks status (`PO_STATUSES` in `purchaseOrders.ts`), payment status, and cancellation (`cancelledAt`/`cancelReason`) |
-| `purchase_order_items` | Line items in a purchase order (FK → purchase_orders, cascade delete); no stored total — computed at read time by the service layer |
-| `purchase_order_sequences` | Per-year atomic counter for PO numbering |
-| `purchase_order_documents` | Files attached to a PO (original PO, vendor quotation/acknowledgement, invoice, email attachment, supporting docs) |
-| `purchase_order_invoices` | Invoices raised against a PO; may reference a `purchase_order_documents` row for the invoice file |
-| `purchase_order_timeline` | Per-PO audit/history trail: created/updated/status_changed/document/invoice/payment/cancelled events |
+| `company_documents` | Purchase orders a customer company has sent to Macro Coats (sales orders received); flat document repository — order number/date/amount plus the uploaded file, no status workflow |
 
 ## Migration workflow (canonical)
 
