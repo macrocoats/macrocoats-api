@@ -3,6 +3,7 @@ import { productDocuments, products } from '../../db/schema/index.js';
 import { pdfService } from './pdf.service.js';
 import { eq, and } from 'drizzle-orm';
 import fs from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 
 async function testRender() {
@@ -44,6 +45,7 @@ async function testRender() {
       productCode:  doc.docNumber,
       productLine:  product.key,
       revisionDate: doc.revision,
+      description:  doc.body.description ?? '',
       signalWord:   doc.body.signalWord ?? null,
       sections:     doc.body.sections,
     };
@@ -51,7 +53,7 @@ async function testRender() {
     const result = await pdfService.generatePDF(docType, payload);
 
     if (result.buffer) {
-      const outDir = '/Users/kumaraswins/.gemini/antigravity/brain/b89a25cd-ccb6-4cbe-98a3-b6fa38c28a56/scratch';
+      const outDir = path.join(os.tmpdir(), 'macrocoats-pdf-test-render');
       await fs.mkdir(outDir, { recursive: true });
       const outFile = path.join(outDir, `CORROCUT_Elite_${docType.toUpperCase()}.pdf`);
       await fs.writeFile(outFile, result.buffer);

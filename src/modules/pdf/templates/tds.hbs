@@ -1,99 +1,63 @@
-<div class="document">
+{{!--
+  Mirrors safteyDataSheet/src/pages/Products/TDSPage.jsx's print-only body
+  (the .tds-print-doc block) exactly — same sections, same order, same copy.
+  Header/company letterhead is NOT here; it's rendered as the Puppeteer page
+  header by buildPrintMatchedHeader() in pdf.service.ts, same as the footer.
+--}}
+<div class="document tds-print-doc">
 
-  {{!-- ═══ TITLE BLOCK ═══════════════════════════════════════════════════════ --}}
-  <div class="doc-title-block no-break">
-    <div class="doc-title-block__title">Technical Data Sheet</div>
-    <div class="doc-title-block__product">{{productName}}</div>
-    <div class="doc-title-block__sub">
-      {{#if productCode}}Ref: {{productCode}}{{/if}}
-      {{#if revisionDate}}&nbsp;|&nbsp; Rev. Date: {{formatDate revisionDate}}{{/if}}
-    </div>
-  </div>
-
-  {{!-- ═══ COMPLIANCE RIBBON ═════════════════════════════════════════════════ --}}
-  <div class="compliance-ribbon no-break">
-    <span class="compliance-tag">Technical Document</span>
-    <span class="compliance-tag">Macro Coats Pvt Ltd</span>
-  </div>
-
-  {{!-- ═══ META TABLE ══════════════════════════════════════════════════════════ --}}
-  <table class="meta-table no-break">
-    <tr>
-      <td class="meta-table__label">Product</td>
-      <td>{{productName}}</td>
-      <td class="meta-table__label">Prepared By</td>
-      <td>{{#if signature}}{{signature.preparedBy}}{{/if}}</td>
-    </tr>
-    {{#if productCode}}
-    <tr>
-      <td class="meta-table__label">Product Code</td>
-      <td class="col-mono fw-semi">{{productCode}}</td>
-      <td class="meta-table__label">Approved By</td>
-      <td>{{#if signature}}{{signature.approvedBy}}{{/if}}</td>
-    </tr>
-    {{/if}}
-    {{#if revisionDate}}
-    <tr>
-      <td class="meta-table__label">Revision Date</td>
-      <td>{{formatDate revisionDate}}</td>
-      <td class="meta-table__label">Reviewed By</td>
-      <td>{{#if signature}}{{signature.checkedBy}}{{/if}}</td>
-    </tr>
-    {{/if}}
-  </table>
-
-  {{!-- ═══ PRODUCT DESCRIPTION ════════════════════════════════════════════════ --}}
+  {{!-- ═══ PRODUCT DESCRIPTION ═══════════════════════════════════════════════ --}}
   {{#if description}}
-  <div class="desc-band">{{description}}</div>
-  {{/if}}
-
-  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
-  {{!--  SECTION 1 — Key Features & Benefits                                   --}}
-  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
-  {{#if sections.features}}
-  <div class="msds-sec">
-    <div class="sec-title">1. Key Features &amp; Benefits</div>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th style="width:38%">Feature</th>
-          <th>Performance Benefit</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{#each sections.features}}
-        <tr>
-          <td class="param-cell">{{head}}</td>
-          <td>{{body}}</td>
-        </tr>
-        {{/each}}
-      </tbody>
-    </table>
+  <div class="tds-print-section no-break">
+    <div class="tds-print-section-head">Product Description</div>
+    <p class="tds-print-description"><strong>{{productName}}</strong> {{description}}</p>
   </div>
   {{/if}}
 
-  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
-  {{!--  SECTION 2 — Physical & Chemical Properties                            --}}
-  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
+  {{!-- ═══ KEY FEATURES & BENEFITS  |  TYPICAL APPLICATIONS ═════════════════ --}}
+  {{#if (or sections.features sections.performance)}}
+  <div class="tds-print-two-col">
+    {{#if sections.features}}
+    <div>
+      <div class="tds-print-section-head">Key Features &amp; Benefits</div>
+      <ul class="tds-print-bullet-list">
+        {{#each sections.features}}
+        <li><strong>{{head}}:</strong> {{body}}</li>
+        {{/each}}
+      </ul>
+    </div>
+    {{/if}}
+    {{#if sections.performance}}
+    <div>
+      <div class="tds-print-section-head">Typical Applications</div>
+      <ul class="tds-print-bullet-list">
+        {{#each sections.performance}}
+        <li><strong>{{label}}:</strong> {{val}}</li>
+        {{/each}}
+      </ul>
+    </div>
+    {{/if}}
+  </div>
+  {{/if}}
+
+  {{!-- ═══ TYPICAL TECHNICAL SPECIFICATIONS ═════════════════════════════════ --}}
   {{#if sections.physicalProperties}}
-  <div class="msds-sec">
-    <div class="sec-title">2. Physical &amp; Chemical Properties</div>
-    <table class="doc-table">
+  <div class="tds-print-section">
+    <div class="tds-print-section-head">Typical Technical Specifications</div>
+    <table class="tds-print-spec-table">
       <thead>
         <tr>
-          <th style="width:38%">Parameter</th>
-          <th style="width:25%">Value</th>
-          <th style="width:14mm" class="col-center">Unit</th>
+          <th>Property Parameter</th>
           <th>Test Method</th>
+          <th>Typical Value Range</th>
         </tr>
       </thead>
       <tbody>
         {{#each sections.physicalProperties}}
         <tr>
-          <td class="param-cell">{{property}}</td>
-          <td class="fw-bold col-mono">{{value}}</td>
-          <td class="col-center fs-xs text-muted">{{unit}}</td>
-          <td class="fs-xs text-muted">{{method}}</td>
+          <td class="tds-spec-prop">{{property}}</td>
+          <td class="tds-spec-method">{{#if method}}{{method}}{{else}}—{{/if}}</td>
+          <td class="tds-spec-value">{{value}}{{#if unit}} {{unit}}{{/if}}</td>
         </tr>
         {{/each}}
       </tbody>
@@ -101,168 +65,23 @@
   </div>
   {{/if}}
 
-  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
-  {{!--  SECTION 3 — Composition (Functional Ingredients)                      --}}
-  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
-  {{#if sections.composition}}
-  <div class="msds-sec">
-    <div class="sec-title">3. Composition (Functional Ingredients)</div>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th style="width:35%">Ingredient</th>
-          <th>Function</th>
-          <th style="width:26mm">Compatibility</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{#each sections.composition}}
-        <tr>
-          <td class="param-cell">{{name}}</td>
-          <td class="fs-xs text-muted">{{function}}</td>
-          <td class="fs-xs text-muted">{{compat}}</td>
-        </tr>
-        {{/each}}
-      </tbody>
-    </table>
-  </div>
-  {{/if}}
-
-  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
-  {{!--  SECTION 4 — Application Procedure                                     --}}
-  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
-  {{#if sections.application}}
-  <div class="msds-sec">
-    <div class="sec-title">4. Application Procedure</div>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th style="width:10mm" class="col-center">Step</th>
-          <th style="width:26mm">Stage</th>
-          <th style="width:35%">Parameters</th>
-          <th>Conditions / Notes</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{#each sections.application}}
-        <tr>
-          <td class="col-center fw-bold" style="color:#163B6D">{{step}}</td>
-          <td class="param-cell">{{name}}</td>
-          <td class="col-mono fs-xs">{{param}}</td>
-          <td class="fs-xs text-muted">{{value}}</td>
-        </tr>
-        {{/each}}
-      </tbody>
-    </table>
-  </div>
-  {{/if}}
-
-  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
-  {{!--  SECTION 5 — Performance Data                                          --}}
-  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
-  {{#if sections.performance}}
-  <div class="msds-sec">
-    <div class="sec-title">5. Performance Data</div>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th style="width:40%">Performance Attribute</th>
-          <th>Result / Value</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{#each sections.performance}}
-        <tr>
-          <td class="param-cell">{{label}}</td>
-          <td class="fw-semi">{{val}}</td>
-        </tr>
-        {{/each}}
-      </tbody>
-    </table>
-  </div>
-  {{/if}}
-
-  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
-  {{!--  SECTION 6 — Packaging & Supply                                        --}}
-  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
-  {{#if sections.packaging}}
-  <div class="msds-sec no-break">
-    <div class="sec-title">6. Packaging &amp; Supply</div>
-    <table class="doc-table">
-      <thead>
-        <tr>
-          <th style="width:35%">Pack Size</th>
-          <th style="width:22mm" class="col-center">Unit</th>
-          <th>Container Type</th>
-        </tr>
-      </thead>
-      <tbody>
-        {{#each sections.packaging}}
-        <tr>
-          <td class="param-cell fw-bold">{{size}}</td>
-          <td class="col-center">{{unit}}</td>
-          <td class="text-muted">{{type}}</td>
-        </tr>
-        {{/each}}
-      </tbody>
-    </table>
-  </div>
-  {{/if}}
-
-  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
-  {{!--  SECTION 7 — Safety Reference                                          --}}
-  {{!-- ═══════════════════════════════════════════════════════════════════════ --}}
+  {{!-- ═══ APPLICATION NOTE CALLOUT ══════════════════════════════════════════ --}}
   {{#if sections.safetyNote}}
-  <div class="msds-sec no-break">
-    <div class="sec-title">7. Safety Reference</div>
-    <div class="callout callout-warning">
-      <div>
-        <div class="callout__title">Important Safety Notice</div>
-        <div class="callout__body">{{sections.safetyNote}}</div>
-      </div>
-    </div>
+  <div class="tds-print-app-note no-break">
+    <strong>Application Note:</strong> {{sections.safetyNote}}
   </div>
   {{/if}}
 
-  {{!-- ═══ AUTHORIZATION ═════════════════════════════════════════════════════ --}}
-  {{#if signature}}
-  <table class="auth-block no-break">
-    <tr class="auth-block__header">
-      {{#if signature.preparedBy}}<td>Prepared By</td>{{/if}}
-      {{#if signature.checkedBy}}<td>Reviewed By</td>{{/if}}
-      {{#if signature.approvedBy}}<td>Approved By</td>{{/if}}
-    </tr>
-    <tr class="auth-block__sig">
-      {{#if signature.preparedBy}}<td><div class="auth-block__sig-line"></div></td>{{/if}}
-      {{#if signature.checkedBy}}<td><div class="auth-block__sig-line"></div></td>{{/if}}
-      {{#if signature.approvedBy}}<td><div class="auth-block__sig-line"></div></td>{{/if}}
-    </tr>
-    <tr class="auth-block__name">
-      {{#if signature.preparedBy}}
-      <td>
-        <div class="auth-block__person">{{signature.preparedBy}}</div>
-        <div class="auth-block__role">R&amp;D / Formulation</div>
-      </td>
-      {{/if}}
-      {{#if signature.checkedBy}}
-      <td>
-        <div class="auth-block__person">{{signature.checkedBy}}</div>
-        <div class="auth-block__role">QC Manager</div>
-      </td>
-      {{/if}}
-      {{#if signature.approvedBy}}
-      <td>
-        <div class="auth-block__person">{{signature.approvedBy}}</div>
-        <div class="auth-block__role">Technical Director</div>
-      </td>
-      {{/if}}
-    </tr>
-    <tr class="auth-block__date">
-      {{#if signature.preparedBy}}<td>Date: ___________________________</td>{{/if}}
-      {{#if signature.checkedBy}}<td>Date: ___________________________</td>{{/if}}
-      {{#if signature.approvedBy}}<td>Date: ___________________________</td>{{/if}}
-    </tr>
-  </table>
+  {{!-- ═══ PACKAGING, STORAGE & SAFETY ═══════════════════════════════════════ --}}
+  {{#if sections.packaging}}
+  <div class="tds-print-section no-break">
+    <div class="tds-print-section-head">Packaging, Storage &amp; Safety</div>
+    <ul class="tds-print-bullet-list">
+      {{#each sections.packaging}}
+      <li><strong>{{type}}:</strong> Available in {{size}} {{unit}} containers.</li>
+      {{/each}}
+    </ul>
+  </div>
   {{/if}}
 
 </div>
