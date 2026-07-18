@@ -1,6 +1,6 @@
-import { eq, asc } from 'drizzle-orm'
+import { eq, ne, and, asc, sql } from 'drizzle-orm'
 import { db } from '../../db/index.js'
-import { vendors } from '../../db/schema/index.js'
+import { vendors, purchaseOrders, purchaseOrderItems } from '../../db/schema/index.js'
 import { z } from 'zod'
 import { phoneNumbersSchema, bankDetailsSchema } from './vendors.schema.js'
 import type { CreateVendorInput, UpdateVendorInput } from './vendors.schema.js'
@@ -92,4 +92,33 @@ export async function deleteVendor(id: string): Promise<boolean> {
     .returning({ id: vendors.id })
 
   return result.length > 0
+}
+
+/**
+ * Purchase-order rollup for a vendor's detail view. Reads purchase_orders /
+ * purchase_order_items directly (not through purchase-orders.service.ts) —
+ * the same "read another module's schema tables directly" norm already used
+ * by purchase-entries.service.ts for `vendors`/`inventoryItems`.
+ *
+ * `status = 'cancelled'` orders are excluded entirely from both the order
+ * count and the value total. No GROUP BY here — a single-row aggregate, so
+ * a vendor with zero (non-cancelled) orders still gets one row back with
+ * totalOrders=0 rather than no rows at all.
+ */
+export async function getVendorPurchaseSummary(vendorId: string) {
+  const [row] = await db
+    .select({
+      totalOrders:      sql<string>`count(distinct ${purchaseOrders.id})`,
+      totalValue:       sql<string>`coalesce(sum(${purchaseOrderItems.quantity} * ${purchaseOrderItems.unitPrice} * (1 + ${purchaseOrderItems.gstPercent} / 100)), 0)`,
+      lastPurchaseDate: sql<string | null>`max(${purchaseOrders.poDate})`,
+    })
+    .from(purchaseOrders)
+    .innerJoin(purchaseOrderItems, eq(purchaseOrderItems.purchaseOrderId, purchaseOrders.id))
+    .where(and(eq(purchaseOrders.vendorId, vendorId), ne(purchaseOrders.status, 'cancelled')))
+
+  return {
+    totalOrders:      Number(row?.totalOrders ?? 0),
+    totalValue:       Number(row?.totalValue ?? 0),
+    lastPurchaseDate: row?.lastPurchaseDate ?? null,
+  }
 }

@@ -44,6 +44,7 @@ All variables are validated by Zod at startup (`src/config/env.ts`); the server 
 | `JWT_PRIVATE_KEY_B64` | yes | — | RS256 private key, base64-encoded |
 | `JWT_PUBLIC_KEY_B64` | yes | — | RS256 public key, base64-encoded |
 | `COOKIE_SECRET` | yes | — | Cookie signing secret (≥32 chars) |
+| `PROCUREMENT_STORAGE_PATH` | yes | — | Base directory for purchase-order document storage (created if missing at startup) |
 | `NODE_ENV` | no | development | development \| test \| production |
 | `PORT` | no | 3001 | HTTP server port |
 | `API_VERSION` | no | v1 | Route prefix |
@@ -93,6 +94,7 @@ Routes never import from other modules' services. Cross-cutting concerns (auth, 
 | `products` | GET /products, GET /products/expiry-summary, GET /products/:productLine/:docType, PUT /products/:productLine/:docType, PATCH /products/:productLine/:docType/status, GET /products/:productLine/:docType/audit |
 | `companies` | GET /companies, GET /companies/:id, POST /companies, PATCH /companies/:id, POST /companies/:id/rotate-token, DELETE /companies/:id |
 | `company-pricing` | GET /companies/:id/pricing, PUT /companies/:id/pricing |
+| `company-documents` | POST /companies/:id/documents, GET /companies/:id/documents, GET /companies/:id/documents/:docId/download, DELETE /companies/:id/documents/:docId |
 | `formulation-variants` | GET /formulation-variants, GET /formulation-variants/:variantId, POST /formulation-variants, PUT /formulation-variants/:variantId, PUT /formulation-variants/:variantId/components, PATCH /formulation-variants/:variantId/status, DELETE /formulation-variants/:variantId |
 | `quotations` | POST /quotations, GET /quotations, GET /quotations/:id |
 | `batches` | POST /batches, GET /batches, GET /batches/:batchNumber, PATCH /batches/:batchNumber/coa, DELETE /batches/:batchNumber/coa, PATCH /batches/:batchNumber/payment, DELETE /batches/:id |
@@ -100,9 +102,12 @@ Routes never import from other modules' services. Cross-cutting concerns (auth, 
 | `analytics` | GET /analytics/access-log, GET /analytics/summary |
 | `salaryRecords` | GET /salary-records, GET /salary-records/:id, POST /salary-records |
 | `staff` | GET /staff, GET /staff/:id, POST /staff, PUT /staff/:id, DELETE /staff/:id |
-| `vendors` | GET /vendors, GET /vendors/:id, POST /vendors, PUT /vendors/:id, DELETE /vendors/:id |
+| `vendors` | GET /vendors, GET /vendors/:id, POST /vendors, PUT /vendors/:id, DELETE /vendors/:id, GET /vendors/:id/purchase-summary |
 | `vendor-prices` | GET /vendors/:vendorId/prices, GET /vendors/:vendorId/prices/active, GET /vendors/:vendorId/prices/effective, POST /vendors/:vendorId/prices |
 | `purchase-entries` | GET /purchase-entries, GET /purchase-entries/:id, POST /purchase-entries |
+| `purchase-orders` | GET /purchase-orders, GET /purchase-orders/summary, GET /purchase-orders/:id, POST /purchase-orders, PUT /purchase-orders/:id/items, PATCH /purchase-orders/:id/status, PATCH /purchase-orders/:id/cancel, PATCH /purchase-orders/:id/payment, GET /purchase-orders/:id/timeline |
+| `purchase-order-documents` | POST /purchase-orders/:id/documents, GET /purchase-orders/:id/documents, GET /purchase-orders/:id/documents/:docId/download, DELETE /purchase-orders/:id/documents/:docId |
+| `purchase-order-invoices` | POST /purchase-orders/:id/invoices, GET /purchase-orders/:id/invoices, PATCH /purchase-orders/:id/invoices/:invoiceId, DELETE /purchase-orders/:id/invoices/:invoiceId |
 | `hazard-profiles` | GET /hazard-profiles, GET /hazard-profiles/:id, POST /hazard-profiles, PUT /hazard-profiles/:id, DELETE /hazard-profiles/:id (soft-delete) |
 | `finished-goods` | GET /finished-goods, GET /finished-goods/summary, GET /finished-goods/:batchNumber, POST /finished-goods/backfill/:batchNumber, PATCH /finished-goods/:id/status |
 | `dispatch` | POST /dispatches, GET /dispatches, GET /dispatches/summary, GET /dispatches/:dispatchNumber, PATCH /dispatches/:id/void |
@@ -110,7 +115,17 @@ Routes never import from other modules' services. Cross-cutting concerns (auth, 
 | `optimizer` | POST /optimizer/analyze |
 | `cost-intelligence` | GET /cost-intelligence/overview, /trends, /batches, /materials, /alerts, /profitability, /comparison |
 
-All endpoints except auth are `superadmin`-only, except product document reads which use `checkProductAccess` for company users. Within `products`, only `GET /products/:productLine/:docType` uses `checkProductAccess` — every other `products` endpoint (including status transitions, audit trail, and expiry summary) is `requireSuperAdmin`-only. `GET /products/expiry-summary` is registered before the `/:productLine/:docType` route so the literal segment `expiry-summary` never matches as a `:productLine` param.
+All endpoints except auth are `superadmin`-only, except product document reads which use `checkProductAccess` for company users. Within `products`, only `GET /products/:productLine/:docType` uses `checkProductAccess` — every other `products` endpoint (including status transitions, audit trail, and expiry summary) is `requireSuperAdmin`-only. `GET /products/expiry-summary` is registered before the `/:productLine/:docType` route so the literal segment `expiry-summary` never matches as a `:productLine` param. Likewise `GET /purchase-orders/summary` is registered before `GET /purchase-orders/:id` for the same reason.
+
+### Purchase order management
+
+`purchase_orders` tracks a vendor commitment from creation to closure — operational procurement tracking only, not an accounting feature (no GL entries, no tax filing; that stays in the company's separate ERP). Overall `status` is a derived, stored enum recomputed by the pure `computeOverallStatus()` function (`purchase-orders.service.ts`) inside every mutating transaction: `draft → issued → confirmed` are user-driven (`PATCH /purchase-orders/:id/status`), then `partially_invoiced/fully_invoiced/partially_paid/paid` are auto-computed from `purchase_order_invoices` sums and `paymentStatus` once the first invoice exists, and `closed`/`cancelled` are terminal. Line items (`purchase_order_items`) are only editable while status is `draft` or `issued` — locked (409 `PO_ITEMS_LOCKED`) once any invoice exists. `purchase_order_documents` is a flat per-PO file repository (local disk under `PROCUREMENT_STORAGE_PATH`, categorized by `docCategory`) that `purchase_order_invoices` also links into via `invoiceDocumentId`. `purchase_order_timeline` mirrors the `document_audit_log` pattern — every mutation writes a timeline row in the same transaction as the entity change. This module has no relationship to `purchase-entries` (material stock intake) — they are intentionally independent.
+
+**Multipart upload gotcha (applies to both `purchase-order-documents` and `company-documents`):** text fields sent after the file part in a multipart body are not guaranteed to be present on `request.file()`'s returned `.fields` until the file stream has been fully consumed — busboy (the parser underlying `@fastify/multipart`) only finishes parsing a field once everything preceding it in the body is drained. Both modules' services expose a two-phase API (`writeUploadedFile()` then `saveDocumentRecord()`/`saveDocumentRecord()`) specifically so the route can drain the file to disk *before* reading `data.fields` — this app's own upload code (`FormData.append('file', ...)` before the metadata fields) sends fields after the file, so reading fields first would silently see them as missing for anything but tiny files. Any new multipart upload route in this codebase should follow the same two-phase pattern rather than reading `data.fields` immediately after `request.file()`.
+
+### Customer purchase order documents (company-documents)
+
+`company_documents` is the reverse direction of `purchase_orders` — purchase orders that a **customer company** sends to Macro Coats (a sales order received), not Macro Coats buying from a vendor. Deliberately minimal: a flat per-company file repository (`orderNumber`, `orderDate`, `orderAmount`, plus the uploaded file) with no status workflow, no line items, no timeline — a reference document list, not an operational tracker. Reuses the same `PROCUREMENT_STORAGE_PATH` disk root as `purchase_order_documents`, under a `companies/<companyId>/` subdirectory instead of `purchase-orders/<poId>/`.
 
 > **Note:** The `pdf` module has a non-standard directory layout — see `src/modules/pdf/CLAUDE.md` for its structure and conventions.
 
@@ -218,7 +233,7 @@ See `DATABASE.md` for the full 26-table schema reference, the canonical migratio
 `src/seed/` contains idempotent seed scripts (run via `npm run seed`):
 
 - `index.ts` — entry point; runs all seeds in order
-- `products.seed.ts` — 12 product lines (uniklean-sp, uniklean-fe, uniprotect-oil, uniflow-ecm, unicool-al, unikoat-lt-700, unisolve-h3, unipass, uniktonner, corroklean, corrcut-100, corrucut-500)
+- `products.seed.ts` — 13 product lines (uniklean-sp, uniklean-fe, uniprotect-oil, uniflow-ecm, unicool-al, unikoat-lt-700, unisolve-h3, unipass, uniktonner, corroklean, corrcut-100, corrucut-500, uniklean-sf)
 - `companies.seed.ts` — test companies (Rane Madras, TVS, Akshaya) with product access mappings
 - `formulationVariants.seed.ts` — formulation variant headers and components
 - `inventory.seed.ts` — 23 factory-default raw materials

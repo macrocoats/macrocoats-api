@@ -2,9 +2,13 @@ import { buildApp } from './app.js'
 import { env } from './config/env.js'
 import { connectRedis, disconnectRedis } from './plugins/redis.js'
 import { pdfService } from './modules/pdf/pdf.service.js'
+import { ensureProcurementStorageDir } from './utils/procurementStorage.js'
 
 async function main() {
   const app = await buildApp()
+
+  // Ensure the purchase-order document upload directory exists before we start accepting requests
+  await ensureProcurementStorageDir()
 
   // Connect to Redis (optional — no-ops if REDIS_URL not set)
   await connectRedis()

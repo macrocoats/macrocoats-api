@@ -8,6 +8,8 @@ const envSchema = z.object({
 
   DATABASE_URL:         z.string().min(1),
 
+  PROCUREMENT_STORAGE_PATH: z.string().min(1),
+
   REDIS_URL:            z.string().optional(),
 
   JWT_PRIVATE_KEY_B64:  z.string().min(1),

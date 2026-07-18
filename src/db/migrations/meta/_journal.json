@@ -127,6 +127,20 @@
       "when": 1784122774183,
       "tag": "0017_absurd_brood",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1784347748013,
+      "tag": "0018_odd_arachne",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1784366093295,
+      "tag": "0019_dapper_infant_terrible",
+      "breakpoints": true
     }
   ]
 }

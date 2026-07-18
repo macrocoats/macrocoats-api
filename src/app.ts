@@ -1,4 +1,5 @@
 import Fastify from 'fastify'
+import multipart from '@fastify/multipart'
 import { env } from './config/env.js'
 import { registerCors } from './plugins/cors.js'
 import { registerCookies } from './plugins/cookie.js'
@@ -23,6 +24,10 @@ import { finishedGoodsRoutes } from './modules/finished-goods/finished-goods.rou
 import { dispatchRoutes } from './modules/dispatch/dispatch.routes.js'
 import { vendorPriceRoutes } from './modules/vendor-prices/vendor-prices.routes.js'
 import { purchaseEntryRoutes } from './modules/purchase-entries/purchase-entries.routes.js'
+import { purchaseOrderRoutes } from './modules/purchase-orders/purchase-orders.routes.js'
+import { purchaseOrderDocumentRoutes } from './modules/purchase-order-documents/purchase-order-documents.routes.js'
+import { purchaseOrderInvoiceRoutes } from './modules/purchase-order-invoices/purchase-order-invoices.routes.js'
+import { companyDocumentRoutes } from './modules/company-documents/company-documents.routes.js'
 import { AppErrors } from './types/errors.js'
 
 export async function buildApp() {
@@ -40,6 +45,7 @@ export async function buildApp() {
   // ── Core plugins ──────────────────────────────────────────────────────────
   await registerCors(app)
   await registerCookies(app)
+  await app.register(multipart, { limits: { fileSize: 20 * 1024 * 1024 } })
 
   // Decode cookie on every request — sets request.authUser if token present
   app.addHook('onRequest', authenticate)
@@ -70,6 +76,10 @@ export async function buildApp() {
   await app.register(dispatchRoutes,              { prefix: `${prefix}/dispatches` })
   await app.register(vendorPriceRoutes,           { prefix: `${prefix}/vendors` })
   await app.register(purchaseEntryRoutes,         { prefix: `${prefix}/purchase-entries` })
+  await app.register(purchaseOrderRoutes,         { prefix: `${prefix}/purchase-orders` })
+  await app.register(purchaseOrderDocumentRoutes, { prefix: `${prefix}/purchase-orders` })
+  await app.register(purchaseOrderInvoiceRoutes,  { prefix: `${prefix}/purchase-orders` })
+  await app.register(companyDocumentRoutes,       { prefix: `${prefix}/companies` })
 
   // ── Global error handler ──────────────────────────────────────────────────
   app.setErrorHandler((error, _request, reply) => {
