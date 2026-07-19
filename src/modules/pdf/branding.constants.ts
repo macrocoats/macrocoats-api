@@ -14,4 +14,8 @@ export const COMPANY = {
   phone: '+91 98840 80377',
   email: 'info@macrocoats.in',
   website: 'www.macrocoats.in',
+  // Optional — only rendered by the Letterhead treatment when set. Left blank
+  // (not fabricated) until Macro Coats provides real values.
+  cin: '',
+  isoCertification: '',
 } as const;

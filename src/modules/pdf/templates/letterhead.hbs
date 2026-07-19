@@ -1,0 +1,67 @@
+<div class="document letterhead-document">
+
+  {{!-- ═══ REFERENCE INFO ════════════════════════════════════════════════════ --}}
+  <div class="info-cards no-break">
+    {{#if letterDate}}
+    <div class="info-card">
+      <div class="info-card__label">Date</div>
+      <div class="info-card__value">{{formatDate letterDate}}</div>
+    </div>
+    {{/if}}
+    {{#if referenceNo}}
+    <div class="info-card">
+      <div class="info-card__label">Reference No.</div>
+      <div class="info-card__value mono">{{referenceNo}}</div>
+    </div>
+    {{/if}}
+    {{#if customerName}}
+    <div class="info-card">
+      <div class="info-card__label">Customer</div>
+      <div class="info-card__value fw-semi">{{customerName}}</div>
+    </div>
+    {{/if}}
+    {{#if companyName}}
+    <div class="info-card">
+      <div class="info-card__label">Company</div>
+      <div class="info-card__value fw-semi">{{companyName}}</div>
+    </div>
+    {{/if}}
+    {{#if attention}}
+    <div class="info-card">
+      <div class="info-card__label">Attention</div>
+      <div class="info-card__value">{{attention}}</div>
+    </div>
+    {{/if}}
+    {{#if subject}}
+    <div class="info-card">
+      <div class="info-card__label">Subject</div>
+      <div class="info-card__value fw-semi">{{subject}}</div>
+    </div>
+    {{/if}}
+  </div>
+
+  {{!-- ═══ LETTER BODY (rich text authored in the editor) ═══════════════════ --}}
+  <div class="lh-body">
+    {{{bodyHtml}}}
+  </div>
+
+  {{!-- ═══ SIGNATURE BLOCK ═══════════════════════════════════════════════════ --}}
+  {{#if preparedBy}}
+  <div class="sig-block no-break">
+    <div class="sig-slot">
+      <div class="sig-slot__space"></div>
+      <div class="sig-slot__role">Prepared By</div>
+      <div class="sig-slot__name">{{preparedBy}}</div>
+    </div>
+    {{#if approvedBy}}
+    <div class="sig-slot">
+      <div class="sig-slot__space"></div>
+      <div class="sig-slot__role">Approved By</div>
+      <div class="sig-slot__name">{{approvedBy}}</div>
+      {{#if designation}}<div class="text-muted fs-sm">{{designation}}</div>{{/if}}
+    </div>
+    {{/if}}
+  </div>
+  {{/if}}
+
+</div>

@@ -1794,3 +1794,59 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
 }
 .ir-health-score__value { font-family: var(--font-heading); font-size: 22pt; font-weight: 800; color: var(--c-primary); }
 .ir-health-score__label { font-size: var(--fs-sm); color: var(--c-muted); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LETTERHEAD — free-form rich-text body (letterhead.hbs only). Styles the raw
+   TipTap-authored HTML ({{{bodyHtml}}}) — plain semantic tags, no custom
+   classes, so these rules key off element selectors scoped to .lh-body.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.lh-body {
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  color: var(--c-text);
+  line-height: 1.6;
+  margin: 6mm 0;
+}
+.lh-body p { margin: 0 0 3mm; }
+.lh-body h1 { font-family: var(--font-heading); color: var(--c-primary); font-weight: 700; font-size: 15pt; margin: 5mm 0 2.5mm; }
+.lh-body h2 { font-family: var(--font-heading); color: var(--c-primary); font-weight: 700; font-size: 12.5pt; margin: 4mm 0 2mm; }
+.lh-body h3 { font-family: var(--font-heading); color: var(--c-primary); font-weight: 700; font-size: 11pt; margin: 3.5mm 0 2mm; }
+.lh-body blockquote {
+  border-left: 3px solid var(--c-primary);
+  margin: 3mm 0;
+  padding: 1mm 4mm;
+  color: var(--c-muted);
+  font-style: italic;
+}
+.lh-body code {
+  background: var(--c-bg-meta);
+  padding: 0.3mm 1.5mm;
+  border-radius: 1px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+}
+.lh-body hr { border: none; border-top: 1px solid var(--c-border); margin: 4mm 0; }
+.lh-body mark { background: #fef08a; padding: 0 0.5mm; }
+.lh-body a { color: var(--c-primary); text-decoration: underline; }
+.lh-body ul, .lh-body ol { margin: 0 0 3mm 5mm; padding: 0; }
+.lh-body li { margin-bottom: 1mm; }
+.lh-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 3mm 0;
+  page-break-inside: auto;
+}
+.lh-body th, .lh-body td {
+  border: 1px solid var(--c-border);
+  padding: 1.5mm 2.5mm;
+  font-size: var(--fs-sm);
+  text-align: left;
+}
+.lh-body th {
+  background: var(--c-bg-meta);
+  font-weight: 700;
+  color: var(--c-primary);
+}
+.lh-body [style*="text-align: center"]  { text-align: center; }
+.lh-body [style*="text-align: right"]   { text-align: right; }
+.lh-body [style*="text-align: justify"] { text-align: justify; }

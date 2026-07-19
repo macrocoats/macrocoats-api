@@ -26,9 +26,14 @@ const LEGACY_BRANDED_DOC_TYPES: ReadonlySet<DocType> = new Set(['coa']);
 // Distinct from legacy-branded (coa): a wider band with period/confidential meta,
 // see buildExecutiveHeader/buildExecutiveFooter below.
 const EXECUTIVE_DOC_TYPES: ReadonlySet<DocType> = new Set(['investor-report']);
+// 5th header/footer treatment — the Company Letterhead. Not per-product (like
+// print-matched) and not a multi-page report (like executive); its own
+// treatment so it can carry the reference-info band's absence from the
+// header/footer bands without borrowing another doc type's semantics.
+const LETTERHEAD_DOC_TYPES: ReadonlySet<DocType> = new Set(['letterhead']);
 
-// All four get the faint centered watermark.
-const WATERMARK_DOC_TYPES: ReadonlySet<DocType> = new Set(['tds', 'msds', 'coa', 'investor-report']);
+// All five get the faint centered watermark.
+const WATERMARK_DOC_TYPES: ReadonlySet<DocType> = new Set(['tds', 'msds', 'coa', 'investor-report', 'letterhead']);
 
 // Per-docType copy for the print-matched header/footer (tds/msds only).
 const PRINT_MATCHED_META: Record<string, {
@@ -312,8 +317,9 @@ class PDFService {
     const printMatched   = PRINT_MATCHED_DOC_TYPES.has(docType);
     const legacyBranded  = !printMatched && LEGACY_BRANDED_DOC_TYPES.has(docType);
     const executive      = !printMatched && !legacyBranded && EXECUTIVE_DOC_TYPES.has(docType);
+    const letterhead     = !printMatched && !legacyBranded && !executive && LETTERHEAD_DOC_TYPES.has(docType);
     const watermarked    = WATERMARK_DOC_TYPES.has(docType);
-    const logoDataUri      = (printMatched || legacyBranded || executive) ? await getLogoDataUri() : null;
+    const logoDataUri      = (printMatched || legacyBranded || executive || letterhead) ? await getLogoDataUri() : null;
     const watermarkDataUri = watermarked ? await getWatermarkDataUri() : null;
 
     const ctx: Record<string, unknown> = {
@@ -336,7 +342,7 @@ class PDFService {
     const docTitle    = docTypeLabel(docType);
     const productName = String(payload['productName'] ?? '');
     const docNumber   = String(
-      payload['productCode'] ?? payload['quotationNumber'] ?? payload['batchNumber'] ?? '',
+      payload['productCode'] ?? payload['quotationNumber'] ?? payload['batchNumber'] ?? payload['referenceNo'] ?? '',
     );
     const revisionDate = String(payload['revisionDate'] ?? '');
 
@@ -348,17 +354,24 @@ class PDFService {
       ? buildPrintMatchedHeader(docType, productName, docNumber, logoDataUri, revisionDate)
       : executive
         ? buildExecutiveHeader(logoDataUri, periodLabel)
-        : buildHeaderTemplate(docTitle, productName, docNumber, { docType, logoDataUri, revisionDate });
+        : letterhead
+          ? buildLetterheadHeader(logoDataUri)
+          : buildHeaderTemplate(docTitle, productName, docNumber, { docType, logoDataUri, revisionDate });
     const footerHtml = printMatched
       ? buildPrintMatchedFooter(docType, productName, docNumber)
       : executive
         ? buildExecutiveFooter(date, time)
-        : buildFooterTemplate(date, time, docTitle, productName, { docType });
+        : letterhead
+          ? buildLetterheadFooter()
+          : buildFooterTemplate(date, time, docTitle, productName, { docType });
 
     // tds/msds reserve less header/footer space than coa's taller branded
     // letterhead; the executive report's header is taller still (logo +
-    // period line) — see buildPrintMatchedHeader/Footer/buildExecutiveHeader
-    // for the content that must fit inside these bands.
+    // period line); the Company Letterhead treatment matches coa's band
+    // height since it carries the same amount of company-identity copy —
+    // see buildPrintMatchedHeader/Footer/buildExecutiveHeader/
+    // buildLetterheadHeader/Footer for the content that must fit inside
+    // these bands.
     const margin = printMatched
       ? { top: '26mm', bottom: '16mm', left: '14mm', right: '14mm' }
       : executive
@@ -429,6 +442,7 @@ function docTypeLabel(docType: DocType): string {
     batch:     'Batch Manufacturing Record',
     salary:    'Salary Slip',
     'investor-report': 'Investor Report',
+    letterhead: 'Company Letterhead',
   };
   return labels[docType] ?? docType.toUpperCase();
 }
@@ -768,6 +782,79 @@ function buildExecutiveFooter(date: string, time: string): string {
     <div class="f-right">Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>
   </div>
   <div class="f-tag">${COMPANY.website} &nbsp;•&nbsp; Prepared for internal/investor use only &nbsp;•&nbsp; Not for public distribution</div>
+</div>`;
+}
+
+// ─── Letterhead header/footer (letterhead only) ────────────────────────────────
+// 5th treatment. Not per-product (no docNumber/productName meta grid like
+// print-matched) — the letter's own reference info (date/refNo/customer/
+// subject/attention) is rendered in the document body's .info-cards band
+// instead, matching letterhead.hbs. Company identity band mirrors the
+// legacy-branded (coa) header's logo+tagline shape, extended with optional
+// GSTIN/CIN/ISO lines gated on branding.constants.ts fields being non-empty.
+
+function buildLetterheadHeader(logoDataUri: string | null): string {
+  const certRows = [
+    COMPANY.gstin ? `<div class="h-row"><b>GSTIN:</b> ${esc(COMPANY.gstin)}</div>` : '',
+    COMPANY.cin ? `<div class="h-row"><b>CIN:</b> ${esc(COMPANY.cin)}</div>` : '',
+    COMPANY.isoCertification ? `<div class="h-row"><b>ISO:</b> ${esc(COMPANY.isoCertification)}</div>` : '',
+  ].join('');
+
+  return `
+<style>
+  html { font-size: 10pt; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', Arial, 'Helvetica Neue', Helvetica, sans-serif; }
+  .hw { width: 100%; background: #ffffff; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .hb { display: flex; align-items: center; padding: 3mm 14mm 2.5mm 14mm; gap: 4mm; }
+  .h-logo { height: 18mm; width: auto; max-width: 46mm; object-fit: contain; flex-shrink: 0; }
+  .h-left { flex: 1; min-width: 0; border-left: 1px solid #C5D3E8; padding-left: 4mm; }
+  .h-company { font-size: 16pt; font-weight: 800; color: #123A6D; line-height: 1.1; letter-spacing: -.02em; }
+  .h-tagline { font-size: 8.5pt; font-weight: 700; color: #5C6470; margin-top: 0.5mm; text-transform: uppercase; letter-spacing: .06em; }
+  .h-addr { font-size: 7pt; color: #5C6470; margin-top: 1.5mm; line-height: 1.5; }
+  .h-right { text-align: right; flex-shrink: 0; border-left: 1px solid #C5D3E8; padding-left: 3mm; }
+  .h-row { font-size: 7.5pt; line-height: 1.6; color: #5C6470; }
+  .h-row b { color: #123A6D; font-weight: 700; }
+  .h-rule  { height: 2px; background: #123A6D; margin: 0 14mm; -webkit-print-color-adjust: exact !important; }
+</style>
+<div class="hw">
+  <div class="hb">
+    ${logoDataUri ? `<img class="h-logo" src="${logoDataUri}" />` : ''}
+    <div class="h-left">
+      <div class="h-company">${COMPANY.legalName}</div>
+      <div class="h-tagline">${COMPANY.tagline}</div>
+      <div class="h-addr">${esc(COMPANY.addressLine)}</div>
+    </div>
+    <div class="h-right">
+      <div class="h-row"><b>Ph:</b> ${esc(COMPANY.phone)}</div>
+      <div class="h-row"><b>Email:</b> ${esc(COMPANY.email)}</div>
+      <div class="h-row"><b>Web:</b> ${esc(COMPANY.website)}</div>
+      ${certRows}
+    </div>
+  </div>
+  <div class="h-rule"></div>
+</div>`;
+}
+
+function buildLetterheadFooter(): string {
+  return `
+<style>
+  html { font-size: 7.5pt; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', Arial, 'Helvetica Neue', Helvetica, sans-serif; }
+  .fw { width: 100%; padding: 0 14mm; }
+  .f-rule { height: 0.5px; background: #ccc; margin-bottom: 1mm; }
+  .fb { display: flex; justify-content: space-between; align-items: baseline; }
+  .f-left { font-size: 7.5pt; color: #888; letter-spacing: .02em; }
+  .f-left b { color: #123A6D; }
+  .f-right { font-size: 7.5pt; color: #888; text-align: right; }
+</style>
+<div class="fw">
+  <div class="f-rule"></div>
+  <div class="fb">
+    <div class="f-left"><b>${COMPANY.name}</b> &nbsp;·&nbsp; ${esc(COMPANY.addressLine)} &nbsp;·&nbsp; ${COMPANY.website}</div>
+    <div class="f-right">Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>
+  </div>
 </div>`;
 }
 

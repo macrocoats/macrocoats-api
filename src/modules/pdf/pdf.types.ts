@@ -1,6 +1,6 @@
 // ─── Document types ───────────────────────────────────────────────────────────
 
-export type DocType = 'quotation' | 'tds' | 'msds' | 'coa' | 'batch' | 'salary' | 'investor-report';
+export type DocType = 'quotation' | 'tds' | 'msds' | 'coa' | 'batch' | 'salary' | 'investor-report' | 'letterhead';
 
 export type OutputFormat = 'buffer' | 'stream' | 'file';
 
@@ -191,6 +191,22 @@ export interface InvestorReportPayload {
   analytics: Record<string, unknown>;
   projections: Record<string, unknown>;
   insights: Record<string, unknown>;
+}
+
+// ─── Letterhead ───────────────────────────────────────────────────────────────
+
+export interface LetterheadPayload {
+  referenceNo?: string;
+  letterDate?: string;
+  customerName?: string;
+  companyName?: string;
+  subject?: string;
+  attention?: string;
+  preparedBy?: string;
+  approvedBy?: string;
+  designation?: string;
+  /** Already variable-resolved HTML from the TipTap editor. */
+  bodyHtml: string;
 }
 
 // ─── PDF generation options ───────────────────────────────────────────────────

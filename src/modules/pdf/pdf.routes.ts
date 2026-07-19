@@ -15,6 +15,7 @@ const filenames: Record<DocType, (payload: Record<string, unknown>) => string> =
   batch:     (p) => `batch-${p['batchNumber'] ?? 'batch'}.pdf`,
   salary:    (p) => `salary-${p['employeeId'] ?? 'staff'}.pdf`,
   'investor-report': (p) => `investor-report-${p['from'] ?? ''}_to_${p['to'] ?? ''}.pdf`,
+  letterhead: (p) => `letterhead-${p['referenceNo'] ?? 'draft'}.pdf`,
 };
 
 function pdfErrorReply(err: unknown, reply: FastifyReply): FastifyReply {
@@ -80,6 +81,11 @@ export async function pdfRoutes(app: FastifyInstance): Promise<void> {
 
   app.post<{ Body: Record<string, unknown> }>('/investor-report', { preHandler }, async (request, reply) => {
     try { return await sendPDF('investor-report', request.body, reply); }
+    catch (err) { return pdfErrorReply(err, reply); }
+  });
+
+  app.post<{ Body: Record<string, unknown> }>('/letterhead', { preHandler }, async (request, reply) => {
+    try { return await sendPDF('letterhead', request.body, reply); }
     catch (err) { return pdfErrorReply(err, reply); }
   });
 }
