@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken'
+import jwt, { type SignOptions } from 'jsonwebtoken'
 import { env } from '../config/env.js'
 import type { AuthUser } from '../types/index.js'
 
@@ -29,7 +29,7 @@ export function signAccessToken(user: AuthUser): string {
   }
   return jwt.sign(payload, PRIVATE_KEY, {
     algorithm: 'RS256',
-    expiresIn: env.JWT_ACCESS_EXPIRES,
+    expiresIn: env.JWT_ACCESS_EXPIRES as SignOptions['expiresIn'],
   })
 }
 
@@ -37,7 +37,7 @@ export function signRefreshToken(userId: string, tokenId: string): string {
   const payload: RefreshTokenPayload = { sub: userId, jti: tokenId }
   return jwt.sign(payload, PRIVATE_KEY, {
     algorithm: 'RS256',
-    expiresIn: env.JWT_REFRESH_EXPIRES,
+    expiresIn: env.JWT_REFRESH_EXPIRES as SignOptions['expiresIn'],
   })
 }
 

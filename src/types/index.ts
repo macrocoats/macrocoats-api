@@ -11,7 +11,8 @@ export interface AuthUser {
   allowedProducts: string[] | null
 }
 
-export type DocType = 'tds' | 'msds' | 'formula' | 'label' | 'coa'
+export const DOC_TYPES = ['tds', 'msds', 'formula', 'label', 'coa'] as const
+export type DocType = typeof DOC_TYPES[number]
 
 export const PRODUCT_KEYS = [
   'uniklean-sp',
@@ -29,8 +30,6 @@ export const PRODUCT_KEYS = [
   'uniklean-sf',
 ] as const
 export type ProductKey = typeof PRODUCT_KEYS[number]
-
-export const DOC_TYPES: DocType[] = ['tds', 'msds', 'formula', 'label', 'coa']
 
 /** Doc types restricted to superadmin only */
 export const RESTRICTED_DOC_TYPES: DocType[] = ['formula', 'label', 'coa']

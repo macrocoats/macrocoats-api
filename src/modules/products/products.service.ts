@@ -13,7 +13,7 @@ import {
   buildInternalHazardBreakdown,
 } from '../document-sanitization/document-sanitization.service.js'
 import type { RawComponent, HazardAggregate } from '../document-sanitization/document-sanitization.types.js'
-import type { AuthUser, DocumentViewMode } from '../../types/index.js'
+import type { AuthUser, DocumentViewMode, DocType } from '../../types/index.js'
 import type { UpdateDocumentBody } from './products.schema.js'
 
 const CACHE_TTL = 300   // 5 minutes
@@ -30,7 +30,7 @@ const STATUS_TRANSITIONS: Record<string, string[]> = {
   archived:        ['draft'],
 }
 
-function cacheKey(productLine: string, docType: string) {
+function cacheKey(productLine: string, docType: DocType) {
   return `doc:${productLine}:${docType}`
 }
 
@@ -139,7 +139,7 @@ async function applyVariantOverride(
 
 export async function getDocument(
   productLine: string,
-  docType: string,
+  docType: DocType,
   authUser: AuthUser | null = null,
   opts?: { variantId?: string; view?: DocumentViewMode },
 ) {
@@ -208,7 +208,7 @@ export async function getDocument(
 
 export async function updateDocument(
   productLine: string,
-  docType: string,
+  docType: DocType,
   updates: UpdateDocumentBody,
   updatedBy: string,
 ) {
@@ -254,7 +254,7 @@ export async function updateDocument(
 
 export async function transitionDocumentStatus(
   productLine: string,
-  docType: string,
+  docType: DocType,
   newStatus: string,
   userId: string,
   notes?: string,
@@ -298,7 +298,7 @@ export async function transitionDocumentStatus(
   return getDocument(productLine, docType)
 }
 
-export async function listAuditTrail(productLine: string, docType: string) {
+export async function listAuditTrail(productLine: string, docType: DocType) {
   const [doc] = await db
     .select({ id: productDocuments.id })
     .from(productDocuments)

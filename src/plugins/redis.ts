@@ -11,9 +11,10 @@ export async function connectRedis(): Promise<void> {
     console.info('ℹ️  REDIS_URL not set — document caching disabled')
     return
   }
-  const { default: Redis } = await import('ioredis')
-  _redis = new Redis(env.REDIS_URL, { lazyConnect: true, maxRetriesPerRequest: 2 })
-  await _redis.connect()
+  const { Redis } = await import('ioredis')
+  const redis = new Redis(env.REDIS_URL, { lazyConnect: true, maxRetriesPerRequest: 2 })
+  await redis.connect()
+  _redis = redis
   console.info('✅ Redis connected')
 }
 

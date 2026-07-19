@@ -30,7 +30,7 @@ function toQuotationResponse(
 
 export async function createQuotation(data: CreateQuotationBody, createdBy: string) {
   return db.transaction(async (tx) => {
-    const quotNumber = await nextQuotNumber(tx as typeof db)
+    const quotNumber = await nextQuotNumber(tx as unknown as typeof db)
 
     // Compute validUntil date
     const quotDateObj = new Date(data.quotDate)

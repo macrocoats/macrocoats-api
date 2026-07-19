@@ -2,8 +2,8 @@ import { z } from 'zod'
 import { PRODUCT_KEYS, DOC_TYPES, DOCUMENT_VIEW_MODES } from '../../types/index.js'
 
 export const productParamsSchema = z.object({
-  productLine: z.enum(PRODUCT_KEYS as [string, ...string[]]),
-  docType:     z.enum(DOC_TYPES as [string, ...string[]]),
+  productLine: z.enum(PRODUCT_KEYS),
+  docType:     z.enum(DOC_TYPES),
 })
 
 export const documentQuerySchema = z.object({
