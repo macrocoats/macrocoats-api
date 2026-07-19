@@ -179,6 +179,14 @@ export const DEFAULT_INVENTORY = [
   { material: 'TAP 363',                            unit: 'Kg' as const, price: '0',   sortOrder: 57 },
   { material: 'TAP 4500',                           unit: 'Kg' as const, price: '0',   sortOrder: 58 },
   { material: 'TAP 4554',                           unit: 'Kg' as const, price: '0',   sortOrder: 59 },
+
+  // ── Rust Preventive Additives (CORRCUT 200) ──────────────────────────────────
+  { material: 'Mineral Turpentine Oil (MTO)',       unit: 'L'  as const, price: '75',  sortOrder: 63 },
+  { material: 'Lanolin',                            unit: 'Kg' as const, price: '310', sortOrder: 64 },
+  { material: 'BHT (Butylated Hydroxytoluene)',     unit: 'Kg' as const, price: '600', sortOrder: 65 },
+
+  // ── Rust Preventive Additives (CORRUCUT 500) ─────────────────────────────────
+  { material: 'Vaseline',                           unit: 'Kg' as const, price: '180', sortOrder: 66 },
 ]
 
 export async function seedInventory() {

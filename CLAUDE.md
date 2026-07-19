@@ -254,7 +254,7 @@ See `DATABASE.md` for the full 33-table schema reference, the canonical migratio
 `src/seed/` contains idempotent seed scripts (run via `npm run seed`):
 
 - `index.ts` — entry point; runs all seeds in order
-- `products.seed.ts` — 13 product lines (uniklean-sp, uniklean-fe, uniprotect-oil, uniflow-ecm, unicool-al, unikoat-lt-700, unisolve-h3, unipass, uniktonner, corroklean, corrcut-100, corrucut-500, uniklean-sf)
+- `products.seed.ts` — 14 product lines (uniklean-sp, uniklean-fe, uniprotect-oil, uniflow-ecm, unicool-al, unikoat-lt-700, unisolve-h3, unipass, uniktonner, corroklean, corrcut-100, corrucut-500, uniklean-sf, corrcut-200)
 - `companies.seed.ts` — test companies (Rane Madras, TVS, Akshaya) with product access mappings
 - `formulationVariants.seed.ts` — formulation variant headers and components
 - `inventory.seed.ts` — 23 factory-default raw materials
