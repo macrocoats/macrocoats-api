@@ -1,11 +1,11 @@
 # Graph Report - /Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api  (2026-07-19)
 
 ## Corpus Check
-- 154 files · ~175,615 words
+- 154 files · ~175,608 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 640 nodes · 1159 edges · 32 communities detected
+- 640 nodes · 1158 edges · 32 communities detected
 - Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 84 edges (avg confidence: 0.81)
 - Token cost: 0 input · 0 output
 

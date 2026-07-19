@@ -10,8 +10,7 @@
       {{companyInfo.addressLine}}<br />
       GSTIN: {{companyInfo.gstin}} &middot; {{companyInfo.website}}<br />
       <br />
-      Prepared By: {{#if preparedBy}}{{preparedBy}}{{else}}System Generated{{/if}}<br />
-      Generated: {{_meta.generatedDate}} {{_meta.generatedTime}}
+      Prepared By: {{#if preparedBy}}{{preparedBy}}{{else}}System Generated{{/if}}
     </div>
     <div class="ir-cover__confidential">Confidential &mdash; Internal &amp; Investor Use Only</div>
   </div>
@@ -46,9 +45,7 @@
     {{/each}}
   </ul>
 
-  <div class="page-break"></div>
-
-  {{!-- ═══ PAGE 3 — SALES ANALYSIS ═══ --}}
+  {{!-- ═══ SALES ANALYSIS ═══ --}}
   <div class="sec-title">Sales Analysis</div>
 
   <div class="sec-subtitle">Monthly Sales Trend</div>
@@ -89,9 +86,7 @@
     </tbody>
   </table>
 
-  <div class="page-break"></div>
-
-  {{!-- ═══ PAGE 4 — FORECAST ═══ --}}
+  {{!-- ═══ FORECAST ═══ --}}
   <div class="sec-title">Forecast</div>
 
   <div class="sec-subtitle">Revenue Projection &mdash; linear run-rate estimates, not a forecasting model</div>
@@ -111,11 +106,9 @@
   </div>
 
   <div class="sec-subtitle">Business Outlook</div>
-  <div class="desc-band">{{businessOutlookText}}</div>
+  <div class="desc-band no-break">{{businessOutlookText}}</div>
 
-  <div class="page-break"></div>
-
-  {{!-- ═══ FINAL PAGE — MANAGEMENT NOTES ═══ --}}
+  {{!-- ═══ MANAGEMENT NOTES ═══ --}}
   <div class="sec-title">Management Notes</div>
 
   <div class="sec-subtitle">Key Risks</div>
@@ -135,18 +128,14 @@
     {{/each}}
   </ul>
 
-  <div class="sig-block no-break">
-    <div class="sig-slot">
+  <div class="sig-block no-break" style="margin-top: 5mm;">
+    <div class="sig-slot" style="flex: 0 0 60mm;">
       <div class="sig-slot__role">Prepared By</div>
       <div class="sig-slot__name">{{#if preparedBy}}{{preparedBy}}{{else}}System Generated{{/if}}</div>
     </div>
-    <div class="sig-slot">
-      <div class="sig-slot__role">Generated</div>
-      <div class="sig-slot__name">{{_meta.generatedDate}} {{_meta.generatedTime}}</div>
-    </div>
   </div>
 
-  <div class="remarks-box no-break" style="margin-top: 6mm;">
+  <div class="remarks-box" style="margin-top: 4mm;">
     This report is auto-generated from operational data recorded in the Macro Coats portal. "Sales"/"Revenue"
     figures represent confirmed Customer PO order value, not recognized accounting revenue &mdash; this system
     has no invoicing/accounting layer. Figures are for internal management and investor reference only and are

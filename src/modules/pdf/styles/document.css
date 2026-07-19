@@ -282,6 +282,8 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
   border-bottom: 2px solid var(--c-primary);
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
+  page-break-after: avoid;
+  break-after: avoid;
 }
 
 /* Section number span used by quotation.hbs / batch.hbs */
@@ -301,6 +303,8 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
   margin-bottom: 2mm;
   padding-bottom: 1mm;
   border-bottom: 1px solid var(--c-divider);
+  page-break-after: avoid;
+  break-after: avoid;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -1763,6 +1767,8 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
   grid-template-columns: repeat(5, 1fr);
   gap: 3mm;
   margin-bottom: 5mm;
+  page-break-inside: avoid;
+  break-inside: avoid;
 }
 .ir-kpi-tile {
   background: var(--c-bg-card);

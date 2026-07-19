@@ -15186,18 +15186,6 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
-      "source_location": "L781",
-      "weight": 1.0,
-      "_src": "pdf_service_buildexecutivefooter",
-      "_tgt": "pdf_service_esc",
-      "source": "pdf_service_buildexecutivefooter",
-      "target": "pdf_service_esc",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "confidence": "EXTRACTED",
-      "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/modules/pdf/pdf.service.ts",
       "source_location": "L798",
       "weight": 1.0,
       "_src": "pdf_service_buildletterheadheader",

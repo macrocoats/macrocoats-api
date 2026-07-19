@@ -151,7 +151,7 @@ export async function seedCompanies() {
   if (!existingAdmin) {
     const passwordHash = await hashPassword(SUPERADMIN_TOKEN)
     await db.insert(users).values({
-      name:         'Super Admin',
+      name:         'Aswin Kumar S',
       username:     'admin',
       passwordHash,
       role:         'superadmin',

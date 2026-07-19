@@ -360,7 +360,7 @@ class PDFService {
     const footerHtml = printMatched
       ? buildPrintMatchedFooter(docType, productName, docNumber)
       : executive
-        ? buildExecutiveFooter(date, time)
+        ? buildExecutiveFooter()
         : letterhead
           ? buildLetterheadFooter()
           : buildFooterTemplate(date, time, docTitle, productName, { docType });
@@ -761,7 +761,7 @@ function buildExecutiveHeader(logoDataUri: string | null, periodLabel: string): 
 </div>`;
 }
 
-function buildExecutiveFooter(date: string, time: string): string {
+function buildExecutiveFooter(): string {
   return `
 <style>
   html { font-size: 7.5pt; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
@@ -778,7 +778,7 @@ function buildExecutiveFooter(date: string, time: string): string {
 <div class="fw">
   <div class="f-rule"></div>
   <div class="fb">
-    <div class="f-left"><b>${COMPANY.name}</b> &nbsp;·&nbsp; Investor Report &nbsp;·&nbsp; Confidential &nbsp;·&nbsp; Generated ${esc(date)} ${esc(time)}</div>
+    <div class="f-left"><b>${COMPANY.name}</b> &nbsp;·&nbsp; Investor Report &nbsp;·&nbsp; Confidential</div>
     <div class="f-right">Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>
   </div>
   <div class="f-tag">${COMPANY.website} &nbsp;•&nbsp; Prepared for internal/investor use only &nbsp;•&nbsp; Not for public distribution</div>
