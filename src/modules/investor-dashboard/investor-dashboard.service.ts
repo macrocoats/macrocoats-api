@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm'
 import { db } from '../../db/index.js'
+import { getProfitability } from '../cost-intelligence/cost-intelligence.service.js'
 import type { DashboardFilter, ProjectionsQuery } from './investor-dashboard.schema.js'
 
 /**
@@ -291,5 +292,140 @@ export async function getProjections(query: ProjectionsQuery) {
     conversionRate: query.conversionRate,
     pipelineUpside,
     projectedMonthlyRevenueWithPipeline: round2(projectedMonthlyRevenue + pipelineUpside),
+  }
+}
+
+// ── Executive Insights ─────────────────────────────────────────────────────
+
+function clamp(n: number, min: number, max: number) { return Math.min(max, Math.max(min, n)) }
+function growthPct(curr: number, prev: number): number | null { return prev !== 0 ? round2(((curr - prev) / prev) * 100) : null }
+
+/**
+ * Auto-generated executive insights layer over getExecutiveKpis/getSalesAnalytics's
+ * existing output plus cost-intelligence's existing getProfitability() — no new
+ * business logic, purely derived read composition. "Receivables" is deliberately not
+ * computed here (no accounting/invoicing layer, see module header) — the frontend
+ * shows the existing pendingOrderValue KPI labeled "Pending Order Value" instead.
+ */
+export async function getExecutiveInsights(filter: DashboardFilter) {
+  const { from, to } = resolveWindow(filter)
+  const windowDays = daysBetween(new Date(from), new Date(to)) + 1
+  const priorTo = iso(addDays(new Date(from), -1))
+  const priorFrom = iso(addDays(new Date(priorTo), -(windowDays - 1)))
+
+  const [kpis, analytics] = await Promise.all([
+    getExecutiveKpis(filter),
+    getSalesAnalytics(filter),
+  ])
+
+  // Revenue in-window vs. the prior equal-length window (mirrors the customerGrowthPct
+  // "first order date" comparison in getExecutiveKpis, but for total order value).
+  const [revenueRow] = await db.execute<{ [k: string]: unknown; windowRevenue: string; priorWindowRevenue: string }>(sql`
+    SELECT
+      COALESCE(SUM(total_value) FILTER (WHERE customer_po_date BETWEEN ${from} AND ${to}), 0) AS "windowRevenue",
+      COALESCE(SUM(total_value) FILTER (WHERE customer_po_date BETWEEN ${priorFrom} AND ${priorTo}), 0) AS "priorWindowRevenue"
+    FROM customer_purchase_orders
+    WHERE deleted_at IS NULL AND status != 'cancelled'
+  `)
+  const windowRevenue = Number(revenueRow?.windowRevenue ?? 0)
+  const priorWindowRevenue = Number(revenueRow?.priorWindowRevenue ?? 0)
+  const revenueGrowthPct = growthPct(windowRevenue, priorWindowRevenue)
+
+  const [priorProductionRow] = await db.execute<{ [k: string]: unknown; priorProductionVolume: string }>(sql`
+    SELECT COALESCE(SUM(batch_size), 0) AS "priorProductionVolume"
+    FROM batches
+    WHERE production_date BETWEEN ${priorFrom} AND ${priorTo}
+  `)
+  const priorProductionVolume = Number(priorProductionRow?.priorProductionVolume ?? 0)
+  const productionTrendPct = growthPct(kpis.productionVolume, priorProductionVolume)
+
+  // ── Customer concentration — top-5 customers' share of in-window revenue ──
+  const top5 = analytics.salesByCustomer.slice(0, 5)
+  const top5Value = top5.reduce((sum, c) => sum + c.totalValue, 0)
+  const concentrationPct = windowRevenue > 0 ? round2((top5Value / windowRevenue) * 100) : null
+
+  // ── Inventory turnover — COGS (period, from cost-intelligence's own batch cost
+  // formula) ÷ current inventory value, annualized. Current inventory value is a
+  // point-in-time proxy (no historical stock snapshots exist), not a true average —
+  // documented limitation, not a bug.
+  const [cogsRow] = await db.execute<{ [k: string]: unknown; cogs: string }>(sql`
+    SELECT COALESCE(SUM((cost_summary->>'productionCostPerL')::numeric * batch_size::numeric), 0) AS "cogs"
+    FROM batches
+    WHERE production_date BETWEEN ${from} AND ${to}
+  `)
+  const cogs = Number(cogsRow?.cogs ?? 0)
+
+  const [inventoryRow] = await db.execute<{ [k: string]: unknown; inventoryValue: string; itemsWithStockQty: string }>(sql`
+    SELECT
+      COALESCE(SUM(price::numeric * stock_qty::numeric) FILTER (WHERE stock_qty IS NOT NULL), 0) AS "inventoryValue",
+      COUNT(*) FILTER (WHERE stock_qty IS NOT NULL) AS "itemsWithStockQty"
+    FROM inventory_items
+  `)
+  const inventoryValue = Number(inventoryRow?.inventoryValue ?? 0)
+  const itemsWithStockQty = Number(inventoryRow?.itemsWithStockQty ?? 0)
+  const annualizedTurnoverRatio = itemsWithStockQty > 0 && inventoryValue > 0
+    ? round2((cogs / inventoryValue) * (365 / windowDays))
+    : null
+
+  // ── Portfolio margin — reuse cost-intelligence's existing per-product roll-up,
+  // scoped to the same window, weighted by revenue (not a simple average of averages).
+  const { products: profitabilityByProduct } = await getProfitability({ dateFrom: from, dateTo: to })
+  const totalRevenueForMargin = profitabilityByProduct.reduce((sum, p) => sum + p.totalRevenue, 0)
+  const totalProfitForMargin = profitabilityByProduct.reduce((sum, p) => sum + p.totalProfit, 0)
+  const weightedAvgMarginPct = totalRevenueForMargin > 0 ? round2((totalProfitForMargin / totalRevenueForMargin) * 100) : null
+
+  // ── Pending-order risk — pending order value relative to this quarter's sales.
+  const pendingRatioPct = kpis.quarterlySales > 0 ? round2((kpis.pendingOrderValue / kpis.quarterlySales) * 100) : null
+  const pendingRiskSeverity: 'low' | 'medium' | 'high' = pendingRatioPct == null ? 'low'
+    : pendingRatioPct > 50 ? 'high' : pendingRatioPct > 25 ? 'medium' : 'low'
+
+  // ── Business Health Score — an equally-weighted composite of four 0-100
+  // sub-scores. This weighting is a new judgment call (no pre-existing formula):
+  //   growthScore        — revenue growth vs. prior window, centered at 50 (0% growth)
+  //   completionScore     — % of in-window orders completed
+  //   concentrationScore — 100 minus top-5-customer revenue concentration (lower
+  //                         concentration = healthier, less customer-dependency risk)
+  //   marginScore         — weighted portfolio margin, scaled so 30% margin = 100
+  const growthScore = clamp(50 + (revenueGrowthPct ?? 0) / 2, 0, 100)
+  const completionScore = kpis.ordersReceived > 0 ? clamp((kpis.ordersCompleted / kpis.ordersReceived) * 100, 0, 100) : 100
+  const concentrationScore = concentrationPct != null ? clamp(100 - concentrationPct, 0, 100) : 100
+  const marginScore = weightedAvgMarginPct != null ? clamp((weightedAvgMarginPct / 30) * 100, 0, 100) : 50
+  const businessHealthScore = round2((growthScore + completionScore + concentrationScore + marginScore) / 4)
+
+  const topProduct = analytics.salesByProduct[0] ?? null
+  const topCustomer = analytics.salesByCustomer[0] ?? null
+  const topRegion = analytics.salesByRegion[0] ?? null
+
+  return {
+    range: filter.range, from, to,
+    highestRevenueProduct: topProduct
+      ? { productKey: topProduct.productKey, label: topProduct.productDisplayName, value: topProduct.totalValue }
+      : null,
+    largestCustomer: topCustomer
+      ? { customerId: topCustomer.customerId, label: topCustomer.customerName, value: topCustomer.totalValue }
+      : null,
+    topRegion: topRegion ? { label: topRegion.region, value: topRegion.totalValue } : null,
+    revenueGrowthPct,
+    averageRevenuePerCustomer: kpis.activeCustomers > 0 ? round2(windowRevenue / kpis.activeCustomers) : 0,
+    productionTrendPct,
+    pendingOrderRisk: {
+      pendingOrderValue: kpis.pendingOrderValue,
+      ratioToQuarterlySalesPct: pendingRatioPct,
+      severity: pendingRiskSeverity,
+    },
+    customerConcentration: {
+      top5Value, windowRevenue, concentrationPct,
+    },
+    inventoryTurnover: {
+      cogs, inventoryValue, annualizedRatio: annualizedTurnoverRatio,
+      note: itemsWithStockQty === 0 ? 'No inventory items have stockQty tracked — turnover cannot be computed.' : null,
+    },
+    portfolioMargin: {
+      totalRevenue: totalRevenueForMargin, totalProfit: totalProfitForMargin, weightedAvgMarginPct,
+    },
+    businessHealthScore: {
+      score: businessHealthScore,
+      components: { growthScore: round2(growthScore), completionScore: round2(completionScore), concentrationScore: round2(concentrationScore), marginScore: round2(marginScore) },
+    },
   }
 }

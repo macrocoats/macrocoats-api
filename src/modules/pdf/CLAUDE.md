@@ -1,18 +1,21 @@
 # CLAUDE.md — pdf module
 
-Server-side PDF generation for quotations, TDS, MSDS, CoA, and batch documents. This module intentionally does **not** follow the standard `*.routes.ts` / `*.service.ts` / `*.schema.ts` 3-file pattern used elsewhere in `src/modules/` — do not use it as a template for new modules.
+Server-side PDF generation for quotations, TDS, MSDS, CoA, batch documents, and the Investor Report. This module intentionally does **not** follow the standard `*.routes.ts` / `*.service.ts` / `*.schema.ts` 3-file pattern used elsewhere in `src/modules/` — do not use it as a template for new modules.
 
 ---
 
 ## Structure
 
 ```
-pdf.routes.ts          Fastify routes: POST /pdf/quotation, /tds, /msds, /coa, /batch
+pdf.routes.ts          Fastify routes: POST /pdf/quotation, /tds, /msds, /coa, /batch, /investor-report
 pdf.service.ts         PDFService (singleton via getInstance()) — Puppeteer orchestration
 template.service.ts    TemplateService (singleton via getInstance()) — Handlebars compilation
 pdf.types.ts           Shared types for this module (aspirational — generatePDF's actual
                         payload is untyped Record<string, unknown>; these interfaces are
                         not enforced on the real tds/msds/coa payload shapes)
+branding.constants.ts   Single source of truth for company name/address/GSTIN/phone/email/
+                        website — imported by every header/footer builder in pdf.service.ts
+                        instead of each one hardcoding its own literal copy
 test-render.ts         Standalone script to render a template to disk without going through Fastify — use for visually debugging a template change
 helpers/
   currency.helper.ts      Handlebars helper: currency formatting
@@ -24,9 +27,13 @@ helpers/
 partials/
   company-info.hbs, footer.hbs, header.hbs, signature-block.hbs
 styles/
-  document.css            Shared CSS injected into every rendered template
+  document.css            Shared CSS injected into every rendered template — `.ir-*` classes
+                          near the end are scoped to investor-report.hbs only (cover page +
+                          KPI grid have no prior equivalent); everything else in that
+                          template reuses existing `.doc-table`/`.sec-title`/`.callout`/
+                          `.doc-list`/`.sig-block`/`.page-break` classes.
 templates/
-  batch.hbs, coa.hbs, msds.hbs, quotation.hbs, tds.hbs
+  batch.hbs, coa.hbs, msds.hbs, quotation.hbs, tds.hbs, investor-report.hbs
 assets/
   macro-coats-logo.png    Icon-only mark, embedded as a base64 data URI in the
                           Puppeteer header template (see `getLogoDataUri()` in
@@ -40,15 +47,18 @@ assets/
                           The `build` script must keep copying this dir to dist/.
 ```
 
-## Header/footer: three treatments, gated by docType
+## Header/footer: four treatments, gated by docType
 
-`pdf.service.ts` picks one of three header/footer/margin treatments per `docType`:
+`pdf.service.ts` picks one of four header/footer/margin treatments per `docType`:
 
 1. **Print-matched** (`tds`, `msds` — `PRINT_MATCHED_DOC_TYPES`): `buildPrintMatchedHeader`/`buildPrintMatchedFooter` reproduce safteyDataSheet's `TDSPage.jsx`/`MSDSPage.jsx` print-to-PDF header/footer byte-for-byte (same px sizes, colors, copy — see "TDS/MSDS print parity" below). Margin: `26mm/16mm/14mm/14mm`.
-2. **Legacy branded** (`coa` only — `LEGACY_BRANDED_DOC_TYPES`): `buildHeaderTemplate`/`buildFooterTemplate`'s branded branch — logo, "Metal Surface Treatment Specialists" tagline, Email/Web only, expanded footer with "computer generated"/"Confidential"/Page X of Y. Margin: `30mm/22mm/14mm/14mm`. This is CoA's own polished letterhead — do not merge it with the print-matched treatment above.
-3. **Plain** (`quotation`, `batch`, `salary`): `buildHeaderTemplate`/`buildFooterTemplate`'s non-branded branch — full company address/GSTIN/phone, unchanged from the module's original design.
+2. **Legacy branded** (`coa` only — `LEGACY_BRANDED_DOC_TYPES`): `buildHeaderTemplate`/`buildFooterTemplate`'s branded branch — logo, tagline, Email/Web only, expanded footer with "computer generated"/"Confidential"/Page X of Y. Margin: `30mm/22mm/14mm/14mm`. This is CoA's own polished letterhead — do not merge it with the print-matched treatment above.
+3. **Executive** (`investor-report` only — `EXECUTIVE_DOC_TYPES`): `buildExecutiveHeader`/`buildExecutiveFooter` — a taller band (logo + period line, no per-product doc-number meta since this isn't a per-product document) plus a "Confidential" footer tag distinct from CoA's "computer generated" copy. Margin: `32mm/20mm/16mm/16mm`. Added for the Investor Report; do not reuse for a per-product document type.
+4. **Plain** (`quotation`, `batch`, `salary`): `buildHeaderTemplate`/`buildFooterTemplate`'s non-branded branch — full company address/GSTIN/phone, unchanged from the module's original design.
 
-All three of `tds`/`msds`/`coa` (`WATERMARK_DOC_TYPES`) get the faint centered logo watermark via `wrapBody()`, independent of which header/footer treatment they use.
+All company name/address/GSTIN/phone/email/website strings in every treatment above come from `branding.constants.ts` — do not reintroduce a hardcoded literal copy when editing any of these builders.
+
+`tds`/`msds`/`coa`/`investor-report` (`WATERMARK_DOC_TYPES`) get the faint centered logo watermark via `wrapBody()`, independent of which header/footer treatment they use.
 
 When adding a doc type to any of these sets, verify the other doc types still render byte-identical to before.
 
@@ -87,6 +97,25 @@ pages. Consequences of that design choice:
 - Because `.tds-print-*`/`.msds-print-*` class names don't collide with any
   other class in `document.css`, that section is safe to edit without
   affecting `quotation.hbs`/`batch.hbs`/`coa.hbs`.
+
+## Investor Report
+
+`investor-report.hbs` is a multi-page document (cover → executive summary → sales
+analysis → forecast → final page) using `.page-break` between sections, not separate
+Puppeteer calls — one `generatePDF('investor-report', payload)` call produces the whole
+report. The frontend's `downloadInvestorReportPDF()` (`safteyDataSheet/src/services/pdfService.js`)
+sends the raw `{ range, from, to, preparedBy, kpis, analytics, projections, insights }`
+shape — the same objects `investorDashboardService.js`'s four GET calls already return —
+so this is a read composition, not a new data source. `buildInvestorReportContext()` in
+`pdf.service.ts`:
+- Mirrors `ExecutiveInsightsRow.jsx`'s insight-sentence/severity derivation server-side
+  (same precedent as `buildMsdsContext()`'s frontend-derivation mirroring) — if that
+  component's wording or thresholds change, mirror the change here too.
+- Precomputes `barPct` (0–100) on each ranked/trend row for the CSS-only bar visuals in
+  the template, since Handlebars has no arithmetic beyond the `multiply` helper.
+- Does **not** compute "Receivables" — this system has no accounting/invoicing layer
+  (see root `CLAUDE.md`); the report shows `kpis.pendingOrderValue` labeled "Pending
+  Order Value" instead, same as the on-screen dashboard.
 
 ## Service split
 

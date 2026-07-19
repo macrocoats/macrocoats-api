@@ -1,6 +1,6 @@
 // ─── Document types ───────────────────────────────────────────────────────────
 
-export type DocType = 'quotation' | 'tds' | 'msds' | 'coa' | 'batch' | 'salary';
+export type DocType = 'quotation' | 'tds' | 'msds' | 'coa' | 'batch' | 'salary' | 'investor-report';
 
 export type OutputFormat = 'buffer' | 'stream' | 'file';
 
@@ -177,6 +177,20 @@ export interface BatchPayload {
   instructions?: string[];
   qcNotes?: string;
   signature?: SignatureBlock;
+}
+
+// ─── Investor Report (aspirational — see module CLAUDE.md: generatePDF's
+// actual payload is untyped Record<string, unknown>) ───────────────────────────
+
+export interface InvestorReportPayload {
+  range: string;
+  from: string;
+  to: string;
+  preparedBy?: string;
+  kpis: Record<string, unknown>;
+  analytics: Record<string, unknown>;
+  projections: Record<string, unknown>;
+  insights: Record<string, unknown>;
 }
 
 // ─── PDF generation options ───────────────────────────────────────────────────

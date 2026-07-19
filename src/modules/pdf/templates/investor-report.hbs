@@ -1,0 +1,156 @@
+<div class="document ir-page">
+
+  {{!-- ═══ COVER PAGE ═══ --}}
+  <div class="ir-cover">
+    <div class="ir-cover__eyebrow">Confidential Executive Report</div>
+    <div class="ir-cover__title">Investor Report</div>
+    <div class="ir-cover__period">{{formatDate from}} &ndash; {{formatDate to}}</div>
+    <div class="ir-cover__meta">
+      {{companyInfo.legalName}}<br />
+      {{companyInfo.addressLine}}<br />
+      GSTIN: {{companyInfo.gstin}} &middot; {{companyInfo.website}}<br />
+      <br />
+      Prepared By: {{#if preparedBy}}{{preparedBy}}{{else}}System Generated{{/if}}<br />
+      Generated: {{_meta.generatedDate}} {{_meta.generatedTime}}
+    </div>
+    <div class="ir-cover__confidential">Confidential &mdash; Internal &amp; Investor Use Only</div>
+  </div>
+
+  <div class="page-break"></div>
+
+  {{!-- ═══ PAGE 2 — EXECUTIVE SUMMARY ═══ --}}
+  <div class="sec-title">Executive Summary</div>
+
+  <div class="ir-kpi-grid">
+    <div class="ir-kpi-tile"><div class="ir-kpi-tile__label">This Month Sales</div><div class="ir-kpi-tile__value">{{formatCurrency kpis.currentMonthSales}}</div></div>
+    <div class="ir-kpi-tile"><div class="ir-kpi-tile__label">This Quarter Sales</div><div class="ir-kpi-tile__value">{{formatCurrency kpis.quarterlySales}}</div></div>
+    <div class="ir-kpi-tile"><div class="ir-kpi-tile__label">Year to Date Sales</div><div class="ir-kpi-tile__value">{{formatCurrency kpis.ytdSales}}</div></div>
+    <div class="ir-kpi-tile"><div class="ir-kpi-tile__label">Pending Order Value</div><div class="ir-kpi-tile__value">{{formatCurrency kpis.pendingOrderValue}}</div></div>
+    <div class="ir-kpi-tile"><div class="ir-kpi-tile__label">Avg Order Value</div><div class="ir-kpi-tile__value">{{formatCurrency kpis.averageOrderValue}}</div></div>
+    <div class="ir-kpi-tile"><div class="ir-kpi-tile__label">Orders Received</div><div class="ir-kpi-tile__value">{{formatNumber kpis.ordersReceived 0}}</div></div>
+    <div class="ir-kpi-tile"><div class="ir-kpi-tile__label">Orders Completed</div><div class="ir-kpi-tile__value">{{formatNumber kpis.ordersCompleted 0}}</div></div>
+    <div class="ir-kpi-tile"><div class="ir-kpi-tile__label">Active Customers</div><div class="ir-kpi-tile__value">{{formatNumber kpis.activeCustomers 0}}</div></div>
+    <div class="ir-kpi-tile"><div class="ir-kpi-tile__label">Products Sold</div><div class="ir-kpi-tile__value">{{formatNumber kpis.productsSold 0}}</div></div>
+    <div class="ir-kpi-tile"><div class="ir-kpi-tile__label">Production Volume</div><div class="ir-kpi-tile__value">{{formatNumber kpis.productionVolume 0}}</div></div>
+  </div>
+
+  <div class="ir-health-score no-break">
+    <div class="ir-health-score__value">{{insights.businessHealthScore.score}}<span style="font-size: 11pt;">/100</span></div>
+    <div class="ir-health-score__label">Business Health Score &mdash; composite of revenue growth, order completion, customer concentration, and portfolio margin</div>
+  </div>
+
+  <div class="sec-subtitle">Business Highlights &amp; Insights</div>
+  <ul class="doc-list">
+    {{#each insightBullets}}
+    <li>{{this}}</li>
+    {{/each}}
+  </ul>
+
+  <div class="page-break"></div>
+
+  {{!-- ═══ PAGE 3 — SALES ANALYSIS ═══ --}}
+  <div class="sec-title">Sales Analysis</div>
+
+  <div class="sec-subtitle">Monthly Sales Trend</div>
+  <div class="no-break" style="display: flex; align-items: flex-end; gap: 3mm; margin-bottom: 6mm; padding: 0 2mm;">
+    {{#each monthlyTrendLast6}}
+    <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+      <div style="font-family: var(--font-mono); font-size: 6.5pt; color: var(--c-muted); margin-bottom: 1mm;">{{formatCurrency this.totalValue}}</div>
+      <div style="width: 70%; background: var(--c-accent); border-radius: 1px 1px 0 0; height: {{this.barHeightMm}}mm; -webkit-print-color-adjust: exact; print-color-adjust: exact;"></div>
+      <div style="font-size: 7pt; color: var(--c-muted); margin-top: 1.5mm;">{{this.periodLabel}}</div>
+    </div>
+    {{/each}}
+  </div>
+
+  <table class="doc-table">
+    <thead><tr><th>Rank</th><th>Top Customers</th><th class="col-num">Order Value</th></tr></thead>
+    <tbody>
+      {{#each topCustomers5}}
+      <tr><td class="col-sno">{{inc @index}}</td><td>{{this.customerName}}</td><td class="col-num col-mono">{{formatCurrency this.totalValue}}</td></tr>
+      {{/each}}
+    </tbody>
+  </table>
+
+  <table class="doc-table">
+    <thead><tr><th>Rank</th><th>Top Products</th><th class="col-num">Order Value</th></tr></thead>
+    <tbody>
+      {{#each topProducts5}}
+      <tr><td class="col-sno">{{inc @index}}</td><td>{{this.productDisplayName}}</td><td class="col-num col-mono">{{formatCurrency this.totalValue}}</td></tr>
+      {{/each}}
+    </tbody>
+  </table>
+
+  <table class="doc-table">
+    <thead><tr><th>Rank</th><th>Sales by Region</th><th class="col-num">Order Value</th></tr></thead>
+    <tbody>
+      {{#each topRegions5}}
+      <tr><td class="col-sno">{{inc @index}}</td><td>{{this.region}}</td><td class="col-num col-mono">{{formatCurrency this.totalValue}}</td></tr>
+      {{/each}}
+    </tbody>
+  </table>
+
+  <div class="page-break"></div>
+
+  {{!-- ═══ PAGE 4 — FORECAST ═══ --}}
+  <div class="sec-title">Forecast</div>
+
+  <div class="sec-subtitle">Revenue Projection &mdash; linear run-rate estimates, not a forecasting model</div>
+  <div class="ir-kpi-grid">
+    <div class="ir-kpi-tile"><div class="ir-kpi-tile__label">Month to Date</div><div class="ir-kpi-tile__value">{{formatCurrency projections.monthToDate}}</div></div>
+    <div class="ir-kpi-tile"><div class="ir-kpi-tile__label">Quarter to Date</div><div class="ir-kpi-tile__value">{{formatCurrency projections.quarterToDate}}</div></div>
+    <div class="ir-kpi-tile"><div class="ir-kpi-tile__label">Year to Date</div><div class="ir-kpi-tile__value">{{formatCurrency projections.yearToDate}}</div></div>
+    <div class="ir-kpi-tile"><div class="ir-kpi-tile__label">Projected Monthly</div><div class="ir-kpi-tile__value">{{formatCurrency projections.projectedMonthlyRevenue}}</div></div>
+    <div class="ir-kpi-tile"><div class="ir-kpi-tile__label">Projected Annual</div><div class="ir-kpi-tile__value">{{formatCurrency projections.projectedAnnualRevenue}}</div></div>
+  </div>
+
+  <div class="sec-subtitle">Quotation Pipeline</div>
+  <div class="ir-kpi-grid" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="ir-kpi-tile"><div class="ir-kpi-tile__label">Pipeline Value</div><div class="ir-kpi-tile__value">{{formatCurrency projections.pipelineValue}}</div></div>
+    <div class="ir-kpi-tile"><div class="ir-kpi-tile__label">Pipeline Upside</div><div class="ir-kpi-tile__value">{{formatCurrency projections.pipelineUpside}}</div></div>
+    <div class="ir-kpi-tile"><div class="ir-kpi-tile__label">Expected Revenue (Open Orders)</div><div class="ir-kpi-tile__value">{{formatCurrency projections.expectedRevenueFromOpenOrders}}</div></div>
+  </div>
+
+  <div class="sec-subtitle">Business Outlook</div>
+  <div class="desc-band">{{businessOutlookText}}</div>
+
+  <div class="page-break"></div>
+
+  {{!-- ═══ FINAL PAGE — MANAGEMENT NOTES ═══ --}}
+  <div class="sec-title">Management Notes</div>
+
+  <div class="sec-subtitle">Key Risks</div>
+  {{#each riskNotes}}
+  <div class="callout callout-warning"><div class="callout__body">{{this}}</div></div>
+  {{/each}}
+
+  <div class="sec-subtitle">Growth Opportunities</div>
+  {{#each opportunities}}
+  <div class="callout callout-success"><div class="callout__body">{{this}}</div></div>
+  {{/each}}
+
+  <div class="sec-subtitle">Recommendations</div>
+  <ul class="doc-list">
+    {{#each recommendations}}
+    <li>{{this}}</li>
+    {{/each}}
+  </ul>
+
+  <div class="sig-block no-break">
+    <div class="sig-slot">
+      <div class="sig-slot__role">Prepared By</div>
+      <div class="sig-slot__name">{{#if preparedBy}}{{preparedBy}}{{else}}System Generated{{/if}}</div>
+    </div>
+    <div class="sig-slot">
+      <div class="sig-slot__role">Generated</div>
+      <div class="sig-slot__name">{{_meta.generatedDate}} {{_meta.generatedTime}}</div>
+    </div>
+  </div>
+
+  <div class="remarks-box no-break" style="margin-top: 6mm;">
+    This report is auto-generated from operational data recorded in the Macro Coats portal. "Sales"/"Revenue"
+    figures represent confirmed Customer PO order value, not recognized accounting revenue &mdash; this system
+    has no invoicing/accounting layer. Figures are for internal management and investor reference only and are
+    not audited financial statements.
+  </div>
+
+</div>

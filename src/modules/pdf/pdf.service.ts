@@ -3,11 +3,12 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Readable } from 'node:stream';
 import { templateService } from './template.service.js';
-import { nowFormatted } from './helpers/date.helper.js';
+import { nowFormatted, formatDate } from './helpers/date.helper.js';
 import { parseStatements, groupPrecautionary } from './helpers/ghs-print.helper.js';
 import { PDFError } from './pdf.types.js';
 import type { DocType, PDFOptions, RenderResult } from './pdf.types.js';
 import { env } from '../../config/env.js';
+import { COMPANY } from './branding.constants.js';
 
 interface PoolEntry {
   browser: Browser;
@@ -21,9 +22,13 @@ interface PoolEntry {
 // letterhead (logo + expanded meta) — the two must not be merged.
 const PRINT_MATCHED_DOC_TYPES: ReadonlySet<DocType> = new Set(['tds', 'msds']);
 const LEGACY_BRANDED_DOC_TYPES: ReadonlySet<DocType> = new Set(['coa']);
+// 4th header/footer treatment — the executive report cover/summary letterhead.
+// Distinct from legacy-branded (coa): a wider band with period/confidential meta,
+// see buildExecutiveHeader/buildExecutiveFooter below.
+const EXECUTIVE_DOC_TYPES: ReadonlySet<DocType> = new Set(['investor-report']);
 
-// All three get the faint centered watermark.
-const WATERMARK_DOC_TYPES: ReadonlySet<DocType> = new Set(['tds', 'msds', 'coa']);
+// All four get the faint centered watermark.
+const WATERMARK_DOC_TYPES: ReadonlySet<DocType> = new Set(['tds', 'msds', 'coa', 'investor-report']);
 
 // Per-docType copy for the print-matched header/footer (tds/msds only).
 const PRINT_MATCHED_META: Record<string, {
@@ -118,6 +123,128 @@ function buildMsdsContext(payload: Record<string, unknown>): Record<string, unkn
   };
 }
 
+interface InvestorInsights {
+  highestRevenueProduct?: { label: string; value: number } | null;
+  largestCustomer?: { label: string; value: number } | null;
+  topRegion?: { label: string; value: number } | null;
+  revenueGrowthPct?: number | null;
+  productionTrendPct?: number | null;
+  pendingOrderRisk?: { pendingOrderValue: number; ratioToQuarterlySalesPct: number | null; severity: 'low' | 'medium' | 'high' };
+  customerConcentration?: { top5Value: number; windowRevenue: number; concentrationPct: number | null };
+  inventoryTurnover?: { cogs: number; inventoryValue: number; annualizedRatio: number | null; note: string | null };
+  portfolioMargin?: { totalRevenue: number; totalProfit: number; weightedAvgMarginPct: number | null };
+  businessHealthScore?: { score: number; components: Record<string, number> };
+}
+
+/**
+ * Mirrors ExecutiveInsightsRow.jsx's sentence/severity derivation server-side
+ * so the generated PDF reads the same insights the on-screen dashboard shows
+ * — same precedent as buildMsdsContext() above. If ExecutiveInsightsRow.jsx's
+ * wording or thresholds change, mirror the change here too.
+ */
+function buildInvestorReportContext(payload: Record<string, unknown>): Record<string, unknown> {
+  const insights = (payload['insights'] as InvestorInsights | undefined) ?? {};
+  const analytics = (payload['analytics'] as Record<string, unknown> | undefined) ?? {};
+
+  const salesByCustomer = (analytics['salesByCustomer'] as Array<Record<string, unknown>> | undefined) ?? [];
+  const salesByProduct  = (analytics['salesByProduct']  as Array<Record<string, unknown>> | undefined) ?? [];
+  const salesByRegion   = (analytics['salesByRegion']   as Array<Record<string, unknown>> | undefined) ?? [];
+  const monthlyTrend    = (analytics['monthlyTrend']     as Array<Record<string, unknown>> | undefined) ?? [];
+
+  // Print can't do arithmetic in Handlebars beyond the `multiply` helper, so
+  // proportional-bar widths (mirroring RankingCard.jsx/TrendChart.jsx on the
+  // live dashboard) are precomputed here rather than adding more helpers.
+  const withBarPct = (rows: Array<Record<string, unknown>>, key: string): Array<Record<string, unknown>> => {
+    const max = Math.max(1, ...rows.map((r) => Number(r[key] ?? 0)));
+    return rows.map((r) => ({ ...r, barPct: Math.round((Number(r[key] ?? 0) / max) * 100) }));
+  };
+
+  const growthLabel = (pct: number | null | undefined) =>
+    pct == null ? 'flat' : pct > 0 ? `up ${pct.toFixed(1)}%` : pct < 0 ? `down ${Math.abs(pct).toFixed(1)}%` : 'flat';
+
+  const insightBullets: string[] = [
+    insights.highestRevenueProduct ? `${insights.highestRevenueProduct.label} is the highest-revenue product.` : null,
+    insights.largestCustomer ? `${insights.largestCustomer.label} is the largest customer by order value.` : null,
+    `Revenue is ${growthLabel(insights.revenueGrowthPct)} vs. the prior equal-length window.`,
+    insights.topRegion ? `${insights.topRegion.label} leads by order value among regions.` : null,
+    `Production volume is ${growthLabel(insights.productionTrendPct)} vs. the prior equal-length window.`,
+    insights.customerConcentration?.concentrationPct != null
+      ? `The top 5 customers account for ${insights.customerConcentration.concentrationPct.toFixed(1)}% of revenue in this window.`
+      : null,
+    insights.inventoryTurnover?.annualizedRatio != null
+      ? `Inventory turns over approximately ${insights.inventoryTurnover.annualizedRatio.toFixed(1)}x per year.`
+      : null,
+    insights.portfolioMargin?.weightedAvgMarginPct != null
+      ? `Portfolio gross margin is ${insights.portfolioMargin.weightedAvgMarginPct.toFixed(1)}% for this window.`
+      : null,
+  ].filter((s): s is string => s !== null);
+
+  const riskNotes: string[] = [];
+  if (insights.pendingOrderRisk && insights.pendingOrderRisk.severity !== 'low') {
+    riskNotes.push(
+      `Pending orders represent ${insights.pendingOrderRisk.ratioToQuarterlySalesPct?.toFixed(1) ?? '—'}% of this quarter's sales (${insights.pendingOrderRisk.severity} risk) — monitor fulfillment capacity.`,
+    );
+  }
+  if (insights.customerConcentration?.concentrationPct != null && insights.customerConcentration.concentrationPct >= 40) {
+    riskNotes.push(
+      `Revenue is concentrated in a small number of customers (top 5 = ${insights.customerConcentration.concentrationPct.toFixed(1)}% of revenue) — a single customer's order pattern change would materially affect results.`,
+    );
+  }
+  if (insights.portfolioMargin?.weightedAvgMarginPct != null && insights.portfolioMargin.weightedAvgMarginPct < 15) {
+    riskNotes.push(`Portfolio gross margin (${insights.portfolioMargin.weightedAvgMarginPct.toFixed(1)}%) is below the 15% target used elsewhere in this system's cost alerts.`);
+  }
+  if (riskNotes.length === 0) riskNotes.push('No elevated risk signals in this window based on the metrics tracked.');
+
+  const opportunities: string[] = [];
+  if (insights.revenueGrowthPct != null && insights.revenueGrowthPct > 0) {
+    opportunities.push(`Revenue growth (${insights.revenueGrowthPct.toFixed(1)}%) is positive — consider whether current capacity supports continued growth.`);
+  }
+  if (insights.customerConcentration?.concentrationPct != null && insights.customerConcentration.concentrationPct < 40) {
+    opportunities.push('Customer revenue is reasonably diversified — a healthy base for expanding into adjacent products or regions.');
+  }
+  if (opportunities.length === 0) opportunities.push('No specific growth opportunity flagged by the metrics tracked this window.');
+
+  const recommendations: string[] = [
+    'Review pending orders against production capacity before committing to new large orders.',
+    'Track customer concentration each period — diversifying the customer base reduces single-customer risk.',
+    'Revisit pricing/cost structure for any product line trending below the 15% gross-margin target.',
+  ];
+
+  const healthScore = insights.businessHealthScore?.score;
+  const businessOutlookText = healthScore == null
+    ? 'Insufficient data to summarize business outlook for this window.'
+    : `Business Health Score is ${healthScore}/100 for this window, reflecting revenue growth (${growthLabel(insights.revenueGrowthPct)}), order completion rate, customer concentration, and portfolio margin combined. ${
+        healthScore >= 70 ? 'Overall indicators are healthy.'
+          : healthScore >= 50 ? 'Overall indicators are stable, with room for improvement in the areas flagged below.'
+          : 'Overall indicators warrant management attention — see risks below.'
+      }`;
+
+  // Bar heights are absolute mm, not CSS %, because percentage-height on a
+  // flex-column child only resolves reliably when every ancestor in the
+  // chain has an explicit (non-content-driven) height — safer to compute the
+  // pixel/mm value once here than debug that per browser/print engine.
+  const MAX_BAR_HEIGHT_MM = 24;
+  const monthlyTrendLast6 = withBarPct(monthlyTrend.slice(-6), 'totalValue').map((r) => {
+    const [y, m] = String(r['period'] ?? '').split('-');
+    const label = y && m ? new Date(Number(y), Number(m) - 1, 1).toLocaleDateString('en-IN', { month: 'short', year: '2-digit' }) : String(r['period'] ?? '');
+    const barPct = Number((r as { barPct: number }).barPct ?? 0);
+    return { ...r, periodLabel: label, barHeightMm: Math.max(1, Math.round((barPct / 100) * MAX_BAR_HEIGHT_MM)) };
+  });
+
+  return {
+    companyInfo: COMPANY,
+    topCustomers5: withBarPct(salesByCustomer.slice(0, 5), 'totalValue'),
+    topProducts5: withBarPct(salesByProduct.slice(0, 5), 'totalValue'),
+    topRegions5: withBarPct(salesByRegion.slice(0, 5), 'totalValue'),
+    monthlyTrendLast6,
+    insightBullets,
+    riskNotes,
+    opportunities,
+    recommendations,
+    businessOutlookText,
+  };
+}
+
 class PDFService {
   private static instance: PDFService;
 
@@ -184,13 +311,15 @@ class PDFService {
     const { date, time } = nowFormatted();
     const printMatched   = PRINT_MATCHED_DOC_TYPES.has(docType);
     const legacyBranded  = !printMatched && LEGACY_BRANDED_DOC_TYPES.has(docType);
+    const executive      = !printMatched && !legacyBranded && EXECUTIVE_DOC_TYPES.has(docType);
     const watermarked    = WATERMARK_DOC_TYPES.has(docType);
-    const logoDataUri      = (printMatched || legacyBranded) ? await getLogoDataUri() : null;
+    const logoDataUri      = (printMatched || legacyBranded || executive) ? await getLogoDataUri() : null;
     const watermarkDataUri = watermarked ? await getWatermarkDataUri() : null;
 
     const ctx: Record<string, unknown> = {
       ...payload,
       ...(docType === 'msds' ? buildMsdsContext(payload) : {}),
+      ...(docType === 'investor-report' ? buildInvestorReportContext(payload) : {}),
       _meta: { generatedDate: date, generatedTime: time, docTitle: docTypeLabel(docType) },
     };
 
@@ -211,19 +340,30 @@ class PDFService {
     );
     const revisionDate = String(payload['revisionDate'] ?? '');
 
+    const periodLabel = executive
+      ? `${formatDate(String(payload['from'] ?? ''))} – ${formatDate(String(payload['to'] ?? ''))}`
+      : '';
+
     const headerHtml = printMatched
       ? buildPrintMatchedHeader(docType, productName, docNumber, logoDataUri, revisionDate)
-      : buildHeaderTemplate(docTitle, productName, docNumber, { docType, logoDataUri, revisionDate });
+      : executive
+        ? buildExecutiveHeader(logoDataUri, periodLabel)
+        : buildHeaderTemplate(docTitle, productName, docNumber, { docType, logoDataUri, revisionDate });
     const footerHtml = printMatched
       ? buildPrintMatchedFooter(docType, productName, docNumber)
-      : buildFooterTemplate(date, time, docTitle, productName, { docType });
+      : executive
+        ? buildExecutiveFooter(date, time)
+        : buildFooterTemplate(date, time, docTitle, productName, { docType });
 
     // tds/msds reserve less header/footer space than coa's taller branded
-    // letterhead — see buildPrintMatchedHeader/Footer for the content that
-    // must fit inside these bands.
+    // letterhead; the executive report's header is taller still (logo +
+    // period line) — see buildPrintMatchedHeader/Footer/buildExecutiveHeader
+    // for the content that must fit inside these bands.
     const margin = printMatched
       ? { top: '26mm', bottom: '16mm', left: '14mm', right: '14mm' }
-      : { top: '30mm', bottom: '22mm', left: '14mm', right: '14mm' };
+      : executive
+        ? { top: '32mm', bottom: '20mm', left: '16mm', right: '16mm' }
+        : { top: '30mm', bottom: '22mm', left: '14mm', right: '14mm' };
 
     const entry = await this.acquireBrowser();
     let page: Page | null = null;
@@ -288,6 +428,7 @@ function docTypeLabel(docType: DocType): string {
     coa:       'Certificate of Analysis',
     batch:     'Batch Manufacturing Record',
     salary:    'Salary Slip',
+    'investor-report': 'Investor Report',
   };
   return labels[docType] ?? docType.toUpperCase();
 }
@@ -370,15 +511,15 @@ function buildHeaderTemplate(
 <div class="hw">
   <div class="hb">
     <div class="h-left">
-      <div class="h-company">Macro Coats</div>
+      <div class="h-company">${COMPANY.name}</div>
       <div class="h-tagline">Specialty Surface Treatment Chemicals</div>
-      <div class="h-addr">SF.NO 224/11, Kalaimagal Nagar, Pazhanthandalam, Chennai - 600132, Tamil Nadu, India</div>
+      <div class="h-addr">${COMPANY.addressLine}</div>
       ${subLine ? `<div class="h-subdoc">${subLine}</div>` : ''}
     </div>
     <div class="h-right">
-      <div class="h-row"><b>GSTIN:</b> 33AARCM7377G1ZY</div>
-      <div class="h-row"><b>Ph:</b> +91 98840 80377</div>
-      <div class="h-row"><b>Email:</b> info@macrocoats.in</div>
+      <div class="h-row"><b>GSTIN:</b> ${COMPANY.gstin}</div>
+      <div class="h-row"><b>Ph:</b> ${COMPANY.phone}</div>
+      <div class="h-row"><b>Email:</b> ${COMPANY.email}</div>
     </div>
   </div>
   <div class="h-rule"></div>
@@ -411,13 +552,13 @@ function buildHeaderTemplate(
   <div class="hb">
     <img class="h-logo" src="${opts.logoDataUri}" />
     <div class="h-left">
-      <div class="h-company">Macro Coats Pvt. Ltd.</div>
-      <div class="h-tagline">Metal Surface Treatment Specialists</div>
+      <div class="h-company">${COMPANY.legalName}</div>
+      <div class="h-tagline">${COMPANY.tagline}</div>
       ${subLine ? `<div class="h-subdoc">${subLine}</div>` : ''}
     </div>
     <div class="h-right">
-      <div class="h-row"><b>Email:</b> info@macrocoats.in</div>
-      <div class="h-row"><b>Web:</b> www.macrocoats.in</div>
+      <div class="h-row"><b>Email:</b> ${COMPANY.email}</div>
+      <div class="h-row"><b>Web:</b> ${COMPANY.website}</div>
       ${revLine}
     </div>
   </div>
@@ -434,7 +575,7 @@ function buildFooterTemplate(
   productName: string,
   opts: { docType: DocType },
 ): string {
-  const leftParts = ['Macro Coats', productName, docTitle].filter(Boolean).map(esc);
+  const leftParts = [COMPANY.name, productName, docTitle].filter(Boolean).map(esc);
   const branded = LEGACY_BRANDED_DOC_TYPES.has(opts.docType);
 
   if (!branded) {
@@ -476,7 +617,7 @@ function buildFooterTemplate(
 <div class="fw">
   <div class="f-rule"></div>
   <div class="fb">
-    <div class="f-left"><b>${leftParts[0]}</b> &nbsp;·&nbsp; ${leftParts.slice(1).join(' &nbsp;·&nbsp; ')} &nbsp;·&nbsp; www.macrocoats.in</div>
+    <div class="f-left"><b>${leftParts[0]}</b> &nbsp;·&nbsp; ${leftParts.slice(1).join(' &nbsp;·&nbsp; ')} &nbsp;·&nbsp; ${COMPANY.website}</div>
     <div class="f-right">Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>
   </div>
   <div class="f-tag">This document is computer generated &nbsp;·&nbsp; Confidential &nbsp;·&nbsp; Generated ${esc(date)} ${esc(time)}</div>
@@ -523,9 +664,9 @@ function buildPrintMatchedHeader(
   <div class="hb">
     ${logoDataUri ? `<img class="h-logo" src="${logoDataUri}" />` : ''}
     <div class="h-left">
-      <div class="h-company">Macro Coats Pvt. Ltd.</div>
-      <div class="h-tagline">Metal Surface Treatment Specialists</div>
-      <div class="h-addr">Email: info@macrocoats.in &nbsp;|&nbsp; Web: www.macrocoats.in</div>
+      <div class="h-company">${COMPANY.legalName}</div>
+      <div class="h-tagline">${COMPANY.tagline}</div>
+      <div class="h-addr">Email: ${COMPANY.email} &nbsp;|&nbsp; Web: ${COMPANY.website}</div>
     </div>
     <div class="h-right">
       <div class="h-doc-title">${esc(meta.docTitle)}</div>
@@ -543,8 +684,8 @@ function buildPrintMatchedFooter(docType: DocType, productName: string, docNumbe
   const meta = PRINT_MATCHED_META[docType]!;
   const isTds = docType === 'tds';
   const leftText = isTds
-    ? `Macro Coats Pvt. Ltd. &nbsp;•&nbsp; ${esc(meta.footerDept)} &nbsp;•&nbsp; Product Code: ${esc(docNumber)}`
-    : `Macro Coats Pvt. Ltd. &nbsp;•&nbsp; ${esc(productName)} &nbsp;•&nbsp; ${esc(meta.footerDept)}`;
+    ? `${COMPANY.legalName} &nbsp;•&nbsp; ${esc(meta.footerDept)} &nbsp;•&nbsp; Product Code: ${esc(docNumber)}`
+    : `${COMPANY.legalName} &nbsp;•&nbsp; ${esc(productName)} &nbsp;•&nbsp; ${esc(meta.footerDept)}`;
   const rightText = isTds ? esc(productName) : esc(meta.footerRightDefault);
 
   return `
@@ -563,7 +704,70 @@ function buildPrintMatchedFooter(docType: DocType, productName: string, docNumbe
     <div class="f-row">${leftText}</div>
     <div class="f-row">${rightText}</div>
   </div>
-  <div class="f-tag">www.macrocoats.in &nbsp;•&nbsp; This document is computer generated &nbsp;•&nbsp; Confidential</div>
+  <div class="f-tag">${COMPANY.website} &nbsp;•&nbsp; This document is computer generated &nbsp;•&nbsp; Confidential</div>
+</div>`;
+}
+
+// ─── Executive header/footer (investor-report only) ───────────────────────────
+// A 4th treatment, distinct from legacy-branded (coa): a period/confidential
+// meta line instead of a revision date, and a taller band to match the
+// executive report's cover/summary pages. When adding a doc type to this
+// treatment, verify tds/msds/coa/quotation/batch still render byte-identical.
+
+function buildExecutiveHeader(logoDataUri: string | null, periodLabel: string): string {
+  return `
+<style>
+  html { font-size: 10pt; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', Arial, 'Helvetica Neue', Helvetica, sans-serif; }
+  .hw { width: 100%; background: #ffffff; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .hb { display: flex; align-items: center; padding: 4mm 16mm 3mm 16mm; gap: 4mm; }
+  .h-logo { height: 15mm; width: auto; max-width: 42mm; object-fit: contain; flex-shrink: 0; }
+  .h-left { flex: 1; min-width: 0; border-left: 1px solid #C5D3E8; padding-left: 4mm; }
+  .h-company { font-size: 13pt; font-weight: 800; color: #123A6D; line-height: 1.1; letter-spacing: -.02em; }
+  .h-tagline { font-size: 7.5pt; font-weight: 700; color: #5C6470; margin-top: 0.5mm; text-transform: uppercase; letter-spacing: .06em; }
+  .h-right { text-align: right; flex-shrink: 0; border-left: 1px solid #C5D3E8; padding-left: 3mm; }
+  .h-doc-title { font-size: 11pt; font-weight: 800; color: #1a1a1a; letter-spacing: 0.02em; }
+  .h-row { font-size: 7pt; color: #5C6470; margin-top: 1mm; }
+  .h-rule { height: 2px; background: #123A6D; margin: 0 16mm; -webkit-print-color-adjust: exact !important; }
+</style>
+<div class="hw">
+  <div class="hb">
+    ${logoDataUri ? `<img class="h-logo" src="${logoDataUri}" />` : ''}
+    <div class="h-left">
+      <div class="h-company">${COMPANY.legalName}</div>
+      <div class="h-tagline">${COMPANY.tagline}</div>
+    </div>
+    <div class="h-right">
+      <div class="h-doc-title">Investor Report</div>
+      <div class="h-row">${esc(periodLabel)}</div>
+    </div>
+  </div>
+  <div class="h-rule"></div>
+</div>`;
+}
+
+function buildExecutiveFooter(date: string, time: string): string {
+  return `
+<style>
+  html { font-size: 7.5pt; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', Arial, 'Helvetica Neue', Helvetica, sans-serif; }
+  .fw { width: 100%; padding: 0 16mm; }
+  .f-rule { height: 0.5px; background: #ccc; margin-bottom: 1mm; }
+  .fb { display: flex; justify-content: space-between; align-items: baseline; }
+  .f-left { font-size: 7.5pt; color: #888; letter-spacing: .02em; }
+  .f-left b { color: #123A6D; }
+  .f-right { font-size: 7.5pt; color: #888; }
+  .f-tag { margin-top: 0.5mm; color: #A6ADB4; font-size: 6.5pt; text-transform: uppercase; letter-spacing: .03em; }
+</style>
+<div class="fw">
+  <div class="f-rule"></div>
+  <div class="fb">
+    <div class="f-left"><b>${COMPANY.name}</b> &nbsp;·&nbsp; Investor Report &nbsp;·&nbsp; Confidential &nbsp;·&nbsp; Generated ${esc(date)} ${esc(time)}</div>
+    <div class="f-right">Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>
+  </div>
+  <div class="f-tag">${COMPANY.website} &nbsp;•&nbsp; Prepared for internal/investor use only &nbsp;•&nbsp; Not for public distribution</div>
 </div>`;
 }
 

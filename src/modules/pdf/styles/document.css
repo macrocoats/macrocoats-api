@@ -1702,3 +1702,95 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
   .tds-print-spec-table tbody tr, .msds-print-comp-table tbody tr,
   .msds-print-kv-table tr, .msds-print-phys-table tr { break-inside: avoid; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   INVESTOR REPORT (investor-report.hbs) — reuses .doc-table/.sec-title/
+   .callout/.kv-grid/.page-break above for everything except the cover page
+   and the KPI grid, which have no existing equivalent. `.ir-*` classes are
+   scoped to this template only — safe to edit without affecting any other
+   doc type's classes.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.ir-page { padding: 0 2mm; }
+
+.ir-cover {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 220mm;
+  text-align: center;
+}
+.ir-cover__logo { height: 26mm; width: auto; object-fit: contain; margin-bottom: 8mm; }
+.ir-cover__eyebrow {
+  font-family: var(--font-heading);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+  margin-bottom: 3mm;
+}
+.ir-cover__title {
+  font-family: var(--font-heading);
+  font-size: 26pt;
+  font-weight: 800;
+  color: var(--c-primary);
+  letter-spacing: -.01em;
+  margin-bottom: 4mm;
+}
+.ir-cover__period {
+  font-family: var(--font-table);
+  font-size: var(--fs-lg);
+  color: var(--c-text);
+  margin-bottom: 10mm;
+}
+.ir-cover__meta { font-size: var(--fs-sm); color: var(--c-muted); line-height: 1.9; }
+.ir-cover__confidential {
+  margin-top: 12mm;
+  font-family: var(--font-heading);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--c-fail);
+  border: 1px solid var(--c-fail);
+  padding: 1.5mm 4mm;
+  border-radius: 2px;
+}
+
+.ir-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 3mm;
+  margin-bottom: 5mm;
+}
+.ir-kpi-tile {
+  background: var(--c-bg-card);
+  border: 1px solid var(--c-border);
+  border-radius: 2px;
+  padding: 3mm 3.5mm;
+}
+.ir-kpi-tile__label {
+  font-family: var(--font-table);
+  font-size: 7pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--c-muted);
+  margin-bottom: 1.5mm;
+}
+.ir-kpi-tile__value {
+  font-family: var(--font-mono);
+  font-size: 12pt;
+  font-weight: 700;
+  color: var(--c-primary);
+}
+
+.ir-health-score {
+  display: flex;
+  align-items: baseline;
+  gap: 3mm;
+  margin-bottom: 4mm;
+}
+.ir-health-score__value { font-family: var(--font-heading); font-size: 22pt; font-weight: 800; color: var(--c-primary); }
+.ir-health-score__label { font-size: var(--fs-sm); color: var(--c-muted); }
