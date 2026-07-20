@@ -43,6 +43,23 @@ export async function getItemById(id: string) {
   return row ? toResponse(row) : null
 }
 
+/**
+ * Items whose computed stockStatus is 'low' or 'out_of_stock', out-of-stock
+ * first. Thin filter over getAllItems() — no new query, reuses the same
+ * computeStockStatus()/lowStockThreshold logic already used by GET /inventory.
+ */
+export async function getLowStockItems() {
+  const items = await getAllItems()
+  const flagged = items.filter((item) => item.stockStatus === 'low' || item.stockStatus === 'out_of_stock')
+  flagged.sort((a, b) => (a.stockStatus === b.stockStatus ? 0 : a.stockStatus === 'out_of_stock' ? -1 : 1))
+
+  return {
+    items: flagged,
+    lowCount: items.filter((item) => item.stockStatus === 'low').length,
+    outOfStockCount: items.filter((item) => item.stockStatus === 'out_of_stock').length,
+  }
+}
+
 export async function createItem(data: CreateInventoryItemBody, updatedBy: string) {
   const [row] = await db
     .insert(inventoryItems)

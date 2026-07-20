@@ -57,7 +57,13 @@ export const listDispatchesQuerySchema = z.object({
   limit:         z.coerce.number().int().min(1).max(100).default(20),
 })
 
+export const dispatchTrendQuerySchema = z.object({
+  granularity: z.enum(['week', 'month']).default('week'),
+  periods:     z.coerce.number().int().min(1).max(52).default(12),
+})
+
 export type CreateDispatchBody   = z.infer<typeof createDispatchSchema>
+export type DispatchTrendQuery   = z.infer<typeof dispatchTrendQuerySchema>
 export type UpdateDispatchBody   = z.infer<typeof updateDispatchSchema>
 export type VoidDispatchBody     = z.infer<typeof voidDispatchSchema>
 export type ListDispatchesQuery  = z.infer<typeof listDispatchesQuerySchema>

@@ -4,7 +4,7 @@ import { dispatches } from '../../db/schema/index.js'
 import { nextDispatchNumber } from '../../utils/dispatchNumber.js'
 import { incrementDispatchedQuantity, reverseDispatchedQuantity } from '../finished-goods/finished-goods.service.js'
 import { recordDispatchAgainstOrder, reverseDispatchAgainstOrder } from '../customer-purchase-orders/customer-purchase-orders.service.js'
-import type { CreateDispatchBody, UpdateDispatchBody, ListDispatchesQuery } from './dispatch.schema.js'
+import type { CreateDispatchBody, UpdateDispatchBody, ListDispatchesQuery, DispatchTrendQuery } from './dispatch.schema.js'
 
 function toDispatchResponse(row: typeof dispatches.$inferSelect) {
   return {
@@ -304,7 +304,7 @@ export async function listDispatches(query: ListDispatchesQuery) {
     SELECT ${SELECT_COLUMNS}
     ${JOINS}
     ${whereClause}
-    ORDER BY d.created_at DESC
+    ORDER BY d.dispatch_date DESC, d.created_at DESC
     LIMIT ${query.limit} OFFSET ${offset}
   `)
 
@@ -335,5 +335,47 @@ export async function getDispatchSummary(): Promise<{ count: number; quantity: n
   return {
     count:    Number(rows[0]?.count ?? 0),
     quantity: Number(rows[0]?.quantity ?? 0),
+  }
+}
+
+// Zero-filled trailing dispatch-volume series, same generate_series pattern as
+// customer-purchase-orders.service.ts::getOrderAnalytics's ordersByMonth.
+export async function getDispatchTrend(query: DispatchTrendQuery): Promise<{
+  granularity: 'week' | 'month'
+  series: Array<{ period: string; count: number; quantity: number }>
+}> {
+  const { granularity, periods } = query
+
+  const rows = granularity === 'week'
+    ? await db.execute<{ [key: string]: unknown; period: string; count: string; quantity: string }>(sql`
+        SELECT to_char(gs.period, 'YYYY-MM-DD') AS period,
+          COUNT(d.id) AS count, COALESCE(SUM(d.quantity), 0) AS quantity
+        FROM generate_series(
+          date_trunc('week', CURRENT_DATE - make_interval(weeks => ${periods})),
+          date_trunc('week', CURRENT_DATE),
+          INTERVAL '1 week'
+        ) AS gs(period)
+        LEFT JOIN dispatches d
+          ON date_trunc('week', d.dispatch_date) = gs.period AND d.voided_at IS NULL
+        GROUP BY gs.period
+        ORDER BY gs.period
+      `)
+    : await db.execute<{ [key: string]: unknown; period: string; count: string; quantity: string }>(sql`
+        SELECT to_char(gs.period, 'YYYY-MM-DD') AS period,
+          COUNT(d.id) AS count, COALESCE(SUM(d.quantity), 0) AS quantity
+        FROM generate_series(
+          date_trunc('month', CURRENT_DATE - make_interval(months => ${periods})),
+          date_trunc('month', CURRENT_DATE),
+          INTERVAL '1 month'
+        ) AS gs(period)
+        LEFT JOIN dispatches d
+          ON date_trunc('month', d.dispatch_date) = gs.period AND d.voided_at IS NULL
+        GROUP BY gs.period
+        ORDER BY gs.period
+      `)
+
+  return {
+    granularity,
+    series: rows.map((r) => ({ period: r.period, count: Number(r.count), quantity: Number(r.quantity) })),
   }
 }

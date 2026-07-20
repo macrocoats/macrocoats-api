@@ -2,13 +2,14 @@ import type { FastifyInstance } from 'fastify'
 import { authenticate, requireAuth } from '../../middleware/authenticate.js'
 import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js'
 import { AppErrors } from '../../types/errors.js'
-import { createDispatchSchema, updateDispatchSchema, voidDispatchSchema, listDispatchesQuerySchema } from './dispatch.schema.js'
+import { createDispatchSchema, updateDispatchSchema, voidDispatchSchema, listDispatchesQuerySchema, dispatchTrendQuerySchema } from './dispatch.schema.js'
 import {
   createDispatch,
   updateDispatch,
   listDispatches,
   getDispatchByNumber,
   getDispatchSummary,
+  getDispatchTrend,
   voidDispatch,
 } from './dispatch.service.js'
 
@@ -54,6 +55,18 @@ export async function dispatchRoutes(app: FastifyInstance) {
   app.get('/summary', { preHandler }, async (_request, reply) => {
     const summary = await getDispatchSummary()
     return reply.send({ data: summary })
+  })
+
+  // ── GET /dispatches/trend ─────────────────────────────────────────────────
+  // Registered before /:dispatchNumber so the literal segment never matches as a param.
+  app.get('/trend', { preHandler }, async (request, reply) => {
+    const query = dispatchTrendQuerySchema.safeParse(request.query)
+    if (!query.success) {
+      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: query.error.flatten() })
+    }
+
+    const trend = await getDispatchTrend(query.data)
+    return reply.send({ data: trend })
   })
 
   // ── GET /dispatches/:dispatchNumber ───────────────────────────────────────

@@ -1,11 +1,11 @@
-# Graph Report - /Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api  (2026-07-19)
+# Graph Report - /Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api  (2026-07-20)
 
 ## Corpus Check
-- 154 files · ~175,608 words
+- 154 files · ~175,984 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 640 nodes · 1158 edges · 32 communities detected
+- 642 nodes · 1161 edges · 32 communities detected
 - Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 84 edges (avg confidence: 0.81)
 - Token cost: 0 input · 0 output
 
@@ -99,12 +99,12 @@ Cohesion: 0.07
 Nodes (10): addTimelineNote(), getOrderById(), insertTimelineEvent(), recomputeStatus(), recordDispatchAgainstOrder(), reverseDispatchAgainstOrder(), sanitizeFilename(), toOrderResponse() (+2 more)
 
 ### Community 6 - "Community 6"
-Cohesion: 0.14
-Nodes (28): buildBatchConditions(), buildComparisonSide(), formatMoney(), getAlerts(), getComparison(), getMaterials(), getOverview(), getProfitability() (+20 more)
+Cohesion: 0.09
+Nodes (21): computeStockStatus(), createItem(), getAllItems(), getItemById(), getLowStockItems(), resetToDefaults(), toResponse(), updateItem() (+13 more)
 
 ### Community 7 - "Community 7"
-Cohesion: 0.09
-Nodes (20): computeStockStatus(), createItem(), getAllItems(), getItemById(), resetToDefaults(), toResponse(), updateItem(), createPurchaseEntry() (+12 more)
+Cohesion: 0.14
+Nodes (28): buildBatchConditions(), buildComparisonSide(), formatMoney(), getAlerts(), getComparison(), getMaterials(), getOverview(), getProfitability() (+20 more)
 
 ### Community 8 - "Community 8"
 Cohesion: 0.11
@@ -144,7 +144,7 @@ Nodes (7): applyMatches(), computeMatches(), findSuperadminId(), isRealUnitMisma
 
 ### Community 17 - "Community 17"
 Cohesion: 0.36
-Nodes (4): createStaff(), getStaffById(), toResponse(), updateStaff()
+Nodes (4): createVendor(), getVendorById(), toResponse(), updateVendor()
 
 ### Community 18 - "Community 18"
 Cohesion: 0.4

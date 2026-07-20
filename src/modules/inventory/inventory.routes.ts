@@ -4,7 +4,7 @@ import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js'
 import { AppErrors } from '../../types/errors.js'
 import { createInventoryItemSchema, updateInventoryItemSchema, receiptPricesQuerySchema } from './inventory.schema.js'
 import {
-  getAllItems, createItem, updateItem, deleteItem, resetToDefaults, getReceiptDatePrices,
+  getAllItems, createItem, updateItem, deleteItem, resetToDefaults, getReceiptDatePrices, getLowStockItems,
 } from './inventory.service.js'
 
 const preHandler = [authenticate, requireAuth, requireSuperAdmin]
@@ -28,6 +28,14 @@ export async function inventoryRoutes(app: FastifyInstance) {
 
     const prices = await getReceiptDatePrices(query.data.date)
     return reply.send({ data: prices })
+  })
+
+  // ── GET /inventory/low-stock ──────────────────────────────────────────────
+  // Literal path segment — registered ahead of any future `/:id`-shaped GET
+  // route, same ordering concern as /receipt-prices above.
+  app.get('/low-stock', { preHandler }, async (_request, reply) => {
+    const result = await getLowStockItems()
+    return reply.send({ data: result })
   })
 
   // ── POST /inventory ───────────────────────────────────────────────────────
