@@ -17,9 +17,9 @@ CREATE TABLE IF NOT EXISTS "formulation_variant_components" (
 	"sort_order" integer DEFAULT 0 NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "batches" ADD COLUMN "variant_id" uuid;--> statement-breakpoint
-ALTER TABLE "batches" ADD COLUMN "variant_name" text;--> statement-breakpoint
-ALTER TABLE "batches" ADD COLUMN "coa_snapshot" jsonb;--> statement-breakpoint
+ALTER TABLE "batches" ADD COLUMN IF NOT EXISTS "variant_id" uuid;--> statement-breakpoint
+ALTER TABLE "batches" ADD COLUMN IF NOT EXISTS "variant_name" text;--> statement-breakpoint
+ALTER TABLE "batches" ADD COLUMN IF NOT EXISTS "coa_snapshot" jsonb;--> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "product_formulation_variants" ADD CONSTRAINT "product_formulation_variants_product_key_products_key_fk" FOREIGN KEY ("product_key") REFERENCES "public"."products"("key") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
