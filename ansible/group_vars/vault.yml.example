@@ -1,0 +1,20 @@
+---
+# Copy this file to vault.yml, fill in real values, then encrypt it:
+#   cp vault.yml.example vault.yml
+#   ansible-vault encrypt group_vars/vault.yml
+#
+# Generate each secret locally first (never let Ansible invent secrets for you):
+#   openssl genrsa -out /tmp/private.pem 4096
+#   openssl rsa -in /tmp/private.pem -pubout -out /tmp/public.pem
+#   base64 -i /tmp/private.pem | tr -d '\n'   -> vault_jwt_private_key_b64
+#   base64 -i /tmp/public.pem  | tr -d '\n'   -> vault_jwt_public_key_b64
+#   node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"  -> vault_cookie_secret
+#   openssl rand -base64 24                                                    -> vault_db_password
+#
+# Delete /tmp/private.pem and /tmp/public.pem locally once base64-encoded — don't leave
+# a plaintext copy of the production private key lying around after this.
+
+vault_db_password: CHANGE_ME
+vault_jwt_private_key_b64: CHANGE_ME
+vault_jwt_public_key_b64: CHANGE_ME
+vault_cookie_secret: CHANGE_ME

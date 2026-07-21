@@ -1,0 +1,85 @@
+---
+- name: Update apt cache
+  apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Install base packages
+  apt:
+    name:
+      - git
+      - build-essential
+      - python3-psycopg2
+      - ufw
+      - acl
+      - cron
+    state: present
+
+- name: Allow HTTP/HTTPS in the base iptables ruleset (Oracle-provided Ubuntu images)
+  # OCI's stock Ubuntu image ships its own iptables INPUT chain (independent of ufw)
+  # that only explicitly allows SSH and REJECTs everything else BEFORE ufw's own chains
+  # are ever evaluated. Without this, ufw's "allow 80/443" rules never take effect —
+  # traffic gets an icmp-host-prohibited reject at the base ruleset first.
+  ansible.builtin.iptables:
+    chain: INPUT
+    protocol: tcp
+    destination_port: "{{ item }}"
+    ctstate: NEW
+    jump: ACCEPT
+    action: insert
+    rule_num: "{{ 5 if item == '80' else 6 }}"
+  loop: ["80", "443"]
+  register: base_iptables_rules
+
+- name: Persist base iptables rules
+  ansible.builtin.command: netfilter-persistent save
+  when: base_iptables_rules.changed
+
+- name: Allow OpenSSH through ufw
+  community.general.ufw:
+    rule: allow
+    name: OpenSSH
+
+- name: Allow HTTP/HTTPS through ufw
+  community.general.ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+  loop:
+    - "80"
+    - "443"
+
+- name: Enable ufw
+  community.general.ufw:
+    state: enabled
+
+- name: Add NodeSource apt key/repo for Node {{ node_version }}
+  ansible.builtin.shell: |
+    curl -fsSL https://deb.nodesource.com/setup_{{ node_version }}.x | bash -
+  args:
+    creates: /etc/apt/sources.list.d/nodesource.list
+
+- name: Install Node.js
+  apt:
+    name: nodejs
+    state: present
+    update_cache: true
+
+- name: Install Chromium runtime deps for Puppeteer (PDF module)
+  apt:
+    name:
+      - libnss3
+      - libatk1.0-0
+      - libatk-bridge2.0-0
+      - libcups2
+      - libdrm2
+      - libxkbcommon0
+      - libxcomposite1
+      - libxdamage1
+      - libxfixes3
+      - libxrandr2
+      - libgbm1
+      - libasound2
+      - libpangocairo-1.0-0
+      - libgtk-3-0
+    state: present

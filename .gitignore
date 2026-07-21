@@ -3,3 +3,5 @@ dist/
 .env.local
 *.pem
 coverage/
+ansible/group_vars/vault.yml
+ansible/.vault_pass.txt

@@ -1,0 +1,73 @@
+---
+- name: Install nginx and certbot
+  apt:
+    name:
+      - nginx
+      - certbot
+    state: present
+
+- name: Ensure ACME challenge webroot exists
+  ansible.builtin.file:
+    path: "{{ certbot_webroot }}"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: "0755"
+
+- name: Check whether a certificate already exists
+  ansible.builtin.stat:
+    path: "/etc/letsencrypt/live/{{ domain }}/fullchain.pem"
+  register: cert_before
+
+- name: Deploy reverse-proxy site config
+  # Rendered with cert_exists reflecting current state — HTTP-only (serving just the ACME
+  # challenge + app proxy) until a cert exists, then HTTP-redirect + HTTPS once it does.
+  # Templated from Ansible (not certbot's --nginx installer) so re-running this playbook
+  # never clobbers the HTTPS block certbot would otherwise own — see git history for the
+  # bug this replaced (a plain --nginx-authenticator install got silently reset to
+  # HTTP-only every time this task re-ran).
+  ansible.builtin.template:
+    src: api.conf.j2
+    dest: "/etc/nginx/sites-available/{{ domain }}"
+  vars:
+    cert_exists: "{{ cert_before.stat.exists }}"
+  notify: reload nginx
+
+- name: Enable site
+  ansible.builtin.file:
+    src: "/etc/nginx/sites-available/{{ domain }}"
+    dest: "/etc/nginx/sites-enabled/{{ domain }}"
+    state: link
+  notify: reload nginx
+
+- name: Remove default nginx site
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: reload nginx
+
+- name: Flush handlers so nginx is valid before requesting a cert
+  meta: flush_handlers
+
+- name: Obtain TLS certificate via certbot (webroot — never touches nginx config)
+  ansible.builtin.command:
+    cmd: >
+      certbot certonly --webroot -w {{ certbot_webroot }}
+      -d {{ domain }} --non-interactive --agree-tos -m {{ certbot_email }}
+    creates: "/etc/letsencrypt/live/{{ domain }}/fullchain.pem"
+
+- name: Check whether the certificate exists now
+  ansible.builtin.stat:
+    path: "/etc/letsencrypt/live/{{ domain }}/fullchain.pem"
+  register: cert_after
+
+- name: Re-deploy site config now that a cert exists (first run only — no-op afterward)
+  ansible.builtin.template:
+    src: api.conf.j2
+    dest: "/etc/nginx/sites-available/{{ domain }}"
+  vars:
+    cert_exists: "{{ cert_after.stat.exists }}"
+  notify: reload nginx
+
+- name: Flush handlers so the HTTPS block is live
+  meta: flush_handlers

@@ -1,0 +1,106 @@
+---
+# Prerequisite: the SSH key used to connect to this host (or an agent-forwarded key)
+# must be registered as a deploy key with read access on git@github.com:macrocoats/macrocoats-api.git
+
+- name: Ensure app directory exists
+  ansible.builtin.file:
+    path: "{{ app_dir }}"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: "0755"
+
+- name: Checkout application code
+  ansible.builtin.git:
+    repo: "{{ repo_url }}"
+    dest: "{{ app_dir }}"
+    version: "{{ repo_version }}"
+    accept_hostkey: true
+  become: true
+  become_user: "{{ app_user }}"
+  register: checkout
+
+- name: Install dependencies (npm ci)
+  ansible.builtin.command:
+    cmd: npm ci
+    chdir: "{{ app_dir }}"
+  become: true
+  become_user: "{{ app_user }}"
+  when: checkout.changed
+
+- name: Build (tsc)
+  ansible.builtin.command:
+    cmd: npm run build
+    chdir: "{{ app_dir }}"
+  become: true
+  become_user: "{{ app_user }}"
+  when: checkout.changed
+
+- name: Ensure procurement storage directory exists
+  ansible.builtin.file:
+    path: "{{ app_dir }}/company-documents"
+    state: directory
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: "0755"
+
+- name: Write .env (secrets from vault.yml — keep this file vault-encrypted)
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ app_dir }}/.env"
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+    mode: "0600"
+  no_log: true
+  notify: restart macrocoats-api
+
+- name: Symlink .env.local -> .env
+  # db:migrate / db:reset / seed / db:generate / db:studio all hardcode --env-file=.env.local
+  # (see macrocoats-api/CLAUDE.md "Environment setup") — this makes those scripts work
+  # unmodified in production without duplicating secrets into a second file.
+  ansible.builtin.file:
+    src: "{{ app_dir }}/.env"
+    dest: "{{ app_dir }}/.env.local"
+    state: link
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+
+- name: Install systemd unit
+  ansible.builtin.template:
+    src: macrocoats-api.service.j2
+    dest: /etc/systemd/system/macrocoats-api.service
+    mode: "0644"
+  notify:
+    - reload systemd
+    - restart macrocoats-api
+
+- name: Flush handlers so the unit file/.env are in place before migrating
+  meta: flush_handlers
+
+- name: Run database migrations
+  ansible.builtin.command:
+    cmd: npm run db:migrate
+    chdir: "{{ app_dir }}"
+  environment:
+    DATABASE_URL: "postgresql://{{ db_user }}:{{ vault_db_password }}@localhost:5432/{{ db_name }}"
+  become: true
+  become_user: "{{ app_user }}"
+  when: checkout.changed
+  no_log: true
+
+- name: Run seed data (idempotent — only when explicitly requested)
+  ansible.builtin.command:
+    cmd: npm run seed
+    chdir: "{{ app_dir }}"
+  environment:
+    DATABASE_URL: "postgresql://{{ db_user }}:{{ vault_db_password }}@localhost:5432/{{ db_name }}"
+  become: true
+  become_user: "{{ app_user }}"
+  tags: [seed, never]
+  no_log: true
+
+- name: Enable and start the app service
+  ansible.builtin.systemd:
+    name: macrocoats-api
+    state: started
+    enabled: true

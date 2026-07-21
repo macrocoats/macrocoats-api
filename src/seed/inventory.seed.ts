@@ -187,6 +187,9 @@ export const DEFAULT_INVENTORY = [
 
   // ── Rust Preventive Additives (CORRUCUT 500) ─────────────────────────────────
   { material: 'Vaseline',                           unit: 'Kg' as const, price: '180', sortOrder: 66 },
+
+  // ── Metalworking Fluid Additives (UNICUT-AL) ─────────────────────────────────
+  { material: 'Light Paraffinic Mineral Oil',       unit: 'L'  as const, price: '0',   sortOrder: 67 },
 ]
 
 export async function seedInventory() {

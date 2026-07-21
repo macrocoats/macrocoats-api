@@ -1,0 +1,14 @@
+---
+# One-time (or rarely-changing) infra setup: OS packages, Postgres, Redis, Nginx+TLS.
+# Safe to re-run — every task is idempotent.
+- name: Provision OCI host for macrocoats-api
+  hosts: api
+  become: true
+  vars_files:
+    - group_vars/vault.yml
+  roles:
+    - common
+    - postgres
+    - role: redis
+      when: install_redis
+    - nginx

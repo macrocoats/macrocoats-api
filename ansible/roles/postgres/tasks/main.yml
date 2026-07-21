@@ -1,0 +1,61 @@
+---
+- name: Install PostgreSQL
+  apt:
+    name:
+      - postgresql
+      - postgresql-contrib
+    state: present
+
+- name: Ensure PostgreSQL is running and enabled
+  systemd:
+    name: postgresql
+    state: started
+    enabled: true
+
+- name: Create app database role
+  become_user: postgres
+  community.postgresql.postgresql_user:
+    name: "{{ db_user }}"
+    password: "{{ vault_db_password }}"
+    role_attr_flags: LOGIN
+    state: present
+
+- name: Create app database
+  become_user: postgres
+  community.postgresql.postgresql_db:
+    name: "{{ db_name }}"
+    owner: "{{ db_user }}"
+    state: present
+
+- name: Confirm PostgreSQL only listens on localhost (default — do not expose 5432)
+  ansible.builtin.lineinfile:
+    path: /etc/postgresql/{{ ansible_facts.postgresql_version | default('14') }}/main/postgresql.conf
+    line: "listen_addresses = 'localhost'"
+    regexp: "^#?listen_addresses"
+  notify: restart postgresql
+  ignore_errors: true # path varies by pg version; verify manually if this doesn't match
+
+- name: Nightly pg_dump backup script
+  ansible.builtin.copy:
+    dest: /usr/local/bin/backup-macrocoats-db.sh
+    mode: "0700"
+    content: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+      DEST=/var/backups/macrocoats
+      mkdir -p "$DEST"
+      STAMP=$(date +%Y%m%d-%H%M%S)
+      FILE="$DEST/{{ db_name }}-$STAMP.sql.gz"
+      sudo -u postgres pg_dump {{ db_name }} | gzip > "$FILE"
+      if [ ! -s "$FILE" ]; then
+        echo "Backup failed: $FILE is empty" >&2
+        exit 1
+      fi
+      find "$DEST" -name '*.sql.gz' -mtime +14 -delete
+
+- name: Schedule nightly backup via cron
+  ansible.builtin.cron:
+    name: "macrocoats db backup"
+    minute: "30"
+    hour: "2"
+    job: "/usr/local/bin/backup-macrocoats-db.sh"

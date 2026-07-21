@@ -68,17 +68,17 @@ const SEED_COMPANIES = [
   },
   {
     key:            'sundaramfasteners',
-    displayName:    'Sundaram Fasteners Ltd',
+    displayName:    'Sundram Fasteners Limited (SEZ Unit)',
     accessToken:    'sf9Np4xRmKvL7wYtA3bZeJ2Q',
     allowedProducts: ['uniklean-sp'],
     contactPerson:  'Meena Raghunathan',
     email:          'purchase@sundaramfasteners.com',
-    phone:          '9600034567',
-    gstNumber:      '33AABCS7890K1Z6',
-    address:        '98-A, VII Floor, Dr. Radhakrishnan Salai, Mylapore',
-    city:           'Chennai',
+    phone:          '+91 44 27460702',
+    gstNumber:      '33AAACS8779D2Z6',
+    address:        'AA1, Central Avenue, Auto Ancillary SEZ, Mahindra World City, Natham Post, Kancheepuram District',
+    city:           'Chengalpet',
     state:          'Tamil Nadu',
-    pincode:        '600004',
+    pincode:        '603002',
   },
 ]
 

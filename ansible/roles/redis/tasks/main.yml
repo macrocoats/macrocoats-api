@@ -1,0 +1,21 @@
+---
+- name: Install Redis
+  apt:
+    name: redis-server
+    state: present
+
+- name: Ensure Redis only binds to localhost
+  # IPv4-only: this box has no globally-routable IPv6 address, and Redis 6.0's
+  # "-" fatal-suppression prefix doesn't cover the getaddrinfo() failure that
+  # results (EAI_NONAME on "::1"), so including "-::1" crashes the service.
+  ansible.builtin.lineinfile:
+    path: /etc/redis/redis.conf
+    regexp: "^bind "
+    line: "bind 127.0.0.1"
+  notify: restart redis
+
+- name: Enable and start Redis
+  systemd:
+    name: redis-server
+    state: started
+    enabled: true

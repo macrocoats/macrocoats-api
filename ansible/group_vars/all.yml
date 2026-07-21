@@ -1,0 +1,20 @@
+---
+domain: api.macrocoats.in
+cookie_domain: .macrocoats.in
+frontend_origin: "https://portal.macrocoats.in"
+certbot_email: aswin@macrocoats.in
+certbot_webroot: /var/www/certbot-webroot
+
+app_user: "{{ ansible_user }}"
+app_dir: /var/www/macrocoats-api
+repo_url: git@github.com:macrocoats/macrocoats-api.git
+repo_version: main
+
+node_version: "20"
+install_redis: true
+
+db_name: macrocoats
+db_user: macrocoats
+# db_password comes from vault.yml
+
+api_port: 3001

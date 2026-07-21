@@ -1,0 +1,10 @@
+---
+# Routine deploy: pull latest code, build, migrate, restart. Run this on every release.
+# Run with --tags seed to also (re-)run the idempotent seed scripts.
+- name: Deploy macrocoats-api
+  hosts: api
+  become: true
+  vars_files:
+    - group_vars/vault.yml
+  roles:
+    - app
