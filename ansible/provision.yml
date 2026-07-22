@@ -1,4 +1,6 @@
 ---
+- import_playbook: oci-network.yml
+
 # One-time (or rarely-changing) infra setup: OS packages, Postgres, Redis, Nginx+TLS.
 # Safe to re-run — every task is idempotent.
 - name: Provision OCI host for macrocoats-api

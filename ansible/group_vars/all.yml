@@ -18,3 +18,9 @@ db_user: macrocoats
 # db_password comes from vault.yml
 
 api_port: 3001
+
+# OCI control-plane resources (used by roles/oci-network — requires oracle.oci
+# collection + ~/.oci/config, not SSH). Fetch/update via `oci network security-list
+# get` / `oci network nsg list` if these instance/subnet/VCN topology ever changes.
+oci_security_list_id: ocid1.securitylist.oc1.ap-mumbai-1.aaaaaaaanqwef2xrykinvrthmvm4ui6jhg5mwqcdjgdjpeik6ql56vnfvvyq
+oci_nsg_id: ocid1.networksecuritygroup.oc1.ap-mumbai-1.aaaaaaaawvp4ekb4efv2brccpqgcxr7w7izctb42pvefxby432iyu4vrovoq

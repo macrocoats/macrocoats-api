@@ -1,0 +1,12 @@
+---
+# OCI control-plane network rules (Security List + NSG) — runs via the OCI API from
+# the local controller, not SSH, so it works even before the instance is reachable.
+# Requires: ansible-galaxy collection install oracle.oci, and the oci Python SDK
+# installed into Ansible's own interpreter (pip install oci), plus ~/.oci/config.
+- name: Ensure OCI network rules
+  hosts: localhost
+  connection: local
+  become: false
+  gather_facts: false
+  roles:
+    - oci-network

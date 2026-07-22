@@ -30,6 +30,15 @@ ansible-playbook provision.yml --ask-vault-pass
 Installs Node 20, Postgres, Redis, Nginx, opens ufw for 80/443/22, and requests a TLS cert via
 certbot. Re-running is safe — every task is idempotent.
 
+The first play (`oci-network.yml`, auto-imported) manages the OCI Security List + NSG rules
+directly via the OCI API — not SSH — so it needs `~/.oci/config` (run `oci setup config` once)
+and the `oci` Python SDK in Ansible's own interpreter (`pip install oci` using the same Python
+Ansible reports via `ansible --version`, not necessarily your system `python3`). It targets the
+Security List/NSG OCIDs hardcoded in `group_vars/all.yml` — if the VCN/subnet ever changes, update
+those. This does not create a VCN/subnet/NSG from scratch; a from-scratch rebuild still needs that
+provisioned first (console or `oci` CLI), same as getting a fresh instance up in the first place.
+To run just this part: `ansible-playbook oci-network.yml`.
+
 ## Deploy (run on every release)
 
 ```bash
