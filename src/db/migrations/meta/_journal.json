@@ -169,6 +169,13 @@
       "when": 1784442394248,
       "tag": "0023_woozy_virginia_dare",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1784704966105,
+      "tag": "0024_perfect_captain_universe",
+      "breakpoints": true
     }
   ]
 }

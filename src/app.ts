@@ -28,6 +28,7 @@ import { companyDocumentRoutes } from './modules/company-documents/company-docum
 import { customerPurchaseOrderRoutes } from './modules/customer-purchase-orders/customer-purchase-orders.routes.js'
 import { investorDashboardRoutes } from './modules/investor-dashboard/investor-dashboard.routes.js'
 import { letterheadRoutes } from './modules/letterheads/letterheads.routes.js'
+import { zohoInvoiceRoutes } from './modules/zoho-invoice/zoho-invoice.routes.js'
 import { AppErrors } from './types/errors.js'
 
 export async function buildApp() {
@@ -80,6 +81,7 @@ export async function buildApp() {
   await app.register(customerPurchaseOrderRoutes, { prefix: `${prefix}/customer-purchase-orders` })
   await app.register(investorDashboardRoutes,     { prefix: `${prefix}/investor-dashboard` })
   await app.register(letterheadRoutes,            { prefix: `${prefix}/letterheads` })
+  await app.register(zohoInvoiceRoutes,           { prefix: `${prefix}/zoho-invoices` })
 
   // ── Global error handler ──────────────────────────────────────────────────
   app.setErrorHandler((error, _request, reply) => {

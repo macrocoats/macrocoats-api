@@ -55,6 +55,12 @@ All variables are validated by Zod at startup (`src/config/env.ts`); the server 
 | `COOKIE_DOMAIN` | no | localhost | Cookie domain |
 | `COOKIE_SECURE` | no | false | Set Secure flag on cookies |
 | `ALLOWED_ORIGIN` | no | http://localhost:5173 | CORS allowed origin |
+| `ZOHO_CLIENT_ID` | no | — | Zoho self-client OAuth client ID (invoice sync disabled until set) |
+| `ZOHO_CLIENT_SECRET` | no | — | Zoho self-client OAuth client secret |
+| `ZOHO_REFRESH_TOKEN` | no | — | Zoho self-client refresh token (long-lived, doesn't expire unless revoked) |
+| `ZOHO_ORG_ID` | no | — | Zoho Invoice organization ID |
+| `ZOHO_ACCOUNTS_DOMAIN` | no | https://accounts.zoho.in | Zoho OAuth token endpoint domain (region-specific) |
+| `ZOHO_API_DOMAIN` | no | https://www.zohoapis.in | Zoho Invoice API domain (region-specific) |
 
 ---
 
@@ -114,6 +120,7 @@ Routes never import from other modules' services. Cross-cutting concerns (auth, 
 | `customer-purchase-orders` | POST /customer-purchase-orders, GET /customer-purchase-orders, GET /customer-purchase-orders/dashboard-summary, GET /customer-purchase-orders/analytics, GET /customer-purchase-orders/search, GET /customer-purchase-orders/from-quotation/:quotationId, GET /customer-purchase-orders/:id, PUT /customer-purchase-orders/:id, PATCH /customer-purchase-orders/:id/status, DELETE /customer-purchase-orders/:id (soft-delete), POST /customer-purchase-orders/:id/batches, DELETE /customer-purchase-orders/:id/batches/:linkId, GET/POST /customer-purchase-orders/:id/timeline, POST/GET /customer-purchase-orders/:id/documents, GET /customer-purchase-orders/:id/documents/:docId/download, DELETE /customer-purchase-orders/:id/documents/:docId |
 | `investor-dashboard` | GET /investor-dashboard/executive-kpis, GET /investor-dashboard/sales-analytics, GET /investor-dashboard/projections, GET /investor-dashboard/insights |
 | `letterheads` | GET/POST /letterheads/templates, GET/PUT/DELETE /letterheads/templates/:id, POST /letterheads/templates/:id/duplicate, GET/POST /letterheads/documents, GET/PUT /letterheads/documents/:id, GET/POST /letterheads/documents/:id/versions |
+| `zoho-invoice` | GET /zoho-invoices (live list from Zoho), GET /zoho-invoices/:dispatchId (stored status), POST /zoho-invoices/:dispatchId/sync |
 
 All endpoints except auth are `superadmin`-only, except product document reads which use `checkProductAccess` for company users. Within `products`, only `GET /products/:productLine/:docType` uses `checkProductAccess` — every other `products` endpoint (including status transitions, audit trail, and expiry summary) is `requireSuperAdmin`-only. `GET /products/expiry-summary` is registered before the `/:productLine/:docType` route so the literal segment `expiry-summary` never matches as a `:productLine` param.
 
@@ -259,6 +266,18 @@ Integration tests use a real PostgreSQL database (the same one in `.env.local`).
 - `paymentDueDate`, `paymentTermDays` (default 45) — payment tracking
 - `paidAt` — nullable timestamp; `NULL` = unpaid, set to `now()` when payment is marked done via `PATCH /batches/:batchNumber/payment` (`{ paid: boolean }`, toggleable). `listBatches` accepts a `paid=true|false` query filter (`isNotNull`/`isNull` on `paidAt`)
 - `batchType` — `'Production'` (default) or `'Trial'`; filterable via `listBatches` query param
+
+### Zoho Invoice sync (zoho-invoice)
+
+Read-only mirror of Zoho Invoice's status for a dispatch — not an accounting integration. Deliberately **pull-only** (never creates/pushes invoices to Zoho) and **display-only** (never writes `batches.paidAt` — that stays a manual, independent toggle; see root `CLAUDE.md`'s note that this system has no accounting/invoicing layer by design).
+
+- **Trigger is on-demand only** — `POST /zoho-invoices/:dispatchId/sync`, no background poll/cron. There is no job-scheduling infrastructure anywhere in this backend; adding one was explicitly out of scope for this feature.
+- **One row per dispatch** in `zoho_invoice_syncs` (unique FK, cascade-deleted with the dispatch), keyed off the dispatch's existing free-text `invoiceNumber` field — the sync call looks that value up in Zoho via `GET /invoice/v3/invoices?invoice_number=...`. A dispatch with no `invoiceNumber` set yet returns `400 DISPATCH_INVOICE_NUMBER_MISSING`.
+- **`GET /zoho-invoices` (list) is a live call, not backed by `zoho_invoice_syncs`** — it hits Zoho's own `GET /invoice/v3/invoices` directly every request (status/date-range/search query params passed through best-effort) and separately looks up `dispatches` by `invoiceNumber` to attach a `linkedDispatch` reference to any matching row. Nothing from this list call is persisted; it's purely a read-through view for the Invoices page. Pagination follows Zoho's own `page`/`per_page`/`has_more_page` — Zoho doesn't return a total count for this endpoint.
+- **`status` is stored as free text**, not a constrained DB enum — it mirrors Zoho's own status vocabulary (paid/overdue/sent/void/...), which this codebase doesn't own and shouldn't hardcode against.
+- **Auth**: Zoho self-client OAuth2 (server-to-server refresh-token grant, scope `ZohoInvoice.invoices.READ`). Access tokens are cached in-memory only (module-level, not persisted) and refreshed on demand via `${ZOHO_ACCOUNTS_DOMAIN}/oauth/v2/token` — a cold restart just costs one extra refresh round trip. Outbound calls use native `fetch` (Node ≥20) rather than adding a new HTTP client dependency; this is the first outbound third-party API call anywhere in this backend.
+- **`ZOHO_NOT_CONFIGURED`** (400) is returned instead of a startup crash when the `ZOHO_*` env vars aren't set — they're optional in `env.ts` specifically so the server keeps booting before the Zoho self-client is set up.
+- **`ZOHO_SYNC_FAILED`** uses `502` — a deliberate, documented exception to the status-code list in root `CLAUDE.md` §3, since this is the only route in the codebase proxying a third-party upstream call.
 
 ### Database schema
 

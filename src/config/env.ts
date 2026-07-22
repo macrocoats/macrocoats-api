@@ -28,6 +28,16 @@ const envSchema = z.object({
   PDF_RENDER_TIMEOUT_MS:  z.coerce.number().default(60_000),
 
   AI_PROVIDER:          z.enum(['heuristic', 'openai', 'azure-openai', 'local']).default('heuristic'),
+
+  // Zoho Invoice (pull-only status sync) — optional so the server still
+  // boots before the self-client is configured; endpoints return
+  // ZOHO_NOT_CONFIGURED until these are set.
+  ZOHO_CLIENT_ID:       z.string().optional(),
+  ZOHO_CLIENT_SECRET:   z.string().optional(),
+  ZOHO_REFRESH_TOKEN:   z.string().optional(),
+  ZOHO_ORG_ID:          z.string().optional(),
+  ZOHO_ACCOUNTS_DOMAIN: z.string().default('https://accounts.zoho.in'),
+  ZOHO_API_DOMAIN:      z.string().default('https://www.zohoapis.in'),
 })
 
 function loadEnv() {

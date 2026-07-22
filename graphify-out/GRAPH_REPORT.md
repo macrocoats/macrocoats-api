@@ -1,11 +1,11 @@
-# Graph Report - /Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api  (2026-07-21)
+# Graph Report - /Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api  (2026-07-22)
 
 ## Corpus Check
-- 154 files · ~178,845 words
+- 158 files · ~182,868 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 642 nodes · 1161 edges · 32 communities detected
+- 656 nodes · 1190 edges · 31 communities detected
 - Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 84 edges (avg confidence: 0.81)
 - Token cost: 0 input · 0 output
 
@@ -41,7 +41,6 @@
 - [[_COMMUNITY_Community 28|Community 28]]
 - [[_COMMUNITY_Community 29|Community 29]]
 - [[_COMMUNITY_Community 30|Community 30]]
-- [[_COMMUNITY_Community 31|Community 31]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `Macro Coats API` - 35 edges
@@ -76,87 +75,87 @@
 
 ### Community 0 - "Community 0"
 Cohesion: 0.03
-Nodes (114): Entity Relationship Rules (staff/vendors standalone), Environment Variables (Zod-validated at startup), Integration Testing (real PostgreSQL, singleFork), Drizzle Migration Workflow (canonical), Module Layout (routes/service/schema per module), Product Documents JSONB Storage, RBAC Roles (superadmin / company), Redis Caching (optional, doc 300s TTL) (+106 more)
+Nodes (98): Entity Relationship Rules (staff/vendors standalone), Environment Variables (Zod-validated at startup), Integration Testing (real PostgreSQL, singleFork), Drizzle Migration Workflow (canonical), Module Layout (routes/service/schema per module), Product Documents JSONB Storage, RBAC Roles (superadmin / company), Redis Caching (optional, doc 300s TTL) (+90 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.06
-Nodes (3): buildApp(), registerCookies(), registerCors()
+Cohesion: 0.04
+Nodes (9): buildApp(), authenticate(), bearerToken(), registerCookies(), registerCors(), forceStatus(), req(), getStockQty() (+1 more)
 
 ### Community 2 - "Community 2"
+Cohesion: 0.07
+Nodes (36): buildSummary(), getAccessSummary(), buildInternalComposition(), buildInternalHazardBreakdown(), buildMsdsIngredientDisclosure(), buildSanitizedTdsComposition(), deriveHazardAggregate(), lookupProfile() (+28 more)
+
+### Community 3 - "Community 3"
 Cohesion: 0.06
 Nodes (29): amountInWords(), wordsBelow1000(), formatDate(), formatTime(), nowFormatted(), groupPrecautionary(), parseStatements(), registerHelpers() (+21 more)
 
-### Community 3 - "Community 3"
-Cohesion: 0.08
-Nodes (36): buildSummary(), getAccessSummary(), buildInternalComposition(), buildInternalHazardBreakdown(), buildMsdsIngredientDisclosure(), buildSanitizedTdsComposition(), deriveHazardAggregate(), lookupProfile() (+28 more)
-
 ### Community 4 - "Community 4"
-Cohesion: 0.07
-Nodes (18): seedCompanies(), getCompanyPricing(), upsertCompanyPricing(), hashPassword(), seedFormulationVariants(), seedHazardProfiles(), main(), seedInventory() (+10 more)
+Cohesion: 0.06
+Nodes (18): seedCompanies(), hashPassword(), getDispatchByNumber(), toJoinedResponse(), seedFormulationVariants(), seedHazardProfiles(), main(), seedInventory() (+10 more)
 
 ### Community 5 - "Community 5"
 Cohesion: 0.07
 Nodes (10): addTimelineNote(), getOrderById(), insertTimelineEvent(), recomputeStatus(), recordDispatchAgainstOrder(), reverseDispatchAgainstOrder(), sanitizeFilename(), toOrderResponse() (+2 more)
 
 ### Community 6 - "Community 6"
-Cohesion: 0.09
+Cohesion: 0.11
 Nodes (21): computeStockStatus(), createItem(), getAllItems(), getItemById(), getLowStockItems(), resetToDefaults(), toResponse(), updateItem() (+13 more)
 
 ### Community 7 - "Community 7"
-Cohesion: 0.14
-Nodes (28): buildBatchConditions(), buildComparisonSide(), formatMoney(), getAlerts(), getComparison(), getMaterials(), getOverview(), getProfitability() (+20 more)
+Cohesion: 0.11
+Nodes (15): sanitizeFilename(), saveDocumentRecord(), toResponse(), writeUploadedFile(), ensureProcurementStorageDir(), connectRedis(), main(), fetchZohoInvoiceByNumber() (+7 more)
 
 ### Community 8 - "Community 8"
-Cohesion: 0.11
-Nodes (21): buildAuthUser(), getMeById(), issueTokens(), loginWithCredentials(), loginWithToken(), revokeRefreshToken(), rotateRefreshToken(), authenticate() (+13 more)
-
-### Community 9 - "Community 9"
-Cohesion: 0.15
+Cohesion: 0.14
 Nodes (0): 
 
-### Community 10 - "Community 10"
+### Community 9 - "Community 9"
 Cohesion: 0.1
-Nodes (8): getDispatchByNumber(), toJoinedResponse(), backfillFinishedGoodsForBatch(), computeBackfillStatus(), findByIdWithJoin(), getFinishedGoodsByBatchNumber(), setFinishedGoodsStatus(), toResponse()
+Nodes (27): Batch Numbering (XX-YYYYMMDD-NNN atomic), Quotation Numbering (UNIK-YYYY-NNN atomic), Feature: Advanced Inventory Module, Feature: Batch Traceability System, Feature: Certificate of Analysis (COA) Generator, Feature: Dispatch Tracking, Feature: Automatic Label Generation, Feature: Price Sensitivity Calculator (+19 more)
 
-### Community 11 - "Community 11"
+### Community 10 - "Community 10"
 Cohesion: 0.18
 Nodes (20): applyRecommendations(), generateRecommendations(), money(), pct(), round2(), getAIProvider(), classifyRole(), densityFor() (+12 more)
 
+### Community 11 - "Community 11"
+Cohesion: 0.12
+Nodes (10): getBatchByNumber(), saveCoaSnapshot(), setPaymentStatus(), toBatchResponse(), backfillFinishedGoodsForBatch(), computeBackfillStatus(), findByIdWithJoin(), getFinishedGoodsByBatchNumber() (+2 more)
+
 ### Community 12 - "Community 12"
-Cohesion: 0.13
-Nodes (7): sanitizeFilename(), saveDocumentRecord(), toResponse(), writeUploadedFile(), ensureProcurementStorageDir(), connectRedis(), main()
+Cohesion: 0.16
+Nodes (18): buildAuthUser(), getMeById(), issueTokens(), loginWithCredentials(), loginWithToken(), revokeRefreshToken(), rotateRefreshToken(), rotateCompanyToken() (+10 more)
 
 ### Community 13 - "Community 13"
-Cohesion: 0.2
-Nodes (12): createDocument(), createNewVersion(), createTemplate(), deleteTemplate(), documentValues(), duplicateTemplate(), getDocumentById(), getTemplateById() (+4 more)
+Cohesion: 0.35
+Nodes (16): addDays(), clamp(), daysBetween(), daysInMonth(), firstOfMonth(), firstOfQuarter(), firstOfYear(), getExecutiveInsights() (+8 more)
 
 ### Community 14 - "Community 14"
-Cohesion: 0.21
-Nodes (4): getBatchByNumber(), saveCoaSnapshot(), setPaymentStatus(), toBatchResponse()
+Cohesion: 0.22
+Nodes (12): createDocument(), createNewVersion(), createTemplate(), deleteTemplate(), documentValues(), duplicateTemplate(), getDocumentById(), getTemplateById() (+4 more)
 
 ### Community 15 - "Community 15"
-Cohesion: 0.31
-Nodes (11): Batch Numbering (XX-YYYYMMDD-NNN atomic), Quotation Numbering (UNIK-YYYY-NNN atomic), Atomic Counter Rationale (INSERT ON CONFLICT lock-free), batchNumber.ts Utility (XX-YYYYMMDD-NNN), batch_sequences Table, quotNumber.ts Utility, quotNumber.ts Utility (UNIK-YYYY-NNN), quotation_line_items Table (+3 more)
+Cohesion: 0.25
+Nodes (12): buildBatchConditions(), buildComparisonSide(), formatMoney(), getAlerts(), getComparison(), getMaterials(), getOverview(), getProfitability() (+4 more)
 
 ### Community 16 - "Community 16"
+Cohesion: 0.19
+Nodes (4): getCompanyById(), toResponse(), getCompanyPricing(), upsertCompanyPricing()
+
+### Community 17 - "Community 17"
 Cohesion: 0.39
 Nodes (7): applyMatches(), computeMatches(), findSuperadminId(), isRealUnitMismatch(), normalizeMaterialName(), printReport(), run()
 
-### Community 17 - "Community 17"
-Cohesion: 0.36
+### Community 18 - "Community 18"
+Cohesion: 0.43
 Nodes (4): createVendor(), getVendorById(), toResponse(), updateVendor()
 
-### Community 18 - "Community 18"
+### Community 19 - "Community 19"
 Cohesion: 0.4
 Nodes (0): 
 
-### Community 19 - "Community 19"
-Cohesion: 1.0
-Nodes (2): getStockQty(), req()
-
 ### Community 20 - "Community 20"
 Cohesion: 1.0
-Nodes (2): forceStatus(), req()
+Nodes (0): 
 
 ### Community 21 - "Community 21"
 Cohesion: 1.0
@@ -192,47 +191,43 @@ Nodes (0):
 
 ### Community 29 - "Community 29"
 Cohesion: 1.0
-Nodes (0): 
-
-### Community 30 - "Community 30"
-Cohesion: 1.0
 Nodes (1): crypto.ts Utility (bcrypt, tokens)
 
-### Community 31 - "Community 31"
+### Community 30 - "Community 30"
 Cohesion: 1.0
 Nodes (1): Feature: AI Formulation Optimizer
 
 ## Knowledge Gaps
 - **35 isolated node(s):** `TypeScript`, `Supertest`, `React + Vite SPA Frontend`, `CORS Plugin (@fastify/cors)`, `Superadmin Role` (+30 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **Thin community `Community 21`** (2 nodes): `req()`, `inventory.test.ts`
+- **Thin community `Community 20`** (2 nodes): `req()`, `inventory.test.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 22`** (2 nodes): `request()`, `auth.test.ts`
+- **Thin community `Community 21`** (2 nodes): `request()`, `auth.test.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 23`** (1 nodes): `drizzle.config.ts`
+- **Thin community `Community 22`** (1 nodes): `drizzle.config.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 24`** (1 nodes): `vitest.config.ts`
+- **Thin community `Community 23`** (1 nodes): `vitest.config.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 25`** (1 nodes): `fastify.d.ts`
+- **Thin community `Community 24`** (1 nodes): `fastify.d.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 26`** (1 nodes): `salaryRecords.ts`
+- **Thin community `Community 25`** (1 nodes): `salaryRecords.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 27`** (1 nodes): `products.ts`
+- **Thin community `Community 26`** (1 nodes): `products.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 28`** (1 nodes): `staff.ts`
+- **Thin community `Community 27`** (1 nodes): `staff.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 29`** (1 nodes): `quotations.schema.ts`
+- **Thin community `Community 28`** (1 nodes): `quotations.schema.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 30`** (1 nodes): `crypto.ts Utility (bcrypt, tokens)`
+- **Thin community `Community 29`** (1 nodes): `crypto.ts Utility (bcrypt, tokens)`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 31`** (1 nodes): `Feature: AI Formulation Optimizer`
+- **Thin community `Community 30`** (1 nodes): `Feature: AI Formulation Optimizer`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Macro Coats API` connect `Community 0` to `Community 15`?**
-  _High betweenness centrality (0.028) - this node is a cross-community bridge._
+- **Why does `Macro Coats API` connect `Community 0` to `Community 9`?**
+  _High betweenness centrality (0.027) - this node is a cross-community bridge._
 - **Are the 9 inferred relationships involving `cacheDel()` (e.g. with `updateDocument()` and `transitionDocumentStatus()`) actually correct?**
   _`cacheDel()` has 9 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 6 inferred relationships involving `generateRecommendations()` (e.g. with `analyzeFormulation()` and `normalizeMaterialName()`) actually correct?**
@@ -242,6 +237,6 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `Community 0` be split into smaller, more focused modules?**
   _Cohesion score 0.03 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.06 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.04 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.06 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07 - nodes in this community are weakly interconnected._
