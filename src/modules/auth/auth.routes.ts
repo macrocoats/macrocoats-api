@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify'
-import { loginSchema, tokenSchema } from './auth.schema.js'
+import { loginSchema, tokenSchema, mobileRefreshSchema } from './auth.schema.js'
 import {
   loginWithCredentials,
   loginWithToken,
@@ -92,4 +92,58 @@ export async function authRoutes(app: FastifyInstance) {
       return reply.send({ user })
     },
   )
+
+  // ── Mobile (Bearer-token) auth ───────────────────────────────────────────
+  // Native clients have no cookie jar to share with a browser, so these routes
+  // return the raw tokens in the JSON body instead of setting cookies. The web
+  // routes above are untouched — cookie-based auth remains the browser contract.
+
+  // ── POST /auth/mobile/login ──────────────────────────────────────────────
+  app.post('/mobile/login', async (request, reply) => {
+    const body = loginSchema.safeParse(request.body)
+    if (!body.success) {
+      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
+    }
+
+    const result = await loginWithCredentials(body.data.username, body.data.password)
+    if (!result) {
+      return reply.code(401).send({ error: AppErrors.INVALID_CREDENTIALS })
+    }
+
+    return reply.send({
+      user: result.authUser,
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+    })
+  })
+
+  // ── POST /auth/mobile/refresh ─────────────────────────────────────────────
+  app.post('/mobile/refresh', async (request, reply) => {
+    const body = mobileRefreshSchema.safeParse(request.body)
+    if (!body.success) {
+      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
+    }
+
+    const result = await rotateRefreshToken(body.data.refreshToken)
+    if (!result) {
+      return reply.code(401).send({ error: AppErrors.REFRESH_TOKEN_INVALID })
+    }
+
+    return reply.send({
+      user: result.authUser,
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+    })
+  })
+
+  // ── POST /auth/mobile/logout ──────────────────────────────────────────────
+  app.post('/mobile/logout', async (request, reply) => {
+    const body = mobileRefreshSchema.safeParse(request.body)
+    if (!body.success) {
+      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
+    }
+
+    await revokeRefreshToken(body.data.refreshToken)
+    return reply.code(204).send()
+  })
 }

@@ -90,7 +90,7 @@ Routes never import from other modules' services. Cross-cutting concerns (auth, 
 
 | Module | Endpoints |
 |---|---|
-| `auth` | POST /auth/login, /auth/token, /auth/refresh, /auth/logout; GET /auth/me |
+| `auth` | POST /auth/login, /auth/token, /auth/refresh, /auth/logout; GET /auth/me; POST /auth/mobile/login, /auth/mobile/refresh, /auth/mobile/logout |
 | `products` | GET /products, GET /products/expiry-summary, GET /products/:productLine/:docType, PUT /products/:productLine/:docType, PATCH /products/:productLine/:docType/status, GET /products/:productLine/:docType/audit |
 | `companies` | GET /companies, GET /companies/:id, POST /companies, PATCH /companies/:id, POST /companies/:id/rotate-token, DELETE /companies/:id |
 | `company-pricing` | GET /companies/:id/pricing, PUT /companies/:id/pricing |
@@ -167,7 +167,7 @@ CRUD backing store for the Company Letterhead document family (superadmin-only, 
 
 Four middleware files in `src/middleware/` (five functions):
 
-- **`authenticate.ts`** — global `onRequest`; reads `accessToken` cookie, decodes RS256 JWT, sets `request.authUser` or null. Never throws. Also exports `requireAuth` preHandler (returns 401 if `request.authUser` is null).
+- **`authenticate.ts`** — global `onRequest`; reads `accessToken` cookie, falling back to an `Authorization: Bearer <token>` header when no cookie is present (native/mobile clients have no cookie jar), decodes RS256 JWT, sets `request.authUser` or null. Never throws. Also exports `requireAuth` preHandler (returns 401 if `request.authUser` is null).
 - **`requireSuperAdmin.ts`** — preHandler; returns 403 if `request.authUser.role !== 'superadmin'`.
 - **`checkProductAccess.ts`** — preHandler; returns 403 if company user requests a `RESTRICTED_DOC_TYPE` (formula/label/coa) or a product not in their `allowedProducts`.
 - **`logAccess.ts`** — `onSend` hook; fire-and-forget INSERT into `access_log` after response is sent. Captures userId, companyKey, productKey, docType, IP, userAgent. Never blocks response; errors silently.
@@ -179,9 +179,15 @@ Two-token RS256 system:
 - **Refresh token** (7d): JWT whose `jti` is a UUID matching a row in `refresh_tokens`. The raw token is never stored — only its `bcrypt` hash. Rotation revokes the old row and calls `issueTokens()` to produce a new pair.
 
 `issueTokens()` in `auth.service.ts` is the single function that creates both tokens and inserts the refresh token row. Three login paths funnel through it:
-- `loginWithCredentials` — username + password (POST /auth/login)
+- `loginWithCredentials` — username + password (POST /auth/login, POST /auth/mobile/login)
 - `loginWithToken` — company magic/QR token (POST /auth/token); token checked against `companies.accessToken`, respects `tokenExpiresAt`
-- `rotateRefreshToken` — POST /auth/refresh
+- `rotateRefreshToken` — POST /auth/refresh, POST /auth/mobile/refresh
+
+**Known bug — refresh rotation does not work today (web or mobile).** `issueTokens()` signs a JWT via `signRefreshToken()` but discards it, returning the raw random string (`rawRefresh`) as the client-facing refresh token instead; `rotateRefreshToken()` then calls `verifyRefreshToken()` (a JWT verify) on whatever the client sends back, which always fails since the client never received a JWT. Confirmed via manual testing on both `/auth/refresh` and `/auth/mobile/refresh` — not introduced by the mobile routes, pre-existing and untested (`tests/integration/auth.test.ts` only covers the no-token 401 case, never a real rotation). Left unfixed per explicit user decision when the mobile routes were added — the mobile app forces re-login on a 401 rather than attempting silent refresh, same as the web app's actual (if accidental) behavior. Fix before relying on refresh anywhere.
+
+### Mobile (Bearer-token) auth
+
+`POST /auth/mobile/login`, `POST /auth/mobile/refresh` (`{ refreshToken }` body — currently broken, see bug above), `POST /auth/mobile/logout` (`{ refreshToken }` body) in `auth.routes.ts` return tokens in the JSON body (`{ user, accessToken, refreshToken }`) instead of setting cookies, for native clients with no shared cookie jar. They reuse the exact same service functions as the cookie-based web routes (`loginWithCredentials`, `rotateRefreshToken`, `revokeRefreshToken`) — no service-layer differences, only how the route responds. The web routes are untouched; cookie-based auth remains the browser contract.
 
 ### RBAC
 
