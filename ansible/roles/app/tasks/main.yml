@@ -42,6 +42,7 @@
   become: true
   become_user: "{{ app_user }}"
   when: checkout.changed
+  notify: restart macrocoats-api
 
 - name: Ensure procurement storage directory exists
   ansible.builtin.file:
