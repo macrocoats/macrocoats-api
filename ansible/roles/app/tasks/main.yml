@@ -29,6 +29,13 @@
   when: checkout.changed
 
 - name: Build (tsc)
+  # Incident 2026-07-22: npm ci + this build, run directly on the live
+  # VM.Standard.E2.1.Micro (1GB RAM, no swap at the time) alongside the running
+  # app/Postgres/Redis/nginx, exhausted memory hard enough to make the whole
+  # instance — including sshd — unresponsive for ~10 minutes, tripping the
+  # uptime alarm. Fixed by adding 2GB swap (roles/common) as a safety net; still
+  # worth watching `free -h` during a deploy on this box, or moving the build
+  # off-box (build locally/CI, rsync dist/) if it recurs.
   ansible.builtin.command:
     cmd: npm run build
     chdir: "{{ app_dir }}"

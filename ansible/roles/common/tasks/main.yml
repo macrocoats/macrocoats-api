@@ -15,6 +15,38 @@
       - cron
     state: present
 
+- name: Check for existing swap file
+  ansible.builtin.stat:
+    path: /swapfile
+  register: swapfile_stat
+
+- name: Create 2GB swap file
+  # VM.Standard.E2.1.Micro (OCI Always Free) has only 1GB RAM and ships with zero
+  # swap. npm ci + tsc build running alongside the live app/Postgres/Redis/nginx
+  # exhausted memory hard enough to make the whole instance (including sshd)
+  # unresponsive for ~10 minutes on 2026-07-22 — see incident notes in deploy.yml.
+  ansible.builtin.command: fallocate -l 2G /swapfile
+  when: not swapfile_stat.stat.exists
+
+- name: Secure swap file permissions
+  ansible.builtin.file:
+    path: /swapfile
+    mode: "0600"
+
+- name: Format swap file
+  ansible.builtin.command: mkswap /swapfile
+  when: not swapfile_stat.stat.exists
+
+- name: Enable swap file
+  ansible.builtin.command: swapon /swapfile
+  when: not swapfile_stat.stat.exists
+
+- name: Persist swap in fstab
+  ansible.builtin.lineinfile:
+    path: /etc/fstab
+    line: "/swapfile none swap sw 0 0"
+    state: present
+
 - name: Allow HTTP/HTTPS in the base iptables ruleset (Oracle-provided Ubuntu images)
   # OCI's stock Ubuntu image ships its own iptables INPUT chain (independent of ufw)
   # that only explicitly allows SSH and REJECTs everything else BEFORE ufw's own chains
