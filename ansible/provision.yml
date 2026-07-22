@@ -1,5 +1,6 @@
 ---
 - import_playbook: oci-network.yml
+- import_playbook: oci-monitoring.yml
 
 # One-time (or rarely-changing) infra setup: OS packages, Postgres, Redis, Nginx+TLS.
 # Safe to re-run — every task is idempotent.

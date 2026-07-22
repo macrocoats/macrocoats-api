@@ -39,6 +39,16 @@ those. This does not create a VCN/subnet/NSG from scratch; a from-scratch rebuil
 provisioned first (console or `oci` CLI), same as getting a fresh instance up in the first place.
 To run just this part: `ansible-playbook oci-network.yml`.
 
+The second play (`oci-monitoring.yml`, also auto-imported) codifies the uptime-monitoring stack:
+an OCI Health Checks HTTP monitor (3 global vantage points, probes `/v1/products` every 60s), a
+Monitoring alarm that fires on 5+ minutes of no successful response, and a Notifications email
+subscription. Same OCI-API/localhost mechanics as `oci-network.yml`, and same caveat: it updates
+the *existing* topic/subscription/monitor/alarm (OCIDs hardcoded in `group_vars/all.yml`), it
+doesn't create them from zero on a fresh tenancy. A new email subscription needs manual
+confirmation via the link OCI emails to it before alerts actually deliver — `is-enabled`/
+`lifecycle-state` won't tell you that from the CLI, check `oci ons subscription list`.
+To run just this part: `ansible-playbook oci-monitoring.yml`.
+
 ## Deploy (run on every release)
 
 ```bash

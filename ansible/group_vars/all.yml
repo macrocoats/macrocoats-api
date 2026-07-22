@@ -19,8 +19,16 @@ db_user: macrocoats
 
 api_port: 3001
 
-# OCI control-plane resources (used by roles/oci-network — requires oracle.oci
-# collection + ~/.oci/config, not SSH). Fetch/update via `oci network security-list
-# get` / `oci network nsg list` if these instance/subnet/VCN topology ever changes.
+# OCI control-plane resources (used by roles/oci-network, roles/oci-monitoring —
+# requires oracle.oci collection + ~/.oci/config, not SSH). Fetch/update via
+# `oci network security-list get` / `oci network nsg list` if the instance/subnet/
+# VCN topology ever changes, or the `oci ons`/`oci health-checks`/`oci monitoring`
+# equivalents for the monitoring resources.
+oci_compartment_id: ocid1.tenancy.oc1..aaaaaaaac6nlrz32jcnx6bn5dleijje2bt6dc6pfciujlgbjiebk7e3pacya
 oci_security_list_id: ocid1.securitylist.oc1.ap-mumbai-1.aaaaaaaanqwef2xrykinvrthmvm4ui6jhg5mwqcdjgdjpeik6ql56vnfvvyq
 oci_nsg_id: ocid1.networksecuritygroup.oc1.ap-mumbai-1.aaaaaaaawvp4ekb4efv2brccpqgcxr7w7izctb42pvefxby432iyu4vrovoq
+
+oci_monitoring_topic_id: ocid1.onstopic.oc1.ap-mumbai-1.amaaaaaaycctwiiatr7upgpycs3dzlemipittvuwb3lexledzu4hsefgwlpq
+oci_monitoring_subscription_id: ocid1.onssubscription.oc1.ap-mumbai-1.aaaaaaaaraamwslbifd2qlsb27osxxribudhfgwghyr6m2rqivmnx3aglccq
+oci_monitoring_http_monitor_id: ocid1.httpmonitor.oc1.ap-mumbai-1.aaaaaaaakx3h6v7f2qr7e4mfjo7zezi2n5hf6ea5stq7jakw5pknbwngmi5q
+oci_monitoring_alarm_id: ocid1.alarm.oc1.ap-mumbai-1.amaaaaaaycctwiias4iporzrwi7wddmfv5slx65rig6hnojmcmayn2elwnga

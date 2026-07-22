@@ -1,0 +1,62 @@
+---
+# Codifies the uptime-monitoring stack (Health Checks -> Monitoring alarm ->
+# Notifications email) set up manually on 2026-07-22. Runs against the OCI API
+# from the local controller (not SSH) — same prerequisites as oci-network.
+#
+# Targets the resources by their existing OCIDs (hardcoded in group_vars/all.yml)
+# for idempotent update-in-place. This does NOT create these resources from
+# scratch on a fresh tenancy/compartment — if oci_monitoring_topic_id etc. are
+# ever unset (e.g. rebuilding from zero), the create path runs instead, but you
+# must then update group_vars/all.yml with the new OCIDs it prints so future
+# runs target the same resources rather than creating duplicates each time.
+
+- name: Ensure notification topic exists
+  oracle.oci.oci_ons_notification_topic:
+    topic_id: "{{ oci_monitoring_topic_id | default(omit) }}"
+    compartment_id: "{{ oci_compartment_id }}"
+    name: macrocoats-uptime-alerts
+    description: "Uptime alerts for {{ domain }}"
+    state: present
+  register: topic_result
+
+- name: Ensure email subscription exists
+  oracle.oci.oci_ons_subscription:
+    subscription_id: "{{ oci_monitoring_subscription_id | default(omit) }}"
+    topic_id: "{{ oci_monitoring_topic_id }}"
+    compartment_id: "{{ oci_compartment_id }}"
+    protocol: EMAIL
+    endpoint: "{{ certbot_email }}"
+    state: present
+  register: subscription_result
+
+- name: Ensure HTTP health check monitor exists
+  oracle.oci.oci_healthchecks_http_monitor:
+    monitor_id: "{{ oci_monitoring_http_monitor_id | default(omit) }}"
+    compartment_id: "{{ oci_compartment_id }}"
+    display_name: macrocoats-api-uptime
+    targets: ["{{ domain }}"]
+    protocol: HTTPS
+    path: /v1/products
+    port: 443
+    method: GET
+    interval_in_seconds: 60
+    timeout_in_seconds: 30
+    is_enabled: true
+    state: present
+  register: monitor_result
+
+- name: Ensure downtime alarm exists
+  oracle.oci.oci_monitoring_alarm:
+    alarm_id: "{{ oci_monitoring_alarm_id | default(omit) }}"
+    compartment_id: "{{ oci_compartment_id }}"
+    display_name: macrocoats-api-down
+    metric_compartment_id: "{{ oci_compartment_id }}"
+    namespace: oci_healthchecks
+    query: 'HTTP.ResponseTime[1m]{resourceId = "{{ oci_monitoring_http_monitor_id }}"}.absent()'
+    severity: CRITICAL
+    destinations: ["{{ oci_monitoring_topic_id }}"]
+    pending_duration: PT5M
+    repeat_notification_duration: PT1H
+    body: "{{ domain }} has stopped responding to health checks for 5+ minutes."
+    is_enabled: true
+    state: present

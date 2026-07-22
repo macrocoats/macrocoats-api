@@ -1,0 +1,11 @@
+---
+# Uptime monitoring stack (Health Checks -> Monitoring alarm -> Notifications
+# email) — OCI API calls from the local controller, not SSH. Same prerequisites
+# as oci-network.yml.
+- name: Ensure OCI uptime monitoring
+  hosts: localhost
+  connection: local
+  become: false
+  gather_facts: false
+  roles:
+    - oci-monitoring
