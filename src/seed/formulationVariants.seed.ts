@@ -598,6 +598,23 @@ const UNIKLEAN_SP_ENHANCED_FLASH_RUST_COMPONENTS = [
   { materialName: 'Non-silicone Defoamer',       percentage: 0.02, unit: 'Kg' as const },
 ]
 
+/**
+ * UNISOLVE H3 - 30 KG Variant (concentrated phosphoric acid cleaner).
+ * Reference batch: 30 kg. Phosphoric Acid (85%) 9.000 kg (30%) + Water 21.000 kg (70%).
+ * Water is auto-calculated (percentage: null) to preserve the exact 30/70 split.
+ * materialName values match existing inventory_items exactly ('Phosphoric Acid',
+ * 'DM Water') — no new inventory items created — so batch inventory deduction
+ * (exact lower-case match in batches.service.ts) and FormulaPage price matching
+ * both resolve. Both names also match aliases in ingredient_hazard_profiles.seed.ts
+ * ('Phosphoric Acid (85%)' → alias 'Phosphoric Acid'; 'Water' → alias 'DM Water'),
+ * so TDS/MSDS composition and hazard sections derive automatically from the real
+ * components — no tdsOverrides/msdsOverrides needed for this variant.
+ */
+const UNISOLVE_H3_30KG_COMPONENTS = [
+  { materialName: 'Phosphoric Acid', percentage: 30.00, unit: 'Kg' as const },  // 9.000 kg / 30 kg batch
+  { materialName: 'DM Water',        percentage: null,  unit: 'L'  as const },  // auto-calc 70% — 21.000 kg / 30 kg batch
+]
+
 export async function seedFormulationVariants() {
   console.log('🌱 Seeding formulation variants...')
 
@@ -1053,5 +1070,52 @@ export async function seedFormulationVariants() {
     )
 
     console.log(`   ✅ Created PG High Lubricity Variant for UNICool AL (id: ${pgHighLubricityVariant.id})`)
+  }
+
+  // ── UNISOLVE H3 — 30 KG Variant ──────────────────────────────────────────
+  const [unisolveH3Product] = await db
+    .select()
+    .from(products)
+    .where(eq(products.key, 'unisolve-h3'))
+
+  if (!unisolveH3Product) {
+    console.warn('   ⚠️  Product unisolve-h3 not found — skipping UNISOLVE H3 - 30 KG variant seed')
+  } else {
+    const UNISOLVE_H3_30KG_NAME = 'UNISOLVE H3 - 30 KG'
+    const [existingUnisolveH3_30KG] = await db
+      .select()
+      .from(productFormulationVariants)
+      .where(
+        and(
+          eq(productFormulationVariants.productKey, 'unisolve-h3'),
+          eq(productFormulationVariants.variantName, UNISOLVE_H3_30KG_NAME),
+        ),
+      )
+
+    if (existingUnisolveH3_30KG) {
+      console.log(`   ↩️  UNISOLVE H3 - 30 KG variant already exists (id: ${existingUnisolveH3_30KG.id})`)
+    } else {
+      const [unisolveH3_30KGVariant] = await db
+        .insert(productFormulationVariants)
+        .values({
+          productKey:  'unisolve-h3',
+          companyId:   null,
+          variantName: UNISOLVE_H3_30KG_NAME,
+          isDefault:   false,
+        })
+        .returning()
+
+      await db.insert(formulationVariantComponents).values(
+        UNISOLVE_H3_30KG_COMPONENTS.map((c, i) => ({
+          variantId:    unisolveH3_30KGVariant.id,
+          materialName: c.materialName,
+          percentage:   c.percentage !== null ? String(c.percentage) : null,
+          unit:         c.unit,
+          sortOrder:    i,
+        })),
+      )
+
+      console.log(`   ✅ Created UNISOLVE H3 - 30 KG variant (id: ${unisolveH3_30KGVariant.id})`)
+    }
   }
 }

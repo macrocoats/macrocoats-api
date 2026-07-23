@@ -339,7 +339,7 @@
       "label": "seedFormulationVariants()",
       "file_type": "code",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/seed/formulationVariants.seed.ts",
-      "source_location": "L601",
+      "source_location": "L618",
       "id": "formulationvariants_seed_seedformulationvariants",
       "community": 4,
       "norm_label": "seedformulationvariants()"
@@ -7962,7 +7962,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "/Users/kumaraswins/Desktop/MACROCOATS/webApps/portal/macrocoats-api/src/seed/formulationVariants.seed.ts",
-      "source_location": "L601",
+      "source_location": "L618",
       "weight": 1.0,
       "_src": "users_kumaraswins_desktop_macrocoats_webapps_portal_macrocoats_api_src_seed_formulationvariants_seed_ts",
       "_tgt": "formulationvariants_seed_seedformulationvariants",
