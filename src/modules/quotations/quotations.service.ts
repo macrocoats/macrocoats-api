@@ -1,17 +1,23 @@
 import { eq, like, desc, count, sql, inArray } from 'drizzle-orm'
 import { db } from '../../db/index.js'
-import { quotations, quotationLineItems } from '../../db/schema/index.js'
+import { quotations, quotationLineItems, companies } from '../../db/schema/index.js'
 import { nextQuotNumber } from '../../utils/quotNumber.js'
 import type { CreateQuotationBody, ListQuotationsQuery } from './quotations.schema.js'
 
 function toQuotationResponse(
   q: typeof quotations.$inferSelect,
   items: typeof quotationLineItems.$inferSelect[],
+  matchedCompanyName: string | null = null,
 ) {
   return {
     id:           q.id,
     quotNumber:   q.quotNumber,
     customerName: q.customerName,
+    // Best-effort link set at creation time (see createQuotation) — never
+    // re-resolved on read, so it reflects the company that existed under
+    // this name when the quotation was created, not a live lookup.
+    companyId:          q.companyId,
+    matchedCompanyName: matchedCompanyName,
     quotDate:     q.quotDate,
     validDays:    q.validDays,
     validUntil:   q.validUntil,
@@ -37,11 +43,21 @@ export async function createQuotation(data: CreateQuotationBody, createdBy: stri
     quotDateObj.setDate(quotDateObj.getDate() + data.validDays)
     const validUntil = quotDateObj.toISOString().slice(0, 10)
 
+    // Best-effort link to a real company, matched by exact case-insensitive
+    // name (same pattern as customer-purchase-orders.service.ts's
+    // getQuotationPrefill) — customerName stays the stored source of truth
+    // either way, this is purely an additional FK for reconciliation.
+    const [matchedCompany] = await tx
+      .select({ id: companies.id, displayName: companies.displayName })
+      .from(companies)
+      .where(sql`LOWER(${companies.displayName}) = LOWER(${data.customerName})`)
+
     const [quot] = await tx
       .insert(quotations)
       .values({
         quotNumber,
         customerName: data.customerName,
+        companyId:    matchedCompany?.id ?? null,
         quotDate:     data.quotDate,
         validDays:    data.validDays,
         validUntil,
@@ -64,8 +80,19 @@ export async function createQuotation(data: CreateQuotationBody, createdBy: stri
       .values(lineItemRows)
       .returning()
 
-    return toQuotationResponse(quot, items)
+    return toQuotationResponse(quot, items, matchedCompany?.displayName ?? null)
   })
+}
+
+/** Resolve {companyId -> current displayName} for a set of quotation rows in one query. */
+async function loadCompanyNames(rows: { companyId: string | null }[]): Promise<Map<string, string>> {
+  const companyIds = [...new Set(rows.map((r) => r.companyId).filter((id): id is string => id !== null))]
+  if (!companyIds.length) return new Map()
+  const matches = await db
+    .select({ id: companies.id, displayName: companies.displayName })
+    .from(companies)
+    .where(inArray(companies.id, companyIds))
+  return new Map(matches.map((c) => [c.id, c.displayName]))
 }
 
 export async function listQuotations(query: ListQuotationsQuery) {
@@ -100,7 +127,12 @@ export async function listQuotations(query: ListQuotationsQuery) {
     itemsById.set(item.quotationId, list)
   }
 
-  const results = rows.map((q) => toQuotationResponse(q, itemsById.get(q.id) ?? []))
+  const companyNames = await loadCompanyNames(rows)
+  const results = rows.map((q) => toQuotationResponse(
+    q,
+    itemsById.get(q.id) ?? [],
+    q.companyId ? companyNames.get(q.companyId) ?? null : null,
+  ))
 
   return { quotations: results, total, page: query.page, limit: query.limit }
 }
@@ -114,5 +146,6 @@ export async function getQuotationById(id: string) {
     .from(quotationLineItems)
     .where(eq(quotationLineItems.quotationId, id))
 
-  return toQuotationResponse(quot, items)
+  const companyNames = await loadCompanyNames([quot])
+  return toQuotationResponse(quot, items, quot.companyId ? companyNames.get(quot.companyId) ?? null : null)
 }

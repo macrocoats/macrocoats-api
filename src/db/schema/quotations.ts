@@ -4,12 +4,20 @@ import {
 } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
 import { users } from './users.js'
+import { companies } from './companies.js'
 
 // ── Quotations ────────────────────────────────────────────────────────────────
 export const quotations = pgTable('quotations', {
   id:           uuid('id').primaryKey().defaultRandom(),
   quotNumber:   text('quot_number').notNull().unique(),   // 'UNIK-2026-001'
   customerName: text('customer_name').notNull(),
+  // Best-effort link to a real company, set at creation time by matching
+  // customerName against companies.displayName (case-insensitive) — see
+  // quotations.service.ts. Nullable and never enforced: customerName stays
+  // the source of truth so a quote for a prospect that isn't onboarded as a
+  // company yet is never blocked. ON DELETE SET NULL so deleting a company
+  // never cascades into deleting its historical quotations.
+  companyId:    uuid('company_id').references(() => companies.id, { onDelete: 'set null' }),
   quotDate:     date('quot_date').notNull(),
   validDays:    integer('valid_days').notNull().default(30),
   validUntil:   date('valid_until').notNull(),
@@ -17,10 +25,12 @@ export const quotations = pgTable('quotations', {
   createdAt:    timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [
   index('quotations_customer_name_idx').on(t.customerName),
+  index('quotations_company_id_idx').on(t.companyId),
 ])
 
 export const quotationsRelations = relations(quotations, ({ one, many }) => ({
   creator:   one(users, { fields: [quotations.createdBy], references: [users.id] }),
+  company:   one(companies, { fields: [quotations.companyId], references: [companies.id] }),
   lineItems: many(quotationLineItems),
 }))
 
