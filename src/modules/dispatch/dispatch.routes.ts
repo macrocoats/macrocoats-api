@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import { authenticate, requireAuth } from '../../middleware/authenticate.js'
 import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js'
+import { requireRole } from '../../middleware/requireRole.js'
 import { AppErrors } from '../../types/errors.js'
 import { createDispatchSchema, updateDispatchSchema, voidDispatchSchema, listDispatchesQuerySchema, dispatchTrendQuerySchema } from './dispatch.schema.js'
 import {
@@ -14,10 +15,15 @@ import {
 } from './dispatch.service.js'
 
 const preHandler = [authenticate, requireAuth, requireSuperAdmin]
+// Dispatch records carry no formula/cost data — operators can view and create
+// dispatches (references an existing finished-goods batch, no recipe
+// involved). Editing/voiding a dispatch stays superadmin-only — see root
+// CLAUDE.md's RBAC notes.
+const operatorPreHandler = [authenticate, requireAuth, requireRole('superadmin', 'operator')]
 
 export async function dispatchRoutes(app: FastifyInstance) {
   // ── POST /dispatches ──────────────────────────────────────────────────────
-  app.post('/', { preHandler }, async (request, reply) => {
+  app.post('/', { preHandler: operatorPreHandler }, async (request, reply) => {
     const body = createDispatchSchema.safeParse(request.body)
     if (!body.success) {
       return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
@@ -40,7 +46,7 @@ export async function dispatchRoutes(app: FastifyInstance) {
   })
 
   // ── GET /dispatches ───────────────────────────────────────────────────────
-  app.get('/', { preHandler }, async (request, reply) => {
+  app.get('/', { preHandler: operatorPreHandler }, async (request, reply) => {
     const query = listDispatchesQuerySchema.safeParse(request.query)
     if (!query.success) {
       return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: query.error.flatten() })
@@ -52,14 +58,14 @@ export async function dispatchRoutes(app: FastifyInstance) {
 
   // ── GET /dispatches/summary ───────────────────────────────────────────────
   // Registered before /:dispatchNumber so the literal segment never matches as a param.
-  app.get('/summary', { preHandler }, async (_request, reply) => {
+  app.get('/summary', { preHandler: operatorPreHandler }, async (_request, reply) => {
     const summary = await getDispatchSummary()
     return reply.send({ data: summary })
   })
 
   // ── GET /dispatches/trend ─────────────────────────────────────────────────
   // Registered before /:dispatchNumber so the literal segment never matches as a param.
-  app.get('/trend', { preHandler }, async (request, reply) => {
+  app.get('/trend', { preHandler: operatorPreHandler }, async (request, reply) => {
     const query = dispatchTrendQuerySchema.safeParse(request.query)
     if (!query.success) {
       return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: query.error.flatten() })
@@ -70,7 +76,7 @@ export async function dispatchRoutes(app: FastifyInstance) {
   })
 
   // ── GET /dispatches/:dispatchNumber ───────────────────────────────────────
-  app.get<{ Params: { dispatchNumber: string } }>('/:dispatchNumber', { preHandler }, async (request, reply) => {
+  app.get<{ Params: { dispatchNumber: string } }>('/:dispatchNumber', { preHandler: operatorPreHandler }, async (request, reply) => {
     const dispatch = await getDispatchByNumber(request.params.dispatchNumber)
     if (!dispatch) return reply.code(404).send({ error: AppErrors.DISPATCH_NOT_FOUND })
     return reply.send({ data: dispatch })

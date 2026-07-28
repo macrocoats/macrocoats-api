@@ -17,6 +17,12 @@ export interface AccessTokenPayload {
 export interface RefreshTokenPayload {
   sub: string   // user id
   jti: string   // unique token id (matches refresh_tokens.id in DB)
+  // Opaque random secret (short — see auth.service.ts's issueTokens), bcrypt-hashed
+  // and stored in refresh_tokens.tokenHash. Verified on rotation as a second factor
+  // alongside the RS256 signature. Deliberately NOT the JWT itself: bcrypt silently
+  // truncates inputs over 72 bytes, so hashing the (much longer) full JWT string
+  // would produce a check that only ever compared its first 72 bytes.
+  sec: string
 }
 
 export function signAccessToken(user: AuthUser): string {
@@ -33,8 +39,8 @@ export function signAccessToken(user: AuthUser): string {
   })
 }
 
-export function signRefreshToken(userId: string, tokenId: string): string {
-  const payload: RefreshTokenPayload = { sub: userId, jti: tokenId }
+export function signRefreshToken(userId: string, tokenId: string, secret: string): string {
+  const payload: RefreshTokenPayload = { sub: userId, jti: tokenId, sec: secret }
   return jwt.sign(payload, PRIVATE_KEY, {
     algorithm: 'RS256',
     expiresIn: env.JWT_REFRESH_EXPIRES as SignOptions['expiresIn'],

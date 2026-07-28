@@ -124,4 +124,78 @@ describe('POST /v1/auth/refresh', () => {
   it('returns 401 with no refresh cookie', async () => {
     await request().post('/v1/auth/refresh').expect(401)
   })
+
+  it('rotates a valid refresh token: new cookies, new access token works, old refresh token is rejected on reuse', async () => {
+    const login = await request()
+      .post('/v1/auth/login')
+      .send({ username: 'admin', password: 'mc2024Xp7NrK9L3vQeJbF2wTa' })
+    const loginCookies = login.headers['set-cookie'] as string[]
+
+    const refresh = await request()
+      .post('/v1/auth/refresh')
+      .set('Cookie', loginCookies)
+      .expect(200)
+
+    expect(refresh.body.user.role).toBe('superadmin')
+    const refreshedCookies = refresh.headers['set-cookie'] as string[]
+    expect(refreshedCookies).toBeDefined()
+    // Rotation must issue a genuinely new refresh token, not re-send the old one.
+    const oldRefreshCookie = loginCookies.find((c) => c.startsWith('refreshToken='))
+    const newRefreshCookie = refreshedCookies.find((c) => c.startsWith('refreshToken='))
+    expect(newRefreshCookie).toBeDefined()
+    expect(newRefreshCookie).not.toBe(oldRefreshCookie)
+
+    // The new access token must actually authenticate a follow-up request.
+    await request().get('/v1/auth/me').set('Cookie', refreshedCookies).expect(200)
+
+    // The old (now-rotated) refresh token must be rejected — no replay.
+    await request().post('/v1/auth/refresh').set('Cookie', loginCookies).expect(401)
+  })
+
+  it('rejects a garbage refresh token', async () => {
+    await request()
+      .post('/v1/auth/refresh')
+      .set('Cookie', ['refreshToken=not-a-real-token'])
+      .expect(401)
+  })
+})
+
+// ── Mobile (Bearer-token) refresh — same service functions, JSON body instead of cookies ──
+describe('POST /v1/auth/mobile/login + /v1/auth/mobile/refresh', () => {
+  it('logs in, refreshes, and rejects reuse of the rotated-away refresh token', async () => {
+    const login = await request()
+      .post('/v1/auth/mobile/login')
+      .send({ username: 'admin', password: 'mc2024Xp7NrK9L3vQeJbF2wTa' })
+      .expect(200)
+
+    expect(login.body.accessToken).toBeTruthy()
+    expect(login.body.refreshToken).toBeTruthy()
+
+    const refresh = await request()
+      .post('/v1/auth/mobile/refresh')
+      .send({ refreshToken: login.body.refreshToken })
+      .expect(200)
+
+    expect(refresh.body.accessToken).toBeTruthy()
+    expect(refresh.body.refreshToken).not.toBe(login.body.refreshToken)
+
+    // Old mobile refresh token is now rotated away — reuse must fail.
+    await request()
+      .post('/v1/auth/mobile/refresh')
+      .send({ refreshToken: login.body.refreshToken })
+      .expect(401)
+  })
+})
+
+// ── POST /v1/auth/logout — verify the refresh token is actually revoked ─────────
+describe('POST /v1/auth/logout revokes the refresh token', () => {
+  it('a refresh token can no longer be used after logout', async () => {
+    const login = await request()
+      .post('/v1/auth/login')
+      .send({ username: 'admin', password: 'mc2024Xp7NrK9L3vQeJbF2wTa' })
+    const cookies = login.headers['set-cookie'] as string[]
+
+    await request().post('/v1/auth/logout').set('Cookie', cookies).expect(204)
+    await request().post('/v1/auth/refresh').set('Cookie', cookies).expect(401)
+  })
 })

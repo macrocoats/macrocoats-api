@@ -83,6 +83,7 @@ const SEED_COMPANIES = [
 ]
 
 const SUPERADMIN_TOKEN = 'mc2024Xp7NrK9L3vQeJbF2wTa'
+const OPERATOR_TOKEN = 'fW8mQ2vLtK9pXsA4nJ6dYcRe'
 
 export async function seedCompanies() {
   console.log('🌱 Seeding companies and users...')
@@ -160,6 +161,23 @@ export async function seedCompanies() {
     console.log('   ✅ Created superadmin user (username: admin)')
   } else {
     console.log('   ↩️  Superadmin user already exists')
+  }
+
+  // Factory Operator user — batches/finished-goods/dispatch/production-planning
+  // access only, no pricing/formula visibility. See root CLAUDE.md's RBAC notes.
+  const [existingOperator] = await db.select().from(users).where(eq(users.username, 'operator'))
+  if (!existingOperator) {
+    const passwordHash = await hashPassword(OPERATOR_TOKEN)
+    await db.insert(users).values({
+      name:         'Factory Operator',
+      username:     'operator',
+      passwordHash,
+      role:         'operator',
+      companyId:    null,
+    })
+    console.log('   ✅ Created operator user (username: operator)')
+  } else {
+    console.log('   ↩️  Operator user already exists')
   }
 
   console.log(`   ✅ Seeded ${SEED_COMPANIES.length} companies`)

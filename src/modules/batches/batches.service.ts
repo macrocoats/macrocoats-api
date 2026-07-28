@@ -30,6 +30,20 @@ function toBatchResponse(row: typeof batches.$inferSelect) {
 }
 
 /**
+ * Operator-role view of a batch — everything toBatchResponse() returns
+ * EXCEPT formulationSnapshot (component percentages — formula IP) and
+ * costSummary (cost/profit figures). labelSnapshot and coaSnapshot are kept:
+ * neither is formula composition or pricing (a label is printed and shipped
+ * with the product; a CoA is a quality record), and an operator plausibly
+ * needs both for traceability. Used instead of toBatchResponse() on the
+ * GET routes operators are granted — see requireRole.ts and batches.routes.ts.
+ */
+function toOperatorBatchResponse(row: typeof batches.$inferSelect) {
+  const { formulationSnapshot: _formulationSnapshot, costSummary: _costSummary, ...rest } = toBatchResponse(row)
+  return rest
+}
+
+/**
  * Discriminated result for createBatch — mirrors the null/'invalid_transition'/data
  * convention used elsewhere (e.g. transitionDocumentStatus, transitionVariantStatus),
  * but createBatch needs to carry extra context (variant name + status) for the 409
@@ -116,7 +130,8 @@ export async function createBatch(data: CreateBatchBody, createdBy: string | nul
   })
 }
 
-export async function listBatches(query: ListBatchesQuery) {
+export async function listBatches(query: ListBatchesQuery, role: 'superadmin' | 'operator' = 'superadmin') {
+  const toResponse = role === 'operator' ? toOperatorBatchResponse : toBatchResponse
   const offset = (query.page - 1) * query.limit
 
   const conditions = []
@@ -141,20 +156,21 @@ export async function listBatches(query: ListBatchesQuery) {
     .offset(offset)
 
   return {
-    batches: rows.map(toBatchResponse),
+    batches: rows.map(toResponse),
     total,
     page:  query.page,
     limit: query.limit,
   }
 }
 
-export async function getBatchByNumber(batchNumber: string) {
+export async function getBatchByNumber(batchNumber: string, role: 'superadmin' | 'operator' = 'superadmin') {
   const [row] = await db
     .select()
     .from(batches)
     .where(eq(batches.batchNumber, batchNumber))
 
-  return row ? toBatchResponse(row) : null
+  if (!row) return null
+  return role === 'operator' ? toOperatorBatchResponse(row) : toBatchResponse(row)
 }
 
 export async function saveCoaSnapshot(batchNumber: string, snapshot: SaveCoaSnapshotBody) {

@@ -9,7 +9,9 @@ export const users = pgTable('users', {
   name:         text('name').notNull(),
   username:     text('username').notNull().unique(),   // normalized: lowercase, no spaces
   passwordHash: text('password_hash').notNull(),       // bcrypt cost 12
-  role:         text('role', { enum: ['superadmin', 'company'] }).notNull(),
+  // No DB-level CHECK constraint backs this — Drizzle's `enum` here is TypeScript-only
+  // narrowing, confirmed via \d users. Adding 'operator' needed no migration.
+  role:         text('role', { enum: ['superadmin', 'company', 'operator'] }).notNull(),
   companyId:    uuid('company_id').references(() => companies.id, { onDelete: 'set null' }),
   createdAt:    timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt:    timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

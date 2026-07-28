@@ -1,11 +1,15 @@
 import type { FastifyInstance } from 'fastify'
 import { authenticate, requireAuth } from '../../middleware/authenticate.js'
 import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js'
+import { requireRole } from '../../middleware/requireRole.js'
 import { AppErrors } from '../../types/errors.js'
 import { createBatchSchema, listBatchesQuerySchema, saveCoaSnapshotSchema, setPaymentStatusSchema } from './batches.schema.js'
 import { createBatch, listBatches, getBatchByNumber, deleteBatch, saveCoaSnapshot, clearCoaSnapshot, setPaymentStatus } from './batches.service.js'
 
 const preHandler = [authenticate, requireAuth, requireSuperAdmin]
+// Operators may VIEW batches (with formula/cost stripped — see toOperatorBatchResponse
+// in batches.service.ts) but never create/edit/delete one — see root CLAUDE.md's RBAC notes.
+const viewPreHandler = [authenticate, requireAuth, requireRole('superadmin', 'operator')]
 
 export async function batchRoutes(app: FastifyInstance) {
   // ── POST /batches ─────────────────────────────────────────────────────────
@@ -31,19 +35,21 @@ export async function batchRoutes(app: FastifyInstance) {
   })
 
   // ── GET /batches ──────────────────────────────────────────────────────────
-  app.get('/', { preHandler }, async (request, reply) => {
+  app.get('/', { preHandler: viewPreHandler }, async (request, reply) => {
     const query = listBatchesQuerySchema.safeParse(request.query)
     if (!query.success) {
       return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: query.error.flatten() })
     }
 
-    const result = await listBatches(query.data)
+    const role = request.authUser!.role === 'operator' ? 'operator' : 'superadmin'
+    const result = await listBatches(query.data, role)
     return reply.send(result)
   })
 
   // ── GET /batches/:batchNumber ─────────────────────────────────────────────
-  app.get<{ Params: { batchNumber: string } }>('/:batchNumber', { preHandler }, async (request, reply) => {
-    const batch = await getBatchByNumber(request.params.batchNumber)
+  app.get<{ Params: { batchNumber: string } }>('/:batchNumber', { preHandler: viewPreHandler }, async (request, reply) => {
+    const role = request.authUser!.role === 'operator' ? 'operator' : 'superadmin'
+    const batch = await getBatchByNumber(request.params.batchNumber, role)
     if (!batch) return reply.code(404).send({ error: AppErrors.BATCH_NOT_FOUND })
     return reply.send(batch)
   })

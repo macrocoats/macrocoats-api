@@ -1,6 +1,9 @@
 // ── Shared domain types ───────────────────────────────────────────────────────
 
-export type UserRole = 'superadmin' | 'company'
+// 'operator' is a Factory Operator: batches/finished-goods/dispatch/production-planning
+// access only (view + the specific write actions that don't require formula/cost
+// visibility — see requireRole.ts and each module's routes.ts for the exact grants).
+export type UserRole = 'superadmin' | 'company' | 'operator'
 
 export interface AuthUser {
   id:              string

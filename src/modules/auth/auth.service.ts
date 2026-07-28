@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto'
 import { eq, and, gt, isNull } from 'drizzle-orm'
 import { db } from '../../db/index.js'
 import {
@@ -100,20 +101,26 @@ export async function loginWithToken(
 async function issueTokens(user: typeof users.$inferSelect) {
   const authUser = await buildAuthUser(user)
 
-  // Create a refresh token record
-  const rawRefresh = generateToken(32)
-  const tokenHash  = await hashToken(rawRefresh)
-  const expiresAt  = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+  // The refresh token handed to the client is the signed JWT itself (sub + jti +
+  // an opaque secret claim). tokenId is generated here (not left to the DB's
+  // defaultRandom()) so it's known before the row exists, letting the JWT be
+  // signed in the same pass as the insert instead of a sign-after-insert
+  // ordering that previously left the signed JWT unused — see git history for
+  // the bug this replaced. `secret` is bcrypt-hashed and stored for a second,
+  // independent revocation-check factor (verified via payload.sec on rotation)
+  // — kept short deliberately; bcrypt truncates at 72 bytes, so the much-longer
+  // JWT string itself is never what gets hashed.
+  const tokenId   = randomUUID()
+  const secret    = generateToken(32)
+  const tokenHash = await hashToken(secret)
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
 
-  const [rtRow] = await db
-    .insert(refreshTokens)
-    .values({ userId: user.id, tokenHash, expiresAt })
-    .returning({ id: refreshTokens.id })
+  await db.insert(refreshTokens).values({ id: tokenId, userId: user.id, tokenHash, expiresAt })
 
   const accessToken  = signAccessToken(authUser)
-  const refreshToken = signRefreshToken(user.id, rtRow.id)
+  const refreshToken = signRefreshToken(user.id, tokenId, secret)
 
-  return { authUser, accessToken, refreshToken: rawRefresh }
+  return { authUser, accessToken, refreshToken }
 }
 
 export async function rotateRefreshToken(
@@ -144,8 +151,10 @@ export async function rotateRefreshToken(
 
   if (!revoked) return null
 
-  // Verify the raw token against the hash of the row we just revoked.
-  const valid = await verifyTokenHash(rawOldRefresh, revoked.tokenHash)
+  // Verify the JWT's secret claim (not the raw JWT string — see issueTokens) against
+  // the hash of the row we just revoked. Second, independent factor beyond the RS256
+  // signature check above.
+  const valid = await verifyTokenHash(payload.sec, revoked.tokenHash)
   if (!valid) return null
 
   const [user] = await db.select().from(users).where(eq(users.id, revoked.userId))

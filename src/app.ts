@@ -27,6 +27,7 @@ import { purchaseEntryRoutes } from './modules/purchase-entries/purchase-entries
 import { companyDocumentRoutes } from './modules/company-documents/company-documents.routes.js'
 import { customerPurchaseOrderRoutes } from './modules/customer-purchase-orders/customer-purchase-orders.routes.js'
 import { investorDashboardRoutes } from './modules/investor-dashboard/investor-dashboard.routes.js'
+import { productionPlanningRoutes } from './modules/production-planning/production-planning.routes.js'
 import { letterheadRoutes } from './modules/letterheads/letterheads.routes.js'
 import { zohoInvoiceRoutes } from './modules/zoho-invoice/zoho-invoice.routes.js'
 import { AppErrors } from './types/errors.js'
@@ -80,6 +81,7 @@ export async function buildApp() {
   await app.register(companyDocumentRoutes,       { prefix: `${prefix}/companies` })
   await app.register(customerPurchaseOrderRoutes, { prefix: `${prefix}/customer-purchase-orders` })
   await app.register(investorDashboardRoutes,     { prefix: `${prefix}/investor-dashboard` })
+  await app.register(productionPlanningRoutes,    { prefix: `${prefix}/production-planning` })
   await app.register(letterheadRoutes,            { prefix: `${prefix}/letterheads` })
   await app.register(zohoInvoiceRoutes,           { prefix: `${prefix}/zoho-invoices` })
 
