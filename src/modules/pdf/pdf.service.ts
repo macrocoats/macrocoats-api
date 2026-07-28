@@ -134,11 +134,79 @@ interface InvestorInsights {
   topRegion?: { label: string; value: number } | null;
   revenueGrowthPct?: number | null;
   productionTrendPct?: number | null;
-  pendingOrderRisk?: { pendingOrderValue: number; ratioToQuarterlySalesPct: number | null; severity: 'low' | 'medium' | 'high' };
+  pendingOrderRisk?: { pendingOrderValue: number; ratioToQuarterlySalesPct: number | null; severity: 'low' | 'medium' | 'high' | 'unknown' };
   customerConcentration?: { top5Value: number; windowRevenue: number; concentrationPct: number | null };
   inventoryTurnover?: { cogs: number; inventoryValue: number; annualizedRatio: number | null; note: string | null };
   portfolioMargin?: { totalRevenue: number; totalProfit: number; weightedAvgMarginPct: number | null };
-  businessHealthScore?: { score: number; components: Record<string, number> };
+  businessHealthScore?: { score: number | null; dataCoverage?: number; components: Record<string, number | null> };
+}
+
+type Band = 'good' | 'warn' | 'bad' | 'nodata';
+
+function bandForScore(score: number | null | undefined, good = 70, warn = 40): Band {
+  if (score == null) return 'nodata';
+  return score >= good ? 'good' : score >= warn ? 'warn' : 'bad';
+}
+
+function bandForGrowth(pct: number | null | undefined): Band {
+  if (pct == null) return 'nodata';
+  return pct > 0 ? 'good' : pct === 0 ? 'warn' : 'bad';
+}
+
+function formatCompactINR(value: number): string {
+  const sign = value < 0 ? '-' : '';
+  const abs = Math.abs(value);
+  if (abs >= 1e7) return `${sign}₹${(abs / 1e7).toFixed(1)}Cr`;
+  if (abs >= 1e5) return `${sign}₹${(abs / 1e5).toFixed(1)}L`;
+  if (abs >= 1e3) return `${sign}₹${(abs / 1e3).toFixed(1)}K`;
+  return `${sign}₹${Math.round(abs)}`;
+}
+
+/**
+ * Renders the monthly sales trend as an actual inline SVG bar+line chart
+ * (baseline + bars + a dashed trend line across bar tops) instead of six
+ * static currency labels — Puppeteer renders inline SVG natively, no chart
+ * library needed for a print PDF. The baseline is always drawn full-width,
+ * so an all-zero window still shows a real flat line at zero rather than a
+ * near-invisible 1px bar or nothing at all.
+ */
+function buildMonthlyTrendSvg(rows: Array<{ periodLabel: string; totalValue: number }>): string {
+  const width = 640;
+  const height = 140;
+  const padTop = 16;
+  const padBottom = 22;
+  const padSide = 10;
+  const chartH = height - padTop - padBottom;
+  const n = Math.max(1, rows.length);
+  const gap = 12;
+  const barW = (width - padSide * 2 - gap * (n - 1)) / n;
+  const max = Math.max(1, ...rows.map((r) => r.totalValue));
+  const hasData = rows.some((r) => r.totalValue > 0);
+  const barColor = hasData ? '#4E7BAF' : '#C5D3E8';
+  const baselineY = padTop + chartH;
+
+  const bars: string[] = [];
+  const values: string[] = [];
+  const labels: string[] = [];
+  const points: string[] = [];
+
+  rows.forEach((r, i) => {
+    const x = padSide + i * (barW + gap);
+    const h = Math.max(1, (r.totalValue / max) * chartH);
+    const y = baselineY - h;
+    const cx = x + barW / 2;
+    bars.push(`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${h.toFixed(1)}" rx="2" fill="${barColor}" />`);
+    values.push(`<text x="${cx.toFixed(1)}" y="${(y - 4).toFixed(1)}" font-size="9" text-anchor="middle" fill="#123A6D" font-weight="700">${formatCompactINR(r.totalValue)}</text>`);
+    labels.push(`<text x="${cx.toFixed(1)}" y="${(height - padBottom + 13).toFixed(1)}" font-size="9" text-anchor="middle" fill="#5C6470">${r.periodLabel}</text>`);
+    points.push(`${cx.toFixed(1)},${y.toFixed(1)}`);
+  });
+
+  const baseline = `<line x1="${padSide}" y1="${baselineY.toFixed(1)}" x2="${width - padSide}" y2="${baselineY.toFixed(1)}" stroke="#C5D3E8" stroke-width="1" />`;
+  const trendLine = hasData
+    ? `<polyline points="${points.join(' ')}" fill="none" stroke="#123A6D" stroke-width="1.4" stroke-dasharray="3,2" />`
+    : '';
+
+  return `<svg viewBox="0 0 ${width} ${height}" width="100%" height="32mm" xmlns="http://www.w3.org/2000/svg" class="ir-trend-svg" preserveAspectRatio="xMidYMid meet">${baseline}${bars.join('')}${trendLine}${values.join('')}${labels.join('')}</svg>`;
 }
 
 /**
@@ -150,11 +218,19 @@ interface InvestorInsights {
 function buildInvestorReportContext(payload: Record<string, unknown>): Record<string, unknown> {
   const insights = (payload['insights'] as InvestorInsights | undefined) ?? {};
   const analytics = (payload['analytics'] as Record<string, unknown> | undefined) ?? {};
+  const kpis = (payload['kpis'] as Record<string, unknown> | undefined) ?? {};
 
   const salesByCustomer = (analytics['salesByCustomer'] as Array<Record<string, unknown>> | undefined) ?? [];
   const salesByProduct  = (analytics['salesByProduct']  as Array<Record<string, unknown>> | undefined) ?? [];
   const salesByRegion   = (analytics['salesByRegion']   as Array<Record<string, unknown>> | undefined) ?? [];
   const monthlyTrend    = (analytics['monthlyTrend']     as Array<Record<string, unknown>> | undefined) ?? [];
+
+  // Whether the *selected report window* had any orders at all — drives the
+  // prominent "no orders recorded" banner. `kpis.ordersReceived` is the
+  // filter-scoped count (respects range/customerId/productKey), same scope
+  // as the top-N breakdown tables below (salesByCustomer/salesByProduct/
+  // salesByRegion are now window-scoped too, see getSalesAnalytics()).
+  const noActivityInWindow = Number(kpis['ordersReceived'] ?? 0) === 0;
 
   // Print can't do arithmetic in Handlebars beyond the `multiply` helper, so
   // proportional-bar widths (mirroring RankingCard.jsx/TrendChart.jsx on the
@@ -164,14 +240,17 @@ function buildInvestorReportContext(payload: Record<string, unknown>): Record<st
     return rows.map((r) => ({ ...r, barPct: Math.round((Number(r[key] ?? 0) / max) * 100) }));
   };
 
+  // `null` (no comparable prior-window data) is reported distinctly from a
+  // genuine 0% change — collapsing both into "flat" previously made a
+  // no-data window read as "unchanged/steady", which is misleading.
   const growthLabel = (pct: number | null | undefined) =>
-    pct == null ? 'flat' : pct > 0 ? `up ${pct.toFixed(1)}%` : pct < 0 ? `down ${Math.abs(pct).toFixed(1)}%` : 'flat';
+    pct == null ? 'not measurable (no comparable prior-period data)' : pct > 0 ? `up ${pct.toFixed(1)}%` : pct < 0 ? `down ${Math.abs(pct).toFixed(1)}%` : 'flat';
 
   const insightBullets: string[] = [
-    insights.highestRevenueProduct ? `${insights.highestRevenueProduct.label} is the highest-revenue product.` : null,
-    insights.largestCustomer ? `${insights.largestCustomer.label} is the largest customer by order value.` : null,
+    insights.highestRevenueProduct ? `${insights.highestRevenueProduct.label} is the highest-revenue product in this window.` : null,
+    insights.largestCustomer ? `${insights.largestCustomer.label} is the largest customer by order value in this window.` : null,
     `Revenue is ${growthLabel(insights.revenueGrowthPct)} vs. the prior equal-length window.`,
-    insights.topRegion ? `${insights.topRegion.label} leads by order value among regions.` : null,
+    insights.topRegion ? `${insights.topRegion.label} leads by order value among regions in this window.` : null,
     `Production volume is ${growthLabel(insights.productionTrendPct)} vs. the prior equal-length window.`,
     insights.customerConcentration?.concentrationPct != null
       ? `The top 5 customers account for ${insights.customerConcentration.concentrationPct.toFixed(1)}% of revenue in this window.`
@@ -185,10 +264,19 @@ function buildInvestorReportContext(payload: Record<string, unknown>): Record<st
   ].filter((s): s is string => s !== null);
 
   const riskNotes: string[] = [];
-  if (insights.pendingOrderRisk && insights.pendingOrderRisk.severity !== 'low') {
-    riskNotes.push(
-      `Pending orders represent ${insights.pendingOrderRisk.ratioToQuarterlySalesPct?.toFixed(1) ?? '—'}% of this quarter's sales (${insights.pendingOrderRisk.severity} risk) — monitor fulfillment capacity.`,
-    );
+  if (insights.pendingOrderRisk) {
+    const { severity, ratioToQuarterlySalesPct, pendingOrderValue } = insights.pendingOrderRisk;
+    if (severity === 'unknown') {
+      if (pendingOrderValue > 0) {
+        riskNotes.push(
+          `Pending order value (${formatCompactINR(pendingOrderValue)}) could not be benchmarked against this quarter's sales — this quarter has no completed sales recorded yet, so this is unassessed risk, not confirmed-low risk.`,
+        );
+      }
+    } else if (severity !== 'low') {
+      riskNotes.push(
+        `Pending orders represent ${ratioToQuarterlySalesPct?.toFixed(1) ?? '—'}% of this quarter's sales (${severity} risk) — monitor fulfillment capacity.`,
+      );
+    }
   }
   if (insights.customerConcentration?.concentrationPct != null && insights.customerConcentration.concentrationPct >= 40) {
     riskNotes.push(
@@ -198,7 +286,11 @@ function buildInvestorReportContext(payload: Record<string, unknown>): Record<st
   if (insights.portfolioMargin?.weightedAvgMarginPct != null && insights.portfolioMargin.weightedAvgMarginPct < 15) {
     riskNotes.push(`Portfolio gross margin (${insights.portfolioMargin.weightedAvgMarginPct.toFixed(1)}%) is below the 15% target used elsewhere in this system's cost alerts.`);
   }
-  if (riskNotes.length === 0) riskNotes.push('No elevated risk signals in this window based on the metrics tracked.');
+  if (riskNotes.length === 0) {
+    riskNotes.push(noActivityInWindow
+      ? 'No risk signals could be assessed — this window has no recorded orders to evaluate.'
+      : 'No elevated risk signals in this window based on the metrics tracked.');
+  }
 
   const opportunities: string[] = [];
   if (insights.revenueGrowthPct != null && insights.revenueGrowthPct > 0) {
@@ -207,7 +299,11 @@ function buildInvestorReportContext(payload: Record<string, unknown>): Record<st
   if (insights.customerConcentration?.concentrationPct != null && insights.customerConcentration.concentrationPct < 40) {
     opportunities.push('Customer revenue is reasonably diversified — a healthy base for expanding into adjacent products or regions.');
   }
-  if (opportunities.length === 0) opportunities.push('No specific growth opportunity flagged by the metrics tracked this window.');
+  if (opportunities.length === 0) {
+    opportunities.push(noActivityInWindow
+      ? 'No growth opportunities can be identified from a window with zero recorded orders.'
+      : 'No specific growth opportunity flagged by the metrics tracked this window.');
+  }
 
   const recommendations: string[] = [
     'Review pending orders against production capacity before committing to new large orders.',
@@ -215,38 +311,77 @@ function buildInvestorReportContext(payload: Record<string, unknown>): Record<st
     'Revisit pricing/cost structure for any product line trending below the 15% gross-margin target.',
   ];
 
-  const healthScore = insights.businessHealthScore?.score;
-  const businessOutlookText = healthScore == null
-    ? 'Insufficient data to summarize business outlook for this window.'
-    : `Business Health Score is ${healthScore}/100 for this window, reflecting revenue growth (${growthLabel(insights.revenueGrowthPct)}), order completion rate, customer concentration, and portfolio margin combined. ${
-        healthScore >= 70 ? 'Overall indicators are healthy.'
-          : healthScore >= 50 ? 'Overall indicators are stable, with room for improvement in the areas flagged below.'
-          : 'Overall indicators warrant management attention — see risks below.'
-      }`;
+  const healthScore = insights.businessHealthScore?.score ?? null;
+  const healthBand = bandForScore(healthScore);
+  const outlookParts: string[] = [];
+  if (noActivityInWindow) {
+    outlookParts.push(`No orders were recorded between ${formatDate(String(payload['from'] ?? ''))} and ${formatDate(String(payload['to'] ?? ''))}.`);
+  }
+  outlookParts.push(
+    healthScore == null
+      ? 'There is insufficient data in this window to compute a Business Health Score — see the breakdown below for which inputs were unavailable.'
+      : `Business Health Score is ${healthScore}/100 for this window, reflecting revenue growth (${growthLabel(insights.revenueGrowthPct)}), order completion rate, customer concentration, and portfolio margin combined. ${
+          healthScore >= 70 ? 'Overall indicators are healthy.'
+            : healthScore >= 50 ? 'Overall indicators are stable, with room for improvement in the areas flagged below.'
+            : 'Overall indicators warrant management attention — see risks below.'
+        }`,
+  );
+  const businessOutlookText = outlookParts.join(' ');
 
-  // Bar heights are absolute mm, not CSS %, because percentage-height on a
-  // flex-column child only resolves reliably when every ancestor in the
-  // chain has an explicit (non-content-driven) height — safer to compute the
-  // pixel/mm value once here than debug that per browser/print engine.
-  const MAX_BAR_HEIGHT_MM = 24;
+  // Health score sub-component breakdown for the visual bars — `score: null`
+  // (excluded from the average upstream, see investor-dashboard.service.ts)
+  // renders as an explicit "No data" bar, never a fabricated number.
+  const healthComponents = insights.businessHealthScore?.components ?? {};
+  const healthBreakdown = [
+    { label: 'Revenue Growth', key: 'growthScore' },
+    { label: 'Order Completion', key: 'completionScore' },
+    { label: 'Customer Concentration', key: 'concentrationScore' },
+    { label: 'Portfolio Margin', key: 'marginScore' },
+  ].map(({ label, key }) => {
+    const score = healthComponents[key] ?? null;
+    // A real score of 0 (bad) and a null score (no data) must not render as
+    // the same empty-looking 0%-width bar — a real bad score gets a small
+    // visible sliver so it reads as "measured and bad", not "unmeasured".
+    const barPct = score == null ? 0 : Math.max(4, score);
+    return { label, score, hasData: score != null, barPct, band: bandForScore(score) };
+  });
+
   const monthlyTrendLast6 = withBarPct(monthlyTrend.slice(-6), 'totalValue').map((r) => {
     const [y, m] = String(r['period'] ?? '').split('-');
     const label = y && m ? new Date(Number(y), Number(m) - 1, 1).toLocaleDateString('en-IN', { month: 'short', year: '2-digit' }) : String(r['period'] ?? '');
-    const barPct = Number((r as { barPct: number }).barPct ?? 0);
-    return { ...r, periodLabel: label, barHeightMm: Math.max(1, Math.round((barPct / 100) * MAX_BAR_HEIGHT_MM)) };
-  });
+    return { ...r, periodLabel: label };
+  }) as Array<{ periodLabel: string; totalValue: number }>;
+  // The trailing-6-month trend is always "the most recent 6 calendar months",
+  // independent of the selected report window (`from`/`to`) — a Dec-2025
+  // report can still show a non-zero Jul-2026 trend bar. Its own "flat at
+  // zero" callout must be driven by whether *this trend series* is all zero,
+  // never by `noActivityInWindow` (which describes the selected window only)
+  // — conflating the two previously produced a false "no orders in the
+  // trailing 6 months" claim next to a chart that visibly had real bars.
+  const monthlyTrendAllZero = monthlyTrendLast6.every((r) => r.totalValue === 0);
 
   return {
     companyInfo: COMPANY,
+    noActivityInWindow,
+    monthlyTrendAllZero,
     topCustomers5: withBarPct(salesByCustomer.slice(0, 5), 'totalValue'),
     topProducts5: withBarPct(salesByProduct.slice(0, 5), 'totalValue'),
     topRegions5: withBarPct(salesByRegion.slice(0, 5), 'totalValue'),
     monthlyTrendLast6,
+    monthlyTrendSvg: buildMonthlyTrendSvg(monthlyTrendLast6),
     insightBullets,
     riskNotes,
     opportunities,
     recommendations,
     businessOutlookText,
+    healthScoreDisplay: healthScore == null ? '—' : String(healthScore),
+    healthBand,
+    healthBreakdown,
+    salesGrowthBand: bandForGrowth(insights.revenueGrowthPct),
+    salesGrowthLabel: growthLabel(insights.revenueGrowthPct),
+    pendingRiskBand: insights.pendingOrderRisk
+      ? (insights.pendingOrderRisk.severity === 'high' ? 'bad' : insights.pendingOrderRisk.severity === 'medium' ? 'warn' : insights.pendingOrderRisk.severity === 'low' ? 'good' : 'nodata')
+      : 'nodata',
   };
 }
 

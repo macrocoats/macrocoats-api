@@ -143,6 +143,12 @@ export async function getExecutiveKpis(filter: DashboardFilter) {
 
 export async function getSalesAnalytics(filter: DashboardFilter) {
   const customerCond = filter.customerId ? sql`AND o.customer_id = ${filter.customerId}` : sql``
+  // Only the top-N breakdowns below (salesByCustomer/salesByProduct/salesByRegion)
+  // use this — monthlyTrend/quarterlyTrend/yearlyTrend are deliberately always
+  // "the trailing N calendar periods from today", independent of `filter.range`,
+  // so they stay untouched here.
+  const { from, to } = resolveWindow(filter)
+  const windowCond = sql`AND o.customer_po_date BETWEEN ${from} AND ${to}`
 
   const monthlyRows = await db.execute<{ [k: string]: unknown; period: string; orderCount: string; totalValue: string }>(sql`
     SELECT to_char(gs.period, 'YYYY-MM') AS period,
@@ -175,7 +181,7 @@ export async function getSalesAnalytics(filter: DashboardFilter) {
     SELECT o.customer_id AS "customerId", c.display_name AS "customerName",
       COUNT(*) AS "orderCount", COALESCE(SUM(o.total_value), 0) AS "totalValue"
     FROM customer_purchase_orders o JOIN companies c ON c.id = o.customer_id
-    WHERE o.deleted_at IS NULL AND o.status != 'cancelled'
+    WHERE o.deleted_at IS NULL AND o.status != 'cancelled' ${windowCond}
     GROUP BY o.customer_id, c.display_name ORDER BY "totalValue" DESC LIMIT 10
   `)
 
@@ -185,7 +191,7 @@ export async function getSalesAnalytics(filter: DashboardFilter) {
     FROM customer_purchase_order_items i
     JOIN products p ON p.key = i.product_key
     JOIN customer_purchase_orders o ON o.id = i.order_id
-    WHERE o.deleted_at IS NULL AND o.status != 'cancelled'
+    WHERE o.deleted_at IS NULL AND o.status != 'cancelled' ${windowCond}
     GROUP BY i.product_key, p.display_name ORDER BY "totalValue" DESC LIMIT 10
   `)
 
@@ -193,7 +199,7 @@ export async function getSalesAnalytics(filter: DashboardFilter) {
     SELECT COALESCE(NULLIF(c.state, ''), 'Unspecified') AS region,
       COUNT(*) AS "orderCount", COALESCE(SUM(o.total_value), 0) AS "totalValue"
     FROM customer_purchase_orders o JOIN companies c ON c.id = o.customer_id
-    WHERE o.deleted_at IS NULL AND o.status != 'cancelled'
+    WHERE o.deleted_at IS NULL AND o.status != 'cancelled' ${windowCond}
     GROUP BY region ORDER BY "totalValue" DESC LIMIT 10
   `)
 
@@ -339,10 +345,18 @@ export async function getExecutiveInsights(filter: DashboardFilter) {
   const priorProductionVolume = Number(priorProductionRow?.priorProductionVolume ?? 0)
   const productionTrendPct = growthPct(kpis.productionVolume, priorProductionVolume)
 
-  // ── Customer concentration — top-5 customers' share of in-window revenue ──
+  // ── Customer concentration — top-5 customers' share of in-window revenue.
+  // Safe to reuse analytics.salesByCustomer.slice(0, 5) now that getSalesAnalytics()
+  // scopes salesByCustomer to this same resolved window (previously it was an
+  // all-time top-10 leaderboard; dividing an all-time top-5 total by a short
+  // window's revenue used to inflate concentrationPct well past 100% for any
+  // window shorter than the account's full history, forcing concentrationScore
+  // to a fabricated 0 even for a well-diversified, healthy window). A top-10
+  // LIMIT always contains the true top 5 when at least 5 customers ordered in
+  // the window, so no separate query is needed here.
   const top5 = analytics.salesByCustomer.slice(0, 5)
   const top5Value = top5.reduce((sum, c) => sum + c.totalValue, 0)
-  const concentrationPct = windowRevenue > 0 ? round2((top5Value / windowRevenue) * 100) : null
+  const concentrationPct = windowRevenue > 0 ? round2(clamp((top5Value / windowRevenue) * 100, 0, 100)) : null
 
   // ── Inventory turnover — COGS (period, from cost-intelligence's own batch cost
   // formula) ÷ current inventory value, annualized. Current inventory value is a
@@ -375,22 +389,57 @@ export async function getExecutiveInsights(filter: DashboardFilter) {
   const weightedAvgMarginPct = totalRevenueForMargin > 0 ? round2((totalProfitForMargin / totalRevenueForMargin) * 100) : null
 
   // ── Pending-order risk — pending order value relative to this quarter's sales.
+  // 'unknown' (not 'low') when quarterlySales is 0 — there's no baseline to
+  // benchmark against, and silently calling that "low risk" is exactly the
+  // "assume healthy when there's no data" bug this module used to have.
   const pendingRatioPct = kpis.quarterlySales > 0 ? round2((kpis.pendingOrderValue / kpis.quarterlySales) * 100) : null
-  const pendingRiskSeverity: 'low' | 'medium' | 'high' = pendingRatioPct == null ? 'low'
+  const pendingRiskSeverity: 'low' | 'medium' | 'high' | 'unknown' = pendingRatioPct == null ? 'unknown'
     : pendingRatioPct > 50 ? 'high' : pendingRatioPct > 25 ? 'medium' : 'low'
 
-  // ── Business Health Score — an equally-weighted composite of four 0-100
-  // sub-scores. This weighting is a new judgment call (no pre-existing formula):
+  // ── Business Health Score — an equally-weighted composite of up to four
+  // 0-100 sub-scores, averaged over only the sub-scores that have real data
+  // behind them. This weighting is a new judgment call (no pre-existing
+  // formula):
   //   growthScore        — revenue growth vs. prior window, centered at 50 (0% growth)
   //   completionScore     — % of in-window orders completed
   //   concentrationScore — 100 minus top-5-customer revenue concentration (lower
   //                         concentration = healthier, less customer-dependency risk)
   //   marginScore         — weighted portfolio margin, scaled so 30% margin = 100
-  const growthScore = clamp(50 + (revenueGrowthPct ?? 0) / 2, 0, 100)
-  const completionScore = kpis.ordersReceived > 0 ? clamp((kpis.ordersCompleted / kpis.ordersReceived) * 100, 0, 100) : 100
-  const concentrationScore = concentrationPct != null ? clamp(100 - concentrationPct, 0, 100) : 100
-  const marginScore = weightedAvgMarginPct != null ? clamp((weightedAvgMarginPct / 30) * 100, 0, 100) : 50
-  const businessHealthScore = round2((growthScore + completionScore + concentrationScore + marginScore) / 4)
+  //
+  // Each sub-score is `null` (not a neutral/optimistic default) when its
+  // window has no underlying data to score — e.g. 0 orders received means
+  // "no completion rate to assess", not "100% completion". A previous version
+  // of this formula defaulted unscorable metrics to 100/100/50/50, which
+  // silently produced a 75/100 "healthy" score for a genuinely empty window
+  // with zero orders and zero revenue. `null` sub-scores are excluded from
+  // the average rather than dragging it toward a fabricated number; the
+  // overall score is `null` (not 0, not a default) when none of the four
+  // could be computed, so callers can render "Insufficient data" instead of
+  // a confident-looking number.
+  const noPriorOrCurrentRevenue = windowRevenue === 0 && priorWindowRevenue === 0
+  const growthScore = noPriorOrCurrentRevenue
+    ? null
+    // priorWindowRevenue === 0 but windowRevenue > 0: revenue appeared from
+    // nothing this window — growthPct is undefined (can't divide by zero
+    // baseline) but this is real, strongly-positive activity, not "no data".
+    : priorWindowRevenue === 0
+      ? 100
+      : round2(clamp(50 + (revenueGrowthPct ?? 0) / 2, 0, 100))
+  const completionScore = kpis.ordersReceived > 0
+    ? round2(clamp((kpis.ordersCompleted / kpis.ordersReceived) * 100, 0, 100))
+    : null
+  const concentrationScore = (windowRevenue > 0 && concentrationPct != null)
+    ? round2(clamp(100 - concentrationPct, 0, 100))
+    : null
+  const marginScore = weightedAvgMarginPct != null
+    ? round2(clamp((weightedAvgMarginPct / 30) * 100, 0, 100))
+    : null
+
+  const scoreComponents = { growthScore, completionScore, concentrationScore, marginScore }
+  const availableScores = Object.values(scoreComponents).filter((s): s is number => s != null)
+  const businessHealthScore = availableScores.length > 0
+    ? round2(availableScores.reduce((sum, s) => sum + s, 0) / availableScores.length)
+    : null
 
   const topProduct = analytics.salesByProduct[0] ?? null
   const topCustomer = analytics.salesByCustomer[0] ?? null
@@ -425,7 +474,8 @@ export async function getExecutiveInsights(filter: DashboardFilter) {
     },
     businessHealthScore: {
       score: businessHealthScore,
-      components: { growthScore: round2(growthScore), completionScore: round2(completionScore), concentrationScore: round2(concentrationScore), marginScore: round2(marginScore) },
+      dataCoverage: availableScores.length,
+      components: scoreComponents,
     },
   }
 }

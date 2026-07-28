@@ -20,22 +20,55 @@
   {{!-- ═══ PAGE 2 — EXECUTIVE SUMMARY ═══ --}}
   <div class="sec-title">Executive Summary</div>
 
+  <div class="ir-disclaimer no-break">
+    <strong>Data provenance:</strong> "Sales"/"Revenue" figures throughout this report represent confirmed Customer PO
+    order value, not recognized accounting revenue &mdash; this system has no invoicing/accounting layer. Figures are
+    for internal management and investor reference only and are not audited financial statements.
+  </div>
+
+  {{#if noActivityInWindow}}
+  <div class="callout callout-warning no-break">
+    <div class="callout__body"><strong>No orders recorded in this period</strong> ({{formatDate from}} &ndash; {{formatDate to}}). Every figure below reflects a zero-activity window &mdash; this is a report of no activity, not a positive or negative performance signal.</div>
+  </div>
+  {{/if}}
+
+  <div class="ir-primary-grid no-break">
+    <div class="ir-primary-tile ir-band-{{salesGrowthBand}}">
+      <div class="ir-primary-tile__label">This Month Sales</div>
+      <div class="ir-primary-tile__value">{{formatCurrency kpis.currentMonthSales}}</div>
+      <div class="ir-primary-tile__sub">Revenue vs. prior window: {{salesGrowthLabel}}</div>
+    </div>
+    <div class="ir-primary-tile ir-band-{{healthBand}}">
+      <div class="ir-primary-tile__label">Business Health Score</div>
+      <div class="ir-primary-tile__value">{{healthScoreDisplay}}<span style="font-size: 11pt;">/100</span></div>
+      <div class="ir-health-breakdown">
+        {{#each healthBreakdown}}
+        <div class="ir-health-breakdown__row">
+          <span class="ir-health-breakdown__label">{{this.label}}</span>
+          <span class="ir-health-breakdown__bar-track">
+            <span class="ir-health-breakdown__bar ir-band-{{this.band}}" style="width: {{this.barPct}}%;"></span>
+          </span>
+          <span class="ir-health-breakdown__score">{{#if this.hasData}}{{this.score}}{{else}}No data{{/if}}</span>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+    <div class="ir-primary-tile ir-band-{{pendingRiskBand}}">
+      <div class="ir-primary-tile__label">Pending Order Value</div>
+      <div class="ir-primary-tile__value">{{formatCurrency kpis.pendingOrderValue}}</div>
+      <div class="ir-primary-tile__sub">Not accounting receivables &mdash; unfulfilled order value</div>
+    </div>
+  </div>
+
   <div class="ir-kpi-grid">
-    <div class="ir-kpi-tile"><div class="ir-kpi-tile__label">This Month Sales</div><div class="ir-kpi-tile__value">{{formatCurrency kpis.currentMonthSales}}</div></div>
     <div class="ir-kpi-tile"><div class="ir-kpi-tile__label">This Quarter Sales</div><div class="ir-kpi-tile__value">{{formatCurrency kpis.quarterlySales}}</div></div>
     <div class="ir-kpi-tile"><div class="ir-kpi-tile__label">Year to Date Sales</div><div class="ir-kpi-tile__value">{{formatCurrency kpis.ytdSales}}</div></div>
-    <div class="ir-kpi-tile"><div class="ir-kpi-tile__label">Pending Order Value</div><div class="ir-kpi-tile__value">{{formatCurrency kpis.pendingOrderValue}}</div></div>
     <div class="ir-kpi-tile"><div class="ir-kpi-tile__label">Avg Order Value</div><div class="ir-kpi-tile__value">{{formatCurrency kpis.averageOrderValue}}</div></div>
     <div class="ir-kpi-tile"><div class="ir-kpi-tile__label">Orders Received</div><div class="ir-kpi-tile__value">{{formatNumber kpis.ordersReceived 0}}</div></div>
     <div class="ir-kpi-tile"><div class="ir-kpi-tile__label">Orders Completed</div><div class="ir-kpi-tile__value">{{formatNumber kpis.ordersCompleted 0}}</div></div>
     <div class="ir-kpi-tile"><div class="ir-kpi-tile__label">Active Customers</div><div class="ir-kpi-tile__value">{{formatNumber kpis.activeCustomers 0}}</div></div>
     <div class="ir-kpi-tile"><div class="ir-kpi-tile__label">Products Sold</div><div class="ir-kpi-tile__value">{{formatNumber kpis.productsSold 0}}</div></div>
     <div class="ir-kpi-tile"><div class="ir-kpi-tile__label">Production Volume</div><div class="ir-kpi-tile__value">{{formatNumber kpis.productionVolume 0}}</div></div>
-  </div>
-
-  <div class="ir-health-score no-break">
-    <div class="ir-health-score__value">{{insights.businessHealthScore.score}}<span style="font-size: 11pt;">/100</span></div>
-    <div class="ir-health-score__label">Business Health Score &mdash; composite of revenue growth, order completion, customer concentration, and portfolio margin</div>
   </div>
 
   <div class="sec-subtitle">Business Highlights &amp; Insights</div>
@@ -49,40 +82,49 @@
   <div class="sec-title">Sales Analysis</div>
 
   <div class="sec-subtitle">Monthly Sales Trend</div>
-  <div class="no-break" style="display: flex; align-items: flex-end; gap: 3mm; margin-bottom: 6mm; padding: 0 2mm;">
-    {{#each monthlyTrendLast6}}
-    <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
-      <div style="font-family: var(--font-mono); font-size: 6.5pt; color: var(--c-muted); margin-bottom: 1mm;">{{formatCurrency this.totalValue}}</div>
-      <div style="width: 70%; background: var(--c-accent); border-radius: 1px 1px 0 0; height: {{this.barHeightMm}}mm; -webkit-print-color-adjust: exact; print-color-adjust: exact;"></div>
-      <div style="font-size: 7pt; color: var(--c-muted); margin-top: 1.5mm;">{{this.periodLabel}}</div>
-    </div>
-    {{/each}}
+  {{#if monthlyTrendAllZero}}
+  <div class="ir-empty-note no-break">No orders recorded across the trailing 6 months shown below &mdash; the line below is a flat baseline at zero, not a rendering error.</div>
+  {{/if}}
+  <div class="no-break" style="margin-bottom: 6mm;">
+    {{{monthlyTrendSvg}}}
   </div>
 
   <table class="doc-table">
     <thead><tr><th>Rank</th><th>Top Customers</th><th class="col-num">Order Value</th></tr></thead>
     <tbody>
+      {{#if topCustomers5.length}}
       {{#each topCustomers5}}
       <tr><td class="col-sno">{{inc @index}}</td><td>{{this.customerName}}</td><td class="col-num col-mono">{{formatCurrency this.totalValue}}</td></tr>
       {{/each}}
+      {{else}}
+      <tr><td colspan="3" class="ir-empty-row">No data for this period</td></tr>
+      {{/if}}
     </tbody>
   </table>
 
   <table class="doc-table">
     <thead><tr><th>Rank</th><th>Top Products</th><th class="col-num">Order Value</th></tr></thead>
     <tbody>
+      {{#if topProducts5.length}}
       {{#each topProducts5}}
       <tr><td class="col-sno">{{inc @index}}</td><td>{{this.productDisplayName}}</td><td class="col-num col-mono">{{formatCurrency this.totalValue}}</td></tr>
       {{/each}}
+      {{else}}
+      <tr><td colspan="3" class="ir-empty-row">No data for this period</td></tr>
+      {{/if}}
     </tbody>
   </table>
 
   <table class="doc-table">
     <thead><tr><th>Rank</th><th>Sales by Region</th><th class="col-num">Order Value</th></tr></thead>
     <tbody>
+      {{#if topRegions5.length}}
       {{#each topRegions5}}
       <tr><td class="col-sno">{{inc @index}}</td><td>{{this.region}}</td><td class="col-num col-mono">{{formatCurrency this.totalValue}}</td></tr>
       {{/each}}
+      {{else}}
+      <tr><td colspan="3" class="ir-empty-row">No data for this period</td></tr>
+      {{/if}}
     </tbody>
   </table>
 
@@ -136,10 +178,8 @@
   </div>
 
   <div class="remarks-box" style="margin-top: 4mm;">
-    This report is auto-generated from operational data recorded in the Macro Coats portal. "Sales"/"Revenue"
-    figures represent confirmed Customer PO order value, not recognized accounting revenue &mdash; this system
-    has no invoicing/accounting layer. Figures are for internal management and investor reference only and are
-    not audited financial statements.
+    This report is auto-generated from operational data recorded in the Macro Coats portal. See the data-provenance
+    note on page 2 (Executive Summary) for the full disclaimer on what "Sales"/"Revenue" means in this report.
   </div>
 
 </div>

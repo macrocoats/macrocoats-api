@@ -1792,14 +1792,102 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
   color: var(--c-primary);
 }
 
-.ir-health-score {
-  display: flex;
-  align-items: baseline;
-  gap: 3mm;
+.ir-disclaimer {
+  background: var(--c-bg-meta);
+  border: 1px solid var(--c-border);
+  border-left: 3px solid var(--c-accent);
+  border-radius: 2px;
+  padding: 3mm 4mm;
+  font-size: var(--fs-xs);
+  color: var(--c-muted);
+  line-height: 1.5;
   margin-bottom: 4mm;
 }
-.ir-health-score__value { font-family: var(--font-heading); font-size: 22pt; font-weight: 800; color: var(--c-primary); }
-.ir-health-score__label { font-size: var(--fs-sm); color: var(--c-muted); }
+.ir-disclaimer strong { color: var(--c-text); }
+
+.ir-empty-note {
+  font-size: var(--fs-xs);
+  color: var(--c-muted);
+  font-style: italic;
+  margin-bottom: 2mm;
+}
+.ir-empty-row {
+  text-align: center;
+  color: var(--c-muted);
+  font-style: italic;
+  padding: 6mm 0 !important;
+}
+
+/* Primary metrics — Sales / Health Score / Pending Order Value get larger,
+   bolder treatment than the secondary ir-kpi-grid tiles below them, plus
+   conditional green/amber/red/gray coloring driven by real thresholds
+   (revenue growth, pending-order risk severity, health-score band) computed
+   server-side in buildInvestorReportContext() — never a uniform neutral look. */
+.ir-primary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3mm;
+  margin-bottom: 5mm;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.ir-primary-tile {
+  background: var(--c-bg-card);
+  border: 1px solid var(--c-border);
+  border-top: 3px solid var(--c-border);
+  border-radius: 2px;
+  padding: 4mm 4.5mm;
+}
+.ir-primary-tile__label {
+  font-family: var(--font-table);
+  font-size: 7.5pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--c-muted);
+  margin-bottom: 2mm;
+}
+.ir-primary-tile__value {
+  font-family: var(--font-heading);
+  font-size: 18pt;
+  font-weight: 800;
+  color: var(--c-primary);
+  margin-bottom: 1.5mm;
+}
+.ir-primary-tile__sub { font-size: var(--fs-xs); color: var(--c-muted); }
+
+.ir-band-good  { border-top-color: var(--c-pass); }
+.ir-band-warn  { border-top-color: var(--c-warn); }
+.ir-band-bad   { border-top-color: var(--c-fail); }
+.ir-band-nodata { border-top-color: var(--c-na); }
+.ir-band-good  .ir-primary-tile__value { color: var(--c-pass); }
+.ir-band-bad   .ir-primary-tile__value { color: var(--c-fail); }
+
+.ir-health-breakdown { display: flex; flex-direction: column; gap: 1.2mm; margin-top: 1mm; }
+.ir-health-breakdown__row { display: flex; align-items: center; gap: 2mm; }
+.ir-health-breakdown__label {
+  flex: 0 0 26mm;
+  font-size: 6.5pt;
+  color: var(--c-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ir-health-breakdown__bar-track {
+  flex: 1;
+  height: 2.2mm;
+  background: var(--c-bg-row);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.ir-health-breakdown__bar { display: block; height: 100%; border-radius: 2px; }
+.ir-health-breakdown__bar.ir-band-good   { background: var(--c-pass); }
+.ir-health-breakdown__bar.ir-band-warn   { background: var(--c-warn); }
+.ir-health-breakdown__bar.ir-band-bad    { background: var(--c-fail); }
+.ir-health-breakdown__bar.ir-band-nodata { background: var(--c-light); }
+.ir-health-breakdown__score { flex: 0 0 12mm; text-align: right; font-family: var(--font-mono); font-size: 6.5pt; font-weight: 700; color: var(--c-text); }
+
+.ir-trend-svg { display: block; font-family: var(--font-table); }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    LETTERHEAD — free-form rich-text body (letterhead.hbs only). Styles the raw
