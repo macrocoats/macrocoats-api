@@ -33,6 +33,7 @@ export const PRODUCT_KEYS = [
   'uniklean-sf',
   'corrcut-200',
   'unicut-al',
+  'uniklean-sp-b',
 ] as const
 export type ProductKey = typeof PRODUCT_KEYS[number]
 

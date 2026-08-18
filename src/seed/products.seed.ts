@@ -18,6 +18,7 @@ const PRODUCTS = [
   { key: 'uniklean-sf',  displayName: 'UNIKLEAN-SF',  code: 'SF',  category: 'Industrial Cleaner',               subtitle: 'Low-Foam Heavy Duty Alkaline Cleaner Concentrate',                accentColor: '#1c7a6e' },
   { key: 'corrcut-200',  displayName: 'CORRCUT 200',  code: 'C2',  category: 'Rust Preventive Oils',             subtitle: 'Ordinary Solvent-Based Rust Preventive Oil',                      accentColor: '#8a4a2d' },
   { key: 'unicut-al',    displayName: 'UNICUT-AL',    code: 'CA',  category: 'Metal Working Fluid',              subtitle: 'Semi-Synthetic Cutting & Grinding Coolant — Water Dilutable Metalworking Fluid', accentColor: '#2f6f91' },
+  { key: 'uniklean-sp-b', displayName: 'UNIKLEAN-SP-B', code: 'SPB', category: 'TBD — pending product details', subtitle: 'TBD — pending product details', accentColor: '#6b6b6b' },
 ]
 
 // ── Document data ──────────────────────────────────────────────────────────────
@@ -30,6 +31,7 @@ const DOCS: Array<{
   revision:   string
   body:       Record<string, unknown>
   footer:     { left: string; center: string; right: string }
+  status?:    'draft' | 'pending_review' | 'qa_review' | 'published' | 'archived'
 }> = [
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -4322,6 +4324,221 @@ const DOCS: Array<{
     },
   },
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // UNIKLEAN-SP-B — placeholder documents (draft). No formulation/spec data
+  // provided yet; every field below is a generic placeholder, not copied from
+  // uniklean-sp or any other product. Kept in 'draft' status so it is invisible
+  // to company-role users and clearly incomplete for superadmin until real
+  // content is supplied.
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    productKey: 'uniklean-sp-b',
+    docType:    'tds',
+    docNumber:  'TDS-SPB-001',
+    revision:   'Draft — pending formulation data',
+    status:     'draft',
+    footer: {
+      left:   'TDS-SPB-001 Draft',
+      center: 'This Technical Data Sheet is a placeholder. Formulation and performance data pending. © Macro Coats Pvt Ltd',
+      right:  'Macro Coats Pvt Ltd · Chennai · India\nPage 1 of 1',
+    },
+    body: {
+      grade:       'TBD — pending formulation data',
+      description: 'UNIKLEAN-SP-B — placeholder Technical Data Sheet. Formulation, performance data and specifications will be added once provided.',
+      sections: {
+        features: [
+          { head: 'TBD', body: 'Pending formulation data.' },
+        ],
+        physicalProperties: [
+          { property: 'TBD', value: 'TBD', unit: '—', method: 'TBD' },
+        ],
+        composition: [
+          { name: 'TBD', function: 'Pending formulation data', percent: 'TBD', compat: 'TBD' },
+        ],
+        application: [
+          { step: '1', name: 'TBD', param: 'Pending formulation data', value: 'TBD' },
+        ],
+        packaging: [
+          { size: 'TBD', unit: '—', type: 'TBD' },
+        ],
+        performance: [
+          { label: 'TBD', val: 'Pending formulation data' },
+        ],
+        safetyNote: 'Placeholder — refer to SDS-SPB-001 once issued.',
+      },
+    },
+  },
+
+  {
+    productKey: 'uniklean-sp-b',
+    docType:    'msds',
+    docNumber:  'SDS-SPB-001',
+    revision:   'Draft — pending formulation data',
+    status:     'draft',
+    footer: {
+      left:   'SDS-SPB-001 Draft',
+      center: 'This Safety Data Sheet is a placeholder. Formulation and hazard data pending. © Macro Coats Pvt Ltd',
+      right:  'Macro Coats Pvt Ltd · Chennai · India\nGHS Rev 9 Compliant · Page 1 of 1',
+    },
+    body: {
+      signalWord: 'Warning',
+      sections: {
+        identification: {
+          productType:  'TBD — pending product details',
+          intendedUse:  'TBD — pending product details',
+          manufacturer: 'Macro Coats Pvt Ltd, Chennai, Tamil Nadu, India',
+          emergency:    'AIIMS Poison Control: 1800-11-6117 (Toll-Free)',
+        },
+        hazards: {
+          pictograms:      ['irritant', 'environment'],
+          classifications: [
+            { class: 'TBD', category: 'TBD', tagType: 'warn' },
+          ],
+          hStatements: 'TBD — pending hazard classification.',
+          pStatements: 'TBD — pending hazard classification.',
+        },
+        composition: {
+          ingredients: [
+            { name: 'TBD', description: 'Pending formulation data', ghsClass: 'TBD', tagType: 'warn' },
+          ],
+          note: 'Exact formulation is proprietary and pending. Functional ingredient descriptions will be provided for safety and emergency purposes once available.',
+        },
+        firstAid: {
+          skin:       'TBD — pending formulation data.',
+          eyes:       'TBD — pending formulation data.',
+          ingestion:  'TBD — pending formulation data.',
+          inhalation: 'TBD — pending formulation data.',
+        },
+        fireFighting: {
+          flammability:       'TBD — pending formulation data.',
+          extinguishingMedia: 'TBD — pending formulation data.',
+          fireHazard:         'TBD — pending formulation data.',
+          ppe:                'TBD — pending formulation data.',
+        },
+        accidentalRelease: ['TBD — pending formulation data.'],
+        handling: {
+          handling:    'TBD — pending formulation data.',
+          storageTemp: 'TBD',
+          containers:  'TBD',
+          segregation: 'TBD',
+          shelfLife:   'TBD',
+        },
+        exposure: {
+          ppeItems:    ['Safety Glasses', 'Nitrile Gloves'],
+          engineering: 'TBD — pending formulation data.',
+        },
+        physical: [
+          { key: 'Appearance', val: 'TBD' },
+        ],
+        stability: {
+          stability:      'TBD — pending formulation data.',
+          avoid:          'TBD',
+          decomposition:  'TBD',
+          polymerisation: 'TBD',
+        },
+        sections11to16: {
+          'Other Info': 'Draft placeholder SDS. Pending formulation data.',
+        },
+      },
+    },
+  },
+
+  {
+    productKey: 'uniklean-sp-b',
+    docType:    'formula',
+    docNumber:  'FRM-SPB-001',
+    revision:   'Rev 01 — Aug 2026',
+    status:     'pending_review',
+    footer: {
+      left:   'FRM-SPB-001 Rev 01 · Aug 2026',
+      center: 'CONFIDENTIAL — This formulation sheet is the proprietary information of Macro Coats Pvt Ltd. Unauthorised reproduction or disclosure is prohibited.',
+      right:  'Macro Coats Pvt Ltd · Chennai · India\nPage 1 of 1',
+    },
+    body: {
+      classification:     'CONFIDENTIAL — Internal Use Only',
+      batchSize:          '100 kg (reference)',
+      formulaType:        'liquid',
+      referenceBatchSize: 100,
+      batchUnit:          'kg',
+      totalActivePercent: 32.2,
+      overview: 'UNIKLEAN-SP-B is an alkaline cleaning formulation built on a sodium carbonate alkalinity/buffering system with sodium gluconate for hard-water sequestration, a dual LAE-7/LAE-9 non-ionic surfactant package for wetting, emulsification and degreasing, butyl glycol and Dowanol PM coupling solvents for oil/grease solvency, and benzotriazole as a copper corrosion inhibitor, carried in a DM water base.',
+      composition: [
+        { srNo: 1, name: 'DM Water',                                  casNo: '7732-18-5', baseQty: 67.8, unit: 'kg', percentWV: 67.8, function: 'Solvent base / carrier — balance to final batch weight (de-mineralised)',    density: 1.0,   unitPrice: 0   },
+        { srNo: 2, name: 'Soda Ash (Sodium Carbonate)',                casNo: '497-19-8',  baseQty: 6.0,  unit: 'kg', percentWV: 6.0,  function: 'Alkalinity builder and buffering',                                            density: null,  unitPrice: 65  },
+        { srNo: 3, name: 'Sodium Gluconate',                           casNo: '527-07-1',  baseQty: 2.0,  unit: 'kg', percentWV: 2.0,  function: 'Sequestrant — hard water stability, prevents metal ion interference',        density: null,  unitPrice: 75  },
+        { srNo: 4, name: 'LAE-7',                                      casNo: '9002-92-0', baseQty: 7.0,  unit: 'kg', percentWV: 7.0,  function: 'Non-ionic surfactant — wetting, emulsification and degreasing aid',          density: 0.95,  unitPrice: 0   },
+        { srNo: 5, name: 'LAE-9 (Lauryl Alcohol Ethoxylate)',          casNo: '9002-92-0', baseQty: 2.0,  unit: 'kg', percentWV: 2.0,  function: 'Low-foam nonionic surfactant — wetting and degreasing aid',                  density: 0.95,  unitPrice: 600 },
+        { srNo: 6, name: 'Butyl Glycol',                               casNo: '111-76-2',  baseQty: 9.0,  unit: 'kg', percentWV: 9.0,  function: 'Coupling solvent — improves oil/grease solvency',                            density: 0.902, unitPrice: 240 },
+        { srNo: 7, name: 'Dowanol PM (Propylene Glycol Methyl Ether)', casNo: '107-98-2',  baseQty: 6.0,  unit: 'kg', percentWV: 6.0,  function: 'Coupling solvent / wetting aid — enhances soil solvency',                    density: 0.965, unitPrice: 0   },
+        { srNo: 8, name: 'BTA (Benzotriazole)',                        casNo: '95-14-7',   baseQty: 0.2,  unit: 'kg', percentWV: 0.2,  function: 'Copper corrosion inhibitor / film former',                                    density: null,  unitPrice: 850 },
+      ],
+      preparation: [],
+      operatingConditions: [],
+      applications: {
+        removes:    [],
+        usedBefore: [],
+      },
+    },
+  },
+
+  {
+    productKey: 'uniklean-sp-b',
+    docType:    'label',
+    docNumber:  'LBL-SPB-001',
+    revision:   'Draft — pending formulation data',
+    status:     'draft',
+    footer: { left: '', center: '', right: '' },
+    body: {
+      signalWord: 'WARNING',
+      unNo: 'N/A',
+      hCodes: [
+        { code: 'TBD', text: 'Pending hazard classification' },
+      ],
+      pCodes: [
+        { code: 'TBD', text: 'Pending hazard classification' },
+      ],
+      firstAid: {
+        skin:       'TBD — pending formulation data.',
+        eyes:       'TBD — pending formulation data.',
+        ingestion:  'TBD — pending formulation data.',
+        inhalation: 'TBD — pending formulation data.',
+      },
+      directions: ['TBD — pending formulation data.'],
+      storage:    ['Store in a cool, dry place.', 'Keep container tightly closed.'],
+      products:   ['UNIKLEAN-SP-B'],
+    },
+  },
+
+  {
+    productKey: 'uniklean-sp-b',
+    docType:    'coa',
+    docNumber:  'COA-SPB-001',
+    revision:   'Draft — pending formulation data',
+    status:     'draft',
+    footer: {
+      left:   'COA-SPB-001 Draft',
+      center: 'CONFIDENTIAL — Placeholder Certificate of Analysis · Macro Coats Pvt Ltd',
+      right:  'Macro Coats Pvt Ltd · Chennai · India',
+    },
+    body: {
+      batchNumber:    'TBD',
+      batchSize:      'TBD',
+      productionDate: 'TBD',
+      expiryDate:     'TBD',
+      grade:          'TBD — pending formulation data',
+      appearance:     'TBD',
+      tests: [
+        { parameter: 'TBD', method: 'TBD', specification: 'TBD', result: 'TBD', status: 'Pending' },
+      ],
+      statement: 'Placeholder Certificate of Analysis for UNIKLEAN-SP-B. No batch has been tested yet; this record will be populated once formulation and batch data are available.',
+      approvals: {
+        preparedBy: 'TBD',
+        reviewedBy: 'TBD',
+        approvedBy: 'TBD',
+      },
+    },
+  },
+
 ]
 
 // ── Seed function ──────────────────────────────────────────────────────────────
@@ -4353,6 +4570,7 @@ export async function seedProducts() {
         revision:   doc.revision,
         body:       doc.body,
         footer:     doc.footer,
+        ...(doc.status ? { status: doc.status } : {}),
       })
       .onConflictDoNothing()
       .returning({ productKey: productDocuments.productKey })
