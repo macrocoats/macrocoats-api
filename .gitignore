@@ -3,5 +3,6 @@ dist/
 .env.local
 *.pem
 coverage/
+graphify-out/
 ansible/group_vars/vault.yml
 ansible/.vault_pass.txt
