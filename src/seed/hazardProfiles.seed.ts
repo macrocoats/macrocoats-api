@@ -567,7 +567,10 @@ const ROWS: SeedRow[] = [
   },
   {
     displayName: 'Propylene Glycol Methyl Ether (PGME)',
-    aliases: ['Propylene Glycol Methyl Ether (Dowanol PM)', 'Propylene Glycol Methyl Ether (PGME)'],
+    aliases: [
+      'Propylene Glycol Methyl Ether (Dowanol PM)', 'Propylene Glycol Methyl Ether (PGME)',
+      'Dowanol PM (Propylene Glycol Methyl Ether)', 'Dowanol PM',
+    ],
     casNo: '107-98-2',
     genericDescription: 'Glycol ether co-solvent',
     functionCategory: 'Co-solvent — enhances cleaning and drying performance',
@@ -578,6 +581,25 @@ const ROWS: SeedRow[] = [
     ],
     pictograms: ['flammable', 'irritant'],
     thresholdPercent: 1,
+  },
+  {
+    displayName: 'Butyl Glycol (2-Butoxyethanol)',
+    aliases: ['Butyl Glycol', 'Butyl Cellosolve', '2-Butoxyethanol'],
+    casNo: '111-76-2',
+    genericDescription: 'Glycol ether coupling solvent',
+    functionCategory: 'Coupling solvent — improves oil/grease solvency',
+    compatNotes: null,
+    hazardClassifications: [
+      cls('Acute Toxicity (Oral)', 'Cat 4', 'warn', 'H302', ['P264', 'P270', 'P301+P312']),
+      cls('Skin Irritation', 'Cat 2', 'warn', 'H315', ['P264', 'P280', 'P302+P352', 'P332+P313']),
+      cls('Serious Eye Irritation', 'Cat 2', 'warn', 'H319', ['P264', 'P280', 'P305+P351+P338', 'P337+P313']),
+      cls('Specific Target Organ Toxicity — Single Exposure', 'Cat 3', 'warn', 'H335', ['P261', 'P271', 'P304+P340']),
+    ],
+    pictograms: ['irritant'],
+    thresholdPercent: 1,
+    disclosureRequired: true,
+    disclosureThresholdPercent: 1,
+    notes: 'Added for UNIKLEAN-CU formulation derivation.',
   },
   {
     displayName: 'LAE-9 (Lauryl Alcohol Ethoxylate)',
