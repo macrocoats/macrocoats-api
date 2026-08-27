@@ -15,17 +15,28 @@ const contactFields = {
 export const createCompanySchema = z.object({
   key:             z.string().min(1).max(60).regex(/^[a-z0-9]+$/, 'Lowercase alphanumeric only'),
   displayName:     z.string().min(1).max(200),
-  allowedProducts: z.array(z.enum(PRODUCT_KEYS)).min(1),
+  allowedProducts: z.array(z.enum(PRODUCT_KEYS)).default([]),
   tokenExpiresAt:  z.string().datetime({ offset: true }).optional(),
   ...contactFields,
 })
 
 export const updateCompanySchema = z.object({
   displayName:     z.string().min(1).max(200).optional(),
-  allowedProducts: z.array(z.enum(PRODUCT_KEYS)).min(1).optional(),
+  allowedProducts: z.array(z.enum(PRODUCT_KEYS)).optional(),
   tokenExpiresAt:  z.string().datetime({ offset: true }).nullable().optional(),
   ...contactFields,
 })
 
+export const assignCompanyFormulaSchema = z.object({
+  variantId: z.string().uuid(),
+  isDefaultForCompany: z.boolean().default(false),
+})
+
+export const updateCompanyFormulaAssignmentSchema = z.object({
+  isDefaultForCompany: z.boolean(),
+})
+
 export type CreateCompanyBody = z.infer<typeof createCompanySchema>
 export type UpdateCompanyBody = z.infer<typeof updateCompanySchema>
+export type AssignCompanyFormulaBody = z.infer<typeof assignCompanyFormulaSchema>
+export type UpdateCompanyFormulaAssignmentBody = z.infer<typeof updateCompanyFormulaAssignmentSchema>

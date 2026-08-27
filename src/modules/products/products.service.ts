@@ -3,7 +3,7 @@ import { db } from '../../db/index.js'
 import { productDocuments, products, documentAuditLog, users } from '../../db/schema/index.js'
 import { cacheGet, cacheSet, cacheDel } from '../../plugins/redis.js'
 import { resolveCompanyId } from '../../utils/resolveCompanyId.js'
-import { getVariantById } from '../formulation-variants/formulation-variants.service.js'
+import { getVariantById, isFormulaAssignedToCompany } from '../formulation-variants/formulation-variants.service.js'
 import { getHazardProfileMap } from '../hazard-profiles/hazard-profiles.service.js'
 import {
   buildSanitizedTdsComposition,
@@ -73,7 +73,11 @@ async function applyVariantOverride(
   }
 
   // 3. Cross-tenant isolation.
-  if (role !== 'superadmin' && variant.companyId && variant.companyId !== companyId) return
+  if (role !== 'superadmin') {
+    if (!companyId) return
+    if (variant.companyId && variant.companyId !== companyId) return
+    if (!variant.companyId && !(await isFormulaAssignedToCompany(variantId, companyId))) return
+  }
 
   // 4. Effective view — non-superadmin is always forced to 'customer'.
   const view: DocumentViewMode = role === 'superadmin' ? (requestedView ?? 'customer') : 'customer'

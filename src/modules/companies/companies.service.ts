@@ -1,18 +1,21 @@
 import { eq, inArray } from 'drizzle-orm'
 import { db } from '../../db/index.js'
-import { companies, companyProductAccess, users } from '../../db/schema/index.js'
+import { companies, companyFormulaAssignments, companyProductAccess, users } from '../../db/schema/index.js'
 import { generateToken, hashPassword } from '../../utils/crypto.js'
 import type { CreateCompanyBody, UpdateCompanyBody } from './companies.schema.js'
 
 function toResponse(
   company: typeof companies.$inferSelect,
   allowedProducts: string[],
+  formulaSummary: { formulaCount: number; formulaProductKeys: string[] } = { formulaCount: 0, formulaProductKeys: [] },
 ) {
   return {
     id:              company.id,
     key:             company.key,
     displayName:     company.displayName,
     allowedProducts,
+    formulaCount:      formulaSummary.formulaCount,
+    formulaProductKeys: formulaSummary.formulaProductKeys,
     accessToken:     company.accessToken,
     tokenExpiresAt:  company.tokenExpiresAt?.toISOString() ?? null,
     contactPerson:   company.contactPerson ?? null,
@@ -43,7 +46,29 @@ export async function listCompanies() {
     accessMap.set(r.companyId, list)
   }
 
-  return rows.map((c) => toResponse(c, accessMap.get(c.id) ?? []))
+  const assignmentRows = await db
+    .select({
+      companyId: companyFormulaAssignments.companyId,
+      productKey: companyFormulaAssignments.productKey,
+      variantId: companyFormulaAssignments.variantId,
+    })
+    .from(companyFormulaAssignments)
+    .where(inArray(companyFormulaAssignments.companyId, rows.map((r) => r.id)))
+
+  const formulaMap = new Map<string, { formulaIds: Set<string>; productKeys: Set<string> }>()
+  for (const row of assignmentRows) {
+    const summary = formulaMap.get(row.companyId) ?? { formulaIds: new Set<string>(), productKeys: new Set<string>() }
+    summary.formulaIds.add(row.variantId)
+    summary.productKeys.add(row.productKey)
+    formulaMap.set(row.companyId, summary)
+  }
+
+  return rows.map((c) => {
+    const formulaSummary = formulaMap.get(c.id)
+    return toResponse(c, accessMap.get(c.id) ?? [], formulaSummary
+      ? { formulaCount: formulaSummary.formulaIds.size, formulaProductKeys: Array.from(formulaSummary.productKeys) }
+      : undefined)
+  })
 }
 
 export async function getCompanyById(id: string) {
@@ -55,7 +80,15 @@ export async function getCompanyById(id: string) {
     .from(companyProductAccess)
     .where(eq(companyProductAccess.companyId, id))
 
-  return toResponse(company, accessRows.map((r) => r.productKey))
+  const assignmentRows = await db
+    .select({ productKey: companyFormulaAssignments.productKey, variantId: companyFormulaAssignments.variantId })
+    .from(companyFormulaAssignments)
+    .where(eq(companyFormulaAssignments.companyId, id))
+
+  return toResponse(company, accessRows.map((r) => r.productKey), {
+    formulaCount: new Set(assignmentRows.map((r) => r.variantId)).size,
+    formulaProductKeys: Array.from(new Set(assignmentRows.map((r) => r.productKey))),
+  })
 }
 
 export async function createCompany(data: CreateCompanyBody) {

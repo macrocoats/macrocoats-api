@@ -1,6 +1,7 @@
 export * from './users.js'
 export * from './companies.js'
 export * from './companyProductAccess.js'
+export * from './companyFormulaAssignments.js'
 export * from './products.js'
 export * from './productDocuments.js'
 export * from './documentAuditLog.js'

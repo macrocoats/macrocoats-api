@@ -8,15 +8,18 @@ import {
   updateVariantSchema,
   replaceComponentsSchema,
   transitionStatusSchema,
+  listVariantsQuerySchema,
 } from './formulation-variants.schema.js'
 import {
   listVariantsForProduct,
+  listFormulaLibrary,
   getVariantById,
   createVariant,
   updateVariant,
   replaceComponents,
   deleteVariant,
   transitionVariantStatus,
+  isFormulaAssignedToCompany,
 } from './formulation-variants.service.js'
 import type { VariantStatus } from '../optimizer/optimizer.types.js'
 
@@ -25,22 +28,24 @@ const readHandler  = [authenticate, requireAuth]
 
 export async function formulationVariantRoutes(app: FastifyInstance) {
   // ── GET /formulation-variants?productKey=X ────────────────────────────────
-  app.get<{ Querystring: { productKey?: string } }>('/', { preHandler: readHandler }, async (request, reply) => {
-    const { productKey } = request.query
-    if (!productKey) {
-      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, message: 'productKey query param is required' })
+  app.get('/', { preHandler: readHandler }, async (request, reply) => {
+    const query = listVariantsQuerySchema.safeParse(request.query)
+    if (!query.success) {
+      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: query.error.flatten() })
     }
 
     const role = request.authUser?.role
-    if (role !== 'superadmin') {
+    if (role !== 'superadmin' && query.data.productKey) {
       const allowed = request.authUser?.allowedProducts ?? []
-      if (!allowed.includes(productKey)) {
+      if (!allowed.includes(query.data.productKey)) {
         return reply.code(403).send({ error: AppErrors.PRODUCT_ACCESS_DENIED })
       }
     }
 
     const companyId = role !== 'superadmin' ? await resolveCompanyId(request.authUser?.companyName) : null
-    const variants = await listVariantsForProduct(productKey, { role, companyId })
+    const variants = query.data.productKey && !query.data.companyId && !query.data.status && !query.data.q
+      ? await listVariantsForProduct(query.data.productKey, { role, companyId })
+      : await listFormulaLibrary(query.data, { role, companyId })
     return reply.send({ data: variants })
   })
 
@@ -66,6 +71,11 @@ export async function formulationVariantRoutes(app: FastifyInstance) {
         if (variant.companyId !== companyId) {
           // 404, not 403 — avoids confirming to a company user that another
           // tenant's variant exists for this product.
+          return reply.code(404).send({ error: 'VARIANT_NOT_FOUND' })
+        }
+      } else {
+        const companyId = await resolveCompanyId(request.authUser?.companyName)
+        if (!companyId || !(await isFormulaAssignedToCompany(variant.id, companyId))) {
           return reply.code(404).send({ error: 'VARIANT_NOT_FOUND' })
         }
       }
@@ -149,6 +159,18 @@ export async function formulationVariantRoutes(app: FastifyInstance) {
   app.delete<{ Params: { variantId: string } }>('/:variantId', { preHandler: adminHandler }, async (request, reply) => {
     const deleted = await deleteVariant(request.params.variantId)
     if (!deleted) return reply.code(404).send({ error: 'VARIANT_NOT_FOUND' })
+    if (deleted === 'assigned') {
+      return reply.code(409).send({
+        error: 'FORMULA_ASSIGNED',
+        message: 'This formula is assigned to one or more companies. Unassign it before deleting.',
+      })
+    }
+    if (deleted === 'protected_status') {
+      return reply.code(409).send({
+        error: 'FORMULA_PROTECTED_STATUS',
+        message: 'Production formulas cannot be deleted.',
+      })
+    }
     return reply.code(204).send()
   })
 }

@@ -84,16 +84,7 @@ export async function loginWithToken(
 
   const result = await issueTokens(user)
 
-  // Determine redirect: first allowed product
-  const [firstAccess] = await db
-    .select({ productKey: companyProductAccess.productKey })
-    .from(companyProductAccess)
-    .where(eq(companyProductAccess.companyId, company.id))
-    .limit(1)
-
-  const redirectTo = firstAccess
-    ? `/products/${firstAccess.productKey}/tds`
-    : '/unauthorized'
+  const redirectTo = '/formulas'
 
   return { ...result, redirectTo }
 }

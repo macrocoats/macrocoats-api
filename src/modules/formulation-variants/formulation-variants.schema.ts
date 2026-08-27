@@ -11,13 +11,21 @@ export const componentBodySchema = z.object({
 
 export const createVariantSchema = z.object({
   productKey:  z.enum(PRODUCT_KEYS as unknown as [string, ...string[]]),
-  companyId:   z.string().uuid().nullable(),
+  companyId:   z.string().uuid().nullable().optional(),
   variantName: z.string().min(1).max(200),
   isDefault:   z.boolean().default(false),
   status:            z.enum(VARIANT_STATUSES as unknown as [string, ...string[]]).default('approved'),
   sourceVariantId:   z.string().uuid().nullable().optional(),
   optimizationMeta:  z.record(z.unknown()).nullable().optional(),
+  assignedCompanyIds: z.array(z.string().uuid()).optional(),
   components:  z.array(componentBodySchema).min(1),
+})
+
+export const listVariantsQuerySchema = z.object({
+  productKey: z.enum(PRODUCT_KEYS as unknown as [string, ...string[]]).optional(),
+  companyId:  z.string().uuid().optional(),
+  status:     z.enum(VARIANT_STATUSES as unknown as [string, ...string[]]).optional(),
+  q:          z.string().trim().optional(),
 })
 
 export const transitionStatusSchema = z.object({
@@ -44,6 +52,7 @@ export const replaceComponentsSchema = z.object({
 
 export type ComponentBody      = z.infer<typeof componentBodySchema>
 export type CreateVariantBody  = z.infer<typeof createVariantSchema>
+export type ListVariantsQuery  = z.infer<typeof listVariantsQuerySchema>
 export type UpdateVariantBody  = z.infer<typeof updateVariantSchema>
 export type ReplaceComponentsBody = z.infer<typeof replaceComponentsSchema>
 export type TransitionStatusBody  = z.infer<typeof transitionStatusSchema>
