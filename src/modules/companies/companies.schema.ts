@@ -12,6 +12,10 @@ const contactFields = {
   pincode:       z.string().regex(/^\d{6}$/, 'Must be 6 digits').optional(),
 }
 
+const nullableContactFields = Object.fromEntries(
+  Object.entries(contactFields).map(([key, schema]) => [key, schema.nullable()]),
+) as { [K in keyof typeof contactFields]: z.ZodNullable<(typeof contactFields)[K]> }
+
 export const createCompanySchema = z.object({
   key:             z.string().min(1).max(60).regex(/^[a-z0-9]+$/, 'Lowercase alphanumeric only'),
   displayName:     z.string().min(1).max(200),
@@ -24,7 +28,7 @@ export const updateCompanySchema = z.object({
   displayName:     z.string().min(1).max(200).optional(),
   allowedProducts: z.array(z.enum(PRODUCT_KEYS)).optional(),
   tokenExpiresAt:  z.string().datetime({ offset: true }).nullable().optional(),
-  ...contactFields,
+  ...nullableContactFields,
 })
 
 export const assignCompanyFormulaSchema = z.object({

@@ -156,12 +156,14 @@ export async function updateCompany(id: string, data: UpdateCompanyBody) {
       await tx.update(companies).set(patch).where(eq(companies.id, id))
     }
 
-    if (data.allowedProducts) {
+    if (data.allowedProducts !== undefined) {
       // Replace all access rows for this company
       await tx.delete(companyProductAccess).where(eq(companyProductAccess.companyId, id))
-      await tx.insert(companyProductAccess).values(
-        data.allowedProducts.map((productKey) => ({ companyId: id, productKey })),
-      )
+      if (data.allowedProducts.length) {
+        await tx.insert(companyProductAccess).values(
+          data.allowedProducts.map((productKey) => ({ companyId: id, productKey })),
+        )
+      }
     }
 
     const [updated] = await tx.select().from(companies).where(eq(companies.id, id))
