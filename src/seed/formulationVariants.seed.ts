@@ -615,6 +615,22 @@ const UNISOLVE_H3_30KG_COMPONENTS = [
   { materialName: 'DM Water',        percentage: null,  unit: 'L'  as const },  // auto-calc 70% — 21.000 kg / 30 kg batch
 ]
 
+/**
+ * UNIKBRIGHTNER — Base Formula variant, mirroring the real composition supplied
+ * for the product (see FRM-UB-001 in products.seed.ts): 20.0 kg Citric Acid,
+ * 3.35 L Hydrogen Peroxide (50%), 96.65 L DM Water per 100 L reference batch.
+ * DM Water is given its exact supplied percentage (not `null`/auto-calculated)
+ * because this formula mixes a % w/v solid with % v/v liquids that together
+ * already sum to 100% on their own — auto-calculating water as
+ * `100 - sum(others)` would silently produce 76.65% instead of the supplied
+ * 96.65%. This is not a placeholder — it is the actual supplied formulation.
+ */
+const UNIKBRIGHTNER_BASE_COMPONENTS = [
+  { materialName: 'Citric Acid (solid)',     percentage: 20.0,  unit: 'Kg' as const },
+  { materialName: 'Hydrogen Peroxide (50%)', percentage: 3.35,  unit: 'L'  as const },
+  { materialName: 'DM Water',                percentage: 96.65, unit: 'L'  as const },
+]
+
 export async function seedFormulationVariants() {
   console.log('🌱 Seeding formulation variants...')
 
@@ -1116,6 +1132,67 @@ export async function seedFormulationVariants() {
       )
 
       console.log(`   ✅ Created UNISOLVE H3 - 30 KG variant (id: ${unisolveH3_30KGVariant.id})`)
+    }
+  }
+
+  // ── UNIKBRIGHTNER — Base Formula ──────────────────────────────────────────
+  const [unikbrightnerProduct] = await db
+    .select()
+    .from(products)
+    .where(eq(products.key, 'unikbrightner'))
+
+  if (!unikbrightnerProduct) {
+    console.warn('   ⚠️  Product unikbrightner not found — skipping Base Formula variant seed')
+  } else {
+    const UNIKBRIGHTNER_BASE_NAME = 'UNIKBRIGHTNER Base Formula'
+    const [existingUnikbrightnerBase] = await db
+      .select()
+      .from(productFormulationVariants)
+      .where(
+        and(
+          eq(productFormulationVariants.productKey, 'unikbrightner'),
+          eq(productFormulationVariants.variantName, UNIKBRIGHTNER_BASE_NAME),
+        ),
+      )
+
+    if (existingUnikbrightnerBase) {
+      console.log(`   ↩️  Base Formula variant for UNIKBRIGHTNER already exists (id: ${existingUnikbrightnerBase.id})`)
+    } else {
+      const [unikbrightnerBaseVariant] = await db
+        .insert(productFormulationVariants)
+        .values({
+          productKey:  'unikbrightner',
+          companyId:   null,
+          variantName: UNIKBRIGHTNER_BASE_NAME,
+          isDefault:   false,
+          // Deliberately 'draft', not the 'approved' default: resolveActiveVariant
+          // (frontend) falls back to the first *usable* (approved/production)
+          // variant whenever nothing is explicitly selected — regardless of
+          // isDefault — and since this would be the product's only variant, it
+          // would always be auto-picked on every TDS/MSDS/Formula page visit.
+          // That silently replaces the base document's hand-authored, correctly
+          // classified hazard content with this variant's auto-derived hazard
+          // aggregate, which is missing the Oxidizing Liquid/Skin Corrosion Cat 1
+          // classifications (the hazard-profile lookup has no entry matching
+          // these raw material names) — a real safety-documentation regression.
+          // 'draft' excludes it from that auto-selection entirely while still
+          // listing it in the Formula Library; a superadmin can still review and
+          // approve it manually via the admin UI if it should become selectable.
+          status:      'draft',
+        })
+        .returning()
+
+      await db.insert(formulationVariantComponents).values(
+        UNIKBRIGHTNER_BASE_COMPONENTS.map((c, i) => ({
+          variantId:    unikbrightnerBaseVariant.id,
+          materialName: c.materialName,
+          percentage:   c.percentage !== null ? String(c.percentage) : null,
+          unit:         c.unit,
+          sortOrder:    i,
+        })),
+      )
+
+      console.log(`   ✅ Created Base Formula variant for UNIKBRIGHTNER (id: ${unikbrightnerBaseVariant.id})`)
     }
   }
 }

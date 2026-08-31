@@ -19,6 +19,7 @@ const PRODUCTS = [
   { key: 'corrcut-200',  displayName: 'CORRCUT 200',  code: 'C2',  category: 'Rust Preventive Oils',             subtitle: 'Ordinary Solvent-Based Rust Preventive Oil',                      accentColor: '#8a4a2d' },
   { key: 'unicut-al',    displayName: 'UNICUT-AL',    code: 'CA',  category: 'Metal Working Fluid',              subtitle: 'Semi-Synthetic Cutting & Grinding Coolant — Water Dilutable Metalworking Fluid', accentColor: '#2f6f91' },
   { key: 'uniklean-cu', displayName: 'UNIKLEAN-CU', code: 'CU', category: 'Alkaline Cleaner', subtitle: 'Industrial Alkaline Cleaning Concentrate', accentColor: '#6b6b6b' },
+  { key: 'unikbrightner', displayName: 'UNIKBRIGHTNER', code: 'UB', category: 'Metal Brightening Chemical', subtitle: 'Metal Brightening Concentrate (10× Concentrate)', accentColor: '#c17817' },
 ]
 
 // ── Document data ──────────────────────────────────────────────────────────────
@@ -3195,12 +3196,12 @@ const DOCS: Array<{
     },
     body: {
       grade:       'Industrial Grade',
-      description: 'CORRUCUT 500 is a dearomatized hydrocarbon-based corrosion preventive fluid built on a three-grade Exxsol solvent carrier (D60, D145, and the lighter 32D fraction) for controlled evaporation and good surface penetration. Calcium petroleum sulfonate provides the primary corrosion-inhibiting film, and Vaseline (petroleum jelly) reinforces film cohesion and water resistance, leaving a thin, lightly oily protective film over components. Suited for inter-operational handling, transit, and indoor or covered storage.',
+      description: 'CORRUCUT 500 is a dearomatized hydrocarbon-based corrosion preventive fluid built on a three-grade dearomatized hydrocarbon solvent carrier (primary, secondary, and light fractions) for controlled evaporation and good surface penetration. Calcium petroleum sulfonate provides the primary corrosion-inhibiting film, and petroleum jelly reinforces film cohesion and water resistance, leaving a thin, lightly oily protective film over components. Suited for inter-operational handling, transit, and indoor or covered storage.',
       sections: {
         features: [
-          { head: 'Multi-Grade Exxsol Carrier',      body: 'Blended D60/D145/32D fractions balance fast wetting with a controlled, staged evaporation profile.' },
+          { head: 'Multi-Grade Hydrocarbon Carrier',  body: 'Blended primary, secondary, and light-grade fractions balance fast wetting with a controlled, staged evaporation profile.' },
           { head: 'Dearomatized Formulation',        body: 'Drastically lower aromatic content provides an improved workplace environment with minimal odour and enhanced operator comfort.' },
-          { head: 'Vaseline-Reinforced Film',        body: 'Petroleum jelly content improves film cohesion and water resistance versus a solvent-only carrier.' },
+          { head: 'Petroleum Jelly-Reinforced Film', body: 'Petroleum jelly content improves film cohesion and water resistance versus a solvent-only carrier.' },
           { head: 'Flexible Application',            body: 'Suitable for use via immersion tanks, automated spray lines, or manual brush setups.' },
         ],
         physicalProperties: [
@@ -3216,11 +3217,11 @@ const DOCS: Array<{
           { property: 'Outdoor Covered Protection Period', value: '1 – 3',                                unit: 'months', method: 'Environmental — guidance only' },
         ],
         composition: [
-          { name: 'Exxsol D60',                     function: 'Primary carrier solvent — dearomatized aliphatic hydrocarbon',     percent: '—', compat: 'All metals' },
-          { name: 'Exxsol D145',                    function: 'Secondary carrier — higher flash point fraction',                 percent: '—', compat: 'All metals' },
-          { name: 'Exxsol 32D',                     function: 'Light, fast-evaporating carrier fraction',                        percent: '—', compat: 'All metals' },
-          { name: 'Calcium Petroleum Sulfonate',    function: 'Primary corrosion inhibitor — polar film on metal surface',       percent: '—', compat: 'Ferrous, non-ferrous' },
-          { name: 'Vaseline (Petroleum Jelly)',     function: 'Film-forming barrier agent — enhances water resistance and cohesion', percent: '—', compat: 'All metals' },
+          { name: 'Dearomatized Hydrocarbon Solvent (Primary Grade)',   function: 'Primary carrier solvent — dearomatized aliphatic hydrocarbon',     percent: '—', compat: 'All metals' },
+          { name: 'Dearomatized Hydrocarbon Solvent (Secondary Grade)', function: 'Secondary carrier — higher flash point fraction',                 percent: '—', compat: 'All metals' },
+          { name: 'Dearomatized Hydrocarbon Solvent (Light Grade)',     function: 'Light, fast-evaporating carrier fraction',                        percent: '—', compat: 'All metals' },
+          { name: 'Calcium Petroleum Sulfonate',                        function: 'Primary corrosion inhibitor — polar film on metal surface',       percent: '—', compat: 'Ferrous, non-ferrous' },
+          { name: 'Petroleum Jelly',                                    function: 'Film-forming barrier agent — enhances water resistance and cohesion', percent: '—', compat: 'All metals' },
         ],
         application: [
           { step: '1', name: 'Pre-clean surface',   param: 'Dry, rust-free, grease-free substrate', value: 'Essential for maximum protection life' },
@@ -3771,7 +3772,7 @@ const DOCS: Array<{
           { property: 'Colour',             value: 'Pale yellow',                            unit: '—',    method: 'Visual' },
           { property: 'Odour',              value: 'Mild solvent odour',                     unit: '—',    method: 'Organoleptic' },
           { property: 'Film Type',          value: 'Thin oily protective film',              unit: '—',    method: 'Visual (post-evaporation)' },
-          { property: 'Base Type',          value: 'Solvent-based (MTO + Exxsol D145)',      unit: '—',    method: '—' },
+          { property: 'Base Type',          value: 'Solvent-based (MTO + Dearomatized Hydrocarbon Solvent)', unit: '—', method: '—' },
           { property: 'Flash Point',        value: '> 40',                                   unit: '°C',   method: 'ASTM D93' },
           { property: 'Density (25 °C)',    value: '0.79 – 0.83',                            unit: 'g/mL', method: 'ISO 2811' },
           { property: 'Viscosity (40 °C)',  value: '2 – 6',                                  unit: 'cSt',  method: 'ASTM D445' },
@@ -4608,6 +4609,272 @@ const DOCS: Array<{
         { parameter: 'TBD', method: 'TBD', specification: 'TBD', result: 'TBD', status: 'Pending' },
       ],
       statement: 'Placeholder Certificate of Analysis for UNIKLEAN-CU. No batch has been tested yet; this record will be populated once formulation and batch data are available.',
+      approvals: {
+        preparedBy: 'TBD',
+        reviewedBy: 'TBD',
+        approvedBy: 'TBD',
+      },
+    },
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // UNIKBRIGHTNER — real formulation supplied (citric acid / hydrogen peroxide
+  // 50% / DM water, exact quantities and ratios per reference 100 L batch).
+  // TDS/MSDS/Label physical & finished-product hazard data was NOT supplied —
+  // those fields are marked TBD/pending, in draft status, following the same
+  // convention as uniklean-cu. Composition percentages are given on a mixed
+  // basis (citric acid % w/v of the 100 L reference batch; hydrogen peroxide
+  // and DM water % v/v of the batch, summing to 100% between themselves) — all
+  // three rows carry the exact percentages as supplied (none marked as the
+  // auto-balancing "fill to volume" row) so the app's requiredQty = (pct/100)
+  // × batchSize math reproduces the supplied quantities exactly at any batch
+  // size. No density/specific-gravity values were invented; DM Water uses the
+  // universally known constant 1.0 g/mL (same convention as other products'
+  // water rows), Citric Acid and Hydrogen Peroxide use density: null (unknown
+  // — falls back to 1.0 in the calculated-SG estimate, same as other products'
+  // unknown-density rows). No hydrogen-peroxide "active concentration"
+  // equivalent was calculated for the finished blend.
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    productKey: 'unikbrightner',
+    docType:    'tds',
+    docNumber:  'TDS-UB-001',
+    revision:   'Rev 01 — Aug 2026',
+    status:     'draft',
+    footer: {
+      left:   'TDS-UB-001 Rev 01 · Aug 2026',
+      center: 'This Technical Data Sheet is for guidance only. Performance figures are typical values obtained under controlled conditions. © Macro Coats Pvt Ltd',
+      right:  'Macro Coats Pvt Ltd · Chennai · India\nPage 1 of 1',
+    },
+    body: {
+      grade:       'Industrial Grade — Metal Brightening Concentrate (10× Concentrate)',
+      description: 'UNIKBRIGHTNER is a 10× concentrated metal brightening formulation combining an organic-acid brightening/chelating agent with a peroxide-type oxidising agent in a de-mineralised water carrier. It is intended to be diluted to a working strength prior to use for chemical brightening / oxide-film removal on metal surfaces. Physical performance data for the finished concentrate has not yet been generated in-house; values below are marked accordingly pending laboratory characterisation.',
+      sections: {
+        features: [
+          { head: 'Organic-Acid Based Brightening',    body: 'Mild organic-acid brightening/chelating action, avoiding the aggressive mineral-acid attack of stronger acid systems.' },
+          { head: 'Oxidiser-Assisted Oxide Removal',   body: 'A peroxide-type oxidising agent provides an oxidising boost to assist removal of light oxide/scale films.' },
+          { head: '10× Concentrate',                   body: 'Supplied as a 10× concentrate for dilution to working strength at the point of use, reducing packaging and freight volume.' },
+        ],
+        physicalProperties: [
+          { property: 'Appearance',              value: 'Clear, colourless liquid', unit: '—',    method: 'Estimated — no colourants in formulation; all components colourless/near-colourless in aqueous solution. Pending visual confirmation.' },
+          { property: 'pH (neat concentrate)',    value: '1.0 – 2.0', unit: '—',    method: 'Calculated — from the organic-acid component\'s concentration (20.0% w/v ≈ 1.04 mol/L) using its first dissociation constant (Ka1, pKa1 3.13); not lab-measured. Pending lab confirmation (pH electrode, 25 °C).' },
+          { property: 'Density',                 value: 'TBD', unit: 'g/mL', method: 'Not measured — no density/specific gravity data supplied; not assumed' },
+          { property: 'Working Concentration',   value: '10% v/v (1:10 dilution)', unit: '—',    method: 'As supplied — derived directly from the stated 10× concentrate form' },
+          { property: 'Reference Batch Size',    value: '100', unit: 'L',    method: 'As supplied — reference formulation batch size' },
+        ],
+        composition: [
+          { name: 'Organic Acid (Brightening Agent)',   function: 'Brightening / chelating acid',      percent: '20.0% w/v', compat: '—' },
+          { name: 'Oxidising Agent (Peroxide-Type)',    function: 'Oxidising brightening agent',       percent: '3.35% v/v', compat: '—' },
+          { name: 'DM Water',                            function: 'Diluent / carrier',                 percent: '96.65% v/v', compat: '—' },
+        ],
+        application: [
+          { step: '1', name: 'Dilution',       param: 'Dilute concentrate to the working strength required for the application', value: '1:10 with water (10% v/v) — derived from the 10× concentrate form' },
+          { step: '2', name: 'Application',    param: 'Apply by immersion or spray as appropriate to the process',               value: 'As appropriate to process' },
+          { step: '3', name: 'Post-Treatment', param: 'Rinse treated surfaces with water after use, as required by the process',  value: 'As required by process' },
+        ],
+        packaging: [
+          { size: '35', unit: 'L', type: 'HDPE jerrycan' },
+          { size: '50', unit: 'L', type: 'HDPE jerrycan' },
+        ],
+        performance: [
+          { label: 'Brightening Performance', val: 'Not yet characterized — pending lab/field testing' },
+          { label: 'Oxide/Scale Removal',      val: 'Not yet characterized — pending lab/field testing' },
+        ],
+        safetyNote: 'DANGER — contains a peroxide-type oxidising raw material that is a strong oxidiser and corrosive. Refer to SDS-UB-001 for full hazard information before handling.',
+      },
+    },
+  },
+
+  {
+    productKey: 'unikbrightner',
+    docType:    'msds',
+    docNumber:  'SDS-UB-001',
+    revision:   'Rev 01 — Aug 2026',
+    status:     'draft',
+    footer: {
+      left:   'SDS-UB-001 Rev 01 · Aug 2026',
+      center: 'This Safety Data Sheet is provided in good faith based on current knowledge. © Macro Coats Pvt Ltd',
+      right:  'Macro Coats Pvt Ltd · Chennai · India\nGHS Rev 9 Compliant · Page 1 of 1',
+    },
+    body: {
+      signalWord: 'DANGER',
+      sections: {
+        identification: {
+          productType:  'Aqueous organic-acid / peroxide-type metal brightening concentrate (10×)',
+          intendedUse:  'Industrial metal brightening / oxide-film removal; diluted to working strength before use',
+          manufacturer: 'Macro Coats Pvt Ltd, Chennai, Tamil Nadu, India',
+          emergency:    'AIIMS Poison Control: 1800-11-6117 (Toll-Free)',
+        },
+        hazards: {
+          pictograms:      ['oxidiser', 'corrosive', 'irritant'],
+          classifications: [
+            { class: 'Oxidizing Liquid',            category: 'Cat 1',  tagType: 'danger' },
+            { class: 'Skin Corrosion',              category: 'Cat 1A', tagType: 'danger' },
+            { class: 'Serious Eye Damage',          category: 'Cat 1',  tagType: 'danger' },
+            { class: 'Acute Toxicity (Oral)',       category: 'Cat 4',  tagType: 'warn' },
+            { class: 'Eye Irritation',               category: 'Cat 2',  tagType: 'warn' },
+          ],
+          hStatements: 'H271 — May cause fire or explosion; strong oxidiser (from the oxidising raw material). H314 — Causes severe skin burns and eye damage (from the oxidising raw material). H302 — Harmful if swallowed. H319 — Causes serious eye irritation (from the organic-acid raw material). These H-statements reflect the known standalone hazard classification of the raw materials used; a formal GHS classification of the finished diluted concentrate has not yet been performed.',
+          pStatements: 'P210 · P220 · P280 · P301+P330+P331 · P303+P361+P353 · P305+P351+P338 · P310 · P371+P380+P375 · P260 · P264 · P270',
+        },
+        composition: {
+          ingredients: [
+            { name: 'Organic Acid (Brightening Agent)',  description: 'Brightening / chelating acid',                percent: '15–25%', ghsClass: 'Eye Irritation Cat 2',                              tagType: 'warn' },
+            { name: 'Oxidising Agent (Peroxide-Type)',   description: 'Oxidising brightening agent (aqueous solution)', percent: '1–5%',   ghsClass: 'Oxidizing Liquid Cat 1 / Skin Corrosion Cat 1A',    tagType: 'danger' },
+            { name: 'DM Water',                  description: 'Diluent / carrier',                            percent: '70–90%', ghsClass: '—',                                                  tagType: 'safe' },
+          ],
+          note: 'Exact formulation ratios are proprietary. Functional ingredient descriptions and standard raw-material hazard classes are provided for safety and emergency purposes only.',
+        },
+        firstAid: {
+          skin:       'Remove contaminated clothing immediately. Wash affected area with plenty of water for at least 15 minutes. Seek immediate medical attention — the oxidising raw material at source concentration can cause severe skin burns.',
+          eyes:       'Rinse cautiously with water for at least 15 minutes. Remove contact lenses if present and easy to do. Continue rinsing. Seek immediate medical attention.',
+          ingestion:  'Rinse mouth with water. Do not induce vomiting. Seek immediate medical attention.',
+          inhalation: 'Remove to fresh air and keep at rest in a position comfortable for breathing. Seek medical attention if symptoms occur.',
+        },
+        fireFighting: {
+          flammability:       'Not flammable, but is a strong oxidiser (from the oxidising raw material) and can intensify combustion of other materials.',
+          extinguishingMedia: 'Water spray/fog — use media appropriate to the surrounding fire.',
+          fireHazard:         'May intensify fire on contact with combustible material. May release oxygen and irritating fumes on strong heating/decomposition.',
+          ppe:                'Self-contained breathing apparatus (SCBA) and full protective/fire-resistant clothing for firefighters.',
+        },
+        accidentalRelease: [
+          'Evacuate non-essential personnel',
+          'Wear appropriate PPE (acid-resistant gloves, face shield/goggles, apron) before attempting cleanup',
+          'Contain spill to prevent entry into drains, waterways or soil',
+          'Dilute with large volumes of water or absorb with inert absorbent material',
+          'Collect into suitable containers for disposal',
+          'Dispose of collected material per CPCB/SPCB guidelines',
+        ],
+        handling: {
+          handling:    'Avoid contact with skin and eyes. Avoid breathing vapours/mist. Keep away from combustible/organic materials and reducing agents. Use in a well-ventilated area.',
+          storageTemp: 'Below 30 °C; cool, dry, well-ventilated area, protected from direct sunlight and heat sources — standard precaution for a peroxide-containing oxidiser (from the oxidising raw material), which decomposes faster at elevated temperature. Not lab-verified for this specific formulation.',
+          containers:  'HDPE jerrycans or equivalent oxidiser-compatible containers; keep tightly closed when not in use',
+          segregation: 'Store separately from combustible/organic materials, reducing agents and reactive metals',
+          shelfLife:   'TBD — depends on the peroxide component\'s decomposition rate under actual storage conditions, which requires real stability testing and cannot be derived from the formula composition alone; pending QA stability data',
+        },
+        exposure: {
+          ppeItems:    ['Safety Goggles / Face Shield', 'Acid-Resistant Gloves', 'Protective Apron', 'Respirator if vapours exceed exposure limits'],
+          engineering: 'Use in a well-ventilated area or with local exhaust ventilation. Eyewash station and safety shower should be available within the work area.',
+        },
+        physical: [
+          { key: 'Appearance', val: 'Clear, colourless liquid — estimated, no colourants in formulation; pending visual confirmation' },
+        ],
+        stability: {
+          stability:      'The oxidising component may decompose over time or with contamination, releasing oxygen; store as recommended.',
+          avoid:          'Combustible/organic materials, reducing agents, reactive metals, heat, contamination',
+          decomposition:  'May decompose to release oxygen and heat; contact with incompatible materials may cause rapid decomposition.',
+          polymerisation: 'Will not occur',
+        },
+        sections11to16: {
+          'Skin / Eye': 'May cause severe skin/eye burns and irritation on contact — flush with water immediately if contact occurs, per First Aid section.',
+          Aquatic:      'Not yet assessed for aquatic toxicity — treat as potentially harmful and avoid discharge to drains or watercourses.',
+          Disposal:     'Do not discharge undiluted product to drains. Dispose of via licensed waste contractor per CPCB/SPCB norms (E.P. Act 1986).',
+          Regulatory:   'MSIHC Rules 1989 · Factories Act 1948 · Hazardous Waste Rules 2016 · GHS Rev 9',
+          'Other Info': 'SDS Rev 01 issued Aug 2026 — draft, based on known raw-material hazard data. Next review: upon completion of formal finished-product GHS classification.',
+        },
+      },
+    },
+  },
+
+  {
+    productKey: 'unikbrightner',
+    docType:    'formula',
+    docNumber:  'FRM-UB-001',
+    revision:   'Rev 01 — Aug 2026',
+    status:     'pending_review',
+    footer: {
+      left:   'FRM-UB-001 Rev 01 · Aug 2026',
+      center: 'CONFIDENTIAL — This formulation sheet is the proprietary information of Macro Coats Pvt Ltd. Unauthorised reproduction or disclosure is prohibited.',
+      right:  'Macro Coats Pvt Ltd · Chennai · India\nPage 1 of 1',
+    },
+    body: {
+      classification:     'CONFIDENTIAL — Internal Use Only',
+      batchSize:          '100 L (reference)',
+      formulaType:        'liquid',
+      referenceBatchSize: 100,
+      batchUnit:          'L',
+      totalActivePercent: 23.35,
+      overview: 'UNIKBRIGHTNER is a 10× concentrate metal brightening formulation built on citric acid (solid) as the brightening/chelating acid and hydrogen peroxide (50% aqueous solution) as the oxidising component, carried in de-mineralised water. Citric acid is dosed on a % w/v basis (20.0 kg per 100 L reference batch); hydrogen peroxide (50%) and DM water make up the balance of the batch on a % v/v basis (3.35% and 96.65% respectively). Formulation values are exactly as supplied and have not been re-derived, re-based, or adjusted for density/specific gravity.',
+      composition: [
+        { srNo: 1, name: 'Citric Acid (solid)',    casNo: '77-92-9',   baseQty: 20.0, unit: 'kg', percentWV: 20.0, function: 'Brightening / chelating acid (solid)',                          density: null, unitPrice: 0 },
+        { srNo: 2, name: 'Hydrogen Peroxide (50%)', casNo: '7722-84-1', baseQty: 3.35, unit: 'L',  percentWV: 3.35, function: 'Oxidising brightening agent — 50% w/w aqueous solution',       density: null, unitPrice: 0 },
+        { srNo: 3, name: 'DM Water',                casNo: '7732-18-5', baseQty: 96.65, unit: 'L', percentWV: 96.65, function: 'Diluent / carrier — de-mineralised water, balance of batch volume', density: 1.0, unitPrice: 0 },
+      ],
+      preparation: [],
+      operatingConditions: [],
+      applications: {
+        removes:    [],
+        usedBefore: [],
+      },
+    },
+  },
+
+  {
+    productKey: 'unikbrightner',
+    docType:    'label',
+    docNumber:  'LBL-UB-001',
+    revision:   'Rev 01 — Aug 2026',
+    status:     'draft',
+    footer: { left: '', center: '', right: '' },
+    body: {
+      signalWord: 'DANGER',
+      unNo: 'N/A',
+      hCodes: [
+        { code: 'H271', text: 'May cause fire or explosion; strong oxidiser' },
+        { code: 'H314', text: 'Causes severe skin burns and eye damage' },
+        { code: 'H302', text: 'Harmful if swallowed' },
+        { code: 'H319', text: 'Causes serious eye irritation' },
+      ],
+      pCodes: [
+        { code: 'P210',            text: 'Keep away from heat, hot surfaces, sparks, open flames and other ignition sources.' },
+        { code: 'P220',            text: 'Keep away from clothing and other combustible materials.' },
+        { code: 'P280',            text: 'Wear protective gloves/protective clothing/eye protection/face protection.' },
+        { code: 'P301+P330+P331', text: 'IF SWALLOWED: rinse mouth. Do NOT induce vomiting.' },
+        { code: 'P303+P361+P353', text: 'IF ON SKIN (or hair): Remove/Take off immediately all contaminated clothing. Rinse skin with water.' },
+        { code: 'P305+P351+P338', text: 'IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.' },
+        { code: 'P310',            text: 'Immediately call a POISON CENTER/doctor.' },
+        { code: 'P371+P380+P375', text: 'In case of major fire and large quantities: Evacuate area. Fight fire remotely due to the risk of explosion.' },
+      ],
+      firstAid: {
+        skin:       'Remove contaminated clothing immediately. Wash affected area with plenty of water for at least 15 minutes. Seek immediate medical attention.',
+        eyes:       'Rinse cautiously with water for at least 15 minutes. Remove contact lenses if present and easy to do. Continue rinsing. Seek immediate medical attention.',
+        ingestion:  'Rinse mouth with water. Do not induce vomiting. Seek immediate medical attention.',
+        inhalation: 'Remove to fresh air and keep at rest in a position comfortable for breathing. Seek medical attention if symptoms occur.',
+      },
+      directions: [
+        'For industrial use only — dilute concentrate to the working strength required for the application before use.',
+        'Do not use undiluted unless the process specification requires it.',
+        'Apply by immersion or spray application as appropriate to the process.',
+        'Use only in a well-ventilated area, away from combustible/organic materials (see SDS-UB-001).',
+        'Rinse treated surfaces with water after use, as required by the process.',
+      ],
+      storage:  ['Store in a cool location away from direct sunlight and heat sources.', 'Keep container tightly closed.', 'Store away from combustible/organic materials and reducing agents.'],
+      products: ['UNIKBRIGHTNER'],
+    },
+  },
+
+  {
+    productKey: 'unikbrightner',
+    docType:    'coa',
+    docNumber:  'COA-UB-001',
+    revision:   'Draft — pending formulation data',
+    status:     'draft',
+    footer: {
+      left:   'COA-UB-001 Draft',
+      center: 'CONFIDENTIAL — Placeholder Certificate of Analysis · Macro Coats Pvt Ltd',
+      right:  'Macro Coats Pvt Ltd · Chennai · India',
+    },
+    body: {
+      batchNumber:    'TBD',
+      batchSize:      'TBD',
+      productionDate: 'TBD',
+      expiryDate:     'TBD',
+      grade:          'TBD — pending formulation QA data',
+      appearance:     'TBD',
+      tests: [
+        { parameter: 'TBD', method: 'TBD', specification: 'TBD', result: 'TBD', status: 'Pending' },
+      ],
+      statement: 'Placeholder Certificate of Analysis for UNIKBRIGHTNER. No batch has been tested yet; this record will be populated once batch data is available.',
       approvals: {
         preparedBy: 'TBD',
         reviewedBy: 'TBD',

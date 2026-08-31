@@ -1396,6 +1396,13 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
   margin: 0;
   color: #1a1a1a;
 }
+.tds-print-description strong {
+  color: #123A6D;
+  background: #eef4fb;
+  border-bottom: 1px solid #e30613;
+  padding: 0 3px 1px;
+  font-weight: 900;
+}
 
 .tds-print-two-col {
   display: grid;
@@ -1512,7 +1519,13 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
   vertical-align: top;
   line-height: 1.6;
 }
-.msds-kv-bold   { font-weight: 700; }
+.msds-kv-bold {
+  color: #123A6D;
+  background: #eef4fb;
+  border-left: 3px solid #e30613;
+  padding-left: 6px;
+  font-weight: 900;
+}
 .msds-kv-accent { color: #1F3A5F; font-weight: 700; }
 .msds-kv-danger { color: #b91c1c; }
 
@@ -1639,26 +1652,33 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
 
 /* ── Section 2 hazard card ───────────────────────────────────────────────── */
 .msds-hazard-card {
-  border: 1px solid #ddd;
+  border: 1px solid #e6c7c7;
+  border-left: 4px solid #b91c1c;
   border-radius: 4px;
-  background: #f8f9fa;
-  padding: 10px 12px;
+  background: #fffafa;
+  padding: 9px 12px 10px;
   break-inside: avoid;
 }
 
 .msds-hazard-signal {
-  font-size: 18px;
+  display: inline-block;
+  padding: 4px 9px;
+  border-radius: 2px;
+  background: #b91c1c;
+  font-size: 15px;
   font-weight: 900;
-  color: #cc2222;
+  color: #ffffff;
   margin-bottom: 9px;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.8px;
 }
 
 .msds-hazard-pictos {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 10px;
+  margin-bottom: 9px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #efd4d4;
 }
 .msds-hazard-picto {
   display: flex;
@@ -1666,11 +1686,16 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
   justify-content: center;
 }
 
-.msds-hazard-group { margin-bottom: 7px; }
+.msds-hazard-group {
+  margin-bottom: 7px;
+  padding: 6px 8px;
+  border: 1px solid #edf1f5;
+  background: #ffffff;
+}
 .msds-hazard-group-head {
   font-size: 8.5px;
   font-weight: 900;
-  color: #1a1a1a;
+  color: #123A6D;
   margin-bottom: 4px;
   text-transform: uppercase;
   letter-spacing: 0.3px;
@@ -1698,7 +1723,7 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
   line-height: 1.4;
   color: #1a1a1a;
 }
-.msds-hazard-stmts li strong { font-weight: 700; }
+.msds-hazard-stmts li strong { color: #123A6D; font-weight: 800; }
 
 /* ── Print overrides (tds/msds print-matched layout) ─────────────────────── */
 @media print {

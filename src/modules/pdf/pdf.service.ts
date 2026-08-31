@@ -480,13 +480,15 @@ class PDFService {
       payload['productCode'] ?? payload['quotationNumber'] ?? payload['batchNumber'] ?? payload['referenceNo'] ?? '',
     );
     const revisionDate = String(payload['revisionDate'] ?? '');
+    const issueDate    = String(payload['issueDate'] ?? '');
+    const revision     = String(payload['revision'] ?? '');
 
     const periodLabel = executive
       ? `${formatDate(String(payload['from'] ?? ''))} – ${formatDate(String(payload['to'] ?? ''))}`
       : '';
 
     const headerHtml = printMatched
-      ? buildPrintMatchedHeader(docType, productName, docNumber, logoDataUri, revisionDate)
+      ? buildPrintMatchedHeader(docType, productName, docNumber, logoDataUri, revisionDate, issueDate, revision)
       : executive
         ? buildExecutiveHeader(logoDataUri, periodLabel)
         : letterhead
@@ -500,15 +502,17 @@ class PDFService {
           ? buildLetterheadFooter()
           : buildFooterTemplate(date, time, docTitle, productName, { docType });
 
-    // tds/msds reserve less header/footer space than coa's taller branded
-    // letterhead; the executive report's header is taller still (logo +
-    // period line); the Company Letterhead treatment matches coa's band
-    // height since it carries the same amount of company-identity copy —
-    // see buildPrintMatchedHeader/Footer/buildExecutiveHeader/
+    // tds/msds reserve enough header/footer space for the repeated
+    // print-matched letterhead; the company/product emphasis makes this
+    // band taller than the original compact treatment. The executive
+    // report's header is taller still (logo + period line), and the Company
+    // Letterhead treatment matches coa's band height since it carries the
+    // same amount of company-identity copy — see
+    // buildPrintMatchedHeader/Footer/buildExecutiveHeader/
     // buildLetterheadHeader/Footer for the content that must fit inside
     // these bands.
     const margin = printMatched
-      ? { top: '26mm', bottom: '16mm', left: '14mm', right: '14mm' }
+      ? { top: '48mm', bottom: '16mm', left: '14mm', right: '14mm' }
       : executive
         ? { top: '32mm', bottom: '20mm', left: '16mm', right: '16mm' }
         : { top: '30mm', bottom: '22mm', left: '14mm', right: '14mm' };
@@ -597,9 +601,9 @@ function wrapBody(body: string, css: string, watermarkDataUri?: string | null): 
     z-index: 999;
   }
   .doc-watermark img {
-    width: 45%;
-    max-width: 100mm;
-    opacity: 0.06;
+    width: 28%;
+    max-width: 70mm;
+    opacity: 0.025;
     filter: grayscale(1);
     transform: rotate(-28deg);
     -webkit-print-color-adjust: exact !important;
@@ -784,10 +788,21 @@ function buildPrintMatchedHeader(
   docNumber: string,
   logoDataUri: string | null,
   revisionDate: string,
+  issueDate: string,
+  revision: string,
 ): string {
   const meta = PRINT_MATCHED_META[docType]!;
-  const metaLine = revisionDate
-    ? `<div class="h-doc-meta">Rev. Date: ${esc(revisionDate)}</div>`
+  const metaItems = [
+    ['Product', productName],
+    [meta.idLabel, docNumber],
+    ['Revision', revision || null],
+    ['Issue Date', issueDate || null],
+    ['Rev. Date', revisionDate || null],
+  ].filter((item): item is [string, string] => Boolean(item[1]));
+  const metaStrip = metaItems.length
+    ? `<div class="h-meta-strip">${metaItems.map(([label, value]) => (
+        `<div class="h-meta-item"><span class="h-meta-label">${esc(label)}</span><span class="h-meta-value">${esc(value)}</span></div>`
+      )).join('')}</div>`
     : '';
 
   return `
@@ -798,15 +813,19 @@ function buildPrintMatchedHeader(
   .hb { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 3mm 14mm 2.5mm 14mm; }
   .h-logo { height: 56px; width: auto; object-fit: contain; flex-shrink: 0; margin-top: 1px; }
   .h-left { flex: 1; min-width: 0; padding-left: 14px; border-left: 1.5px solid #d8dee5; }
-  .h-company { font-size: 20px; font-weight: 900; color: #1a1a1a; line-height: 1; letter-spacing: -0.5px; margin-bottom: 3px; }
+  .h-company { display: inline-block; font-size: 24px; font-weight: 900; color: #123A6D; line-height: 1; letter-spacing: -0.35px; margin-bottom: 5px; padding-bottom: 3px; border-bottom: 2px solid #e30613; }
   .h-tagline { font-size: 8.5px; font-weight: 700; color: #555; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 7px; }
   .h-addr { font-size: 9.5px; color: #333; line-height: 1.7; }
   .h-right { text-align: right; flex-shrink: 0; }
   .h-doc-title { font-size: 22px; font-weight: 900; color: #1a1a1a; letter-spacing: 0.3px; margin-bottom: 4px; }
   .h-doc-subtitle { font-size: 10px; font-weight: 700; color: #1F3A5F; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 5px; }
-  .h-doc-product { font-size: 15px; font-weight: 800; color: #1a1a1a; margin-bottom: 3px; }
-  .h-doc-id { font-size: 10.5px; color: #333; }
-  .h-doc-meta { font-size: 9px; color: #666; margin-top: 3px; }
+  .h-doc-product { display: inline-block; max-width: 330px; padding: 5px 11px; border: 1px solid #123A6D; border-left: 5px solid #e30613; border-radius: 3px; background: #eef4fb; font-size: 20px; font-weight: 900; color: #123A6D; line-height: 1.12; margin-bottom: 4px; overflow-wrap: anywhere; }
+  .h-meta-strip { display: flex; align-items: stretch; gap: 0; margin: 0 14mm 2mm; border: 1px solid #c9d5e2; border-left: 4px solid #e30613; background: #f7fafc; }
+  .h-meta-item { flex: 1; min-width: 0; padding: 3px 7px 3.5px; border-left: 1px solid #dce4ec; }
+  .h-meta-item:first-child { flex: 1.4; border-left: 0; }
+  .h-meta-label { display: block; margin-bottom: 1px; font-size: 5.8px; font-weight: 800; color: #6b7280; letter-spacing: 0.6px; text-transform: uppercase; }
+  .h-meta-value { display: block; font-size: 7.5px; font-weight: 800; color: #123A6D; line-height: 1.15; overflow-wrap: anywhere; }
+  .h-meta-item:first-child .h-meta-value { font-size: 9px; font-weight: 900; }
   .h-rule { height: 1.5px; background: #1a1a1a; margin: 0 14mm; }
 </style>
 <div class="hw">
@@ -821,10 +840,9 @@ function buildPrintMatchedHeader(
       <div class="h-doc-title">${esc(meta.docTitle)}</div>
       <div class="h-doc-subtitle">${esc(meta.subtitle)}</div>
       <div class="h-doc-product">${esc(productName)}</div>
-      ${docNumber ? `<div class="h-doc-id">${esc(meta.idLabel)}: ${esc(docNumber)}</div>` : ''}
-      ${metaLine}
     </div>
   </div>
+  ${metaStrip}
   <div class="h-rule"></div>
 </div>`;
 }
@@ -845,13 +863,15 @@ function buildPrintMatchedFooter(docType: DocType, productName: string, docNumbe
   .f-rule { height: 0.5px; background: #ccc; margin-bottom: 4px; }
   .fb { display: flex; justify-content: space-between; }
   .f-row { font-size: 7.5px; color: #888; letter-spacing: 0.3px; text-transform: uppercase; }
+  .f-right { min-width: 80px; text-align: right; }
+  .f-page { display: block; margin-top: 1px; color: #123A6D; font-weight: 800; }
   .f-tag { margin-top: 2px; color: #aaa; font-size: 7px; text-transform: uppercase; letter-spacing: 0.3px; }
 </style>
 <div class="fw">
   <div class="f-rule"></div>
   <div class="fb">
     <div class="f-row">${leftText}</div>
-    <div class="f-row">${rightText}</div>
+    <div class="f-row f-right">${rightText}<span class="f-page">Page <span class="pageNumber"></span> of <span class="totalPages"></span></span></div>
   </div>
   <div class="f-tag">${COMPANY.website} &nbsp;•&nbsp; This document is computer generated &nbsp;•&nbsp; Confidential</div>
 </div>`;
