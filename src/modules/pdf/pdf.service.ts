@@ -48,7 +48,7 @@ const PRINT_MATCHED_META: Record<string, {
   },
   msds: {
     docTitle: 'Safety Data Sheet',
-    subtitle: 'Globally Harmonized System Compliant',
+    subtitle: '',
     idLabel: 'REF',
     footerDept: 'GHS Rev. 9 Standard',
     footerRightDefault: 'Confidential — For Authorised Use Only',
@@ -512,7 +512,7 @@ class PDFService {
     // buildLetterheadHeader/Footer for the content that must fit inside
     // these bands.
     const margin = printMatched
-      ? { top: '48mm', bottom: '16mm', left: '14mm', right: '14mm' }
+      ? { top: '36mm', bottom: '16mm', left: '14mm', right: '14mm' }
       : executive
         ? { top: '32mm', bottom: '20mm', left: '16mm', right: '16mm' }
         : { top: '30mm', bottom: '22mm', left: '14mm', right: '14mm' };
@@ -792,18 +792,6 @@ function buildPrintMatchedHeader(
   revision: string,
 ): string {
   const meta = PRINT_MATCHED_META[docType]!;
-  const metaItems = [
-    ['Product', productName],
-    [meta.idLabel, docNumber],
-    ['Revision', revision || null],
-    ['Issue Date', issueDate || null],
-    ['Rev. Date', revisionDate || null],
-  ].filter((item): item is [string, string] => Boolean(item[1]));
-  const metaStrip = metaItems.length
-    ? `<div class="h-meta-strip">${metaItems.map(([label, value]) => (
-        `<div class="h-meta-item"><span class="h-meta-label">${esc(label)}</span><span class="h-meta-value">${esc(value)}</span></div>`
-      )).join('')}</div>`
-    : '';
 
   return `
 <style>
@@ -813,19 +801,13 @@ function buildPrintMatchedHeader(
   .hb { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 3mm 14mm 2.5mm 14mm; }
   .h-logo { height: 56px; width: auto; object-fit: contain; flex-shrink: 0; margin-top: 1px; }
   .h-left { flex: 1; min-width: 0; padding-left: 14px; border-left: 1.5px solid #d8dee5; }
-  .h-company { display: inline-block; font-size: 24px; font-weight: 900; color: #123A6D; line-height: 1; letter-spacing: -0.35px; margin-bottom: 5px; padding-bottom: 3px; border-bottom: 2px solid #e30613; }
+  .h-company { display: inline-block; white-space: nowrap; font-size: 24px; font-weight: 900; color: #123A6D; line-height: 1; letter-spacing: -0.35px; margin-bottom: 5px; padding-bottom: 3px; border-bottom: 2px solid #e30613; }
   .h-tagline { font-size: 8.5px; font-weight: 700; color: #555; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 7px; }
   .h-addr { font-size: 9.5px; color: #333; line-height: 1.7; }
   .h-right { text-align: right; flex-shrink: 0; }
-  .h-doc-title { font-size: 22px; font-weight: 900; color: #1a1a1a; letter-spacing: 0.3px; margin-bottom: 4px; }
+  .h-doc-title { font-size: 18px; font-weight: 900; color: #1a1a1a; letter-spacing: 0.3px; margin-bottom: 4px; }
   .h-doc-subtitle { font-size: 10px; font-weight: 700; color: #1F3A5F; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 5px; }
   .h-doc-product { display: inline-block; max-width: 330px; padding: 5px 11px; border: 1px solid #123A6D; border-left: 5px solid #e30613; border-radius: 3px; background: #eef4fb; font-size: 20px; font-weight: 900; color: #123A6D; line-height: 1.12; margin-bottom: 4px; overflow-wrap: anywhere; }
-  .h-meta-strip { display: flex; align-items: stretch; gap: 0; margin: 0 14mm 2mm; border: 1px solid #c9d5e2; border-left: 4px solid #e30613; background: #f7fafc; }
-  .h-meta-item { flex: 1; min-width: 0; padding: 3px 7px 3.5px; border-left: 1px solid #dce4ec; }
-  .h-meta-item:first-child { flex: 1.4; border-left: 0; }
-  .h-meta-label { display: block; margin-bottom: 1px; font-size: 5.8px; font-weight: 800; color: #6b7280; letter-spacing: 0.6px; text-transform: uppercase; }
-  .h-meta-value { display: block; font-size: 7.5px; font-weight: 800; color: #123A6D; line-height: 1.15; overflow-wrap: anywhere; }
-  .h-meta-item:first-child .h-meta-value { font-size: 9px; font-weight: 900; }
   .h-rule { height: 1.5px; background: #1a1a1a; margin: 0 14mm; }
 </style>
 <div class="hw">
@@ -838,11 +820,10 @@ function buildPrintMatchedHeader(
     </div>
     <div class="h-right">
       <div class="h-doc-title">${esc(meta.docTitle)}</div>
-      <div class="h-doc-subtitle">${esc(meta.subtitle)}</div>
+      ${meta.subtitle ? `<div class="h-doc-subtitle">${esc(meta.subtitle)}</div>` : ''}
       <div class="h-doc-product">${esc(productName)}</div>
     </div>
   </div>
-  ${metaStrip}
   <div class="h-rule"></div>
 </div>`;
 }

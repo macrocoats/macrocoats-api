@@ -1387,6 +1387,8 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
   border-bottom: 2px solid #123A6D;
   padding-bottom: 3px;
   margin-bottom: 7px;
+  break-after: avoid-page;
+  page-break-after: avoid;
 }
 
 .tds-print-description {
@@ -1461,7 +1463,7 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
   line-height: 1.4;
 }
 .tds-spec-prop  { font-weight: 700; color: #1F3A5F; font-size: 9.5px; }
-.tds-spec-method { font-family: 'Menlo', 'Monaco', 'Consolas', monospace; color: #777; font-size: 9px; }
+.tds-spec-method { font-family: 'Menlo', 'Monaco', 'Consolas', monospace; color: #444; font-size: 9.5px; }
 .tds-spec-value { font-weight: 700; color: #1a1a1a; font-size: 11px; }
 
 .tds-print-app-note {
@@ -1494,6 +1496,8 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
   border-bottom: 2px solid #123A6D;
   padding-bottom: 3px;
   margin-bottom: 6px;
+  break-after: avoid-page;
+  page-break-after: avoid;
 }
 
 .msds-print-kv-table {
@@ -1657,7 +1661,6 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
   border-radius: 4px;
   background: #fffafa;
   padding: 9px 12px 10px;
-  break-inside: avoid;
 }
 
 .msds-hazard-signal {
@@ -1691,6 +1694,7 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
   padding: 6px 8px;
   border: 1px solid #edf1f5;
   background: #ffffff;
+  break-inside: avoid;
 }
 .msds-hazard-group-head {
   font-size: 8.5px;
@@ -1727,7 +1731,13 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
 
 /* ── Print overrides (tds/msds print-matched layout) ─────────────────────── */
 @media print {
-  .tds-print-section, .msds-print-section { break-inside: avoid; }
+  /* NOTE: .tds-print-section/.msds-print-section themselves are intentionally
+     NOT break-inside:avoid here — tds.hbs/msds.hbs opt individual sections
+     into atomic behavior via the .no-break class (small sections only; the
+     large ones — hazard identification, composition, spec tables — are meant
+     to flow across a page break). A blanket avoid on every section used to
+     force those large sections wholesale onto the next page, leaving the
+     remainder of the previous page blank. */
   .tds-print-spec-table tbody tr, .msds-print-comp-table tbody tr,
   .msds-print-kv-table tr, .msds-print-phys-table tr { break-inside: avoid; }
 }
