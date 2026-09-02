@@ -4355,15 +4355,15 @@ const DOCS: Array<{
           { head: 'Corrosion Inhibited',           body: 'Formulated with a corrosion inhibitor for added metal surface protection.' },
         ],
         physicalProperties: [
-          { property: 'Appearance',              value: 'Clear to pale liquid', unit: '—', method: 'Estimated — no colorants in formulation; all components colorless/near-colorless. Pending visual confirmation.' },
+          { property: 'Appearance',              value: 'Clear to pale liquid', unit: '—', method: 'Estimated — colorless/near-colorless components; pending visual confirmation' },
           { property: 'pH (Neat)',                value: '10.5', unit: '—', method: 'pH electrode, 25 °C' },
           { property: 'pH (10% solution)',        value: '10.0', unit: '—', method: 'pH electrode, 25 °C' },
-          { property: 'Density (calculated)',    value: '~0.985', unit: 'g/mL', method: 'Calculated — weighted average of component densities by formula composition; pending lab (ISO 2811) confirmation' },
-          { property: 'Working Concentration',   value: '1 – 5', unit: '% v/v', method: 'Estimated — typical range for this alkaline-cleaner product class. Pending process qualification.' },
-          { property: 'Working Temperature',     value: '40 – 65', unit: '°C', method: 'Estimated — typical range for alkaline immersion/spray cleaning. Pending process qualification.' },
-          { property: 'Contact Time (spray)',    value: '1 – 3', unit: 'min', method: 'Estimated — typical range for this product class. Pending process qualification.' },
-          { property: 'Contact Time (dip)',      value: '5 – 15', unit: 'min', method: 'Estimated — typical range for this product class. Pending process qualification.' },
-          { property: 'Foam level',              value: 'Moderate to High', unit: '—', method: 'Estimated — no defoamer in formulation; ~9% w/w LAE-7/LAE-9 nonionic surfactant content. Pending DIN 53902 confirmation.' },
+          { property: 'Density (calculated)',    value: '~0.985', unit: 'g/mL', method: 'Calculated — weighted avg. of component densities; pending ISO 2811 confirmation' },
+          { property: 'Working Concentration',   value: '7 – 10', unit: '% v/v', method: 'As supplied — per the UNIKLEAN-CU process chart' },
+          { property: 'Working Temperature',     value: '75 ± 5 (70 – 80)', unit: '°C', method: 'As supplied — per the UNIKLEAN-CU process chart' },
+          { property: 'Contact Time (spray)',    value: '1 – 3', unit: 'min', method: 'Estimated — typical range for this product class' },
+          { property: 'Contact Time (dip)',      value: '15', unit: 'min', method: 'As supplied — per the UNIKLEAN-CU process chart' },
+          { property: 'Foam level',              value: 'Moderate to High', unit: '—', method: 'Estimated — ~9% w/w nonionic surfactant; pending DIN 53902 confirmation' },
           { property: 'Total Active Content',    value: '32.2', unit: '%',   method: 'Calculated — 100% minus water/carrier content in formula composition' },
         ],
         composition: [
@@ -4376,11 +4376,15 @@ const DOCS: Array<{
           { name: 'Glycol ether co-solvent',                            function: 'Co-solvent — enhances cleaning and drying performance', percent: '5–10%', compat: 'All metals' },
           { name: 'Metal corrosion inhibitor / film former',            function: 'Copper corrosion inhibitor / film former',           percent: '<1%',    compat: 'Copper and copper alloys' },
         ],
+        // Recommended UNIKLEAN-CU Process (brass/copper cleaning & brightening) — supplied process
+        // chart, Rev 01. UNIKBRIGHTNER stage 4 is optional; see UNIKBRIGHTNER TDS (TDS-UB-001) for
+        // that product's own application section.
         application: [
-          { step: '1', name: 'Dilution',        param: 'Dilute with water to the working concentration required for the application', value: 'As per process requirement' },
-          { step: '2', name: 'Application',     param: 'Apply by immersion, spray or wipe application as appropriate to the process',  value: 'As appropriate to process' },
-          { step: '3', name: 'Ventilation',     param: 'Use in a well-ventilated area, away from heat and ignition sources',           value: 'Continuous' },
-          { step: '4', name: 'Post-Treatment',  param: 'Rinse treated surfaces with water after use, as required by the process',      value: 'As required by process' },
+          { step: '1', name: 'UNIKLEAN-CU Degreasing',                        param: 'Immerse in 7–10% v/v UNIKLEAN-CU bath at 75 ± 5°C (70–80°C) for 15 min, with air agitation', value: 'Removes heavy oil, grease, waxes and soils. Maintain concentration and temperature.' },
+          { step: '2', name: 'Water Rinse 1',                                 param: 'Fresh / overflow water, ambient temperature, 60 sec, static (no agitation)',                     value: 'Removes residual cleaner and loosened soils.' },
+          { step: '3', name: 'Water Rinse 2',                                 param: 'Fresh / overflow water, ambient temperature, 60 sec, static (no agitation)',                     value: 'Ensures thorough removal of cleaner residues.' },
+          { step: '4', name: 'UNIKBRIGHTNER — Coloring / Brightening (Optional)', param: 'Immerse in 2% v/v UNIKBRIGHTNER bath at ambient temperature for 60 sec, static (no agitation)', value: 'Brightens and enhances appearance of brass/copper. Optional stage — adjust dose per desired brightness.' },
+          { step: '5', name: 'Final Water Rinse',                             param: 'Fresh water, DM water preferred, ambient temperature, 60 sec, static (no agitation)',              value: 'Removes residual brightener and leaves a clean surface.' },
         ],
         packaging: [
           { size: '35', unit: 'L', type: 'HDPE jerrycan' },
@@ -4658,8 +4662,8 @@ const DOCS: Array<{
         physicalProperties: [
           { property: 'Appearance',              value: 'Clear, colourless liquid', unit: '—',    method: 'Estimated — no colourants in formulation; all components colourless/near-colourless in aqueous solution. Pending visual confirmation.' },
           { property: 'pH (neat concentrate)',    value: '1.0 – 2.0', unit: '—',    method: 'Calculated — from the organic-acid component\'s concentration (20.0% w/v ≈ 1.04 mol/L) using its first dissociation constant (Ka1, pKa1 3.13); not lab-measured. Pending lab confirmation (pH electrode, 25 °C).' },
-          { property: 'Density',                 value: 'TBD', unit: 'g/mL', method: 'Not measured — no density/specific gravity data supplied; not assumed' },
-          { property: 'Working Concentration',   value: '10% v/v (1:10 dilution)', unit: '—',    method: 'As supplied — derived directly from the stated 10× concentrate form' },
+          { property: 'Density (calculated)',    value: '~1.21', unit: 'g/mL', method: 'Calculated — mass of formula components (20.0 kg citric acid + 3.35 L H₂O₂ 50% solution @ ~1.196 g/mL + 96.65 kg DM water) ÷ 100 L reference batch volume; not lab-measured. Pending lab (density bottle/hydrometer, 25 °C) confirmation.' },
+          { property: 'Working Concentration',   value: '2', unit: '% v/v',    method: 'As supplied — recommended dose for the brass/copper coloring/brightening stage, per the Recommended UNIKLEAN-CU Process (brass/copper cleaning & brightening); dosed directly into the bath, not a standalone 1:10 dilution' },
           { property: 'Reference Batch Size',    value: '100', unit: 'L',    method: 'As supplied — reference formulation batch size' },
         ],
         composition: [
@@ -4667,10 +4671,14 @@ const DOCS: Array<{
           { name: 'Oxidising Agent (Peroxide-Type)',    function: 'Oxidising brightening agent',       percent: '3.35% v/v', compat: '—' },
           { name: 'DM Water',                            function: 'Diluent / carrier',                 percent: '96.65% v/v', compat: '—' },
         ],
+        // Recommended UNIKLEAN-CU Process (brass/copper cleaning & brightening) — supplied process
+        // chart, Rev 01. UNIKBRIGHTNER is stage 4 (optional) of that process; stages 1–3 (UNIKLEAN-CU
+        // degreasing + two water rinses) are shown here as pre-treatment context — see UNIKLEAN-CU
+        // TDS (TDS-CU-001) for the full process.
         application: [
-          { step: '1', name: 'Dilution',       param: 'Dilute concentrate to the working strength required for the application', value: '1:10 with water (10% v/v) — derived from the 10× concentrate form' },
-          { step: '2', name: 'Application',    param: 'Apply by immersion or spray as appropriate to the process',               value: 'As appropriate to process' },
-          { step: '3', name: 'Post-Treatment', param: 'Rinse treated surfaces with water after use, as required by the process',  value: 'As required by process' },
+          { step: '1', name: 'Pre-Treatment (UNIKLEAN-CU Process)', param: 'Precede with UNIKLEAN-CU degreasing (7–10% v/v, 75 ± 5°C, 15 min, air agitation) and two fresh-water rinses (60 sec each, ambient, static)', value: 'Ensures a clean, soil-free surface before brightening.' },
+          { step: '2', name: 'UNIKBRIGHTNER Application',           param: 'Immerse in 2% v/v UNIKBRIGHTNER bath at ambient temperature for 60 sec, static (no agitation)',                                              value: 'Brightens and enhances appearance of brass/copper. Optional stage — adjust dose per desired brightness.' },
+          { step: '3', name: 'Final Water Rinse',                   param: 'Fresh water, DM water preferred, ambient temperature, 60 sec, static (no agitation)',                                                          value: 'Removes residual brightener and leaves a clean surface.' },
         ],
         packaging: [
           { size: '35', unit: 'L', type: 'HDPE jerrycan' },
