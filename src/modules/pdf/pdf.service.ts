@@ -454,7 +454,7 @@ class PDFService {
     const executive      = !printMatched && !legacyBranded && EXECUTIVE_DOC_TYPES.has(docType);
     const letterhead     = !printMatched && !legacyBranded && !executive && LETTERHEAD_DOC_TYPES.has(docType);
     const watermarked    = WATERMARK_DOC_TYPES.has(docType);
-    const logoDataUri      = (printMatched || legacyBranded || executive || letterhead) ? await getLogoDataUri() : null;
+    const logoDataUri      = (legacyBranded || executive || letterhead) ? await getLogoDataUri() : null;
     const watermarkDataUri = watermarked ? await getWatermarkDataUri() : null;
 
     const ctx: Record<string, unknown> = {
@@ -488,7 +488,7 @@ class PDFService {
       : '';
 
     const headerHtml = printMatched
-      ? buildPrintMatchedHeader(docType, productName, docNumber, logoDataUri, revisionDate, issueDate, revision)
+      ? buildPrintMatchedHeader(docType, productName, docNumber, revisionDate, issueDate, revision)
       : executive
         ? buildExecutiveHeader(logoDataUri, periodLabel)
         : letterhead
@@ -512,7 +512,7 @@ class PDFService {
     // buildLetterheadHeader/Footer for the content that must fit inside
     // these bands.
     const margin = printMatched
-      ? { top: '36mm', bottom: '16mm', left: '14mm', right: '14mm' }
+      ? { top: '28mm', bottom: '16mm', left: '14mm', right: '14mm' }
       : executive
         ? { top: '32mm', bottom: '20mm', left: '16mm', right: '16mm' }
         : { top: '30mm', bottom: '22mm', left: '14mm', right: '14mm' };
@@ -786,7 +786,6 @@ function buildPrintMatchedHeader(
   docType: DocType,
   productName: string,
   docNumber: string,
-  logoDataUri: string | null,
   revisionDate: string,
   issueDate: string,
   revision: string,
@@ -799,29 +798,21 @@ function buildPrintMatchedHeader(
   body { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   .hw { width: 100%; background: #ffffff; }
   .hb { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 3mm 14mm 2.5mm 14mm; }
-  .h-logo { height: 56px; width: auto; object-fit: contain; flex-shrink: 0; margin-top: 1px; }
-  .h-left { flex: 1; min-width: 0; padding-left: 14px; border-left: 1.5px solid #d8dee5; }
-  .h-company { display: inline-block; white-space: nowrap; font-size: 24px; font-weight: 900; color: #123A6D; line-height: 1; letter-spacing: -0.35px; margin-bottom: 5px; padding-bottom: 3px; border-bottom: 2px solid #e30613; }
-  .h-tagline { font-size: 8.5px; font-weight: 700; color: #555; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 7px; }
-  .h-addr { font-size: 9.5px; color: #333; line-height: 1.7; }
+  .h-left { flex: 1; min-width: 0; }
+  .h-product-hero { display: inline-block; font-size: 34px; font-weight: 900; color: #123A6D; line-height: 1.05; letter-spacing: -0.4px; padding-bottom: 4px; border-bottom: 3px solid #e30613; overflow-wrap: anywhere; }
   .h-right { text-align: right; flex-shrink: 0; }
   .h-doc-title { font-size: 18px; font-weight: 900; color: #1a1a1a; letter-spacing: 0.3px; margin-bottom: 4px; }
-  .h-doc-subtitle { font-size: 10px; font-weight: 700; color: #1F3A5F; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 5px; }
-  .h-doc-product { display: inline-block; max-width: 330px; padding: 5px 11px; border: 1px solid #123A6D; border-left: 5px solid #e30613; border-radius: 3px; background: #eef4fb; font-size: 20px; font-weight: 900; color: #123A6D; line-height: 1.12; margin-bottom: 4px; overflow-wrap: anywhere; }
+  .h-doc-subtitle { font-size: 10px; font-weight: 700; color: #1F3A5F; letter-spacing: 1.5px; text-transform: uppercase; }
   .h-rule { height: 1.5px; background: #1a1a1a; margin: 0 14mm; }
 </style>
 <div class="hw">
   <div class="hb">
-    ${logoDataUri ? `<img class="h-logo" src="${logoDataUri}" />` : ''}
     <div class="h-left">
-      <div class="h-company">${COMPANY.legalName}</div>
-      <div class="h-tagline">${COMPANY.tagline}</div>
-      <div class="h-addr">Email: ${COMPANY.email} &nbsp;|&nbsp; Web: ${COMPANY.website}</div>
+      <div class="h-product-hero">${esc(productName)}</div>
     </div>
     <div class="h-right">
       <div class="h-doc-title">${esc(meta.docTitle)}</div>
       ${meta.subtitle ? `<div class="h-doc-subtitle">${esc(meta.subtitle)}</div>` : ''}
-      <div class="h-doc-product">${esc(productName)}</div>
     </div>
   </div>
   <div class="h-rule"></div>

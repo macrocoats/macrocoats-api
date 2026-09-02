@@ -45,6 +45,27 @@ export function registerHelpers(): void {
     return arr.join(typeof sep === 'string' ? sep : ', ');
   });
 
+  // TDS "Product Description" lead-in: every product's stored description
+  // already opens with its own name (e.g. "CORRUCUT 500 is a..."), so
+  // bolding a second, separately-prepended copy of productName printed the
+  // name twice. This bolds the name where it already occurs instead of
+  // prepending a duplicate; falls back to the old prepend behavior for the
+  // rare description that doesn't open with the product name.
+  Handlebars.registerHelper('leadDescription', (productName: unknown, description: unknown) => {
+    const name = String(productName ?? '');
+    const desc = String(description ?? '');
+    if (name && desc.toLowerCase().startsWith(name.toLowerCase())) {
+      const lead = desc.slice(0, name.length);
+      const rest = desc.slice(name.length);
+      return new Handlebars.SafeString(
+        `<strong>${Handlebars.Utils.escapeExpression(lead)}</strong>${Handlebars.Utils.escapeExpression(rest)}`,
+      );
+    }
+    return new Handlebars.SafeString(
+      `<strong>${Handlebars.Utils.escapeExpression(name)}</strong> ${Handlebars.Utils.escapeExpression(desc)}`,
+    );
+  });
+
   Handlebars.registerHelper('ghsDiamond', (key: unknown) =>
     new Handlebars.SafeString(GHS_PRINT_DIAMOND_SVG[String(key)] ?? ''),
   );
