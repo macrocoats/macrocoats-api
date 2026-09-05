@@ -255,6 +255,8 @@ production → approved                (bounce back)
 
 `transitionVariantStatus(variantId, newStatus)` in `formulation-variants.service.ts` mirrors the return contract of `transitionDocumentStatus`: `null` (→ 404), `'invalid_transition'` (→ 409), or the updated variant. Variants created directly via POST default to `approved`; variants saved from the AI Optimizer start at `ai_suggested`.
 
+**Approving/creating a usable variant silently changes what TDS/MSDS content gets served — with no explicit action on the document itself.** The frontend's `resolveActiveVariant()` (`safteyDataSheet/src/components/shared/VariantSelector.jsx`) falls back to `usable.find(v => v.isDefault) ?? usable[0]` whenever no variant is explicitly selected — "usable" meaning status `approved` or `production`. The moment a product has any such variant, TDS/MSDS pages start passing that variant's id as `opts.variantId` to `getDocument()`, which routes into `applyVariantOverride()` (this file, in `products.service.ts`) and rewrites `document.sections.composition`, and for MSDS also `sections.hazards` (pictograms/classifications/hStatements/pStatements) and `document.signalWord` — recomputed from the variant's raw `components` via `deriveHazardAggregate()`/`getHazardProfileMap()`, unless the variant has explicit `tdsOverrides.composition` / `msdsOverrides.hazardOverride` set. This only fires when a `variantId` is present (no variant on a product → the authored document is served byte-for-byte, untouched), but once one exists, its hazard content — not the document's own authored hazard section — is what most viewers see by default. After creating or approving a variant for a product that has a live MSDS, re-check the hazard fields actually shown before treating the document as final.
+
 ### AI Formulation Optimizer
 
 `POST /optimizer/analyze` (superadmin-only) takes a product/variant's component list plus optimization goals, enriches components with inventory prices (name-normalized: `'LAE 9'` ≡ `'LAE-9'`), and calls an AI provider (`src/modules/optimizer/ai/`) to produce recommendations and financial impact. Suggested variants can then be saved through the normal `formulation-variants` module with status `ai_suggested` and promoted via the approval workflow above.
@@ -303,7 +305,7 @@ See `DATABASE.md` for the full 33-table schema reference, the canonical migratio
 `src/seed/` contains idempotent seed scripts (run via `npm run seed`):
 
 - `index.ts` — entry point; runs all seeds in order
-- `products.seed.ts` — 14 product lines (uniklean-sp, uniklean-fe, uniprotect-oil, uniflow-ecm, unicool-al, unikoat-lt-700, unisolve-h3, unipass, uniktonner, corroklean, corrcut-100, corrucut-500, uniklean-sf, corrcut-200)
+- `products.seed.ts` — 17 product lines (uniklean-sp, uniklean-fe, uniprotect-oil, uniflow-ecm, unicool-al, unikoat-lt-700, unisolve-h3, unipass, uniktonner, corroklean, corrcut-100, corrucut-500, uniklean-sf, corrcut-200, unicut-al, uniklean-cu, unikbrightner)
 - `companies.seed.ts` — test companies (Rane Madras, TVS, Akshaya) with product access mappings
 - `formulationVariants.seed.ts` — formulation variant headers and components
 - `inventory.seed.ts` — 23 factory-default raw materials
@@ -312,7 +314,8 @@ See `DATABASE.md` for the full 33-table schema reference, the canonical migratio
 ### Seed & Data Integrity
 
 - Seed scripts must be idempotent — always check for existing records before inserting/upserting
-- When updating data, propagate changes to both seed files AND the live database; seed-only edits won't reflect in the running DB
+- **"Idempotent" here means insert-if-missing, not upsert.** `products.seed.ts` (and the other seed files) insert via `.onConflictDoNothing()` — safe to re-run, but a row that already exists is never touched. Editing a product's TDS/MSDS/formula body (or any other seeded field) in the seed file and re-running `npm run seed` is a silent no-op for every product that was already seeded; it only affects genuinely new rows. There is no seed-driven update path.
+- When updating data, propagate changes to both seed files AND the live database; seed-only edits won't reflect in the running DB — for an existing row this means an explicit `UPDATE`/API call against the live DB, not just re-running the seed
 - Handle name normalization when matching DB records (e.g., `'LAE 9'` vs `'LAE-9'`)
 - For Drizzle ORM: use `.returning()` to get affected rows — `rowCount` does not exist on Drizzle results
 - **Verify current DB value BEFORE editing numeric fields** (percentages, quantities, prices) — if the value already matches the request, stop and ask for clarification rather than making a no-op or comment-only change
