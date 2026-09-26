@@ -1,7 +1,16 @@
 import { eq, sql } from 'drizzle-orm'
 import { db } from '../../db/index.js'
-import { companyProductPrices } from '../../db/schema/index.js'
+import { companies, companyProductPrices } from '../../db/schema/index.js'
 import type { UpsertPricingBody } from './company-pricing.schema.js'
+
+export async function companyExists(companyId: string): Promise<boolean> {
+  const [row] = await db
+    .select({ id: companies.id })
+    .from(companies)
+    .where(eq(companies.id, companyId))
+    .limit(1)
+  return !!row
+}
 
 export async function getCompanyPricing(companyId: string) {
   const rows = await db

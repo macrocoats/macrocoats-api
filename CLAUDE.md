@@ -83,6 +83,16 @@ route handler → service function → DB / Redis
 
 `authenticate` is a global `onRequest` hook (not per-route) — `request.authUser` is always available in handlers. The `requireAuth` preHandler is what actually rejects unauthenticated requests.
 
+### Response envelope
+
+Success responses are `{ data: ... }` (list results that carry pagination wrap the whole result object, e.g. `{ data: { quotations, total, page } }`). The matching frontend service unwraps `data.data`. Deliberate exceptions — do not "fix" these without coordinating a native-app release:
+
+- `/auth/*` (web and `/auth/mobile/*`) — the Bearer-token native client depends on `{ user, accessToken, refreshToken }`.
+- Operator-reachable reads: `GET /batches`, `GET /batches/:batchNumber` (bare), plus the operator routes in `finished-goods` and `dispatch`. These may be consumed by a native operator app.
+- Binary/stream responses: `/pdf/*`, document downloads, `204` deletes.
+
+Error bodies are `{ error, ... }`; validation errors still use `issues` (not `details`) because the frontend reads it.
+
 ### Module layout
 
 Each module under `src/modules/<name>/` has three files with strict roles:
@@ -182,11 +192,12 @@ CRUD backing store for the Company Letterhead document family (superadmin-only, 
 
 ### Middleware
 
-Four middleware files in `src/middleware/` (five functions):
+Five middleware files in `src/middleware/` (six functions):
 
 - **`authenticate.ts`** — global `onRequest`; reads `accessToken` cookie, falling back to an `Authorization: Bearer <token>` header when no cookie is present (native/mobile clients have no cookie jar), decodes RS256 JWT, sets `request.authUser` or null. Never throws. Also exports `requireAuth` preHandler (returns 401 if `request.authUser` is null).
 - **`requireSuperAdmin.ts`** — preHandler; returns 403 if `request.authUser.role !== 'superadmin'`.
 - **`checkProductAccess.ts`** — preHandler; returns 403 if company user requests a `RESTRICTED_DOC_TYPE` (formula/label/coa) or a product not in their `allowedProducts`.
+- **`requireRole.ts`** — preHandler factory; `requireRole(...allowedRoles)` returns 403 unless `request.authUser.role` is one of the given roles. Used to grant a route to `operator` without swapping `requireSuperAdmin` module-wide (see RBAC below).
 - **`logAccess.ts`** — `onSend` hook; fire-and-forget INSERT into `access_log` after response is sent. Captures userId, companyKey, productKey, docType, IP, userAgent. Never blocks response; errors silently.
 
 ### Auth tokens

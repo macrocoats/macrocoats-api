@@ -26,6 +26,8 @@ export const quotations = pgTable('quotations', {
 }, (t) => [
   index('quotations_customer_name_idx').on(t.customerName),
   index('quotations_company_id_idx').on(t.companyId),
+  index('quotations_quot_date_idx').on(t.quotDate),     // investor-dashboard 90-day pipeline
+  index('quotations_created_at_idx').on(t.createdAt),   // quotation history ordering
 ])
 
 export const quotationsRelations = relations(quotations, ({ one, many }) => ({

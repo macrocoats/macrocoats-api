@@ -6,13 +6,11 @@ import { createCompanySchema, updateCompanySchema, assignCompanyFormulaSchema, u
 import {
   listCompanies, getCompanyById, createCompany,
   updateCompany, rotateCompanyToken, deleteCompany,
-} from './companies.service.js'
-import {
   assignFormulaToCompany,
   listCompanyFormulaAssignments,
   unassignFormulaFromCompany,
   updateCompanyFormulaAssignment,
-} from '../formulation-variants/formulation-variants.service.js'
+} from './companies.service.js'
 
 const preHandler = [authenticate, requireAuth, requireSuperAdmin]
 
@@ -20,7 +18,7 @@ export async function companyRoutes(app: FastifyInstance) {
   // ── GET /companies ────────────────────────────────────────────────────────
   app.get('/', { preHandler }, async (_request, reply) => {
     const list = await listCompanies()
-    return reply.send({ companies: list })
+    return reply.send({ data: list })
   })
 
   // ── GET /companies/:id/formulas ───────────────────────────────────────────
@@ -80,7 +78,7 @@ export async function companyRoutes(app: FastifyInstance) {
   app.get<{ Params: { id: string } }>('/:id', { preHandler }, async (request, reply) => {
     const company = await getCompanyById(request.params.id)
     if (!company) return reply.code(404).send({ error: AppErrors.COMPANY_NOT_FOUND })
-    return reply.send(company)
+    return reply.send({ data: company })
   })
 
   // ── POST /companies ───────────────────────────────────────────────────────
@@ -92,7 +90,7 @@ export async function companyRoutes(app: FastifyInstance) {
 
     try {
       const company = await createCompany(body.data)
-      return reply.code(201).send(company)
+      return reply.code(201).send({ data: company })
     } catch (err: any) {
       if (err?.code === '23505') {
         return reply.code(409).send({ error: AppErrors.COMPANY_KEY_EXISTS, message: `A company with key "${body.data.key}" already exists.` })
@@ -111,7 +109,7 @@ export async function companyRoutes(app: FastifyInstance) {
     const company = await updateCompany(request.params.id, body.data)
     if (!company) return reply.code(404).send({ error: AppErrors.COMPANY_NOT_FOUND })
 
-    return reply.send(company)
+    return reply.send({ data: company })
   })
 
   // ── POST /companies/:id/rotate-token ──────────────────────────────────────
@@ -120,7 +118,7 @@ export async function companyRoutes(app: FastifyInstance) {
     if (!company) return reply.code(404).send({ error: AppErrors.COMPANY_NOT_FOUND })
 
     const result = await rotateCompanyToken(request.params.id)
-    return reply.send(result)
+    return reply.send({ data: result })
   })
 
   // ── DELETE /companies/:id ─────────────────────────────────────────────────

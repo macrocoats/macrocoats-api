@@ -13,14 +13,14 @@ export async function vendorRoutes(app: FastifyInstance) {
   // ── GET /vendors ──────────────────────────────────────────────────────────
   app.get('/', { preHandler }, async (_request, reply) => {
     const items = await listVendors()
-    return reply.send({ vendors: items })
+    return reply.send({ data: items })
   })
 
   // ── GET /vendors/:id ──────────────────────────────────────────────────────
   app.get<{ Params: { id: string } }>('/:id', { preHandler }, async (request, reply) => {
     const vendor = await getVendorById(request.params.id)
     if (!vendor) return reply.code(404).send({ error: AppErrors.VENDOR_NOT_FOUND })
-    return reply.send({ vendor })
+    return reply.send({ data: vendor })
   })
 
   // ── POST /vendors ─────────────────────────────────────────────────────────
@@ -31,7 +31,7 @@ export async function vendorRoutes(app: FastifyInstance) {
     }
 
     const vendor = await createVendor(body.data)
-    return reply.code(201).send({ vendor })
+    return reply.code(201).send({ data: vendor })
   })
 
   // ── PUT /vendors/:id ──────────────────────────────────────────────────────
@@ -44,7 +44,7 @@ export async function vendorRoutes(app: FastifyInstance) {
     const vendor = await updateVendor(request.params.id, body.data)
     if (!vendor) return reply.code(404).send({ error: AppErrors.VENDOR_NOT_FOUND })
 
-    return reply.send({ vendor })
+    return reply.send({ data: vendor })
   })
 
   // ── DELETE /vendors/:id ───────────────────────────────────────────────────

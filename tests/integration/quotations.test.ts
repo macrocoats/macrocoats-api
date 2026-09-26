@@ -43,9 +43,9 @@ describe('POST /v1/quotations — companyId reconciliation', () => {
       .send(baseQuotation('rane industries ltd'))
       .expect(201)
 
-    expect(res.body.customerName).toBe('rane industries ltd')
-    expect(res.body.companyId).toBeTruthy()
-    expect(res.body.matchedCompanyName).toBe('Rane Industries Ltd')
+    expect(res.body.data.customerName).toBe('rane industries ltd')
+    expect(res.body.data.companyId).toBeTruthy()
+    expect(res.body.data.matchedCompanyName).toBe('Rane Industries Ltd')
   })
 
   it('leaves companyId/matchedCompanyName null when no company matches', async () => {
@@ -55,8 +55,8 @@ describe('POST /v1/quotations — companyId reconciliation', () => {
       .send(baseQuotation('Totally Unmatched Prospect Pvt Ltd'))
       .expect(201)
 
-    expect(res.body.companyId).toBeNull()
-    expect(res.body.matchedCompanyName).toBeNull()
+    expect(res.body.data.companyId).toBeNull()
+    expect(res.body.data.matchedCompanyName).toBeNull()
   })
 
   it('returns 403 for a company-role user', async () => {
@@ -85,17 +85,17 @@ describe('GET /v1/quotations — companyId surfaced on reads', () => {
       .set('Cookie', adminCookies)
       .expect(200)
 
-    const listed = listRes.body.quotations.find((q: { id: string }) => q.id === created.body.id)
+    const listed = listRes.body.data.quotations.find((q: { id: string }) => q.id === created.body.data.id)
     expect(listed).toBeDefined()
-    expect(listed.companyId).toBe(created.body.companyId)
+    expect(listed.companyId).toBe(created.body.data.companyId)
     expect(listed.matchedCompanyName).toBe('Rane Industries Ltd')
 
     const getRes = await req()
-      .get(`/v1/quotations/${created.body.id}`)
+      .get(`/v1/quotations/${created.body.data.id}`)
       .set('Cookie', adminCookies)
       .expect(200)
 
-    expect(getRes.body.companyId).toBe(created.body.companyId)
-    expect(getRes.body.matchedCompanyName).toBe('Rane Industries Ltd')
+    expect(getRes.body.data.companyId).toBe(created.body.data.companyId)
+    expect(getRes.body.data.matchedCompanyName).toBe('Rane Industries Ltd')
   })
 })

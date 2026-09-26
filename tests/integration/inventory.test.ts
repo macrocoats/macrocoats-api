@@ -33,10 +33,10 @@ describe('GET /v1/inventory', () => {
       .set('Cookie', adminCookies)
       .expect(200)
 
-    expect(Array.isArray(res.body.items)).toBe(true)
-    expect(res.body.items.length).toBeGreaterThanOrEqual(23)
+    expect(Array.isArray(res.body.data)).toBe(true)
+    expect(res.body.data.length).toBeGreaterThanOrEqual(23)
 
-    const item = res.body.items[0]
+    const item = res.body.data[0]
     expect(item).toHaveProperty('id')
     expect(item).toHaveProperty('material')
     expect(item).toHaveProperty('unit')
@@ -63,13 +63,13 @@ describe('POST /v1/inventory', () => {
       .send({ material: 'Test Chemical X', unit: 'Kg', price: 99.5, stock: '10kg', supplier: 'Test Co' })
       .expect(201)
 
-    expect(res.body.material).toBe('Test Chemical X')
-    expect(res.body.price).toBe(99.5)
-    expect(res.body.id).toBeDefined()
+    expect(res.body.data.material).toBe('Test Chemical X')
+    expect(res.body.data.price).toBe(99.5)
+    expect(res.body.data.id).toBeDefined()
 
     // Cleanup
     await req()
-      .delete(`/v1/inventory/${res.body.id}`)
+      .delete(`/v1/inventory/${res.body.data.id}`)
       .set('Cookie', adminCookies)
       .expect(204)
   })
@@ -91,7 +91,7 @@ describe('PATCH /v1/inventory/:id', () => {
       .set('Cookie', adminCookies)
       .send({ material: 'Patch Test', unit: 'L', price: 50 })
 
-    const id = created.body.id
+    const id = created.body.data.id
 
     const res = await req()
       .patch(`/v1/inventory/${id}`)
@@ -99,8 +99,8 @@ describe('PATCH /v1/inventory/:id', () => {
       .send({ price: 75, supplier: 'New Supplier' })
       .expect(200)
 
-    expect(res.body.price).toBe(75)
-    expect(res.body.supplier).toBe('New Supplier')
+    expect(res.body.data.price).toBe(75)
+    expect(res.body.data.supplier).toBe('New Supplier')
 
     // Cleanup
     await req().delete(`/v1/inventory/${id}`).set('Cookie', adminCookies)
@@ -122,9 +122,9 @@ describe('POST /v1/inventory/reset', () => {
       .set('Cookie', adminCookies)
       .expect(200)
 
-    expect(Array.isArray(res.body.items)).toBe(true)
+    expect(Array.isArray(res.body.data)).toBe(true)
     // Default materials should include "Sodium Nitrite"
-    const hasNitrite = res.body.items.some((i: { material: string }) =>
+    const hasNitrite = res.body.data.some((i: { material: string }) =>
       i.material.includes('Sodium Nitrite'),
     )
     expect(hasNitrite).toBe(true)

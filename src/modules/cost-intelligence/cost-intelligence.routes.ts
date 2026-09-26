@@ -31,7 +31,7 @@ export async function costIntelligenceRoutes(app: FastifyInstance) {
 
     const result = await getOverview(query.data)
     if (!result) return reply.code(404).send({ error: 'No matching batch found' })
-    return reply.send(result)
+    return reply.send({ data: result })
   })
 
   // ── GET /cost-intelligence/trends ─────────────────────────────────────────
@@ -42,7 +42,7 @@ export async function costIntelligenceRoutes(app: FastifyInstance) {
     }
 
     const result = await getTrends(query.data)
-    return reply.send(result)
+    return reply.send({ data: result })
   })
 
   // ── GET /cost-intelligence/batches ────────────────────────────────────────
@@ -53,19 +53,19 @@ export async function costIntelligenceRoutes(app: FastifyInstance) {
     }
 
     const result = await listBatchCosts(query.data)
-    return reply.send(result)
+    return reply.send({ data: result })
   })
 
   // ── GET /cost-intelligence/materials ──────────────────────────────────────
   app.get('/materials', { preHandler }, async (_request, reply) => {
     const result = await getMaterials()
-    return reply.send(result)
+    return reply.send({ data: result })
   })
 
   // ── GET /cost-intelligence/alerts ─────────────────────────────────────────
   app.get('/alerts', { preHandler }, async (_request, reply) => {
     const result = await getAlerts()
-    return reply.send(result)
+    return reply.send({ data: result })
   })
 
   // ── GET /cost-intelligence/profitability ──────────────────────────────────
@@ -76,7 +76,7 @@ export async function costIntelligenceRoutes(app: FastifyInstance) {
     }
 
     const result = await getProfitability(query.data)
-    return reply.send(result)
+    return reply.send({ data: result })
   })
 
   // ── GET /cost-intelligence/comparison ─────────────────────────────────────
@@ -88,6 +88,6 @@ export async function costIntelligenceRoutes(app: FastifyInstance) {
 
     const result = await getComparison(query.data)
     if (!result) return reply.code(404).send({ error: 'No batches found for comparison' })
-    return reply.send(result)
+    return reply.send({ data: result })
   })
 }

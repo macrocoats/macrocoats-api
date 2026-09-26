@@ -24,12 +24,12 @@ export async function analyticsRoutes(app: FastifyInstance) {
       return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: query.error.flatten() })
     }
     const result = await getAccessLog(query.data)
-    return reply.send(result)
+    return reply.send({ data: result })
   })
 
   // ── GET /analytics/summary ────────────────────────────────────────────────
   app.get('/summary', { preHandler }, async (_request, reply) => {
     const summary = await getAccessSummary()
-    return reply.send(summary)
+    return reply.send({ data: summary })
   })
 }

@@ -23,7 +23,7 @@ export async function productRoutes(app: FastifyInstance) {
     { preHandler: [authenticate, requireAuth, requireSuperAdmin] },
     async (_request, reply) => {
       const products = await listProducts()
-      return reply.send({ products })
+      return reply.send({ data: products })
     },
   )
 
@@ -34,7 +34,7 @@ export async function productRoutes(app: FastifyInstance) {
     { preHandler: [authenticate, requireAuth, requireSuperAdmin] },
     async (_request, reply) => {
       const summary = await listExpirySummary()
-      return reply.send({ summary })
+      return reply.send({ data: summary })
     },
   )
 
@@ -59,7 +59,7 @@ export async function productRoutes(app: FastifyInstance) {
         return reply.code(404).send({ error: AppErrors.DOCUMENT_NOT_FOUND })
       }
 
-      return reply.send(doc)
+      return reply.send({ data: doc })
     },
   )
 
@@ -101,7 +101,7 @@ export async function productRoutes(app: FastifyInstance) {
         return reply.code(404).send({ error: AppErrors.DOCUMENT_NOT_FOUND })
       }
 
-      return reply.send(updated)
+      return reply.send({ data: updated })
     },
   )
 
@@ -135,7 +135,7 @@ export async function productRoutes(app: FastifyInstance) {
         return reply.code(409).send({ error: AppErrors.INVALID_STATUS_TRANSITION })
       }
 
-      return reply.send(result)
+      return reply.send({ data: result })
     },
   )
 
@@ -154,7 +154,7 @@ export async function productRoutes(app: FastifyInstance) {
         return reply.code(404).send({ error: AppErrors.DOCUMENT_NOT_FOUND })
       }
 
-      return reply.send({ entries })
+      return reply.send({ data: entries })
     },
   )
 }

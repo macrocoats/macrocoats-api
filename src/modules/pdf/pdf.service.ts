@@ -523,6 +523,20 @@ class PDFService {
     try {
       page = await entry.browser.newPage();
       page.setDefaultTimeout(this.PAGE_TIMEOUT_MS);
+      // Templates need no JS and embed assets as data: URIs; only Google Fonts is
+      // fetched. Locking the page down means payload HTML (letterhead bodyHtml is
+      // rendered unescaped) can't run scripts or reach internal/network URLs.
+      await page.setJavaScriptEnabled(false);
+      await page.setRequestInterception(true);
+      page.on('request', (req) => {
+        const url = req.url();
+        const allowed = url.startsWith('data:')
+          || url.startsWith('about:')
+          || url.startsWith('https://fonts.googleapis.com/')
+          || url.startsWith('https://fonts.gstatic.com/');
+        if (allowed) void req.continue();
+        else void req.abort();
+      });
       await page.setContent(html, { waitUntil: 'networkidle0', timeout: this.RENDER_TIMEOUT_MS });
 
       const pdfBuffer = await page.pdf({

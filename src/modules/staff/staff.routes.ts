@@ -13,14 +13,14 @@ export async function staffRoutes(app: FastifyInstance) {
   // ── GET /staff ────────────────────────────────────────────────────────────
   app.get('/', { preHandler }, async (_request, reply) => {
     const items = await listStaff()
-    return reply.send({ staff: items })
+    return reply.send({ data: items })
   })
 
   // ── GET /staff/:id ────────────────────────────────────────────────────────
   app.get<{ Params: { id: string } }>('/:id', { preHandler }, async (request, reply) => {
     const member = await getStaffById(request.params.id)
     if (!member) return reply.code(404).send({ error: AppErrors.STAFF_NOT_FOUND })
-    return reply.send({ staff: member })
+    return reply.send({ data: member })
   })
 
   // ── POST /staff ───────────────────────────────────────────────────────────
@@ -31,7 +31,7 @@ export async function staffRoutes(app: FastifyInstance) {
     }
 
     const member = await createStaff(body.data)
-    return reply.code(201).send({ staff: member })
+    return reply.code(201).send({ data: member })
   })
 
   // ── PUT /staff/:id ────────────────────────────────────────────────────────
@@ -44,7 +44,7 @@ export async function staffRoutes(app: FastifyInstance) {
     const member = await updateStaff(request.params.id, body.data)
     if (!member) return reply.code(404).send({ error: AppErrors.STAFF_NOT_FOUND })
 
-    return reply.send({ staff: member })
+    return reply.send({ data: member })
   })
 
   // ── DELETE /staff/:id ─────────────────────────────────────────────────────

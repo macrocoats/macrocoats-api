@@ -39,15 +39,15 @@ describe('companies CRUD', () => {
         allowedProducts: ['uniklean-sp'],
       })
       .expect(201)
-    createdCompanyIds.push(company.body.id)
+    createdCompanyIds.push(company.body.data.id)
 
     const updated = await req()
-      .patch(`/v1/companies/${company.body.id}`)
+      .patch(`/v1/companies/${company.body.data.id}`)
       .set('Cookie', adminCookies)
       .send({ allowedProducts: [] })
       .expect(200)
 
-    expect(updated.body.allowedProducts).toEqual([])
+    expect(updated.body.data.allowedProducts).toEqual([])
   })
 
   it('clears optional contact fields when patch values are null', async () => {
@@ -68,10 +68,10 @@ describe('companies CRUD', () => {
         pincode: '600001',
       })
       .expect(201)
-    createdCompanyIds.push(company.body.id)
+    createdCompanyIds.push(company.body.data.id)
 
     const updated = await req()
-      .patch(`/v1/companies/${company.body.id}`)
+      .patch(`/v1/companies/${company.body.data.id}`)
       .set('Cookie', adminCookies)
       .send({
         contactPerson: null,
@@ -85,14 +85,14 @@ describe('companies CRUD', () => {
       })
       .expect(200)
 
-    expect(updated.body.contactPerson).toBeNull()
-    expect(updated.body.email).toBeNull()
-    expect(updated.body.phone).toBeNull()
-    expect(updated.body.gstNumber).toBeNull()
-    expect(updated.body.address).toBeNull()
-    expect(updated.body.city).toBeNull()
-    expect(updated.body.state).toBeNull()
-    expect(updated.body.pincode).toBeNull()
+    expect(updated.body.data.contactPerson).toBeNull()
+    expect(updated.body.data.email).toBeNull()
+    expect(updated.body.data.phone).toBeNull()
+    expect(updated.body.data.gstNumber).toBeNull()
+    expect(updated.body.data.address).toBeNull()
+    expect(updated.body.data.city).toBeNull()
+    expect(updated.body.data.state).toBeNull()
+    expect(updated.body.data.pincode).toBeNull()
   })
 
   it('preserves create validation for invalid company fields', async () => {

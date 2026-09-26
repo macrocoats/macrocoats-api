@@ -19,11 +19,11 @@ beforeAll(async () => {
   adminCookies = adminLogin.headers['set-cookie']
 
   const companies = await supertest(app.server).get('/v1/companies').set('Cookie', adminCookies)
-  const sanmar = (companies.body.companies ?? companies.body).find((c: { key: string }) => c.key === 'sanmar')
+  const sanmar = companies.body.data.find((c: { key: string }) => c.key === 'sanmar')
   sanmarCompanyId = sanmar.id
 
   const inventory = await supertest(app.server).get('/v1/inventory').set('Cookie', adminCookies)
-  const sms = inventory.body.items.find((i: { material: string }) => i.material === 'Sodium Metasilicate (SMS)')
+  const sms = inventory.body.data.find((i: { material: string }) => i.material === 'Sodium Metasilicate (SMS)')
   smsInventoryId = sms.id
   smsOriginalStockQty = sms.stockQty ?? null
 

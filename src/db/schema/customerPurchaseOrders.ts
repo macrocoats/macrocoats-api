@@ -44,6 +44,8 @@ export const customerPurchaseOrders = pgTable('customer_purchase_orders', {
   index('cpo_customer_id_idx').on(t.customerId),
   index('cpo_status_idx').on(t.status),
   index('cpo_customer_po_number_idx').on(t.customerPoNumber),
+  // investor-dashboard windows and buckets every sales figure by customer_po_date
+  index('cpo_customer_po_date_idx').on(t.customerPoDate),
 ])
 
 // Child tables (items/documents/batchLinks/timeline) each import this file and

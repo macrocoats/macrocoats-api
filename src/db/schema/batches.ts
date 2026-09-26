@@ -30,6 +30,11 @@ export const batches = pgTable('batches', {
 }, (t) => [
   index('batches_company_name_idx').on(t.companyName),
   index('batches_created_by_idx').on(t.createdBy),
+  // Filter/sort columns used by cost-intelligence and investor-dashboard aggregations
+  index('batches_production_date_idx').on(t.productionDate),
+  index('batches_product_code_idx').on(t.productCode),
+  index('batches_variant_id_idx').on(t.variantId),
+  index('batches_created_at_idx').on(t.createdAt),
 ])
 
 export const batchesRelations = relations(batches, ({ one }) => ({

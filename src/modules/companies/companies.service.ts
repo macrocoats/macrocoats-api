@@ -4,6 +4,15 @@ import { companies, companyFormulaAssignments, companyProductAccess, users } fro
 import { generateToken, hashPassword } from '../../utils/crypto.js'
 import type { CreateCompanyBody, UpdateCompanyBody } from './companies.schema.js'
 
+// Company formula assignments live in the formulation-variants module; re-exported
+// here so companies.routes.ts only ever imports from its own service.
+export {
+  assignFormulaToCompany,
+  listCompanyFormulaAssignments,
+  unassignFormulaFromCompany,
+  updateCompanyFormulaAssignment,
+} from '../formulation-variants/formulation-variants.service.js'
+
 function toResponse(
   company: typeof companies.$inferSelect,
   allowedProducts: string[],

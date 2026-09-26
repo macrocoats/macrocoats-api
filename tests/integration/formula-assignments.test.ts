@@ -45,8 +45,8 @@ beforeAll(async () => {
     })
     .expect(201)
 
-  companyId = company.body.id
-  companyPassword = company.body.accessToken
+  companyId = company.body.data.id
+  companyPassword = company.body.data.accessToken
 })
 
 afterAll(async () => {

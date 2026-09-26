@@ -50,7 +50,7 @@ beforeAll(async () => {
       },
     })
     .expect(201)
-  testBatchNumber = created.body.batchNumber
+  testBatchNumber = created.body.data.batchNumber
 })
 
 afterAll(async () => { await app.close() })

@@ -3,6 +3,8 @@ import { authenticate, requireAuth } from '../../middleware/authenticate.js';
 import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js';
 import { pdfService } from './pdf.service.js';
 import { PDFError } from './pdf.types.js';
+import { pdfBodySchemas } from './pdf.schema.js';
+import { AppErrors } from '../../types/errors.js';
 import type { DocType } from './pdf.types.js';
 
 // ─── Filename helpers ─────────────────────────────────────────────────────────
@@ -36,10 +38,16 @@ export async function pdfRoutes(app: FastifyInstance): Promise<void> {
   const preHandler = [authenticate, requireAuth, requireSuperAdmin];
 
   async function sendPDF(
-    docType: DocType,
-    payload: Record<string, unknown>,
+    docType: Exclude<DocType, 'salary'>,
+    body: unknown,
     reply: FastifyReply,
   ): Promise<FastifyReply> {
+    const parsed = pdfBodySchemas[docType].safeParse(body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, details: parsed.error.flatten() });
+    }
+    const payload = parsed.data as Record<string, unknown>;
+
     const result = await pdfService.generatePDF(docType, payload);
     if (!result.buffer) throw new PDFError('PDF buffer missing', 'RENDER_FAILED');
     const filename = filenames[docType](payload);
@@ -54,37 +62,37 @@ export async function pdfRoutes(app: FastifyInstance): Promise<void> {
       .send(result.buffer);
   }
 
-  app.post<{ Body: Record<string, unknown> }>('/quotation', { preHandler }, async (request, reply) => {
+  app.post<{ Body: unknown }>('/quotation', { preHandler }, async (request, reply) => {
     try { return await sendPDF('quotation', request.body, reply); }
     catch (err) { return pdfErrorReply(err, reply); }
   });
 
-  app.post<{ Body: Record<string, unknown> }>('/tds', { preHandler }, async (request, reply) => {
+  app.post<{ Body: unknown }>('/tds', { preHandler }, async (request, reply) => {
     try { return await sendPDF('tds', request.body, reply); }
     catch (err) { return pdfErrorReply(err, reply); }
   });
 
-  app.post<{ Body: Record<string, unknown> }>('/msds', { preHandler }, async (request, reply) => {
+  app.post<{ Body: unknown }>('/msds', { preHandler }, async (request, reply) => {
     try { return await sendPDF('msds', request.body, reply); }
     catch (err) { return pdfErrorReply(err, reply); }
   });
 
-  app.post<{ Body: Record<string, unknown> }>('/coa', { preHandler }, async (request, reply) => {
+  app.post<{ Body: unknown }>('/coa', { preHandler }, async (request, reply) => {
     try { return await sendPDF('coa', request.body, reply); }
     catch (err) { return pdfErrorReply(err, reply); }
   });
 
-  app.post<{ Body: Record<string, unknown> }>('/batch', { preHandler }, async (request, reply) => {
+  app.post<{ Body: unknown }>('/batch', { preHandler }, async (request, reply) => {
     try { return await sendPDF('batch', request.body, reply); }
     catch (err) { return pdfErrorReply(err, reply); }
   });
 
-  app.post<{ Body: Record<string, unknown> }>('/investor-report', { preHandler }, async (request, reply) => {
+  app.post<{ Body: unknown }>('/investor-report', { preHandler }, async (request, reply) => {
     try { return await sendPDF('investor-report', request.body, reply); }
     catch (err) { return pdfErrorReply(err, reply); }
   });
 
-  app.post<{ Body: Record<string, unknown> }>('/letterhead', { preHandler }, async (request, reply) => {
+  app.post<{ Body: unknown }>('/letterhead', { preHandler }, async (request, reply) => {
     try { return await sendPDF('letterhead', request.body, reply); }
     catch (err) { return pdfErrorReply(err, reply); }
   });

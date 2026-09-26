@@ -1,6 +1,11 @@
 import Fastify from 'fastify'
 import multipart from '@fastify/multipart'
+import helmet from '@fastify/helmet'
+import rateLimit from '@fastify/rate-limit'
+import { sql } from 'drizzle-orm'
 import { env } from './config/env.js'
+import { db } from './db/index.js'
+import { getRedis } from './plugins/redis.js'
 import { registerCors } from './plugins/cors.js'
 import { registerCookies } from './plugins/cookie.js'
 import { authenticate } from './middleware/authenticate.js'
@@ -39,6 +44,21 @@ export async function buildApp() {
       transport: env.NODE_ENV === 'development'
         ? { target: 'pino-pretty', options: { colorize: true } }
         : undefined,
+      // Enforce "never log JWTs, passwords, cookies, or PII" rather than relying on discipline
+      redact: {
+        paths: [
+          'req.headers.authorization',
+          'req.headers.cookie',
+          'res.headers["set-cookie"]',
+          '*.password',
+          '*.token',
+          '*.accessToken',
+          '*.refreshToken',
+          '*.panNumber',
+          '*.aadharNumber',
+        ],
+        censor: '[REDACTED]',
+      },
     },
     trustProxy: true,   // needed for accurate req.ip behind nginx/load balancer
     bodyLimit:  1_048_576,   // 1 MB — prevent oversized JSONB payloads
@@ -48,12 +68,42 @@ export async function buildApp() {
   await registerCors(app)
   await registerCookies(app)
   await app.register(multipart, { limits: { fileSize: 20 * 1024 * 1024 } })
+  // API is consumed cross-origin by the Vercel SPA, so allow cross-origin resource loads
+  await app.register(helmet, { crossOriginResourcePolicy: { policy: 'cross-origin' } })
+  // Opt-in only — limits are set per-route via `config.rateLimit` (see auth.routes.ts)
+  await app.register(rateLimit, { global: false })
 
   // Decode cookie on every request — sets request.authUser if token present
   app.addHook('onRequest', authenticate)
 
-  // ── Health check ───────────────────��──────────────────────────────────────
-  app.get('/health', async () => ({ status: 'ok', ts: new Date().toISOString() }))
+  // ── Health check ──────────────────────────────────────────────────────────
+  // Pings Postgres (and Redis when configured) so probes detect a real outage
+  app.get('/health', async (_request, reply) => {
+    const checks: Record<string, 'ok' | 'down' | 'disabled'> = { db: 'ok', redis: 'disabled' }
+
+    try {
+      await db.execute(sql`select 1`)
+    } catch {
+      checks.db = 'down'
+    }
+
+    const redis = getRedis()
+    if (redis) {
+      try {
+        await redis.ping()
+        checks.redis = 'ok'
+      } catch {
+        checks.redis = 'down'
+      }
+    }
+
+    const healthy = checks.db === 'ok' && checks.redis !== 'down'
+    return reply.code(healthy ? 200 : 503).send({
+      status: healthy ? 'ok' : 'degraded',
+      checks,
+      ts: new Date().toISOString(),
+    })
+  })
 
   // ── API routes ───────────────────────���────────────────────────────────────
   const prefix = `/${env.API_VERSION}`

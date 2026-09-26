@@ -13,7 +13,7 @@ export async function inventoryRoutes(app: FastifyInstance) {
   // ── GET /inventory ────────────────────────────────────────────────────────
   app.get('/', { preHandler }, async (_request, reply) => {
     const items = await getAllItems()
-    return reply.send({ items })
+    return reply.send({ data: items })
   })
 
   // ── GET /inventory/receipt-prices ─────────────────────────────────────────
@@ -46,7 +46,7 @@ export async function inventoryRoutes(app: FastifyInstance) {
     }
 
     const item = await createItem(body.data, request.authUser!.id)
-    return reply.code(201).send(item)
+    return reply.code(201).send({ data: item })
   })
 
   // ── PATCH /inventory/:id ──────────────────────────────────────────────────
@@ -59,7 +59,7 @@ export async function inventoryRoutes(app: FastifyInstance) {
     const item = await updateItem(request.params.id, body.data, request.authUser!.id)
     if (!item) return reply.code(404).send({ error: AppErrors.ITEM_NOT_FOUND })
 
-    return reply.send(item)
+    return reply.send({ data: item })
   })
 
   // ── DELETE /inventory/:id ─────────────────────────────────────────────────
@@ -72,6 +72,6 @@ export async function inventoryRoutes(app: FastifyInstance) {
   // ── POST /inventory/reset ─────────────────────────────────────────────────
   app.post('/reset', { preHandler }, async (_request, reply) => {
     const items = await resetToDefaults()
-    return reply.send({ items })
+    return reply.send({ data: items })
   })
 }

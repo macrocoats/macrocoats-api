@@ -40,8 +40,8 @@ describe('GET /v1/products/:productLine/:docType', () => {
       .set('Cookie', adminCookies)
       .expect(200)
 
-    expect(res.body.docNumber).toBe('TDS-USP-001')
-    expect(res.body.sections).toBeDefined()
+    expect(res.body.data.docNumber).toBe('TDS-USP-001')
+    expect(res.body.data.sections).toBeDefined()
   })
 
   it('superadmin can fetch restricted formula doc', async () => {
@@ -50,8 +50,8 @@ describe('GET /v1/products/:productLine/:docType', () => {
       .set('Cookie', adminCookies)
       .expect(200)
 
-    expect(res.body.docNumber).toBe('FRM-UFE-001')
-    expect(res.body.classification).toContain('CONFIDENTIAL')
+    expect(res.body.data.docNumber).toBe('FRM-UFE-001')
+    expect(res.body.data.classification).toContain('CONFIDENTIAL')
   })
 
   it('company user can fetch allowed product TDS', async () => {
@@ -60,7 +60,7 @@ describe('GET /v1/products/:productLine/:docType', () => {
       .set('Cookie', raneCookies)
       .expect(200)
 
-    expect(res.body.docNumber).toBe('TDS-USP-001')
+    expect(res.body.data.docNumber).toBe('TDS-USP-001')
   })
 
   it('company user cannot fetch formula (restricted doc type)', async () => {
@@ -84,7 +84,7 @@ describe('GET /v1/products/:productLine/:docType', () => {
       .set('Cookie', galvaCookies)
       .expect(200)
 
-    expect(res.body.docNumber).toBe('TDS-UCL-001')
+    expect(res.body.data.docNumber).toBe('TDS-UCL-001')
   })
 
   it('returns 401 with no auth', async () => {
@@ -107,8 +107,8 @@ describe('GET /v1/products', () => {
       .set('Cookie', adminCookies)
       .expect(200)
 
-    expect(Array.isArray(res.body.products)).toBe(true)
-    expect(res.body.products.length).toBeGreaterThanOrEqual(5)
+    expect(Array.isArray(res.body.data)).toBe(true)
+    expect(res.body.data.length).toBeGreaterThanOrEqual(5)
   })
 
   it('company user cannot list products', async () => {
@@ -129,7 +129,7 @@ const STATUS_CYCLE = ['draft', 'pending_review', 'qa_review', 'published', 'arch
 
 async function forceStatus(productLine: string, docType: string, target: string) {
   const getRes = await req().get(`/v1/products/${productLine}/${docType}`).set('Cookie', adminCookies)
-  let current = getRes.body.status as string
+  let current = getRes.body.data.status as string
   for (let i = 0; i < STATUS_CYCLE.length && current !== target; i++) {
     const next = STATUS_CYCLE[(STATUS_CYCLE.indexOf(current) + 1) % STATUS_CYCLE.length]
     const res = await req()
@@ -137,7 +137,7 @@ async function forceStatus(productLine: string, docType: string, target: string)
       .set('Cookie', adminCookies)
       .send({ status: next })
       .expect(200)
-    current = res.body.status
+    current = res.body.data.status
   }
 }
 
@@ -156,21 +156,21 @@ describe('PATCH /v1/products/:productLine/:docType/status', () => {
       .set('Cookie', adminCookies)
       .send({ status: 'pending_review' })
       .expect(200)
-    expect(res1.body.status).toBe('pending_review')
+    expect(res1.body.data.status).toBe('pending_review')
 
     const res2 = await req()
       .patch('/v1/products/unisolve-h3/tds/status')
       .set('Cookie', adminCookies)
       .send({ status: 'qa_review' })
       .expect(200)
-    expect(res2.body.status).toBe('qa_review')
+    expect(res2.body.data.status).toBe('qa_review')
 
     const res3 = await req()
       .patch('/v1/products/unisolve-h3/tds/status')
       .set('Cookie', adminCookies)
       .send({ status: 'published', notes: 'QA sign-off' })
       .expect(200)
-    expect(res3.body.status).toBe('published')
+    expect(res3.body.data.status).toBe('published')
   })
 
   it('rejects skipping a state (draft -> qa_review)', async () => {
@@ -215,9 +215,9 @@ describe('GET /v1/products/:productLine/:docType/audit', () => {
       .set('Cookie', adminCookies)
       .expect(200)
 
-    expect(Array.isArray(res.body.entries)).toBe(true)
-    expect(res.body.entries.length).toBeGreaterThan(0)
-    expect(res.body.entries[0].action).toBe('status_changed')
+    expect(Array.isArray(res.body.data)).toBe(true)
+    expect(res.body.data.length).toBeGreaterThan(0)
+    expect(res.body.data[0].action).toBe('status_changed')
   })
 
   it('company user cannot view audit trail', async () => {
@@ -236,9 +236,9 @@ describe('GET /v1/products/expiry-summary', () => {
       .set('Cookie', adminCookies)
       .expect(200)
 
-    expect(Array.isArray(res.body.summary)).toBe(true)
-    expect(res.body.summary.length).toBeGreaterThanOrEqual(5)
-    expect(res.body.summary[0]).toHaveProperty('reviewState')
+    expect(Array.isArray(res.body.data)).toBe(true)
+    expect(res.body.data.length).toBeGreaterThanOrEqual(5)
+    expect(res.body.data[0]).toHaveProperty('reviewState')
   })
 
   it('company user cannot view the expiry summary', async () => {

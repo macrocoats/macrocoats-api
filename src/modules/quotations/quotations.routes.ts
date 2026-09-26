@@ -20,7 +20,7 @@ export async function quotationRoutes(app: FastifyInstance) {
     }
 
     const quotation = await createQuotation(body.data, request.authUser!.id)
-    return reply.code(201).send(quotation)
+    return reply.code(201).send({ data: quotation })
   })
 
   // ── GET /quotations ───────────────────────────────────────────────────────
@@ -31,13 +31,13 @@ export async function quotationRoutes(app: FastifyInstance) {
     }
 
     const result = await listQuotations(query.data)
-    return reply.send(result)
+    return reply.send({ data: result })
   })
 
   // ── GET /quotations/:id ───────────────────────────────────────────────────
   app.get<{ Params: { id: string } }>('/:id', { preHandler }, async (request, reply) => {
     const quotation = await getQuotationById(request.params.id)
     if (!quotation) return reply.code(404).send({ error: AppErrors.QUOTATION_NOT_FOUND })
-    return reply.send(quotation)
+    return reply.send({ data: quotation })
   })
 }

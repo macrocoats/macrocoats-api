@@ -31,7 +31,7 @@ export async function batchRoutes(app: FastifyInstance) {
       })
     }
 
-    return reply.code(201).send(result)
+    return reply.code(201).send({ data: result })
   })
 
   // ── GET /batches ──────────────────────────────────────────────────────────
@@ -63,7 +63,7 @@ export async function batchRoutes(app: FastifyInstance) {
 
     const batch = await saveCoaSnapshot(request.params.batchNumber, body.data)
     if (!batch) return reply.code(404).send({ error: AppErrors.BATCH_NOT_FOUND })
-    return reply.send(batch)
+    return reply.send({ data: batch })
   })
 
   // ── PATCH /batches/:batchNumber/payment ──────────────────────────────────
@@ -75,7 +75,7 @@ export async function batchRoutes(app: FastifyInstance) {
 
     const batch = await setPaymentStatus(request.params.batchNumber, body.data.paid)
     if (!batch) return reply.code(404).send({ error: AppErrors.BATCH_NOT_FOUND })
-    return reply.send(batch)
+    return reply.send({ data: batch })
   })
 
   // ── DELETE /batches/:batchNumber/coa ─────────────────────────────────────

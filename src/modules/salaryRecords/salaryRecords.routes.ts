@@ -18,7 +18,7 @@ export async function salaryRecordRoutes(app: FastifyInstance) {
     }
 
     const record = await saveSalaryRecord(body.data)
-    return reply.code(201).send({ salaryRecord: record })
+    return reply.code(201).send({ data: record })
   })
 
   // ── GET /salary-records ───────────────────────────────────────────────────
@@ -29,13 +29,13 @@ export async function salaryRecordRoutes(app: FastifyInstance) {
     }
 
     const records = await listSalaryRecords(query.data)
-    return reply.send({ salaryRecords: records })
+    return reply.send({ data: records })
   })
 
   // ── GET /salary-records/:id ───────────────────────────────────────────────
   app.get<{ Params: { id: string } }>('/:id', { preHandler }, async (request, reply) => {
     const record = await getSalaryRecordById(request.params.id)
     if (!record) return reply.code(404).send({ error: AppErrors.SALARY_RECORD_NOT_FOUND })
-    return reply.send({ salaryRecord: record })
+    return reply.send({ data: record })
   })
 }

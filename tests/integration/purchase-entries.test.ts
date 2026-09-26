@@ -29,19 +29,19 @@ beforeAll(async () => {
     .post('/v1/vendors')
     .set('Cookie', adminCookies)
     .send({ vendorName: `Test Vendor PE ${Date.now()}`, gstNumber: '33AAAAA0000A1Z5' })
-  vendorId = vendorRes.body.vendor.id
+  vendorId = vendorRes.body.data.id
 
   const pricedItemRes = await supertest(app.server)
     .post('/v1/inventory')
     .set('Cookie', adminCookies)
     .send({ material: `Test Material PE Priced ${Date.now()}`, unit: 'Kg', price: 42 })
-  pricedItemId = pricedItemRes.body.id
+  pricedItemId = pricedItemRes.body.data.id
 
   const unpricedItemRes = await supertest(app.server)
     .post('/v1/inventory')
     .set('Cookie', adminCookies)
     .send({ material: `Test Material PE Unpriced ${Date.now()}`, unit: 'Kg', price: 42 })
-  unpricedItemId = unpricedItemRes.body.id
+  unpricedItemId = unpricedItemRes.body.data.id
 
   await supertest(app.server)
     .post(`/v1/vendors/${vendorId}/prices`)
@@ -58,7 +58,7 @@ const req = () => supertest(app.server)
 
 async function getStockQty(id: string): Promise<number> {
   const res = await req().get('/v1/inventory').set('Cookie', adminCookies).expect(200)
-  const item = res.body.items.find((i: { id: string }) => i.id === id)
+  const item = res.body.data.find((i: { id: string }) => i.id === id)
   return item.stockQty ?? 0
 }
 

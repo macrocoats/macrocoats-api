@@ -28,13 +28,13 @@ beforeAll(async () => {
     .post('/v1/vendors')
     .set('Cookie', adminCookies)
     .send({ vendorName: `Test Vendor VP ${Date.now()}`, gstNumber: '33AAAAA0000A1Z5' })
-  vendorId = vendorRes.body.vendor.id
+  vendorId = vendorRes.body.data.id
 
   const itemRes = await supertest(app.server)
     .post('/v1/inventory')
     .set('Cookie', adminCookies)
     .send({ material: `Test Material VP ${Date.now()}`, unit: 'Kg', price: 42 })
-  inventoryItemId = itemRes.body.id
+  inventoryItemId = itemRes.body.data.id
 })
 
 afterAll(async () => {

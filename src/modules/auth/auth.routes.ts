@@ -11,9 +11,14 @@ import { accessCookieOptions, refreshCookieOptions } from '../../plugins/cookie.
 import { authenticate, requireAuth } from '../../middleware/authenticate.js'
 import { AppErrors } from '../../types/errors.js'
 
+// Per-IP limits on credential and token endpoints. Kept loose enough that staff
+// sharing one office NAT IP don't lock each other out, tight enough to stop brute force.
+const CREDENTIAL_RATE_LIMIT = { max: 20, timeWindow: '5 minutes' }
+const REFRESH_RATE_LIMIT    = { max: 60, timeWindow: '1 minute' }
+
 export async function authRoutes(app: FastifyInstance) {
   // ── POST /auth/login ─────────────────────────────────────────────────────
-  app.post('/login', async (request, reply) => {
+  app.post('/login', { config: { rateLimit: CREDENTIAL_RATE_LIMIT } }, async (request, reply) => {
     const body = loginSchema.safeParse(request.body)
     if (!body.success) {
       return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
@@ -31,7 +36,7 @@ export async function authRoutes(app: FastifyInstance) {
   })
 
   // ── POST /auth/token (magic-link / QR access) ────────────────────────────
-  app.post('/token', async (request, reply) => {
+  app.post('/token', { config: { rateLimit: CREDENTIAL_RATE_LIMIT } }, async (request, reply) => {
     const body = tokenSchema.safeParse(request.body)
     if (!body.success) {
       return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
@@ -49,7 +54,7 @@ export async function authRoutes(app: FastifyInstance) {
   })
 
   // ── POST /auth/refresh ───────────────────────────────────────────────────
-  app.post('/refresh', async (request, reply) => {
+  app.post('/refresh', { config: { rateLimit: REFRESH_RATE_LIMIT } }, async (request, reply) => {
     const rawRefresh = request.cookies?.refreshToken
     if (!rawRefresh) {
       return reply.code(401).send({ error: AppErrors.NO_REFRESH_TOKEN })
@@ -99,7 +104,7 @@ export async function authRoutes(app: FastifyInstance) {
   // routes above are untouched — cookie-based auth remains the browser contract.
 
   // ── POST /auth/mobile/login ──────────────────────────────────────────────
-  app.post('/mobile/login', async (request, reply) => {
+  app.post('/mobile/login', { config: { rateLimit: CREDENTIAL_RATE_LIMIT } }, async (request, reply) => {
     const body = loginSchema.safeParse(request.body)
     if (!body.success) {
       return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
@@ -118,7 +123,7 @@ export async function authRoutes(app: FastifyInstance) {
   })
 
   // ── POST /auth/mobile/refresh ─────────────────────────────────────────────
-  app.post('/mobile/refresh', async (request, reply) => {
+  app.post('/mobile/refresh', { config: { rateLimit: REFRESH_RATE_LIMIT } }, async (request, reply) => {
     const body = mobileRefreshSchema.safeParse(request.body)
     if (!body.success) {
       return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
