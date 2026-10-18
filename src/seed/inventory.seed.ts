@@ -153,7 +153,7 @@ export const DEFAULT_INVENTORY = [
 
   // ── Solvents (additional) ────────────────────────────────────────────────────
   { material: 'Isopropyl Acetate',                  unit: 'L'  as const, price: '0',   sortOrder: 49 },
-  { material: 'Exxol 32D',                          unit: 'L'  as const, price: '0',   sortOrder: 50 },
+  { material: 'Exxol 32D',                          unit: 'L'  as const, price: '230', sortOrder: 50 },
   // PGME / Dowanol PM — wetting agent for UNICool AL PGME Enhanced Variant
   { material: 'Propylene Glycol Methyl Ether (PGME)', unit: 'L' as const, price: '0',  sortOrder: 60 },
   // Dowanol PM — kept as a distinct SKU from PGME for UNICool AL PG High Lubricity Variant
@@ -181,15 +181,15 @@ export const DEFAULT_INVENTORY = [
   { material: 'TAP 4554',                           unit: 'Kg' as const, price: '0',   sortOrder: 59 },
 
   // ── Rust Preventive Additives (CORRCUT 200) ──────────────────────────────────
-  { material: 'Mineral Turpentine Oil (MTO)',       unit: 'L'  as const, price: '75',  sortOrder: 63 },
+  { material: 'Mineral Turpentine Oil (MTO)',       unit: 'L'  as const, price: '113', sortOrder: 63 },
   { material: 'Lanolin',                            unit: 'Kg' as const, price: '310', sortOrder: 64 },
   { material: 'BHT (Butylated Hydroxytoluene)',     unit: 'Kg' as const, price: '600', sortOrder: 65 },
 
   // ── Rust Preventive Additives (CORRUCUT 500) ─────────────────────────────────
-  { material: 'Vaseline',                           unit: 'Kg' as const, price: '180', sortOrder: 66 },
+  { material: 'Vaseline',                           unit: 'Kg' as const, price: '237', sortOrder: 66 },
 
   // ── Metalworking Fluid Additives (UNICUT-AL) ─────────────────────────────────
-  { material: 'Light Paraffinic Mineral Oil',       unit: 'L'  as const, price: '0',   sortOrder: 67 },
+  { material: 'Light Paraffinic Mineral Oil',       unit: 'L'  as const, price: '172', sortOrder: 67 },
 ]
 
 export async function seedInventory() {

@@ -631,6 +631,37 @@ const UNIKBRIGHTNER_BASE_COMPONENTS = [
   { materialName: 'DM Water',                percentage: 96.65, unit: 'L'  as const },
 ]
 
+/**
+ * CORRUCUT 500 — Water-Displacing Rust Preventive Oil variant, from the supplied
+ * costing sheet (400 L reference batch): MTO 140 L, LLP 80 L, Exxsol D60 80 L,
+ * Exxsol 32D 24 L, Calcium Petroleum Sulfonate 52 kg, White Petroleum Jelly 24 kg.
+ * Percentages are the sheet's nominal recipe shares (mixed L/kg units, sum 100%).
+ * materialName values match existing inventory_items names exactly (incl. the
+ * inventory's 'Exxol' spelling for Exxsol D60/32D) so batch inventory deduction
+ * and FormulaPage price matching resolve.
+ */
+const CORRUCUT_500_WDRPO_COMPONENTS = [
+  { materialName: 'Mineral Turpentine Oil (MTO)', percentage: 35.0, unit: 'L'  as const },  // 140 L / 400 L
+  { materialName: 'Light Paraffinic Mineral Oil', percentage: 20.0, unit: 'L'  as const },  //  80 L — LLP
+  { materialName: 'Exxol D60',                    percentage: 20.0, unit: 'L'  as const },  //  80 L — Exxsol D60
+  { materialName: 'Exxol 32D',                    percentage: 6.0,  unit: 'L'  as const },  //  24 L — Exxsol 32D
+  { materialName: 'Calcium Petroleum Sulfonate',  percentage: 13.0, unit: 'Kg' as const },  //  52 kg
+  { materialName: 'Vaseline',                     percentage: 6.0,  unit: 'Kg' as const },  //  24 kg — white petroleum jelly
+]
+
+/* ── TDS overrides — CORRUCUT 500 Water-Displacing RPO ─────────────────────── */
+
+const TDS_OVERRIDES_CORRUCUT_500_WDRPO = {
+  composition: [
+    { name: 'Hydrocarbon carrier (MTO)',       function: 'Primary carrier and water-displacing vehicle', percent: '30 – 40%', compat: 'Ferrous and non-ferrous metals' },
+    { name: 'Light liquid paraffin',           function: 'Lubricating base oil',                         percent: '15 – 25%', compat: 'Ferrous and non-ferrous metals' },
+    { name: 'Dearomatized solvent',            function: 'Controlled-evaporation carrier',               percent: '15 – 25%', compat: 'Ferrous and non-ferrous metals' },
+    { name: 'Light wetting solvent',           function: 'Wetting and penetration aid',                  percent: '< 10%',    compat: 'Ferrous and non-ferrous metals' },
+    { name: 'Calcium petroleum sulfonate',     function: 'Corrosion inhibitor',                          percent: '10 – 15%', compat: 'Ferrous and non-ferrous metals' },
+    { name: 'White petroleum jelly',           function: 'Protective film former',                       percent: '< 10%',    compat: 'Ferrous and non-ferrous metals' },
+  ],
+}
+
 export async function seedFormulationVariants() {
   console.log('🌱 Seeding formulation variants...')
 
@@ -1193,6 +1224,56 @@ export async function seedFormulationVariants() {
       )
 
       console.log(`   ✅ Created Base Formula variant for UNIKBRIGHTNER (id: ${unikbrightnerBaseVariant.id})`)
+    }
+  }
+
+  // ── CORRUCUT 500 — Water-Displacing RPO ───────────────────────────────────
+  const [corrucut500Product] = await db
+    .select()
+    .from(products)
+    .where(eq(products.key, 'corrucut-500'))
+
+  if (!corrucut500Product) {
+    console.warn('   ⚠️  Product corrucut-500 not found — skipping Water-Displacing RPO variant seed')
+  } else {
+    const CORRUCUT_500_WDRPO_NAME = 'CORRUCUT 500 - Water-Displacing RPO'
+    const [existingCorrucut500Wdrpo] = await db
+      .select()
+      .from(productFormulationVariants)
+      .where(
+        and(
+          eq(productFormulationVariants.productKey, 'corrucut-500'),
+          eq(productFormulationVariants.variantName, CORRUCUT_500_WDRPO_NAME),
+        ),
+      )
+
+    if (existingCorrucut500Wdrpo) {
+      console.log(`   ↩️  Water-Displacing RPO variant for CORRUCUT 500 already exists (id: ${existingCorrucut500Wdrpo.id})`)
+    } else {
+      // Non-default: the existing default 'Base Formula' variant stays the one
+      // resolveActiveVariant auto-picks, so TDS/MSDS content doesn't change.
+      const [corrucut500WdrpoVariant] = await db
+        .insert(productFormulationVariants)
+        .values({
+          productKey:  'corrucut-500',
+          companyId:   null,
+          variantName: CORRUCUT_500_WDRPO_NAME,
+          isDefault:   false,
+          tdsOverrides: TDS_OVERRIDES_CORRUCUT_500_WDRPO,
+        })
+        .returning()
+
+      await db.insert(formulationVariantComponents).values(
+        CORRUCUT_500_WDRPO_COMPONENTS.map((c, i) => ({
+          variantId:    corrucut500WdrpoVariant.id,
+          materialName: c.materialName,
+          percentage:   c.percentage !== null ? String(c.percentage) : null,
+          unit:         c.unit,
+          sortOrder:    i,
+        })),
+      )
+
+      console.log(`   ✅ Created Water-Displacing RPO variant for CORRUCUT 500 (id: ${corrucut500WdrpoVariant.id})`)
     }
   }
 }
