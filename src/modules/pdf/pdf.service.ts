@@ -4,7 +4,9 @@ import path from 'node:path';
 import { Readable } from 'node:stream';
 import { templateService } from './template.service.js';
 import { nowFormatted, formatDate } from './helpers/date.helper.js';
-import { parseStatements, groupPrecautionary } from './helpers/ghs-print.helper.js';
+import {
+  GHS_CODES, GHS_LABELS, firstPhone, groupPrecautionary, parseStatements, ppeCode, splitRunOn,
+} from './helpers/ghs-print.helper.js';
 import { PDFError } from './pdf.types.js';
 import type { DocType, PDFOptions, RenderResult } from './pdf.types.js';
 import { env } from '../../config/env.js';
@@ -35,24 +37,11 @@ const LETTERHEAD_DOC_TYPES: ReadonlySet<DocType> = new Set(['letterhead']);
 // All five get the faint centered watermark.
 const WATERMARK_DOC_TYPES: ReadonlySet<DocType> = new Set(['tds', 'msds', 'coa', 'investor-report', 'letterhead']);
 
-// Per-docType copy for the print-matched header/footer (tds/msds only).
-const PRINT_MATCHED_META: Record<string, {
-  docTitle: string; subtitle: string; idLabel: string; footerDept: string; footerRightDefault: string;
-}> = {
-  tds: {
-    docTitle: 'Technical Data Sheet',
-    subtitle: 'Industrial Performance Product',
-    idLabel: 'DOC ID',
-    footerDept: 'Technical Data Department',
-    footerRightDefault: '',
-  },
-  msds: {
-    docTitle: 'Safety Data Sheet',
-    subtitle: '',
-    idLabel: 'REF',
-    footerDept: 'GHS Rev. 9 Standard',
-    footerRightDefault: 'Confidential — For Authorised Use Only',
-  },
+// Per-docType copy for the print-matched page header (tds/msds only) —
+// mirrors the frontend's PrintMasthead props in TDSPage/MSDSPage print blocks.
+const PRINT_MATCHED_META: Record<string, { docTitle: string; standard: string }> = {
+  tds: { docTitle: 'Technical Data Sheet', standard: 'Industrial performance product' },
+  msds: { docTitle: 'Safety Data Sheet', standard: 'Prepared to GHS Rev. 9' },
 };
 
 const SIMPLE_COMPOSITION_PRODUCT_LINES: ReadonlySet<string> = new Set([
@@ -83,48 +72,78 @@ async function getWatermarkDataUri(): Promise<string> {
 }
 
 interface PhysicalRow { key?: string; val?: string }
-interface PhysicalPair { a: PhysicalRow | null; b: PhysicalRow | null }
+interface Classification { class?: string; category?: string }
+interface SpecRow { property?: string; value?: string; unit?: string; method?: string }
 
-// Mirrors MSDSPage.jsx's physical-properties pairing: chunks the flat list
-// into rows of two for the 4-column paired table.
-function pairPhysicalProperties(items: PhysicalRow[]): PhysicalPair[] {
-  const pairs: PhysicalPair[] = [];
-  for (let i = 0; i < items.length; i += 2) {
-    pairs.push({ a: items[i] ?? null, b: items[i + 1] ?? null });
-  }
-  return pairs;
-}
-
-// Mirrors MSDSPage.jsx's derived-from-raw-payload values (hStmts, pGroups,
-// isSimpleComposition, physical pairing, signal word default) so msds.hbs
-// can iterate the same shape the frontend print layout renders from,
-// without duplicating that logic in Handlebars.
+// Mirrors safteyDataSheet's docPrint/MsdsPrintDoc.jsx: everything msds.hbs
+// renders that the frontend derives client-side (statements, P groups, the
+// signal-word default, emergency phone, pictogram summary, PPE badges) is
+// computed here from the same raw payload, so the template only iterates.
 function buildMsdsContext(payload: Record<string, unknown>): Record<string, unknown> {
   const sections = (payload['sections'] as Record<string, unknown> | undefined) ?? {};
   const hazards = (sections['hazards'] as Record<string, unknown> | undefined) ?? {};
+  const identification = (sections['identification'] as Record<string, unknown> | undefined) ?? {};
+  const exposure = (sections['exposure'] as Record<string, unknown> | undefined) ?? {};
   const productLine = String(payload['productLine'] ?? '');
   const physical = (sections['physical'] as PhysicalRow[] | undefined) ?? [];
+  const pictograms = (hazards['pictograms'] as string[] | undefined) ?? [];
+  const classifications = (hazards['classifications'] as Classification[] | undefined) ?? [];
+  const ppeItems = (exposure['ppeItems'] as string[] | undefined) ?? [];
   const sections11to16 = (sections['sections11to16'] as Record<string, string> | undefined) ?? {};
+  const emergency = identification['emergency'] as string | undefined;
 
-  const hStmts = parseStatements(hazards['hStatements'] as string | undefined);
-  const pStmts = parseStatements(hazards['pStatements'] as string | undefined);
+  const hStmts = splitRunOn(parseStatements(hazards['hStatements'] as string | undefined));
+  const pStmts = splitRunOn(parseStatements(hazards['pStatements'] as string | undefined));
   const pGroups = groupPrecautionary(pStmts);
 
   return {
     hStmts,
-    pGroupsPrevention: pGroups.prevention,
-    pGroupsResponse: pGroups.response,
-    pGroupsStorage: pGroups.storage,
-    pGroupsDisposal: pGroups.disposal,
+    pGroupList: [
+      { label: 'Precautionary — prevention', items: pGroups.prevention },
+      { label: 'Precautionary — response', items: pGroups.response },
+      { label: 'Precautionary — storage', items: pGroups.storage },
+      { label: 'Precautionary — disposal', items: pGroups.disposal },
+    ].filter((g) => g.items.length > 0),
     isSimpleComposition: SIMPLE_COMPOSITION_PRODUCT_LINES.has(productLine),
-    physicalPaired: pairPhysicalProperties(physical),
+    physicalRows: physical.filter((row) => row.val),
+    classifications: classifications.filter((cl) => cl.category),
+    pictogramSummary: pictograms.map((p) => `${GHS_CODES[p] ?? p} – ${GHS_LABELS[p] ?? p}`).join(', '),
+    emergencyPhone: firstPhone(emergency) ?? emergency ?? '',
+    ppeBadges: ppeItems.map((label) => ({ code: ppeCode(label), label })),
     effectiveSignalWord: String(payload['signalWord'] ?? 'WARNING').toUpperCase(),
-    // Mirrors MSDSPage.jsx's entries11to16.map(([key, val], idx) => `${11 + idx}. ${key}`)
+    // Mirrors MsdsPrintDoc.jsx's entries11to16.map(([key, val], idx) => 11 + idx)
     sections11to16Entries: Object.entries(sections11to16).map(([key, value], idx) => ({
       number: 11 + idx,
       key,
       value,
     })),
+  };
+}
+
+// Authored "no unit" markers ("-", "—") — mirrors sheetHelpers.js withUnit().
+const PLACEHOLDER_UNIT = /^\s*[-–—]\s*$/;
+const withUnit = (value: unknown, unit: unknown): string =>
+  unit && !PLACEHOLDER_UNIT.test(String(unit)) ? `${String(value ?? '')} ${String(unit)}` : String(value ?? '');
+
+// Mirrors safteyDataSheet's docPrint/TdsPrintDoc.jsx: only sections with data
+// render, numbered contiguously from 1; the identity band shows the first
+// four specs as facts.
+function buildTdsContext(payload: Record<string, unknown>): Record<string, unknown> {
+  const sections = (payload['sections'] as Record<string, unknown> | undefined) ?? {};
+  const has = (key: string) => Array.isArray(sections[key]) && (sections[key] as unknown[]).length > 0;
+  const specs = (sections['physicalProperties'] as SpecRow[] | undefined) ?? [];
+
+  let n = 0;
+  const next = (present: boolean) => (present ? ++n : null);
+
+  return {
+    numFeatures: next(has('features')),
+    numApplications: next(has('performance')),
+    numSpecs: next(has('physicalProperties')),
+    numPackaging: next(has('packaging')),
+    specRows: specs.map((p) => ({ property: p.property, method: p.method || '—', value: withUnit(p.value, p.unit) })),
+    keyFacts: specs.slice(0, 4).map((p) => ({ k: p.property, v: withUnit(p.value, p.unit) })),
+    hasSpecs: specs.length > 0,
   };
 }
 
@@ -460,6 +479,7 @@ class PDFService {
     const ctx: Record<string, unknown> = {
       ...payload,
       ...(docType === 'msds' ? buildMsdsContext(payload) : {}),
+      ...(docType === 'tds' ? buildTdsContext(payload) : {}),
       ...(docType === 'investor-report' ? buildInvestorReportContext(payload) : {}),
       _meta: { generatedDate: date, generatedTime: time, docTitle: docTypeLabel(docType) },
     };
@@ -480,22 +500,20 @@ class PDFService {
       payload['productCode'] ?? payload['quotationNumber'] ?? payload['batchNumber'] ?? payload['referenceNo'] ?? '',
     );
     const revisionDate = String(payload['revisionDate'] ?? '');
-    const issueDate    = String(payload['issueDate'] ?? '');
-    const revision     = String(payload['revision'] ?? '');
 
     const periodLabel = executive
       ? `${formatDate(String(payload['from'] ?? ''))} – ${formatDate(String(payload['to'] ?? ''))}`
       : '';
 
     const headerHtml = printMatched
-      ? buildPrintMatchedHeader(docType, productName, docNumber, revisionDate, issueDate, revision)
+      ? buildPrintMatchedHeader(docType, productName)
       : executive
         ? buildExecutiveHeader(logoDataUri, periodLabel)
         : letterhead
           ? buildLetterheadHeader(logoDataUri)
           : buildHeaderTemplate(docTitle, productName, docNumber, { docType, logoDataUri, revisionDate });
     const footerHtml = printMatched
-      ? buildPrintMatchedFooter(docType, productName, docNumber)
+      ? buildPrintMatchedFooter()
       : executive
         ? buildExecutiveFooter()
         : letterhead
@@ -511,8 +529,11 @@ class PDFService {
     // buildPrintMatchedHeader/Footer/buildExecutiveHeader/
     // buildLetterheadHeader/Footer for the content that must fit inside
     // these bands.
+    // tds/msds: the header band ends ~25mm down; the extra ~5mm is breathing
+    // room so a section that opens a continuation page (its margin-top is
+    // dropped at the break) doesn't butt its rule against the header's.
     const margin = printMatched
-      ? { top: '28mm', bottom: '16mm', left: '14mm', right: '14mm' }
+      ? { top: '31mm', bottom: '16mm', left: '14mm', right: '14mm' }
       : executive
         ? { top: '32mm', bottom: '20mm', left: '16mm', right: '16mm' }
         : { top: '30mm', bottom: '22mm', left: '14mm', right: '14mm' };
@@ -633,7 +654,7 @@ function wrapBody(body: string, css: string, watermarkDataUri?: string | null): 
 <head>
   <meta charset="UTF-8" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <style>${css}${watermarkCss}</style>
 </head>
 <body>${watermarkHtml}${body}</body>
@@ -792,74 +813,52 @@ function buildFooterTemplate(
 }
 
 // ─── Print-matched header/footer (tds / msds only) ────────────────────────────
-// Mirrors safteyDataSheet's TDSPage.jsx / MSDSPage.jsx print CSS byte-for-byte
-// where practical (same px sizes, colors, copy) — see documents.css
-// .tds-print-header / .msds-print-header / .tds-print-footer / .msds-print-footer.
+// Mirrors safteyDataSheet's docPrint/PrintSheet.jsx PrintMasthead and the
+// `@page datasheet` margin-box footer in print.css (same sizes, colours,
+// copy). Unlike Print, the PDF repeats the masthead on every page and adds
+// "Page n of N" to it.
 
-function buildPrintMatchedHeader(
-  docType: DocType,
-  productName: string,
-  docNumber: string,
-  revisionDate: string,
-  issueDate: string,
-  revision: string,
-): string {
+function buildPrintMatchedHeader(docType: DocType, productName: string): string {
   const meta = PRINT_MATCHED_META[docType]!;
 
   return `
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-  .hw { width: 100%; background: #ffffff; }
-  .hb { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 3mm 14mm 2.5mm 14mm; }
-  .h-left { flex: 1; min-width: 0; }
-  .h-product-hero { display: inline-block; font-size: 34px; font-weight: 900; color: #123A6D; line-height: 1.05; letter-spacing: -0.4px; padding-bottom: 4px; border-bottom: 3px solid #e30613; overflow-wrap: anywhere; }
-  .h-right { text-align: right; flex-shrink: 0; }
-  .h-doc-title { font-size: 18px; font-weight: 900; color: #1a1a1a; letter-spacing: 0.3px; margin-bottom: 4px; }
-  .h-doc-subtitle { font-size: 10px; font-weight: 700; color: #1F3A5F; letter-spacing: 1.5px; text-transform: uppercase; }
-  .h-rule { height: 1.5px; background: #1a1a1a; margin: 0 14mm; }
+  body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .hw { width: 100%; padding: 0 14mm; font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif; color: #1a1c1f; }
+  .hb { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; padding: 7mm 0 2.5mm; border-bottom: 2px solid #1a1c1f; }
+  .mono { font-family: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace; }
+  .h-company { display: block; font-size: 10px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: #1F4E8C; }
+  .h-title { display: block; margin-top: 2px; font-size: 22px; font-weight: 700; line-height: 1.1; letter-spacing: -.01em; }
+  .h-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-size: 10px; font-weight: 500; line-height: 1.4; color: #5b6168; }
 </style>
 <div class="hw">
   <div class="hb">
-    <div class="h-left">
-      <div class="h-product-hero">${esc(productName)}</div>
+    <div>
+      <span class="h-company mono">${esc(COMPANY.legalName)}</span>
+      <span class="h-title">${esc(meta.docTitle)}</span>
     </div>
-    <div class="h-right">
-      <div class="h-doc-title">${esc(meta.docTitle)}</div>
-      ${meta.subtitle ? `<div class="h-doc-subtitle">${esc(meta.subtitle)}</div>` : ''}
+    <div class="h-meta mono">
+      <span>${esc(productName)}</span>
+      <span>${esc(meta.standard)}</span>
+      <span>Page <span class="pageNumber"></span> of <span class="totalPages"></span></span>
     </div>
   </div>
-  <div class="h-rule"></div>
 </div>`;
 }
 
-function buildPrintMatchedFooter(docType: DocType, productName: string, docNumber: string): string {
-  const meta = PRINT_MATCHED_META[docType]!;
-  const isTds = docType === 'tds';
-  const leftText = isTds
-    ? `${COMPANY.legalName} &nbsp;•&nbsp; ${esc(meta.footerDept)} &nbsp;•&nbsp; Product Code: ${esc(docNumber)}`
-    : `${COMPANY.legalName} &nbsp;•&nbsp; ${esc(productName)} &nbsp;•&nbsp; ${esc(meta.footerDept)}`;
-  const rightText = isTds ? esc(productName) : esc(meta.footerRightDefault);
-
+function buildPrintMatchedFooter(): string {
   return `
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   .fw { width: 100%; padding: 0 14mm; }
-  .f-rule { height: 0.5px; background: #b8bec3; margin-bottom: 4px; }
-  .fb { display: flex; justify-content: space-between; }
-  .f-row { font-size: 9px; color: #4f5a64; letter-spacing: 0.3px; text-transform: uppercase; }
-  .f-right { min-width: 80px; text-align: right; }
-  .f-page { display: block; margin-top: 1px; color: #123A6D; font-weight: 800; }
-  .f-tag { margin-top: 2px; color: #66727d; font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.3px; }
+  .fb { display: flex; justify-content: space-between; gap: 16px; padding-top: 6px; border-top: 1px solid #1a1c1f; font-family: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace; font-size: 8.5px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; color: #5b6168; }
 </style>
 <div class="fw">
-  <div class="f-rule"></div>
   <div class="fb">
-    <div class="f-row">${leftText}</div>
-    <div class="f-row f-right">${rightText}<span class="f-page">Page <span class="pageNumber"></span> of <span class="totalPages"></span></span></div>
+    <span>${esc(COMPANY.legalName)} &middot; ${esc(COMPANY.city)} &middot; ${esc(COMPANY.website)}</span>
+    <span>Computer-generated document &middot; <span class="pageNumber"></span>/<span class="totalPages"></span></span>
   </div>
-  <div class="f-tag">${COMPANY.website} &nbsp;•&nbsp; This document is computer generated &nbsp;•&nbsp; Confidential</div>
 </div>`;
 }
 

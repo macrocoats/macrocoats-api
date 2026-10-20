@@ -1,7 +1,7 @@
 import Handlebars from 'handlebars';
 import { formatDate, formatTime } from './date.helper.js';
 import { formatCurrency, formatNumber } from './currency.helper.js';
-import { GHS_PRINT_DIAMOND_SVG } from './ghs-print.helper.js';
+import { GHS_CODES, GHS_LABELS, GHS_PRINT_DIAMOND_SVG } from './ghs-print.helper.js';
 
 export function registerHelpers(): void {
   Handlebars.registerHelper('formatDate', (val: unknown) => formatDate(String(val ?? '')));
@@ -69,6 +69,9 @@ export function registerHelpers(): void {
   Handlebars.registerHelper('ghsDiamond', (key: unknown) =>
     new Handlebars.SafeString(GHS_PRINT_DIAMOND_SVG[String(key)] ?? ''),
   );
+
+  Handlebars.registerHelper('ghsCode', (key: unknown) => GHS_CODES[String(key)] ?? String(key ?? ''));
+  Handlebars.registerHelper('ghsLabel', (key: unknown) => GHS_LABELS[String(key)] ?? String(key ?? ''));
 
   Handlebars.registerHelper('isArray', (val: unknown) => Array.isArray(val));
   Handlebars.registerHelper('isObject', (val: unknown) => val !== null && typeof val === 'object' && !Array.isArray(val));

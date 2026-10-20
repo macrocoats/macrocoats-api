@@ -1,234 +1,187 @@
 {{!--
-  Mirrors safteyDataSheet/src/pages/Products/MSDSPage.jsx's print-only body
-  (the .msds-print-doc block) exactly — same 16 GHS sections, same order,
-  same copy. Header/company letterhead is NOT here; it's rendered as the
-  Puppeteer page header by buildPrintMatchedHeader() in pdf.service.ts, same
-  as the footer. hStmts / pGroupsPrevention|Response|Storage|Disposal /
-  isSimpleComposition / physicalPaired / effectiveSignalWord are precomputed
-  server-side in buildMsdsContext() (pdf.service.ts), mirroring the frontend
-  component's derived values.
+  Mirrors safteyDataSheet/src/pages/Products/docPrint/MsdsPrintDoc.jsx
+  (the .ds-print markup) — same sections, order, copy and class names. The
+  masthead is NOT here: Puppeteer renders it per page via
+  buildPrintMatchedHeader() in pdf.service.ts, as it does the footer.
+  hStmts / pGroupList / isSimpleComposition / physicalRows / classifications /
+  pictogramSummary / emergencyPhone / ppeBadges / effectiveSignalWord are
+  precomputed in buildMsdsContext() (pdf.service.ts). Empty rows are skipped,
+  matching PrintRows on the frontend.
 --}}
-<div class="document msds-print-doc">
+<div class="document msds-print-doc ds-print">
 
-  {{!-- ═══ SECTION 1 — IDENTIFICATION ═══════════════════════════════════════ --}}
-  <div class="msds-print-section no-break">
-    <div class="msds-print-section-head">1. Identification of the Substance and Company</div>
-    <table class="msds-print-kv-table">
-      <tbody>
-        <tr><td class="msds-kv-key">Product Name</td><td class="msds-kv-val msds-kv-bold">{{productName}}</td></tr>
-        <tr><td class="msds-kv-key">Product Nature</td><td class="msds-kv-val">{{sections.identification.productType}}</td></tr>
-        <tr><td class="msds-kv-key">Recommended Use</td><td class="msds-kv-val">{{sections.identification.intendedUse}}</td></tr>
-        <tr><td class="msds-kv-key">Manufacturer</td><td class="msds-kv-val">{{sections.identification.manufacturer}}</td></tr>
-        {{#if sections.identification.emergency}}
-        <tr><td class="msds-kv-key">Emergency Telephone</td><td class="msds-kv-val msds-kv-accent">{{sections.identification.emergency}}</td></tr>
-        {{/if}}
-      </tbody>
-    </table>
-  </div>
-
-  {{!-- ═══ SECTION 2 — HAZARD(S) IDENTIFICATION ═════════════════════════════ --}}
-  <div class="msds-print-section">
-    <div class="msds-print-section-head">2. Hazard(s) Identification</div>
-    <div class="msds-hazard-card">
-
-      <div class="msds-hazard-signal">SIGNAL WORD: {{effectiveSignalWord}}</div>
-
-      {{#if sections.hazards.pictograms}}
-      <div class="msds-hazard-pictos">
-        {{#each sections.hazards.pictograms}}
-        <div class="msds-hazard-picto">{{ghsDiamond this}}</div>
-        {{/each}}
+  <div class="ds-print-identity">
+    <div class="ds-print-identity__main">
+      <span class="ds-print-identity__name">{{productName}}</span>
+      {{#if sections.identification.productType}}<span class="ds-print-identity__sub">{{sections.identification.productType}}</span>{{/if}}
+      <div class="ds-print-chips">
+        <span class="ds-print-chip ds-print-chip--solid">Signal word: {{effectiveSignalWord}}</span>
+        {{#if emergencyPhone}}<span class="ds-print-chip">Emergency {{emergencyPhone}}</span>{{/if}}
       </div>
-      {{/if}}
-
-      {{#if hStmts}}
-      <div class="msds-hazard-group">
-        <div class="msds-hazard-group-head">Hazard Statements:</div>
-        <ul class="msds-hazard-stmts">
-          {{#each hStmts}}
-          <li><strong>{{code}}:</strong> {{text}}</li>
-          {{/each}}
-        </ul>
-      </div>
-      {{/if}}
-
-      {{#if pGroupsPrevention}}
-      <div class="msds-hazard-group">
-        <div class="msds-hazard-group-head">Precautionary Statements (Prevention):</div>
-        <ul class="msds-hazard-stmts">
-          {{#each pGroupsPrevention}}
-          <li><strong>{{code}}:</strong> {{text}}</li>
-          {{/each}}
-        </ul>
-      </div>
-      {{/if}}
-
-      {{#if pGroupsResponse}}
-      <div class="msds-hazard-group">
-        <div class="msds-hazard-group-head">Precautionary Statements (Response):</div>
-        <ul class="msds-hazard-stmts">
-          {{#each pGroupsResponse}}
-          <li><strong>{{code}}:</strong> {{text}}</li>
-          {{/each}}
-        </ul>
-      </div>
-      {{/if}}
-
-      {{#if pGroupsStorage}}
-      <div class="msds-hazard-group">
-        <div class="msds-hazard-group-head">Precautionary Statements (Storage):</div>
-        <ul class="msds-hazard-stmts">
-          {{#each pGroupsStorage}}
-          <li><strong>{{code}}:</strong> {{text}}</li>
-          {{/each}}
-        </ul>
-      </div>
-      {{/if}}
-
-      {{#if pGroupsDisposal}}
-      <div class="msds-hazard-group">
-        <div class="msds-hazard-group-head">Precautionary Statements (Disposal):</div>
-        <ul class="msds-hazard-stmts">
-          {{#each pGroupsDisposal}}
-          <li><strong>{{code}}:</strong> {{text}}</li>
-          {{/each}}
-        </ul>
-      </div>
-      {{/if}}
-
+      <dl class="ds-print-docmeta">
+        {{#if productCode}}<div><dt>Ref</dt><dd>{{productCode}}</dd></div>{{/if}}
+        {{#if revision}}<div><dt>Revision</dt><dd>{{revision}}</dd></div>{{/if}}
+        {{#if issueDate}}<div><dt>Issued</dt><dd>{{issueDate}}</dd></div>{{/if}}
+        {{#if revisionDate}}<div><dt>Revised</dt><dd>{{revisionDate}}</dd></div>{{/if}}
+      </dl>
     </div>
+    {{#if sections.hazards.pictograms}}
+    <ul class="ds-print-pictos">
+      {{#each sections.hazards.pictograms}}
+      <li>
+        <span class="ds-print-pictos__icon">{{ghsDiamond this}}</span>
+        <span class="ds-print-pictos__label"><strong>{{ghsCode this}}</strong>{{ghsLabel this}}</span>
+      </li>
+      {{/each}}
+    </ul>
+    {{/if}}
   </div>
 
-  {{!-- ═══ SECTION 3 — COMPOSITION ═══════════════════════════════════════════ --}}
-  <div class="msds-print-section">
-    <div class="msds-print-section-head">3. Composition / Information on Ingredients</div>
-    <table class="msds-print-comp-table">
+  {{!-- 1 — IDENTIFICATION --}}
+  <section class="ds-print-section ds-print-section--keep">
+    <h2 class="ds-print-section__bar"><span class="ds-print-section__num">1</span><span class="ds-print-section__title">Identification of the substance and company</span></h2>
+    <dl class="ds-print-rows">
+      <div class="ds-print-row"><dt>Product name</dt><dd>{{productName}}</dd></div>
+      {{#if sections.identification.productType}}<div class="ds-print-row"><dt>Product type</dt><dd>{{sections.identification.productType}}</dd></div>{{/if}}
+      {{#if sections.identification.intendedUse}}<div class="ds-print-row"><dt>Recommended use</dt><dd>{{sections.identification.intendedUse}}</dd></div>{{/if}}
+      {{#if sections.identification.manufacturer}}<div class="ds-print-row"><dt>Manufacturer</dt><dd>{{sections.identification.manufacturer}}</dd></div>{{/if}}
+      {{#if sections.identification.emergency}}<div class="ds-print-row"><dt>Emergency telephone</dt><dd>{{sections.identification.emergency}}</dd></div>{{/if}}
+    </dl>
+  </section>
+
+  {{!-- 2 — HAZARD IDENTIFICATION --}}
+  <section class="ds-print-section">
+    <h2 class="ds-print-section__bar"><span class="ds-print-section__num">2</span><span class="ds-print-section__title">Hazard identification</span></h2>
+    <dl class="ds-print-rows">
+      <div class="ds-print-row"><dt>Signal word</dt><dd>{{effectiveSignalWord}}</dd></div>
+      {{#if pictogramSummary}}<div class="ds-print-row"><dt>Pictograms</dt><dd>{{pictogramSummary}}</dd></div>{{/if}}
+      {{#each classifications}}<div class="ds-print-row"><dt>{{class}}</dt><dd>{{category}}</dd></div>{{/each}}
+    </dl>
+    {{#if hStmts}}
+    <h3 class="ds-print-subhead">Hazard statements</h3>
+    <dl class="ds-print-rows">
+      {{#each hStmts}}<div class="ds-print-row is-code"><dt>{{code}}</dt><dd>{{text}}</dd></div>{{/each}}
+    </dl>
+    {{/if}}
+    {{#each pGroupList}}
+    <div>
+      <h3 class="ds-print-subhead">{{label}}</h3>
+      <dl class="ds-print-rows">
+        {{#each items}}<div class="ds-print-row is-code"><dt>{{code}}</dt><dd>{{text}}</dd></div>{{/each}}
+      </dl>
+    </div>
+    {{/each}}
+  </section>
+
+  {{!-- 3 — COMPOSITION --}}
+  <section class="ds-print-section">
+    <h2 class="ds-print-section__bar"><span class="ds-print-section__num">3</span><span class="ds-print-section__title">Composition / information on ingredients</span></h2>
+    <table class="ds-print-table">
       <thead>
         <tr>
-          {{#unless isSimpleComposition}}<th>Component / Chemical Name</th>{{/unless}}
-          <th>Industrial Function</th>
+          {{#unless isSimpleComposition}}<th>Component</th>{{/unless}}
+          <th>Function</th>
           <th>Classification</th>
         </tr>
       </thead>
       <tbody>
         {{#each sections.composition.ingredients}}
         <tr>
-          {{#unless ../isSimpleComposition}}<td class="msds-comp-name">{{#if name}}{{name}}{{else}}—{{/if}}</td>{{/unless}}
+          {{#unless ../isSimpleComposition}}<td>{{#if name}}{{name}}{{else}}—{{/if}}</td>{{/unless}}
           <td>{{description}}</td>
           <td>{{ghsClass}}</td>
         </tr>
         {{/each}}
       </tbody>
     </table>
-    {{#if sections.composition.note}}<p class="msds-print-note">{{sections.composition.note}}</p>{{/if}}
-  </div>
+    {{#if sections.composition.note}}<p class="ds-print-note">{{sections.composition.note}}</p>{{/if}}
+  </section>
 
-  {{!-- ═══ SECTION 4 — FIRST AID ════════════════════════════════════════════ --}}
-  <div class="msds-print-section no-break">
-    <div class="msds-print-section-head">4. First-Aid Measures</div>
-    <table class="msds-print-kv-table">
-      <tbody>
-        <tr><td class="msds-kv-key">Eye Contact</td><td class="msds-kv-val">{{sections.firstAid.eyes}}</td></tr>
-        <tr><td class="msds-kv-key">Skin Contact</td><td class="msds-kv-val">{{sections.firstAid.skin}}</td></tr>
-        <tr><td class="msds-kv-key">Inhalation</td><td class="msds-kv-val">{{sections.firstAid.inhalation}}</td></tr>
-        <tr><td class="msds-kv-key">Ingestion</td><td class="msds-kv-val">{{sections.firstAid.ingestion}}</td></tr>
-      </tbody>
-    </table>
+  {{!-- 4 — FIRST AID --}}
+  <section class="ds-print-section ds-print-section--keep">
+    <h2 class="ds-print-section__bar"><span class="ds-print-section__num">4</span><span class="ds-print-section__title">First-aid measures</span></h2>
+    <dl class="ds-print-rows">
+      {{#if sections.firstAid.eyes}}<div class="ds-print-row"><dt>Eye contact</dt><dd>{{sections.firstAid.eyes}}</dd></div>{{/if}}
+      {{#if sections.firstAid.skin}}<div class="ds-print-row"><dt>Skin contact</dt><dd>{{sections.firstAid.skin}}</dd></div>{{/if}}
+      {{#if sections.firstAid.inhalation}}<div class="ds-print-row"><dt>Inhalation</dt><dd>{{sections.firstAid.inhalation}}</dd></div>{{/if}}
+      {{#if sections.firstAid.ingestion}}<div class="ds-print-row"><dt>Ingestion</dt><dd>{{sections.firstAid.ingestion}}</dd></div>{{/if}}
+    </dl>
     {{#if sections.firstAid.warning}}
-    <div class="msds-print-callout msds-print-callout-danger">
-      <div class="msds-callout-head">Critical Notice for Intensive Medicine:</div>
-      <div>{{sections.firstAid.warning}}</div>
-    </div>
+    <div class="ds-print-callout"><span class="ds-print-callout__title">Note to physician</span><p>{{sections.firstAid.warning}}</p></div>
     {{/if}}
-  </div>
+  </section>
 
-  {{!-- ═══ SECTION 5 — FIRE-FIGHTING ═════════════════════════════════════════ --}}
-  <div class="msds-print-section no-break">
-    <div class="msds-print-section-head">5. Fire-Fighting Measures</div>
-    <table class="msds-print-kv-table">
-      <tbody>
-        <tr><td class="msds-kv-key">Flammability Level</td><td class="msds-kv-val">{{sections.fireFighting.flammability}}</td></tr>
-        <tr><td class="msds-kv-key">Extinguishing Media</td><td class="msds-kv-val">{{sections.fireFighting.extinguishingMedia}}</td></tr>
-        <tr><td class="msds-kv-key">Fire Hazard</td><td class="msds-kv-val msds-kv-danger">{{sections.fireFighting.fireHazard}}</td></tr>
-        <tr><td class="msds-kv-key">Firefighter PPE</td><td class="msds-kv-val">{{sections.fireFighting.ppe}}</td></tr>
-      </tbody>
-    </table>
-  </div>
+  {{!-- 5 — FIRE-FIGHTING --}}
+  <section class="ds-print-section ds-print-section--keep">
+    <h2 class="ds-print-section__bar"><span class="ds-print-section__num">5</span><span class="ds-print-section__title">Fire-fighting measures</span></h2>
+    <dl class="ds-print-rows">
+      {{#if sections.fireFighting.flammability}}<div class="ds-print-row"><dt>Flammability</dt><dd>{{sections.fireFighting.flammability}}</dd></div>{{/if}}
+      {{#if sections.fireFighting.extinguishingMedia}}<div class="ds-print-row"><dt>Extinguishing media</dt><dd>{{sections.fireFighting.extinguishingMedia}}</dd></div>{{/if}}
+      {{#if sections.fireFighting.fireHazard}}<div class="ds-print-row"><dt>Fire hazard</dt><dd>{{sections.fireFighting.fireHazard}}</dd></div>{{/if}}
+      {{#if sections.fireFighting.ppe}}<div class="ds-print-row"><dt>Firefighter PPE</dt><dd>{{sections.fireFighting.ppe}}</dd></div>{{/if}}
+    </dl>
+  </section>
 
-  {{!-- ═══ SECTION 6 — ACCIDENTAL RELEASE ═══════════════════════════════════ --}}
-  <div class="msds-print-section">
-    <div class="msds-print-section-head">6. Accidental Release Measures</div>
-    <ul class="msds-print-bullet-list">
-      {{#each sections.accidentalRelease}}<li>{{this}}</li>{{/each}}
-    </ul>
-  </div>
+  {{!-- 6 — ACCIDENTAL RELEASE --}}
+  <section class="ds-print-section">
+    <h2 class="ds-print-section__bar"><span class="ds-print-section__num">6</span><span class="ds-print-section__title">Accidental release measures</span></h2>
+    <ol class="ds-print-list">
+      {{#each sections.accidentalRelease}}<li><span class="ds-print-list__n">{{inc @index}}</span><span>{{this}}</span></li>{{/each}}
+    </ol>
+  </section>
 
-  {{!-- ═══ SECTION 7 — HANDLING & STORAGE ═══════════════════════════════════ --}}
-  <div class="msds-print-section no-break">
-    <div class="msds-print-section-head">7. Handling and Storage</div>
-    <table class="msds-print-kv-table">
-      <tbody>
-        <tr><td class="msds-kv-key">Handling</td><td class="msds-kv-val">{{sections.handling.handling}}</td></tr>
-        <tr><td class="msds-kv-key">Storage Temperature</td><td class="msds-kv-val">{{sections.handling.storageTemp}}</td></tr>
-        <tr><td class="msds-kv-key">Shelf Life</td><td class="msds-kv-val">{{sections.handling.shelfLife}}</td></tr>
-        {{#if sections.handling.containers}}<tr><td class="msds-kv-key">Containers</td><td class="msds-kv-val">{{sections.handling.containers}}</td></tr>{{/if}}
-        {{#if sections.handling.segregation}}<tr><td class="msds-kv-key">Segregation</td><td class="msds-kv-val">{{sections.handling.segregation}}</td></tr>{{/if}}
-      </tbody>
-    </table>
-  </div>
+  {{!-- 7 — HANDLING & STORAGE --}}
+  <section class="ds-print-section ds-print-section--keep">
+    <h2 class="ds-print-section__bar"><span class="ds-print-section__num">7</span><span class="ds-print-section__title">Handling and storage</span></h2>
+    <dl class="ds-print-rows">
+      {{#if sections.handling.handling}}<div class="ds-print-row"><dt>Handling</dt><dd>{{sections.handling.handling}}</dd></div>{{/if}}
+      {{#if sections.handling.storageTemp}}<div class="ds-print-row"><dt>Storage temperature</dt><dd>{{sections.handling.storageTemp}}</dd></div>{{/if}}
+      {{#if sections.handling.shelfLife}}<div class="ds-print-row"><dt>Shelf life</dt><dd>{{sections.handling.shelfLife}}</dd></div>{{/if}}
+      {{#if sections.handling.containers}}<div class="ds-print-row"><dt>Containers</dt><dd>{{sections.handling.containers}}</dd></div>{{/if}}
+      {{#if sections.handling.segregation}}<div class="ds-print-row"><dt>Segregation</dt><dd>{{sections.handling.segregation}}</dd></div>{{/if}}
+    </dl>
+  </section>
 
-  {{!-- ═══ SECTION 8 — EXPOSURE CONTROLS ═════════════════════════════════════ --}}
-  <div class="msds-print-section">
-    <div class="msds-print-section-head">8. Exposure Controls / Personal Protection</div>
-    {{#if sections.exposure.ppeItems}}
-    <ul class="msds-print-bullet-list">
-      {{#each sections.exposure.ppeItems}}<li>{{this}}</li>{{/each}}
-    </ul>
-    {{/if}}
+  {{!-- 8 — EXPOSURE CONTROLS --}}
+  <section class="ds-print-section">
+    <h2 class="ds-print-section__bar"><span class="ds-print-section__num">8</span><span class="ds-print-section__title">Exposure controls / personal protection</span></h2>
     {{#if sections.exposure.engineering}}
-    <div class="msds-print-callout">
-      <div class="msds-callout-head">Engineering Controls:</div>
-      <div>{{sections.exposure.engineering}}</div>
-    </div>
+    <dl class="ds-print-rows">
+      <div class="ds-print-row"><dt>Engineering controls</dt><dd>{{sections.exposure.engineering}}</dd></div>
+    </dl>
     {{/if}}
-  </div>
+    {{#if ppeBadges}}
+    <ul class="ds-print-ppe">
+      {{#each ppeBadges}}<li><span class="ds-print-ppe__badge">{{code}}</span><span>{{label}}</span></li>{{/each}}
+    </ul>
+    {{/if}}
+  </section>
 
-  {{!-- ═══ SECTION 9 — PHYSICAL PROPERTIES (4-col paired grid) ══════════════ --}}
-  <div class="msds-print-section">
-    <div class="msds-print-section-head">9. Physical and Chemical Properties</div>
-    <table class="msds-print-phys-table">
-      <tbody>
-        {{#each physicalPaired}}
-        <tr>
-          <td class="msds-phys-key">{{a.key}}</td>
-          <td class="msds-phys-val">{{a.val}}</td>
-          <td class="msds-phys-key">{{b.key}}</td>
-          <td class="msds-phys-val msds-phys-val-last">{{b.val}}</td>
-        </tr>
-        {{/each}}
-      </tbody>
-    </table>
-  </div>
+  {{!-- 9 — PHYSICAL PROPERTIES --}}
+  <section class="ds-print-section">
+    <h2 class="ds-print-section__bar"><span class="ds-print-section__num">9</span><span class="ds-print-section__title">Physical and chemical properties</span></h2>
+    <dl class="ds-print-rows">
+      {{#each physicalRows}}<div class="ds-print-row"><dt>{{key}}</dt><dd>{{val}}</dd></div>{{/each}}
+    </dl>
+  </section>
 
-  {{!-- ═══ SECTION 10 — STABILITY ═══════════════════════════════════════════ --}}
-  <div class="msds-print-section no-break">
-    <div class="msds-print-section-head">10. Stability and Reactivity</div>
-    <table class="msds-print-kv-table">
-      <tbody>
-        <tr><td class="msds-kv-key">Stability</td><td class="msds-kv-val">{{sections.stability.stability}}</td></tr>
-        <tr><td class="msds-kv-key">Conditions to Avoid</td><td class="msds-kv-val">{{sections.stability.avoid}}</td></tr>
-        <tr><td class="msds-kv-key">Polymerisation</td><td class="msds-kv-val">{{sections.stability.polymerisation}}</td></tr>
-        <tr><td class="msds-kv-key">Hazardous Decomposition</td><td class="msds-kv-val msds-kv-danger">{{sections.stability.decomposition}}</td></tr>
-      </tbody>
-    </table>
-  </div>
+  {{!-- 10 — STABILITY --}}
+  <section class="ds-print-section ds-print-section--keep">
+    <h2 class="ds-print-section__bar"><span class="ds-print-section__num">10</span><span class="ds-print-section__title">Stability and reactivity</span></h2>
+    <dl class="ds-print-rows">
+      {{#if sections.stability.stability}}<div class="ds-print-row"><dt>Stability</dt><dd>{{sections.stability.stability}}</dd></div>{{/if}}
+      {{#if sections.stability.avoid}}<div class="ds-print-row"><dt>Conditions to avoid</dt><dd>{{sections.stability.avoid}}</dd></div>{{/if}}
+      {{#if sections.stability.polymerisation}}<div class="ds-print-row"><dt>Hazardous polymerisation</dt><dd>{{sections.stability.polymerisation}}</dd></div>{{/if}}
+      {{#if sections.stability.decomposition}}<div class="ds-print-row"><dt>Hazardous decomposition</dt><dd>{{sections.stability.decomposition}}</dd></div>{{/if}}
+    </dl>
+  </section>
 
-  {{!-- ═══ SECTIONS 11–16 ═══════════════════════════════════════════════════ --}}
+  {{!-- 11–16 --}}
   {{#each sections11to16Entries}}
-  <div class="msds-print-section">
-    <div class="msds-print-section-head">{{number}}. {{key}}</div>
-    <p class="msds-print-para">{{value}}</p>
-  </div>
+  <section class="ds-print-section">
+    <h2 class="ds-print-section__bar"><span class="ds-print-section__num">{{number}}</span><span class="ds-print-section__title">{{key}}</span></h2>
+    <p class="ds-print-para">{{value}}</p>
+  </section>
   {{/each}}
 
 </div>

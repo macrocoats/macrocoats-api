@@ -72,6 +72,49 @@ export const GHS_PRINT_DIAMOND_SVG: Record<string, string> = {
   </svg>`,
 };
 
+// Mirrors safteyDataSheet/src/config/ghs.jsx (GHS_CODES, GHS_LABELS).
+export const GHS_CODES: Record<string, string> = {
+  explosive: 'GHS01',
+  flammable: 'GHS02',
+  oxidiser: 'GHS03',
+  corrosive: 'GHS05',
+  skull: 'GHS06',
+  irritant: 'GHS07',
+  healthhazard: 'GHS08',
+  environment: 'GHS09',
+};
+
+export const GHS_LABELS: Record<string, string> = {
+  oxidiser: 'Oxidising',
+  irritant: 'Irritant',
+  corrosive: 'Corrosive',
+  environment: 'Environmental',
+  flammable: 'Flammable',
+  skull: 'Acute Toxicity',
+  healthhazard: 'Health Hazard',
+  explosive: 'Explosive',
+};
+
+// Mirrors safteyDataSheet/src/pages/Products/docPrint/sheetHelpers.js
+// (PHONE_RE, ppeCode) so the PDF shows the same emergency chip and PPE badges.
+const PHONE_RE = /\+?\d[\d\s-]{6,}\d/;
+
+export function firstPhone(text: string | null | undefined): string | null {
+  return text?.match(PHONE_RE)?.[0] ?? null;
+}
+
+const PPE_RULES: ReadonlyArray<[RegExp, string]> = [
+  [/goggle|glass|eye|face/i, 'EYE'],
+  [/glove|hand/i, 'HAND'],
+  [/respirat|mask|breath|scba/i, 'RESP'],
+  [/boot|shoe|foot|feet/i, 'FEET'],
+  [/overall|apron|cloth|suit|body|coat/i, 'BODY'],
+];
+
+export function ppeCode(item: string): string {
+  return PPE_RULES.find(([re]) => re.test(item))?.[1] ?? 'PPE';
+}
+
 export const GHS_P_DESCRIPTIONS: Record<string, string> = {
   P201: 'Obtain special instructions before use.',
   P202: 'Do not handle until all safety precautions have been read and understood.',
@@ -163,6 +206,26 @@ export function parseStatements(raw: string | null | undefined): ParsedStatement
       const parsedText = rest.join(' — ') || GHS_P_DESCRIPTIONS[parsedCode] || '';
       return { code: parsedCode, text: parsedText };
     });
+}
+
+// Mirrors safteyDataSheet's docPrint/sheetHelpers.js splitRunOn(): some
+// authored entries run several statements together ("… damage. H319 — …");
+// split them so each code prints on its own row.
+const RUN_ON = /(?:\.\s+|\s·\s)(?=[HP]\d{3}(?:\s*\+\s*[HP]\d{3})*\s—\s)/;
+
+export function splitRunOn(items: ParsedStatement[]): ParsedStatement[] {
+  return items.flatMap(({ code, text }) => {
+    const parts = text ? text.split(RUN_ON) : [];
+    if (parts.length <= 1) return [{ code, text }];
+    const [first = '', ...rest] = parts;
+    return [
+      { code, text: first.endsWith('.') ? first : `${first}.` },
+      ...rest.map((chunk) => {
+        const [c = '', ...t] = chunk.split(' — ');
+        return { code: c.trim(), text: t.join(' — ') };
+      }),
+    ];
+  });
 }
 
 export interface PGroups {

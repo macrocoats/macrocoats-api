@@ -9,9 +9,11 @@ export const COMPANY = {
   name: 'Macro Coats',
   legalName: 'Macro Coats Pvt. Ltd.',
   tagline: 'Metal Surface Treatment Specialists',
+  // Short locality for one-line footers (tds/msds print-matched footer).
+  city: 'Chennai, India',
   addressLine: 'SF.NO 224/11, Kalaimagal Nagar, Pazhanthandalam, Chennai - 600132, Tamil Nadu, India',
   gstin: '33AARCM7377G1ZY',
-  phone: '+91 98840 80377',
+  phone: '+91 94449 61815',
   email: 'info@macrocoats.in',
   website: 'www.macrocoats.in',
   // Optional — only rendered by the Letterhead treatment when set. Left blank

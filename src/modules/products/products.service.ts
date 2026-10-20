@@ -222,7 +222,7 @@ export async function getDocument(
     company:     'Macro Coats',
     location:    'SF.NO 224/11, Kalaimagal Nagar, Pazhanthandalam, Chennai - 600132, Tamil Nadu, India',
     contact:     'info@macrocoats.in',
-    phone:       '+91 98840 80377',
+    phone:       '+91 94449 61815',
     gstin:       '33AARCM7377G1ZY',
     ...row.body,
     footer:      row.footer,

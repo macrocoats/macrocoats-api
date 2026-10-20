@@ -55,7 +55,7 @@ assets/
 
 `pdf.service.ts` picks one of five header/footer/margin treatments per `docType`:
 
-1. **Print-matched** (`tds`, `msds` — `PRINT_MATCHED_DOC_TYPES`): `buildPrintMatchedHeader`/`buildPrintMatchedFooter` reproduce safteyDataSheet's `TDSPage.jsx`/`MSDSPage.jsx` print-to-PDF header/footer byte-for-byte (same px sizes, colors, copy — see "TDS/MSDS print parity" below). Margin: `26mm/16mm/14mm/14mm`.
+1. **Print-matched** (`tds`, `msds` — `PRINT_MATCHED_DOC_TYPES`): `buildPrintMatchedHeader` reproduces the frontend's `PrintMasthead` (company line, doc title, product / standard / "Page n of N") and `buildPrintMatchedFooter` reproduces the `@page datasheet` margin-box footer from safteyDataSheet's `print.css` (same sizes, colours, copy; see "TDS/MSDS print parity" below). Header/footer templates can't load web fonts, so they fall back from IBM Plex to system fonts. Margin: `31mm/16mm/14mm/14mm` (the band ends ~25mm down; the rest keeps a section that opens a continuation page clear of the header rule).
 2. **Legacy branded** (`coa` only — `LEGACY_BRANDED_DOC_TYPES`): `buildHeaderTemplate`/`buildFooterTemplate`'s branded branch — logo, tagline, Email/Web only, expanded footer with "computer generated"/"Confidential"/Page X of Y. Margin: `30mm/22mm/14mm/14mm`. This is CoA's own polished letterhead — do not merge it with the print-matched treatment above.
 3. **Executive** (`investor-report` only — `EXECUTIVE_DOC_TYPES`): `buildExecutiveHeader`/`buildExecutiveFooter` — a taller band (logo + period line, no per-product doc-number meta since this isn't a per-product document) plus a "Confidential" footer tag distinct from CoA's "computer generated" copy. Margin: `32mm/20mm/16mm/16mm`. Added for the Investor Report; do not reuse for a per-product document type.
 4. **Letterhead** (`letterhead` only — `LETTERHEAD_DOC_TYPES`): `buildLetterheadHeader`/`buildLetterheadFooter` — same visual weight as CoA's legacy-branded header (logo + legal name + tagline + address) plus optional GSTIN/CIN/ISO lines gated on `branding.constants.ts` fields being non-empty. No per-product doc-number meta — the letter's own date/reference-no/customer/subject/attention band renders inside the document body (`.info-cards` in `letterhead.hbs`), not the header. Margin: `30mm/22mm/14mm/14mm`.
@@ -73,39 +73,15 @@ When adding a doc type to any of these sets, verify the other doc types still re
 
 ## TDS/MSDS print parity
 
-`tds.hbs`/`msds.hbs` bodies, the print-matched header/footer, and the
-`.tds-print-*`/`.msds-print-*` classes in `document.css` are a deliberate port
-of safteyDataSheet's `TDSPage.jsx`/`MSDSPage.jsx` print-only JSX and
-`documents.css` — same sections, same order, same copy, same colors —
-so **Download PDF** produces the same document as **Print** on those two
-pages. Consequences of that design choice:
+`tds.hbs`/`msds.hbs` bodies, the print-matched header/footer, and the `.ds-print*` block in `document.css` are a deliberate port of safteyDataSheet's `pages/Products/docPrint/` print JSX (`MsdsPrintDoc`, `TdsPrintDoc`, `PrintSheet`) and the `.ds-print` block in its `styles/documents.css`. Same sections, order, copy, class names and colours ("Variant 1" SDS design), so **Download PDF** produces the same document as **Print** on those two pages. Consequences of that design choice:
 
-- The old generic elements (gradient title banner, compliance ribbon,
-  meta-table, signature/authorization block) are intentionally **not**
-  rendered for `tds`/`msds` — print doesn't have them either. `coa`,
-  `quotation`, and `batch` still use those shared `document.css` classes
-  normally.
-- `msds.hbs` needs data the frontend derives client-side
-  (`parseStatements`, `pGroups`, `isSimpleComposition`, the physical-properties
-  pairing, the signal-word default). `buildMsdsContext()` in `pdf.service.ts`
-  recomputes all of it server-side from the same raw `sections` payload the
-  frontend sends, and injects it into the template context as `hStmts`,
-  `pGroupsPrevention`/`Response`/`Storage`/`Disposal`, `isSimpleComposition`,
-  `physicalPaired`, `effectiveSignalWord`, `sections11to16Entries`. If
-  `MSDSPage.jsx`'s derivation logic changes, mirror the change in
-  `buildMsdsContext()` too — the two must stay in sync.
-- GHS hazard pictograms are rendered via the `ghsDiamond` Handlebars helper
-  (`helpers/ghs-print.helper.ts`, registered in `handlebars.helpers.ts`),
-  which returns the same inline SVG diamonds as `GHS_PRINT_DIAMOND` in
-  `safteyDataSheet/src/config/ghs.jsx`. Keep the two in sync if a pictogram
-  is added/changed on the frontend.
-- Puppeteer's `headerTemplate`/`footerTemplate` repeat on every PDF page,
-  whereas the frontend's header appears once (normal content flow) and its
-  footer repeats (`position: fixed`) — this is an accepted, minor difference
-  from the print output, not a bug.
-- Because `.tds-print-*`/`.msds-print-*` class names don't collide with any
-  other class in `document.css`, that section is safe to edit without
-  affecting `quotation.hbs`/`batch.hbs`/`coa.hbs`.
+- The old generic elements (gradient title banner, compliance ribbon, meta-table, signature/authorization block) are intentionally **not** rendered for `tds`/`msds`; print doesn't have them either. `coa`, `quotation`, and `batch` still use those shared `document.css` classes normally.
+- The `.ds-print` CSS here is a copy of the frontend block (minus its screen-hiding rule, plus a white-page override because `body` uses the tinted `--c-bg`). Change both copies together.
+- `msds.hbs` needs data the frontend derives client-side. `buildMsdsContext()` in `pdf.service.ts` recomputes it from the same raw `sections` payload: `hStmts` and `pGroupList` (parsed, then split by `splitRunOn()`, then P2–P5 grouped), `isSimpleComposition`, `physicalRows`, `classifications`, `pictogramSummary`, `emergencyPhone` (`firstPhone()`), `ppeBadges` (`ppeCode()`), `effectiveSignalWord` (defaults to WARNING) and `sections11to16Entries`. `buildTdsContext()` does the same for `tds.hbs`: contiguous section numbers (`numFeatures`/`numApplications`/`numSpecs`/`numPackaging`, null when a section is empty), `specRows`, `keyFacts`, `hasSpecs`. If `MSDSPage.jsx`, `docPrint/*` or `docPrint/sheetHelpers.js` change their derivation logic, mirror it here; the helpers live in `helpers/ghs-print.helper.ts`.
+- GHS hazard pictograms are rendered via the `ghsDiamond` Handlebars helper (`helpers/ghs-print.helper.ts`, registered in `handlebars.helpers.ts`), which returns the same inline SVG diamonds as `GHS_PRINT_DIAMOND` in `safteyDataSheet/src/config/ghs.jsx`. `ghsCode`/`ghsLabel` mirror its `GHS_CODES`/`GHS_LABELS`. Keep them in sync if a pictogram is added or changed on the frontend.
+- Puppeteer's `headerTemplate`/`footerTemplate` repeat on every PDF page, whereas the frontend's masthead appears once (normal content flow) and only its `@page` footer repeats. This is an accepted, minor difference from the print output, not a bug.
+- The TDS payload carries an optional `subtitle` (the product's `config/products.js` subtitle) for the identity band; MSDS uses `sections.identification.productType`.
+- Because `ds-print*` class names don't collide with any other class in `document.css`, that section is safe to edit without affecting `quotation.hbs`/`batch.hbs`/`coa.hbs`.
 
 ## Investor Report
 

@@ -1,87 +1,78 @@
 {{!--
-  Mirrors safteyDataSheet/src/pages/Products/TDSPage.jsx's print-only body
-  (the .tds-print-doc block) exactly — same sections, same order, same copy.
-  Header/company letterhead is NOT here; it's rendered as the Puppeteer page
-  header by buildPrintMatchedHeader() in pdf.service.ts, same as the footer.
+  Mirrors safteyDataSheet/src/pages/Products/docPrint/TdsPrintDoc.jsx (the
+  .ds-print markup) — same sections, order, copy and class names. The
+  masthead is NOT here: Puppeteer renders it per page via
+  buildPrintMatchedHeader() in pdf.service.ts, as it does the footer.
+  numFeatures / numApplications / numSpecs / numPackaging / specRows /
+  keyFacts / hasSpecs come from buildTdsContext() (pdf.service.ts).
 --}}
-<div class="document tds-print-doc">
+<div class="document tds-print-doc ds-print">
 
-  {{!-- ═══ PRODUCT DESCRIPTION ═══════════════════════════════════════════════ --}}
-  {{#if description}}
-  <div class="tds-print-section no-break">
-    <div class="tds-print-section-head">Product Description</div>
-    <p class="tds-print-description">{{leadDescription productName description}}</p>
+  <div class="ds-print-identity">
+    <div class="ds-print-identity__main">
+      <span class="ds-print-identity__name">{{productName}}</span>
+      {{#if subtitle}}<span class="ds-print-identity__sub">{{subtitle}}</span>{{/if}}
+      {{#if description}}<p class="ds-print-identity__desc">{{description}}</p>{{/if}}
+      {{#if keyFacts}}
+      <dl class="ds-print-facts">
+        {{#each keyFacts}}<div><dt>{{k}}</dt><dd>{{v}}</dd></div>{{/each}}
+      </dl>
+      {{/if}}
+      <dl class="ds-print-docmeta">
+        {{#if productCode}}<div><dt>Doc no</dt><dd>{{productCode}}</dd></div>{{/if}}
+        {{#if revision}}<div><dt>Revision</dt><dd>{{revision}}</dd></div>{{/if}}
+        {{#if issueDate}}<div><dt>Issued</dt><dd>{{issueDate}}</dd></div>{{/if}}
+        {{#if revisionDate}}<div><dt>Revised</dt><dd>{{revisionDate}}</dd></div>{{/if}}
+      </dl>
+    </div>
   </div>
+
+  {{#if numFeatures}}
+  <section class="ds-print-section">
+    <h2 class="ds-print-section__bar"><span class="ds-print-section__num">{{numFeatures}}</span><span class="ds-print-section__title">Key features &amp; benefits</span></h2>
+    <dl class="ds-print-rows">
+      {{#each sections.features}}<div class="ds-print-row"><dt>{{head}}</dt><dd>{{body}}</dd></div>{{/each}}
+    </dl>
+  </section>
   {{/if}}
 
-  {{!-- ═══ KEY FEATURES & BENEFITS  |  TYPICAL APPLICATIONS ═════════════════ --}}
-  {{#if (or sections.features sections.performance)}}
-  <div class="tds-print-two-col">
-    {{#if sections.features}}
-    <div>
-      <div class="tds-print-section-head">Key Features &amp; Benefits</div>
-      <ul class="tds-print-bullet-list">
-        {{#each sections.features}}
-        <li><strong>{{head}}:</strong> {{body}}</li>
-        {{/each}}
-      </ul>
-    </div>
-    {{/if}}
-    {{#if sections.performance}}
-    <div>
-      <div class="tds-print-section-head">Typical Applications</div>
-      <ul class="tds-print-bullet-list">
-        {{#each sections.performance}}
-        <li><strong>{{label}}:</strong> {{val}}</li>
-        {{/each}}
-      </ul>
-    </div>
-    {{/if}}
-  </div>
+  {{#if numApplications}}
+  <section class="ds-print-section ds-print-section--keep">
+    <h2 class="ds-print-section__bar"><span class="ds-print-section__num">{{numApplications}}</span><span class="ds-print-section__title">Typical applications</span></h2>
+    <dl class="ds-print-rows">
+      {{#each sections.performance}}<div class="ds-print-row"><dt>{{label}}</dt><dd>{{val}}</dd></div>{{/each}}
+    </dl>
+  </section>
   {{/if}}
 
-  {{!-- ═══ TYPICAL TECHNICAL SPECIFICATIONS ═════════════════════════════════ --}}
-  {{#if sections.physicalProperties}}
-  <div class="tds-print-section">
-    <div class="tds-print-section-head">Typical Technical Specifications</div>
-    <table class="tds-print-spec-table">
-      <thead>
-        <tr>
-          <th>Property Parameter</th>
-          <th>Test Method</th>
-          <th>Typical Value Range</th>
-        </tr>
-      </thead>
+  {{#if numSpecs}}
+  <section class="ds-print-section">
+    <h2 class="ds-print-section__bar"><span class="ds-print-section__num">{{numSpecs}}</span><span class="ds-print-section__title">Typical technical specifications</span></h2>
+    <table class="ds-print-table">
+      <thead><tr><th>Property</th><th>Test method</th><th>Typical value</th></tr></thead>
       <tbody>
-        {{#each sections.physicalProperties}}
-        <tr>
-          <td class="tds-spec-prop">{{property}}</td>
-          <td class="tds-spec-method">{{#if method}}{{method}}{{else}}—{{/if}}</td>
-          <td class="tds-spec-value">{{value}}{{#if unit}} {{unit}}{{/if}}</td>
-        </tr>
-        {{/each}}
+        {{#each specRows}}<tr><td>{{property}}</td><td>{{method}}</td><td>{{value}}</td></tr>{{/each}}
       </tbody>
     </table>
-  </div>
+    {{#if sections.safetyNote}}
+    <div class="ds-print-callout"><span class="ds-print-callout__title">Application note</span><p>{{sections.safetyNote}}</p></div>
+    {{/if}}
+  </section>
   {{/if}}
 
-  {{!-- ═══ APPLICATION NOTE CALLOUT ══════════════════════════════════════════ --}}
+  {{#if numPackaging}}
+  <section class="ds-print-section ds-print-section--keep">
+    <h2 class="ds-print-section__bar"><span class="ds-print-section__num">{{numPackaging}}</span><span class="ds-print-section__title">Packaging, storage &amp; safety</span></h2>
+    <dl class="ds-print-rows">
+      {{#each sections.packaging}}<div class="ds-print-row"><dt>{{type}}</dt><dd>Available in {{size}} {{unit}} containers.</dd></div>{{/each}}
+    </dl>
+  </section>
+  {{/if}}
+
+  {{#unless hasSpecs}}
   {{#if sections.safetyNote}}
-  <div class="tds-print-app-note no-break">
-    <strong>Application Note:</strong> {{sections.safetyNote}}
-  </div>
+  <div class="ds-print-callout"><span class="ds-print-callout__title">Application note</span><p>{{sections.safetyNote}}</p></div>
   {{/if}}
-
-  {{!-- ═══ PACKAGING, STORAGE & SAFETY ═══════════════════════════════════════ --}}
-  {{#if sections.packaging}}
-  <div class="tds-print-section no-break">
-    <div class="tds-print-section-head">Packaging, Storage &amp; Safety</div>
-    <ul class="tds-print-bullet-list">
-      {{#each sections.packaging}}
-      <li><strong>{{type}}:</strong> Available in {{size}} {{unit}} containers.</li>
-      {{/each}}
-    </ul>
-  </div>
-  {{/if}}
+  {{/unless}}
 
 </div>

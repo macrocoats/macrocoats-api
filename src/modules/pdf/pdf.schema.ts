@@ -42,6 +42,7 @@ const quotationSchema = z.object({
 const tdsSchema = z.object({
   ...docHeader,
   description: z.string().max(20_000),
+  subtitle:    optText(300),
   sections:    object,
 }).passthrough()
 

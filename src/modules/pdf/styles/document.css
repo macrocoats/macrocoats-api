@@ -1356,391 +1356,332 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   TDS / MSDS — PRINT-MATCHED LAYOUT
-   Ported verbatim (same px values, colors, class names) from
-   safteyDataSheet/src/styles/documents.css .tds-print-* / .msds-print-*
-   classes, so the downloaded PDF mirrors the frontend's window.print()
-   output exactly. Used only by templates/tds.hbs and templates/msds.hbs —
-   the "tds-print-" / "msds-print-" prefix does not collide with any other
-   class in this file, so this section is safe to edit without affecting
-   quotation.hbs / batch.hbs / coa.hbs. Header/footer for these two doc
-   types are NOT here — they're Puppeteer headerTemplate/footerTemplate
-   strings built in pdf.service.ts (buildPrintMatchedHeader/Footer).
+   TDS / MSDS — PRINT-MATCHED LAYOUT (.ds-print)
+   Copy of safteyDataSheet/src/styles/documents.css's ".ds-print" block (same
+   class names, sizes and colours) so Download PDF mirrors window.print().
+   Used only by templates/tds.hbs and templates/msds.hbs — the "ds-print"
+   prefix collides with nothing else in this file. Header/footer for these
+   two doc types are Puppeteer templates in pdf.service.ts
+   (buildPrintMatchedHeader/Footer), not rules here.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-.tds-print-doc {
-  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
-  font-size: 11px;
-  color: #1a1a1a;
+/* PDF only: the shared body background (--c-bg) is tinted; these sheets are white. */
+html:has(.ds-print),
+body:has(.ds-print) {
   background: #fff;
-  line-height: 1.55;
+}
+.ds-print {
+  --ds-ink: #1a1c1f;
+  --ds-ink-2: #3d4248;
+  --ds-muted: #5b6168;
+  --ds-rule: #d8dadd;
+  --ds-rule-soft: #e3e5e8;
+  --ds-bar: #eef0f2;
+  --ds-brand: #1F4E8C;
+  font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--ds-ink);
+  background: #fff;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
-.tds-print-section { margin-bottom: 13px; }
+.ds-print-masthead__company,
+.ds-print-masthead__meta,
+.ds-print-chip,
+.ds-print-docmeta,
+.ds-print-section__num,
+.ds-print-subhead,
+.ds-print-callout__title,
+.ds-print-row.is-code dt,
+.ds-print-list__n,
+.ds-print-ppe__badge,
+.ds-print-pictos__label strong,
+.ds-print-facts dd {
+  font-family: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+}
 
-.tds-print-section-head {
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 0.8px;
-  color: #1a1a1a;
+/* Masthead (page 1 in print; the PDF repeats it as its page header) */
+.ds-print-masthead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--ds-ink);
+}
+.ds-print-masthead__brand { display: flex; flex-direction: column; gap: 2px; }
+.ds-print-masthead__company {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .12em;
   text-transform: uppercase;
-  border-bottom: 2px solid #123A6D;
-  padding-bottom: 3px;
-  margin-bottom: 7px;
-  break-after: avoid-page;
-  page-break-after: avoid;
+  color: var(--ds-brand);
+}
+.ds-print-masthead__title {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -.01em;
+}
+.ds-print-masthead__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--ds-muted);
 }
 
-.tds-print-description {
-  font-size: 11.5px;
-  line-height: 1.7;
-  text-align: justify;
-  margin: 0;
-  color: #1a1a1a;
-}
-.tds-print-description strong {
-  color: #123A6D;
-  background: #eef4fb;
-  border-bottom: 1px solid #e30613;
-  padding: 0 3px 1px;
-  font-weight: 900;
-}
-
-.tds-print-two-col {
+/* Identity band */
+.ds-print-identity {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-  margin-bottom: 13px;
-}
-
-.tds-print-bullet-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-.tds-print-bullet-list li {
-  position: relative;
-  padding-left: 10px;
-  margin-bottom: 7px;
-  font-size: 11px;
-  line-height: 1.5;
-  color: #1a1a1a;
-}
-.tds-print-bullet-list li::before {
-  content: '·';
-  position: absolute;
-  left: 0;
-  top: 0;
-  font-weight: 900;
-  color: #1a1a1a;
-  font-size: 10px;
-  line-height: 1.3;
-}
-
-.tds-print-spec-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.tds-print-spec-table thead tr {
-  border-top: 1.5px solid #123A6D;
-  border-bottom: 1.5px solid #123A6D;
-}
-.tds-print-spec-table thead th {
-  padding: 5px 8px;
-  font-size: 9.5px;
-  font-weight: 800;
-  letter-spacing: 0.5px;
-  color: #1F3A5F;
-  text-align: left;
-  text-transform: uppercase;
-}
-.tds-print-spec-table tbody tr {
-  border-bottom: 0.5px solid #e0e0e0;
-}
-.tds-print-spec-table tbody td {
-  padding: 7px 8px;
-  vertical-align: middle;
-  line-height: 1.4;
-}
-.tds-spec-prop  { font-weight: 700; color: #1F3A5F; font-size: 9.5px; }
-.tds-spec-method { font-family: 'Menlo', 'Monaco', 'Consolas', monospace; color: #444; font-size: 9.5px; }
-.tds-spec-value { font-weight: 700; color: #1a1a1a; font-size: 11px; }
-
-.tds-print-app-note {
-  border-left: 3px solid #1F3A5F;
-  background: #eef2f8;
-  padding: 8px 12px;
-  margin-bottom: 13px;
-  font-size: 11px;
-  color: #1F3A5F;
-  line-height: 1.6;
-}
-
-/* ── MSDS ─────────────────────────────────────────────────────────────────── */
-
-.msds-print-doc {
-  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
-  font-size: 11px;
-  color: #1a1a1a;
-  background: #fff;
-  line-height: 1.5;
-}
-
-.msds-print-section { margin-bottom: 10px; }
-.msds-print-section-head {
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 0.8px;
-  color: #1a1a1a;
-  text-transform: uppercase;
-  border-bottom: 2px solid #123A6D;
-  padding-bottom: 3px;
-  margin-bottom: 6px;
-  break-after: avoid-page;
-  page-break-after: avoid;
-}
-
-.msds-print-kv-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.msds-print-kv-table tr {
-  border-bottom: 0.5px solid #ebebeb;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--ds-rule);
   break-inside: avoid;
 }
-.msds-kv-key {
-  width: 28%;
-  padding: 4px 8px 4px 0;
+.ds-print-identity__main { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.ds-print-identity__name {
+  font-size: 32px;
   font-weight: 700;
-  color: #1F3A5F;
-  font-size: 9.5px;
-  vertical-align: top;
+  line-height: 1;
+  letter-spacing: -.02em;
 }
-.msds-kv-val {
-  padding: 4px 0;
-  font-size: 11px;
-  color: #1a1a1a;
-  vertical-align: top;
-  line-height: 1.6;
-}
-.msds-kv-bold {
-  color: #123A6D;
-  background: #eef4fb;
-  border-left: 3px solid #e30613;
-  padding-left: 6px;
-  font-weight: 900;
-}
-.msds-kv-accent { color: #1F3A5F; font-weight: 700; }
-.msds-kv-danger { color: #b91c1c; }
+.ds-print-identity__sub { font-size: 14px; line-height: 1.45; color: var(--ds-ink-2); }
+.ds-print-identity__desc { margin: 2px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--ds-ink-2); }
 
-.msds-print-bullet-list {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 4px 0;
-}
-.msds-print-bullet-list li {
-  position: relative;
-  padding-left: 10px;
-  margin-bottom: 4px;
-  font-size: 11px;
-  line-height: 1.5;
-  color: #1a1a1a;
-  break-inside: avoid;
-}
-.msds-print-bullet-list li::before {
-  content: '·';
-  position: absolute;
-  left: 0;
-  font-weight: 900;
-  font-size: 10px;
-  line-height: 1.3;
-}
-
-.msds-print-comp-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.msds-print-comp-table thead tr {
-  border-top: 1.5px solid #123A6D;
-  border-bottom: 1.5px solid #123A6D;
-}
-.msds-print-comp-table thead th {
+.ds-print-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.ds-print-chip {
   padding: 4px 8px;
-  font-size: 9.5px;
-  font-weight: 800;
-  letter-spacing: 0.5px;
-  color: #1F3A5F;
-  text-align: left;
+  border: 1px solid var(--ds-ink);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: .06em;
   text-transform: uppercase;
 }
-.msds-print-comp-table tbody tr {
-  border-bottom: 0.5px solid #e0e0e0;
-  break-inside: avoid;
-}
-.msds-print-comp-table tbody td {
-  padding: 5px 8px;
-  font-size: 11px;
-  vertical-align: middle;
-  line-height: 1.4;
-  color: #1a1a1a;
-}
-.msds-comp-name { font-weight: 700; }
+.ds-print-chip--solid { background: var(--ds-ink); color: #fff; font-weight: 600; }
 
-.msds-print-callout {
-  border-left: 3px solid #1F3A5F;
-  background: #eef2f8;
-  padding: 6px 10px;
-  margin-top: 7px;
-  font-size: 11px;
-  color: #1F3A5F;
-  line-height: 1.6;
-  break-inside: avoid;
-}
-.msds-print-callout-danger {
-  border-left: 3px solid #b91c1c !important;
-  background: #fef2f2 !important;
-  color: #b91c1c !important;
-  break-inside: avoid;
-}
-.msds-callout-head {
-  font-weight: 800;
-  margin-bottom: 3px;
-  font-size: 9.5px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.msds-print-note {
-  font-size: 9px;
-  font-style: italic;
-  color: #555;
-  margin-top: 5px;
-}
-
-.msds-print-phys-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.msds-print-phys-table tr {
-  border-bottom: 0.5px solid #ebebeb;
-  break-inside: avoid;
-}
-.msds-phys-key {
-  width: 21%;
-  padding: 4px 8px 4px 0;
-  font-weight: 700;
-  font-size: 9.5px;
-  color: #1F3A5F;
-  vertical-align: top;
-}
-.msds-phys-val {
-  width: 29%;
-  padding: 4px 10px 4px 0;
-  font-size: 11px;
-  color: #1a1a1a;
-  vertical-align: top;
-  border-right: 0.5px solid #e0e0e0;
-}
-.msds-phys-val-last {
-  border-right: none;
-  padding-left: 10px;
-}
-
-.msds-print-para {
-  font-size: 11px;
-  line-height: 1.7;
-  color: #1a1a1a;
-  margin: 0;
-  text-align: justify;
-}
-
-/* ── Section 2 hazard card ───────────────────────────────────────────────── */
-.msds-hazard-card {
-  border: 1px solid #e6c7c7;
-  border-left: 4px solid #b91c1c;
-  border-radius: 4px;
-  background: #fffafa;
-  padding: 9px 12px 10px;
-}
-
-.msds-hazard-signal {
-  display: inline-block;
-  padding: 4px 9px;
-  border-radius: 2px;
-  background: #b91c1c;
-  font-size: 15px;
-  font-weight: 900;
-  color: #ffffff;
-  margin-bottom: 9px;
-  letter-spacing: 0.8px;
-}
-
-.msds-hazard-pictos {
+.ds-print-docmeta {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 9px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #efd4d4;
+  gap: 4px 16px;
+  margin: 4px 0 0;
+  font-size: 9.5px;
+  color: var(--ds-muted);
 }
-.msds-hazard-picto {
+.ds-print-docmeta div { display: flex; gap: 5px; }
+.ds-print-docmeta dt { text-transform: uppercase; letter-spacing: .06em; }
+.ds-print-docmeta dd { margin: 0; color: var(--ds-ink); font-weight: 500; }
+
+.ds-print-facts {
   display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin: 6px 0 0;
+}
+.ds-print-facts div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 10px;
+  border-left: 2px solid var(--ds-ink);
+}
+.ds-print-facts dt { font-size: 10px; color: var(--ds-muted); }
+.ds-print-facts dd { margin: 0; font-size: 13px; font-weight: 600; }
+
+.ds-print-pictos {
+  display: flex;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ds-print-pictos li { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.ds-print-pictos__icon svg { display: block; width: 64px; height: 64px; }
+.ds-print-pictos__label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 9.5px;
+  line-height: 1.3;
+  color: var(--ds-muted);
+  text-align: center;
+}
+.ds-print-pictos__label strong { color: var(--ds-ink); font-weight: 600; }
+
+/* Sections */
+.ds-print-section { display: block; margin-top: 14px; }
+
+/* ── Page breaks ──────────────────────────────────────────────────────────
+   Sections are plain blocks (Chrome ignores break-after on flex children).
+   - Short sections (--keep) move to the next page whole rather than
+     stranding a row or two there.
+   - Long sections (hazards, composition, specs, features) flow, but a
+     heading always travels with its first row, sub-headings with their
+     rows, and no single row, callout or PPE strip is split. */
+.ds-print-section--keep { break-inside: avoid; page-break-inside: avoid; }
+.ds-print-section__bar,
+.ds-print-subhead { break-after: avoid; page-break-after: avoid; }
+.ds-print-section__bar + *,
+.ds-print-subhead + * { break-before: avoid; page-break-before: avoid; }
+.ds-print-section__bar + .ds-print-rows > .ds-print-row:first-child,
+.ds-print-subhead + .ds-print-rows > .ds-print-row:first-child,
+.ds-print-section__bar + .ds-print-table thead,
+.ds-print-section__bar + .ds-print-list > li:first-child { break-before: avoid; page-break-before: avoid; }
+.ds-print-row,
+.ds-print-list li,
+.ds-print-table tr,
+.ds-print-callout,
+.ds-print-ppe,
+.ds-print-identity,
+.ds-print-facts { break-inside: avoid; page-break-inside: avoid; }
+.ds-print-callout,
+.ds-print-ppe { break-before: avoid; page-break-before: avoid; }
+/* No lone trailing entry: the last two rows of a list or table travel together. */
+.ds-print-rows > .ds-print-row:last-child,
+.ds-print-list > li:last-child,
+.ds-print-table tbody tr:nth-last-child(-n+2) { break-before: avoid; page-break-before: avoid; }
+.ds-print p { orphans: 3; widows: 3; }
+.ds-print-section__bar {
+  display: flex;
+  align-items: stretch;
+  margin: 0;
+  background: var(--ds-bar);
+  border-top: 1px solid var(--ds-ink);
+  break-after: avoid;
+}
+.ds-print-section__num {
+  min-width: 22px;
+  padding: 5px 8px;
+  background: var(--ds-ink);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+.ds-print-section__title {
+  padding: 5px 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.ds-print-rows { margin: 0; }
+.ds-print-row {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr);
+  gap: 16px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--ds-rule-soft);
+  break-inside: avoid;
+}
+.ds-print-row dt { font-size: 11.5px; font-weight: 500; color: var(--ds-muted); }
+.ds-print-row dd { margin: 0; font-size: 12.5px; }
+.ds-print-row.is-code dt { color: var(--ds-ink); font-weight: 600; }
+
+.ds-print-subhead {
+  margin: 8px 0 0;
+  padding-bottom: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ds-brand);
+  border-bottom: 1px solid var(--ds-rule);
+  break-after: avoid;
+}
+
+.ds-print-table { width: 100%; border-collapse: collapse; }
+.ds-print-table th {
+  padding: 5px 8px 4px 0;
+  font-family: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-align: left;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+  border-bottom: 1px solid var(--ds-ink);
+}
+.ds-print-table td {
+  padding: 5px 8px 5px 0;
+  font-size: 12px;
+  vertical-align: top;
+  border-bottom: 1px solid var(--ds-rule-soft);
+}
+.ds-print-table td:first-child { font-weight: 500; }
+.ds-print-table tr { break-inside: avoid; }
+
+.ds-print-list { margin: 0; padding: 0; list-style: none; }
+.ds-print-list li {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 10px;
+  padding: 5px 0;
+  font-size: 12.5px;
+  border-bottom: 1px solid var(--ds-rule-soft);
+  break-inside: avoid;
+}
+.ds-print-list__n { font-size: 11px; font-weight: 600; color: var(--ds-brand); }
+
+.ds-print-callout {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+  padding: 6px 10px;
+  border: 1.5px solid var(--ds-ink);
+  break-inside: avoid;
+}
+.ds-print-callout__title {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.7;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.ds-print-callout p { margin: 0; font-size: 12.5px; line-height: 1.5; }
+
+.ds-print-ppe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  margin: 0;
+  padding: 8px 0 0;
+  list-style: none;
+}
+.ds-print-ppe li { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; }
+.ds-print-ppe__badge {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--ds-brand);
+  color: #fff;
+  font-size: 8px;
+  font-weight: 600;
 }
 
-.msds-hazard-group {
-  margin-bottom: 7px;
-  padding: 6px 8px;
-  border: 1px solid #edf1f5;
-  background: #ffffff;
-  break-inside: avoid;
-}
-.msds-hazard-group-head {
-  font-size: 9px;
-  font-weight: 900;
-  color: #123A6D;
-  margin-bottom: 4px;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.msds-hazard-stmts {
-  list-style: none;
-  padding: 0;
+.ds-print-note {
   margin: 0;
+  padding-top: 6px;
+  font-size: 11.5px;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--ds-muted);
 }
-.msds-hazard-stmts li {
-  position: relative;
-  padding-left: 10px;
-  margin-bottom: 4px;
-  font-size: 11px;
-  line-height: 1.55;
-  color: #1a1a1a;
-  break-inside: avoid;
-}
-.msds-hazard-stmts li::before {
-  content: '•';
-  position: absolute;
-  left: 0;
-  font-size: 9px;
-  line-height: 1.4;
-  color: #1a1a1a;
-}
-.msds-hazard-stmts li strong { color: #123A6D; font-weight: 800; }
-
-/* ── Print overrides (tds/msds print-matched layout) ─────────────────────── */
-@media print {
-  /* NOTE: .tds-print-section/.msds-print-section themselves are intentionally
-     NOT break-inside:avoid here — tds.hbs/msds.hbs opt individual sections
-     into atomic behavior via the .no-break class (small sections only; the
-     large ones — hazard identification, composition, spec tables — are meant
-     to flow across a page break). A blanket avoid on every section used to
-     force those large sections wholesale onto the next page, leaving the
-     remainder of the previous page blank. */
-  .tds-print-spec-table tbody tr, .msds-print-comp-table tbody tr,
-  .msds-print-kv-table tr, .msds-print-phys-table tr { break-inside: avoid; }
-}
+.ds-print-para { margin: 0; padding: 6px 0; font-size: 12.5px; line-height: 1.5; border-bottom: 1px solid var(--ds-rule-soft); }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    INVESTOR REPORT (investor-report.hbs) — reuses .doc-table/.sec-title/
