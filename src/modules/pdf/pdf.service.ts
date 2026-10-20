@@ -667,11 +667,11 @@ function buildHeaderTemplate(
   .hb { display: flex; justify-content: space-between; align-items: flex-start; padding: 3mm 14mm 2.5mm 14mm; gap: 4mm; }
   .h-left { flex: 1; min-width: 0; }
   .h-company { font-size: 13pt; font-weight: 800; color: #123A6D; line-height: 1.1; letter-spacing: -.02em; }
-  .h-tagline { font-size: 6.5pt; font-weight: 700; color: #5C6470; margin-top: 0.5mm; text-transform: uppercase; letter-spacing: .05em; }
-  .h-addr { font-size: 6.5pt; color: #5C6470; margin-top: 1.5mm; line-height: 1.5; }
-  .h-subdoc  { font-size: 7pt; color: #2D4D7A; margin-top: 1mm; font-weight: 700; letter-spacing: .02em; }
+  .h-tagline { font-size: 7.5pt; font-weight: 700; color: #5C6470; margin-top: 0.5mm; text-transform: uppercase; letter-spacing: .05em; }
+  .h-addr { font-size: 7.5pt; color: #5C6470; margin-top: 1.5mm; line-height: 1.5; }
+  .h-subdoc  { font-size: 7.5pt; color: #2D4D7A; margin-top: 1mm; font-weight: 700; letter-spacing: .02em; }
   .h-right { text-align: right; flex-shrink: 0; border-left: 1px solid #C5D3E8; padding-left: 3mm; }
-  .h-row { font-size: 6.5pt; line-height: 1.65; color: #5C6470; }
+  .h-row { font-size: 7.5pt; line-height: 1.65; color: #5C6470; }
   .h-row b { color: #123A6D; font-weight: 700; }
   .h-rule  { height: 2px; background: #123A6D; margin: 0 14mm; -webkit-print-color-adjust: exact !important; }
 </style>
@@ -752,11 +752,11 @@ function buildFooterTemplate(
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Inter', Arial, 'Helvetica Neue', Helvetica, sans-serif; }
   .fw { width: 100%; padding: 0 14mm; }
-  .f-rule { height: 0.5px; background: #ccc; margin-bottom: 1mm; }
+  .f-rule { height: 0.5px; background: #b8bec3; margin-bottom: 1mm; }
   .fb { display: flex; justify-content: space-between; align-items: baseline; }
-  .f-left { font-size: 7.5pt; color: #888; letter-spacing: .02em; }
+  .f-left { font-size: 7.5pt; color: #4f5a64; letter-spacing: .02em; }
   .f-left b { color: #5C6470; }
-  .f-right { font-size: 7.5pt; color: #888; }
+  .f-right { font-size: 7.5pt; color: #4f5a64; }
 </style>
 <div class="fw">
   <div class="f-rule"></div>
@@ -774,12 +774,12 @@ function buildFooterTemplate(
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Inter', Arial, 'Helvetica Neue', Helvetica, sans-serif; }
   .fw { width: 100%; padding: 0 14mm; }
-  .f-rule { height: 0.5px; background: #ccc; margin-bottom: 1mm; }
+  .f-rule { height: 0.5px; background: #b8bec3; margin-bottom: 1mm; }
   .fb { display: flex; justify-content: space-between; align-items: baseline; }
-  .f-left { font-size: 7.5pt; color: #888; letter-spacing: .02em; }
+  .f-left { font-size: 7.5pt; color: #4f5a64; letter-spacing: .02em; }
   .f-left b { color: #123A6D; }
-  .f-right { font-size: 7.5pt; color: #888; text-align: right; }
-  .f-tag { font-size: 6.5pt; color: #A6ADB4; letter-spacing: .03em; margin-top: 0.5mm; text-transform: uppercase; }
+  .f-right { font-size: 7.5pt; color: #4f5a64; text-align: right; }
+  .f-tag { font-size: 7.5pt; color: #66727d; letter-spacing: .03em; margin-top: 0.5mm; text-transform: uppercase; }
 </style>
 <div class="fw">
   <div class="f-rule"></div>
@@ -846,12 +846,12 @@ function buildPrintMatchedFooter(docType: DocType, productName: string, docNumbe
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   .fw { width: 100%; padding: 0 14mm; }
-  .f-rule { height: 0.5px; background: #ccc; margin-bottom: 4px; }
+  .f-rule { height: 0.5px; background: #b8bec3; margin-bottom: 4px; }
   .fb { display: flex; justify-content: space-between; }
-  .f-row { font-size: 7.5px; color: #888; letter-spacing: 0.3px; text-transform: uppercase; }
+  .f-row { font-size: 9px; color: #4f5a64; letter-spacing: 0.3px; text-transform: uppercase; }
   .f-right { min-width: 80px; text-align: right; }
   .f-page { display: block; margin-top: 1px; color: #123A6D; font-weight: 800; }
-  .f-tag { margin-top: 2px; color: #aaa; font-size: 7px; text-transform: uppercase; letter-spacing: 0.3px; }
+  .f-tag { margin-top: 2px; color: #66727d; font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.3px; }
 </style>
 <div class="fw">
   <div class="f-rule"></div>
@@ -883,7 +883,7 @@ function buildExecutiveHeader(logoDataUri: string | null, periodLabel: string): 
   .h-tagline { font-size: 7.5pt; font-weight: 700; color: #5C6470; margin-top: 0.5mm; text-transform: uppercase; letter-spacing: .06em; }
   .h-right { text-align: right; flex-shrink: 0; border-left: 1px solid #C5D3E8; padding-left: 3mm; }
   .h-doc-title { font-size: 11pt; font-weight: 800; color: #1a1a1a; letter-spacing: 0.02em; }
-  .h-row { font-size: 7pt; color: #5C6470; margin-top: 1mm; }
+  .h-row { font-size: 7.5pt; color: #5C6470; margin-top: 1mm; }
   .h-rule { height: 2px; background: #123A6D; margin: 0 16mm; -webkit-print-color-adjust: exact !important; }
 </style>
 <div class="hw">
@@ -909,12 +909,12 @@ function buildExecutiveFooter(): string {
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Inter', Arial, 'Helvetica Neue', Helvetica, sans-serif; }
   .fw { width: 100%; padding: 0 16mm; }
-  .f-rule { height: 0.5px; background: #ccc; margin-bottom: 1mm; }
+  .f-rule { height: 0.5px; background: #b8bec3; margin-bottom: 1mm; }
   .fb { display: flex; justify-content: space-between; align-items: baseline; }
-  .f-left { font-size: 7.5pt; color: #888; letter-spacing: .02em; }
+  .f-left { font-size: 7.5pt; color: #4f5a64; letter-spacing: .02em; }
   .f-left b { color: #123A6D; }
-  .f-right { font-size: 7.5pt; color: #888; }
-  .f-tag { margin-top: 0.5mm; color: #A6ADB4; font-size: 6.5pt; text-transform: uppercase; letter-spacing: .03em; }
+  .f-right { font-size: 7.5pt; color: #4f5a64; }
+  .f-tag { margin-top: 0.5mm; color: #66727d; font-size: 7.5pt; text-transform: uppercase; letter-spacing: .03em; }
 </style>
 <div class="fw">
   <div class="f-rule"></div>
@@ -952,7 +952,7 @@ function buildLetterheadHeader(logoDataUri: string | null): string {
   .h-left { flex: 1; min-width: 0; border-left: 1px solid #C5D3E8; padding-left: 4mm; }
   .h-company { font-size: 16pt; font-weight: 800; color: #123A6D; line-height: 1.1; letter-spacing: -.02em; }
   .h-tagline { font-size: 8.5pt; font-weight: 700; color: #5C6470; margin-top: 0.5mm; text-transform: uppercase; letter-spacing: .06em; }
-  .h-addr { font-size: 7pt; color: #5C6470; margin-top: 1.5mm; line-height: 1.5; }
+  .h-addr { font-size: 7.5pt; color: #5C6470; margin-top: 1.5mm; line-height: 1.5; }
   .h-right { text-align: right; flex-shrink: 0; border-left: 1px solid #C5D3E8; padding-left: 3mm; }
   .h-row { font-size: 7.5pt; line-height: 1.6; color: #5C6470; }
   .h-row b { color: #123A6D; font-weight: 700; }
@@ -984,11 +984,11 @@ function buildLetterheadFooter(): string {
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Inter', Arial, 'Helvetica Neue', Helvetica, sans-serif; }
   .fw { width: 100%; padding: 0 14mm; }
-  .f-rule { height: 0.5px; background: #ccc; margin-bottom: 1mm; }
+  .f-rule { height: 0.5px; background: #b8bec3; margin-bottom: 1mm; }
   .fb { display: flex; justify-content: space-between; align-items: baseline; }
-  .f-left { font-size: 7.5pt; color: #888; letter-spacing: .02em; }
+  .f-left { font-size: 7.5pt; color: #4f5a64; letter-spacing: .02em; }
   .f-left b { color: #123A6D; }
-  .f-right { font-size: 7.5pt; color: #888; text-align: right; }
+  .f-right { font-size: 7.5pt; color: #4f5a64; text-align: right; }
 </style>
 <div class="fw">
   <div class="f-rule"></div>

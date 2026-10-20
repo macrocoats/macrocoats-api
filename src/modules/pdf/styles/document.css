@@ -31,7 +31,7 @@
   /* ── Neutral ── */
   --c-text:        #1A1A2E;   /* primary body text                          */
   --c-muted:       #5C6470;   /* secondary / muted text                     */
-  --c-light:       #8A9099;   /* tertiary text                              */
+  --c-light:       #66727D;   /* tertiary text — ≥4.5:1 on white for print  */
   --c-white:       #FFFFFF;
 
   /* ── Borders ── */
@@ -58,7 +58,7 @@
   --fs-xl:   14pt;
   --fs-sm:   9pt;
   --fs-xs:   8pt;
-  --fs-xxs:  7pt;
+  --fs-xxs:  7.5pt;
   --lh:      1.55;
 }
 
@@ -835,7 +835,7 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
   align-items: center;
   justify-content: center;
   font-family: var(--font-table);
-  font-size: 6.5pt;
+  font-size: 7.5pt;
   font-weight: 700;
   letter-spacing: .05em;
   color: var(--c-accent);
@@ -1611,7 +1611,7 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
 }
 
 .msds-print-note {
-  font-size: 8.5px;
+  font-size: 9px;
   font-style: italic;
   color: #555;
   margin-top: 5px;
@@ -1697,7 +1697,7 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
   break-inside: avoid;
 }
 .msds-hazard-group-head {
-  font-size: 8.5px;
+  font-size: 9px;
   font-weight: 900;
   color: #123A6D;
   margin-bottom: 4px;
@@ -1902,7 +1902,7 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
 .ir-health-breakdown__row { display: flex; align-items: center; gap: 2mm; }
 .ir-health-breakdown__label {
   flex: 0 0 26mm;
-  font-size: 6.5pt;
+  font-size: 7.5pt;
   color: var(--c-muted);
   white-space: nowrap;
   overflow: hidden;
@@ -1920,7 +1920,7 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
 .ir-health-breakdown__bar.ir-band-warn   { background: var(--c-warn); }
 .ir-health-breakdown__bar.ir-band-bad    { background: var(--c-fail); }
 .ir-health-breakdown__bar.ir-band-nodata { background: var(--c-light); }
-.ir-health-breakdown__score { flex: 0 0 12mm; text-align: right; font-family: var(--font-mono); font-size: 6.5pt; font-weight: 700; color: var(--c-text); }
+.ir-health-breakdown__score { flex: 0 0 12mm; text-align: right; font-family: var(--font-mono); font-size: 7.5pt; font-weight: 700; color: var(--c-text); }
 
 .ir-trend-svg { display: block; font-family: var(--font-table); }
 
