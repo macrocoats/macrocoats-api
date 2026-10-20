@@ -649,6 +649,17 @@ const CORRUCUT_500_WDRPO_COMPONENTS = [
   { materialName: 'Vaseline',                     percentage: 6.0,  unit: 'Kg' as const },  //  24 kg — white petroleum jelly
 ]
 
+/**
+ * CORRUCUT 500 — MTO Based alternate formulation supplied from the formulation
+ * editor. Zero-percent Exxol D60 and Exxol 32D rows are intentionally omitted.
+ */
+const CORRUCUT_500_MTO_BASED_COMPONENTS = [
+  { materialName: 'Mineral Turpentine Oil (MTO)', percentage: 55.0, unit: 'L'  as const },
+  { materialName: 'Light Paraffinic Mineral Oil', percentage: 26.0, unit: 'L'  as const },
+  { materialName: 'Calcium Petroleum Sulfonate',  percentage: 13.0, unit: 'Kg' as const },
+  { materialName: 'Vaseline',                     percentage: 6.0,  unit: 'Kg' as const },
+]
+
 /* ── TDS overrides — CORRUCUT 500 Water-Displacing RPO ─────────────────────── */
 
 const TDS_OVERRIDES_CORRUCUT_500_WDRPO = {
@@ -1274,6 +1285,43 @@ export async function seedFormulationVariants() {
       )
 
       console.log(`   ✅ Created Water-Displacing RPO variant for CORRUCUT 500 (id: ${corrucut500WdrpoVariant.id})`)
+    }
+
+    const CORRUCUT_500_MTO_BASED_NAME = 'MTO Based'
+    const [existingCorrucut500MtoBased] = await db
+      .select()
+      .from(productFormulationVariants)
+      .where(
+        and(
+          eq(productFormulationVariants.productKey, 'corrucut-500'),
+          eq(productFormulationVariants.variantName, CORRUCUT_500_MTO_BASED_NAME),
+        ),
+      )
+
+    if (existingCorrucut500MtoBased) {
+      console.log(`   ↩️  MTO Based variant for CORRUCUT 500 already exists (id: ${existingCorrucut500MtoBased.id})`)
+    } else {
+      const [corrucut500MtoBasedVariant] = await db
+        .insert(productFormulationVariants)
+        .values({
+          productKey:  'corrucut-500',
+          companyId:   null,
+          variantName: CORRUCUT_500_MTO_BASED_NAME,
+          isDefault:   false,
+        })
+        .returning()
+
+      await db.insert(formulationVariantComponents).values(
+        CORRUCUT_500_MTO_BASED_COMPONENTS.map((c, i) => ({
+          variantId:    corrucut500MtoBasedVariant.id,
+          materialName: c.materialName,
+          percentage:   String(c.percentage),
+          unit:         c.unit,
+          sortOrder:    i,
+        })),
+      )
+
+      console.log(`   ✅ Created MTO Based variant for CORRUCUT 500 (id: ${corrucut500MtoBasedVariant.id})`)
     }
   }
 }
