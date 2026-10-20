@@ -46,8 +46,8 @@ const UPDATES: Entry[] = [
   { dbName: 'Methyl Oleate',                     qty: 34,   unit: 'Kg' },
   { dbName: 'Oleic Acid',                        qty: 42.8, unit: 'Kg' },
   { dbName: 'IPA (Isopropyl Alcohol)',            qty: 270,  unit: 'L'  },
-  // Exxol 145 D → EXXSOL D145 (same product, normalised name)
-  { dbName: 'EXXSOL D145',                       qty: 50,   unit: 'Kg', note: 'input: Exxol 145 D' },
+  // Exxol 145 D → Exxol D145 (same product, normalised name)
+  { dbName: 'Exxol D145',                      qty: 50,   unit: 'Kg', note: 'input: Exxol 145 D' },
   { dbName: 'Exxol D60',                         qty: 50,   unit: 'Kg' },
 ]
 

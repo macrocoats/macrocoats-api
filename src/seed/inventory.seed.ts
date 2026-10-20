@@ -65,7 +65,7 @@ const STOCK_UPDATE: Record<string, { stock: string; stockQty: string }> = {
   'TAP 234':                            { stock: '25 Kg',   stockQty: '25'   },
   'TAP 4554':                           { stock: '28 Kg',   stockQty: '28'   },
   'Exxol 32D':                          { stock: '50 Kg',   stockQty: '50'   },
-  'EXXSOL D145':                        { stock: '50 Kg',   stockQty: '50'   },
+  'Exxol D145':                         { stock: '50 Kg',   stockQty: '50'   },
   'Exxol D60':                          { stock: '50 Kg',   stockQty: '50'   },
   'TAP 4500':                           { stock: '80 Kg',   stockQty: '80'   },
   'TAP 363':                            { stock: '28 Kg',   stockQty: '28'   },
@@ -74,8 +74,8 @@ const STOCK_UPDATE: Record<string, { stock: string; stockQty: string }> = {
 export const DEFAULT_INVENTORY = [
   // ── Solvents & Oils ──────────────────────────────────────────────────────────
   { material: 'Exxol D60',                          unit: 'L'  as const, price: '120', sortOrder: 1  },
-  { material: 'EXXSOL D80',                         unit: 'L'  as const, price: '130', sortOrder: 2  },
-  { material: 'EXXSOL D145',                        unit: 'L'  as const, price: '140', sortOrder: 3  },
+  { material: 'Exxol D80',                          unit: 'L'  as const, price: '130', sortOrder: 2  },
+  { material: 'Exxol D145',                         unit: 'L'  as const, price: '140', sortOrder: 3  },
   { material: 'Sodium Petroleum Sulfonate',          unit: 'L'  as const, price: '220', sortOrder: 4  },
   { material: 'Calcium Petroleum Sulfonate',         unit: 'L'  as const, price: '275', sortOrder: 5  },
   { material: 'Methyl Oleate',                      unit: 'L'  as const, price: '120', sortOrder: 6  },
