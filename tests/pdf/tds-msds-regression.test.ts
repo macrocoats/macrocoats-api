@@ -128,30 +128,16 @@ describe('Print text color regression', () => {
     return 0.2126 * r + 0.7152 * g + 0.0722 * b // relative brightness; lower = darker
   }
 
-  const ACCENT_SELECTOR = /-callout|-app-note|-danger|-warning/
-
-  it('.tds-print-*/.msds-print-* body/data text stays at #1a1a1a or darker', async () => {
+  it('the shared datasheet primary ink stays print-dark (#202020 or darker)', async () => {
     const cssPath = path.join(__dirname, '../../src/modules/pdf/styles/document.css')
     const css = await fs.readFile(cssPath, 'utf-8')
 
-    const printMatchedBlocks = css.match(/\.(?:tds|msds)-print-[\w-]+(?:,\s*\.(?:tds|msds)-print-[\w-]+)*\s*\{[^}]*\}/g) ?? []
-    expect(printMatchedBlocks.length, 'expected to find .tds-print-*/.msds-print-* rule blocks in document.css').toBeGreaterThan(0)
-
-    const maxAllowedLuminance = relativeLuminance('#1a1a1a')
-    const tooLight: string[] = []
-
-    for (const block of printMatchedBlocks) {
-      const selector = block.slice(0, block.indexOf('{')).trim()
-      if (ACCENT_SELECTOR.test(selector)) continue // deliberately brand-colored, not body/data text
-
-      const match = block.match(/color:\s*(#[0-9a-fA-F]{6})\s*;/)
-      if (!match) continue
-      const hex = match[1]
-      if (relativeLuminance(hex) > maxAllowedLuminance + 1) { // +1 tolerance for float rounding
-        tooLight.push(`${selector} → ${hex}`)
-      }
-    }
-
-    expect(tooLight, `Body/data text color too light for print (must be #1a1a1a or darker):\n${tooLight.join('\n')}`).toEqual([])
+    const datasheetBlock = css.match(/\.ds-print\s*\{[^}]*\}/)?.[0]
+    expect(datasheetBlock, 'expected to find the shared .ds-print rule block in document.css').toBeDefined()
+    const primaryInk = datasheetBlock?.match(/--ds-ink:\s*(#[0-9a-fA-F]{6})\s*;/)?.[1]
+    expect(primaryInk, 'expected .ds-print to define --ds-ink').toBeDefined()
+    const maxAllowedLuminance = relativeLuminance('#202020')
+    expect(relativeLuminance(primaryInk!), `Primary print ink ${primaryInk} is too light (must be #202020 or darker)`)
+      .toBeLessThanOrEqual(maxAllowedLuminance + 1) // +1 tolerance for float rounding
   })
 })
