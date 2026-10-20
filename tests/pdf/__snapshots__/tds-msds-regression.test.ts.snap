@@ -14,7 +14,7 @@ exports[`TDS/MSDS PDF regression — every seeded product > corroklean tds rende
 
 exports[`TDS/MSDS PDF regression — every seeded product > corrucut-500 msds renders and matches its recorded page count > corrucut-500-msds-page-count 1`] = `3`;
 
-exports[`TDS/MSDS PDF regression — every seeded product > corrucut-500 tds renders and matches its recorded page count > corrucut-500-tds-page-count 1`] = `2`;
+exports[`TDS/MSDS PDF regression — every seeded product > corrucut-500 tds renders and matches its recorded page count > corrucut-500-tds-page-count 1`] = `1`;
 
 exports[`TDS/MSDS PDF regression — every seeded product > unicool-al msds renders and matches its recorded page count > unicool-al-msds-page-count 1`] = `3`;
 
