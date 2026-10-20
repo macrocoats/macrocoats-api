@@ -37,9 +37,9 @@ const TDS_OVERRIDES_PEG_GLYCOL = {
   ],
   composition: [
     { name: 'Deionised Water',     function: 'Primary carrier',                    percent: '> 90%', compat: 'All substrates' },
-    { name: 'Propylene Glycol',    function: 'Co-solvent and humectant',            percent: '1 – 3%', compat: 'Metals, plastics' },
-    { name: 'PEG 400',             function: 'Viscosity modifier and wetting aid', percent: '< 1%',   compat: 'Metals, plastics' },
-    { name: 'TEA',                 function: 'pH regulator (mild alkalinity)',     percent: '< 1%',   compat: 'Metals, glass' },
+    { name: 'Co-solvent',    function: 'Co-solvent and humectant',            percent: '1 – 3%', compat: 'Metals, plastics' },
+    { name: 'Viscosity modifier',             function: 'Viscosity modifier and wetting aid', percent: '< 1%',   compat: 'Metals, plastics' },
+    { name: 'pH regulator',                 function: 'pH regulator (mild alkalinity)',     percent: '< 1%',   compat: 'Metals, glass' },
     { name: 'Non-ionic surfactant', function: 'Wetting and degreasing aid',        percent: '< 1%',   compat: 'All substrates' },
   ],
   performance: [
@@ -62,8 +62,8 @@ const TDS_OVERRIDES_ALCOHOL_PRECISION = {
   ],
   composition: [
     { name: 'Deionised Water',          function: 'Primary carrier',           percent: '~ 85%',   compat: 'All substrates' },
-    { name: 'Ethanol',                  function: 'Co-solvent, fast drying',   percent: '10%',     compat: 'Metals, PCBs' },
-    { name: 'Isopropyl Alcohol (IPA)',  function: 'Co-solvent, degreasing',    percent: '5%',      compat: 'Metals, PCBs' },
+    { name: 'Volatile co-solvent',                  function: 'Co-solvent, fast drying',   percent: '10%',     compat: 'Metals, PCBs' },
+    { name: 'Volatile solvent',  function: 'Co-solvent, degreasing',    percent: '5%',      compat: 'Metals, PCBs' },
     { name: 'Non-ionic surfactant',     function: 'Wetting aid',               percent: '< 0.1%',  compat: 'All substrates' },
     { name: 'pH regulator',             function: 'Mild alkalinity buffer',    percent: '< 0.1%',  compat: 'All substrates' },
   ],
@@ -78,7 +78,7 @@ const TDS_OVERRIDES_ALCOHOL_PRECISION = {
 const TDS_OVERRIDES_HIGH_IPA = {
   physicalProperties: [
     { property: 'Appearance',             value: 'Clear, colourless liquid', unit: '—',    method: 'Visual' },
-    { property: 'Odour',                  value: 'Strong IPA / alcohol',     unit: '—',    method: '—' },
+    { property: 'Odour',                  value: 'Strong alcohol',     unit: '—',    method: '—' },
     { property: 'Flash Point',            value: '26 – 38',                   unit: '°C',   method: 'Pensky-Martens' },
     { property: 'Density',                value: '0.90 – 0.94',               unit: 'g/mL', method: 'ISO 2811' },
     { property: 'Evaporation Rate',       value: 'Fast',                      unit: '—',    method: 'vs diethyl ether = 1' },
@@ -87,7 +87,7 @@ const TDS_OVERRIDES_HIGH_IPA = {
   ],
   composition: [
     { name: 'Deionised Water',          function: 'Primary carrier',               percent: '~ 80%',   compat: 'All substrates' },
-    { name: 'Isopropyl Alcohol (IPA)',  function: 'Primary solvent, fast drying',  percent: '20%',     compat: 'Metals, PCBs' },
+    { name: 'Volatile solvent',  function: 'Primary solvent, fast drying',  percent: '20%',     compat: 'Metals, PCBs' },
     { name: 'Non-ionic surfactant',     function: 'Wetting aid',                   percent: '< 0.1%',  compat: 'All substrates' },
     { name: 'pH regulator',             function: 'Mild alkalinity buffer',        percent: '< 0.1%',  compat: 'All substrates' },
   ],
@@ -96,7 +96,7 @@ const TDS_OVERRIDES_HIGH_IPA = {
     { label: 'Dry time',               val: '15 – 40 s (ambient)' },
     { label: 'Aluminium compatibility', val: 'No staining or etching at ambient' },
   ],
-  safetyNote: 'Flammable liquid — flash point 26 – 38 °C. High IPA content — keep away from all ignition sources. Use only in well-ventilated areas. Refer to SDS-UCL-001.',
+  safetyNote: 'Flammable liquid — flash point 26 – 38 °C. High volatile-solvent content — keep away from all ignition sources. Use only in well-ventilated areas. Refer to SDS-UCL-001.',
 }
 
 const TDS_OVERRIDES_PGME_ENHANCED = {
@@ -111,9 +111,9 @@ const TDS_OVERRIDES_PGME_ENHANCED = {
   ],
   composition: [
     { name: 'Deionised Water',                       function: 'Primary carrier and cooling medium',                                    percent: '~ 82%', compat: 'All substrates' },
-    { name: 'Isopropyl Alcohol (IPA)',               function: 'Fast evaporation, cooling, improved drying',                            percent: '15%',   compat: 'Metals, aluminium' },
-    { name: 'Propylene Glycol',                      function: 'Lubricity, corrosion protection, evaporation control',                  percent: '~ 2%',  compat: 'Metals, plastics' },
-    { name: 'Propylene Glycol Methyl Ether (PGME)',  function: 'Wetting agent, residue reduction, improved surface finish and chip flushing', percent: '~ 1%', compat: 'Metals, aluminium' },
+    { name: 'Volatile solvent',               function: 'Fast evaporation, cooling, improved drying',                            percent: '15%',   compat: 'Metals, aluminium' },
+    { name: 'Co-solvent',                      function: 'Lubricity, corrosion protection, evaporation control',                  percent: '~ 2%',  compat: 'Metals, plastics' },
+    { name: 'Wetting co-solvent',  function: 'Wetting agent, residue reduction, improved surface finish and chip flushing', percent: '~ 1%', compat: 'Metals, aluminium' },
   ],
   performance: [
     { label: 'Evaporation residue',      val: '1.0 – 3.0% (ASTM D2369) — lubricity film' },
@@ -136,8 +136,8 @@ const TDS_OVERRIDES_PG_HIGH_LUBRICITY = {
   ],
   composition: [
     { name: 'Deionised Water',                                     function: 'Primary cooling medium',                                                percent: '95.60%', compat: 'All substrates' },
-    { name: 'Propylene Glycol (PG)',                                function: 'Lubricity, corrosion protection, evaporation control',                 percent: '2.80%',  compat: 'Metals, aluminium' },
-    { name: 'Propylene Glycol Methyl Ether (Dowanol PM)',          function: 'Wetting agent, residue reduction, chip flushing, improved surface finish', percent: '1.60%', compat: 'Metals, aluminium' },
+    { name: 'Co-solvent',                                function: 'Lubricity, corrosion protection, evaporation control',                 percent: '2.80%',  compat: 'Metals, aluminium' },
+    { name: 'Wetting co-solvent',          function: 'Wetting agent, residue reduction, chip flushing, improved surface finish', percent: '1.60%', compat: 'Metals, aluminium' },
   ],
   performance: [
     { label: 'Evaporation residue',     val: '2.0 – 4.5% (ASTM D2369) — lubricity film' },
@@ -164,9 +164,9 @@ const MSDS_OVERRIDES_PEG_GLYCOL = {
   composition: {
     ingredients: [
       { name: 'Water',                description: 'Primary carrier — major component',   percent: '> 90%', ghsClass: '—',       tagType: 'safe' },
-      { name: 'Propylene Glycol',     description: 'Co-solvent and humectant',            percent: '1 – 3%', ghsClass: 'Irritant', tagType: 'warn' },
-      { name: 'PEG 400',              description: 'Viscosity modifier and wetting aid', percent: '< 1%',   ghsClass: '—',        tagType: 'safe' },
-      { name: 'TEA',                  description: 'pH regulator — mild alkalinity',     percent: '< 1%',   ghsClass: 'Irritant', tagType: 'warn' },
+      { name: 'Co-solvent',     description: 'Co-solvent and humectant',            percent: '1 – 3%', ghsClass: 'Irritant', tagType: 'warn' },
+      { name: 'Viscosity modifier',              description: 'Viscosity modifier and wetting aid', percent: '< 1%',   ghsClass: '—',        tagType: 'safe' },
+      { name: 'pH regulator',                  description: 'pH regulator — mild alkalinity',     percent: '< 1%',   ghsClass: 'Irritant', tagType: 'warn' },
       { name: 'Non-ionic surfactant', description: 'Wetting and degreasing aid',          percent: '< 1%',   ghsClass: 'Irritant', tagType: 'warn' },
     ],
     note: 'Exact formulation is proprietary. Functional ingredient descriptions are provided for safety and emergency purposes only.',
@@ -217,8 +217,8 @@ const MSDS_OVERRIDES_ALCOHOL_PRECISION = {
   composition: {
     ingredients: [
       { name: 'Water',                   description: 'Primary carrier — major component',  percent: '~ 85%',   ghsClass: '—',         tagType: 'safe' },
-      { name: 'Ethanol',                 description: 'Co-solvent, fast drying',            percent: '10%',     ghsClass: 'Flammable', tagType: 'warn' },
-      { name: 'Isopropyl Alcohol (IPA)', description: 'Co-solvent, degreasing',             percent: '5%',      ghsClass: 'Flammable', tagType: 'warn' },
+      { name: 'Volatile co-solvent',                 description: 'Co-solvent, fast drying',            percent: '10%',     ghsClass: 'Flammable', tagType: 'warn' },
+      { name: 'Volatile solvent', description: 'Co-solvent, degreasing',             percent: '5%',      ghsClass: 'Flammable', tagType: 'warn' },
       { name: 'Non-ionic surfactant',    description: 'Wetting aid',                        percent: '< 0.1%',  ghsClass: 'Irritant',  tagType: 'warn' },
       { name: 'pH regulator',            description: 'Mild alkalinity buffer',             percent: '< 0.1%',  ghsClass: 'Irritant',  tagType: 'warn' },
     ],
@@ -257,9 +257,11 @@ const MSDS_OVERRIDES_ALCOHOL_PRECISION = {
 }
 
 const MSDS_OVERRIDES_HIGH_IPA = {
-  signalWord: 'Danger',
+  // Warning, not Danger: Flam. Liq. 3 / Eye Irrit. 2 / STOT SE 3 carry no Danger-level class.
+  // No GHS09: no aquatic classification.
+  signalWord: 'Warning',
   hazards: {
-    pictograms:      ['flammable', 'irritant', 'environment'],
+    pictograms:      ['flammable', 'irritant'],
     classifications: [
       { class: 'Flammable Liquid',      category: 'Cat 3',        tagType: 'warn' },
       { class: 'Eye Irritation',        category: 'Cat 2',        tagType: 'warn' },
@@ -271,26 +273,26 @@ const MSDS_OVERRIDES_HIGH_IPA = {
   composition: {
     ingredients: [
       { name: 'Water',                   description: 'Primary carrier',                           percent: '~ 80%',   ghsClass: '—',         tagType: 'safe'   },
-      { name: 'Isopropyl Alcohol (IPA)', description: 'Primary solvent — fast-drying, degreasing', percent: '20%',     ghsClass: 'Flammable', tagType: 'danger' },
+      { name: 'Volatile solvent', description: 'Primary solvent — fast-drying, degreasing', percent: '20%',     ghsClass: 'Flammable', tagType: 'danger' },
       { name: 'Non-ionic surfactant',    description: 'Wetting aid',                               percent: '< 0.1%',  ghsClass: 'Irritant',  tagType: 'warn'   },
       { name: 'pH regulator',            description: 'Mild alkalinity buffer',                    percent: '< 0.1%',  ghsClass: 'Irritant',  tagType: 'warn'   },
     ],
     note: 'Exact formulation is proprietary. Functional ingredient descriptions are provided for safety and emergency purposes only.',
   },
   fireFighting: {
-    flammability:       'Flammable liquid. Flash point 26 – 38 °C. High IPA content increases fire risk.',
+    flammability:       'Flammable liquid. Flash point 26 – 38 °C. High volatile-solvent content increases fire risk.',
     extinguishingMedia: 'CO₂, dry powder, alcohol-resistant foam.',
-    fireHazard:         'IPA vapours may travel to ignition source and flashback. Vapour accumulation in enclosed spaces is dangerous.',
+    fireHazard:         'Solvent vapours may travel to ignition source and flashback. Vapour accumulation in enclosed spaces is dangerous.',
     ppe:                'SCBA and full fire-resistant clothing.',
   },
   physical: [
     { key: 'Appearance',    val: 'Clear, colourless liquid' },
-    { key: 'Odour',         val: 'Strong IPA / alcohol characteristic' },
+    { key: 'Odour',         val: 'Strong alcohol characteristic' },
     { key: 'Flash Point',   val: '26 – 38 °C' },
     { key: 'Density',       val: '0.90 – 0.94 g/mL' },
     { key: 'pH',            val: '7.0 – 9.0' },
     { key: 'Solubility',    val: 'Fully miscible with water' },
-    { key: 'Evaporation',   val: 'Fast (high IPA content)' },
+    { key: 'Evaporation',   val: 'Fast (high volatile-solvent content)' },
     { key: 'Boiling Point', val: '~ 82 °C' },
   ],
   accidentalRelease: [
@@ -324,16 +326,16 @@ const MSDS_OVERRIDES_PGME_ENHANCED = {
   composition: {
     ingredients: [
       { name: 'Water',                                description: 'Primary carrier and cooling medium',                       percent: '~ 82%', ghsClass: '—',         tagType: 'safe' },
-      { name: 'Isopropyl Alcohol (IPA)',              description: 'Fast evaporation, cooling, improved drying',               percent: '15%',   ghsClass: 'Flammable', tagType: 'warn' },
-      { name: 'Propylene Glycol',                     description: 'Lubricity, corrosion protection, evaporation control',     percent: '~ 2%',  ghsClass: '—',         tagType: 'safe' },
-      { name: 'Propylene Glycol Methyl Ether (PGME)', description: 'Wetting agent, residue reduction, improved surface finish', percent: '~ 1%', ghsClass: 'Flammable', tagType: 'warn' },
+      { name: 'Volatile solvent',              description: 'Fast evaporation, cooling, improved drying',               percent: '15%',   ghsClass: 'Flammable', tagType: 'warn' },
+      { name: 'Co-solvent',                     description: 'Lubricity, corrosion protection, evaporation control',     percent: '~ 2%',  ghsClass: '—',         tagType: 'safe' },
+      { name: 'Wetting co-solvent', description: 'Wetting agent, residue reduction, improved surface finish', percent: '~ 1%', ghsClass: 'Flammable', tagType: 'warn' },
     ],
     note: 'Exact formulation is proprietary. Functional ingredient descriptions are provided for safety and emergency purposes only.',
   },
   fireFighting: {
     flammability:       'Flammable liquid. Flash point 35 – 45 °C (Pensky-Martens).',
     extinguishingMedia: 'CO₂, dry powder, alcohol-resistant foam.',
-    fireHazard:         'Alcohol and glycol ether vapours may accumulate in enclosed spaces and ignite. Avoid vapour accumulation.',
+    fireHazard:         'Solvent vapours may accumulate in enclosed spaces and ignite. Avoid vapour accumulation.',
     ppe:                'SCBA and fire-resistant clothing for enclosed-space fires.',
   },
   physical: [
@@ -375,8 +377,8 @@ const MSDS_OVERRIDES_PG_HIGH_LUBRICITY = {
   composition: {
     ingredients: [
       { name: 'Water',                                            description: 'Primary cooling medium',                                              percent: '95.60%', ghsClass: '—',        tagType: 'safe' },
-      { name: 'Propylene Glycol (PG)',                             description: 'Lubricity, corrosion protection, evaporation control',                percent: '2.80%',  ghsClass: '—',        tagType: 'safe' },
-      { name: 'Propylene Glycol Methyl Ether (Dowanol PM)',       description: 'Wetting agent, residue reduction, chip flushing, improved surface finish', percent: '1.60%', ghsClass: 'Irritant', tagType: 'warn' },
+      { name: 'Co-solvent',                             description: 'Lubricity, corrosion protection, evaporation control',                percent: '2.80%',  ghsClass: '—',        tagType: 'safe' },
+      { name: 'Wetting co-solvent',       description: 'Wetting agent, residue reduction, chip flushing, improved surface finish', percent: '1.60%', ghsClass: 'Irritant', tagType: 'warn' },
     ],
     note: 'Exact formulation is proprietary. Functional ingredient descriptions are provided for safety and emergency purposes only.',
   },
@@ -465,7 +467,7 @@ const COA_TESTS_PG_HIGH_LUBRICITY = [
 ]
 
 /**
- * PEG Glycol Variant for UNICool AL.
+ * Low-Evaporation Variant for UNICool AL.
  * Reference batch: 18.537 L.  Percentages derived from absolute quantities:
  *   Water 17.9 L | TEA 90 mL | Propylene Glycol 350 mL | PEG 400 70 mL
  *   LAE-9 80 mL | Sodium Gluconate 45 g | Non-silicone Defoamer 2 g
@@ -497,7 +499,7 @@ const ALCOHOL_PRECISION_COMPONENTS = [
 ]
 
 /**
- * High IPA Variant for UNICool AL.
+ * Fast-Dry Variant for UNICool AL.
  * Percentage-based; Water is auto-calculated (~79.96%).
  * IPA at 20% gives fast-drying, high-purity cleaning action.
  * LAE-9 and Ammonium Hydroxide at 0.01% L each (~10 mL per 100 L batch).
@@ -510,7 +512,7 @@ const HIGH_IPA_COMPONENTS = [
 ]
 
 /**
- * PGME Enhanced Variant for UNICool AL.
+ * Enhanced Wetting Variant for UNICool AL.
  * Percentage-based; Water is auto-calculated (100 − 18.20 = 81.80%).
  * Optimised for aluminium machining: IPA for fast drying, Propylene Glycol
  * for lubricity and corrosion protection, PGME (Dowanol PM) for wetting,
@@ -527,7 +529,7 @@ const PGME_ENHANCED_COMPONENTS = [
 ]
 
 /**
- * PG High Lubricity Variant for UNICool AL.
+ * High Lubricity Variant for UNICool AL.
  * Percentage-based; Water is auto-calculated (100 − 4.40 = 95.60%).
  * Optimised for aluminium machining requiring enhanced lubricity, excellent
  * wetting, and a residue-free finish, without any alcohol content: Propylene
@@ -562,7 +564,7 @@ const UNIKLEAN_SP_LOW_FOAM_COMPONENTS = [
 ]
 
 /**
- * Heavy Duty Alkaline SMS Variant for UNIKLEAN SP.
+ * Heavy Duty Alkaline Variant for UNIKLEAN SP.
  * Percentage-based (% w/v); Water is auto-calculated (~84.48%).
  * Reference batch: 100 L. Active components sum to 15.52%.
  * Uses Sodium Metasilicate as primary builder for heavy alkaline degreasing,
@@ -662,15 +664,169 @@ const CORRUCUT_500_MTO_BASED_COMPONENTS = [
 
 /* ── TDS overrides — CORRUCUT 500 Water-Displacing RPO ─────────────────────── */
 
-const TDS_OVERRIDES_CORRUCUT_500_WDRPO = {
+/*
+ * CORRUCUT 500 MTO-carrier variants — values are calculated from the variant
+ * composition, not measured (flash point: Le Chatelier/Raoult estimate;
+ * viscosity: Refutas blend; density: volume-additive). Hazards: GHS mixture
+ * rules over typical ingredient classifications (MTO taken as C9–C12
+ * white spirit, 2–25% aromatics, benzene < 0.1%). Replace with test data
+ * once available.
+ */
+const CORRUCUT_500_MTO_HAZARD_OVERRIDE = {
+  signalWord: 'DANGER' as const,
+  pictograms: ['flammable', 'healthhazard', 'environment'],
+  classifications: [
+    { class: 'Flammable Liquid',                    category: 'Category 3',                       tagType: 'warn'   },
+    { class: 'Aspiration Hazard',                   category: 'Category 1',                       tagType: 'danger' },
+    { class: 'STOT – Single Exposure',              category: 'Category 3 (narcotic effects)',    tagType: 'warn'   },
+    { class: 'STOT – Repeated Exposure',            category: 'Category 1 (central nervous system)', tagType: 'danger' },
+    { class: 'Aquatic Toxicity (Chronic)',          category: 'Category 2',                       tagType: 'warn'   },
+  ],
+  hStatements: 'H226 — Flammable liquid and vapour. H304 — May be fatal if swallowed and enters airways. H336 — May cause drowsiness or dizziness. H372 — Causes damage to the central nervous system through prolonged or repeated exposure. H411 — Toxic to aquatic life with long lasting effects.',
+  pStatements: 'P210 — Keep away from heat, hot surfaces, sparks, open flames and other ignition sources. No smoking. · P233 — Keep container tightly closed. · P240 — Ground and bond container and receiving equipment. · P260 — Do not breathe mist/vapours/spray. · P273 — Avoid release to the environment. · P280 — Wear protective gloves/protective clothing/eye protection/face protection. · P301+P310 — IF SWALLOWED: Immediately call a POISON CENTER or doctor/physician. · P331 — Do NOT induce vomiting. · P304+P340 — IF INHALED: Remove person to fresh air and keep comfortable for breathing. · P314 — Get medical advice/attention if you feel unwell. · P370+P378 — In case of fire: Use CO₂, dry chemical powder or foam to extinguish. · P391 — Collect spillage. · P403+P235 — Store in a well-ventilated place. Keep cool. · P405 — Store locked up. · P501 — Dispose of contents/container in accordance with the Hazardous Waste Management Rules.',
+}
+
+const CORRUCUT_500_MTO_IDENTIFICATION = (productType: string) => ({
+  productType,
+  intendedUse:  'Temporary rust prevention of ferrous and non-ferrous components during in-process handling, transit, and storage.',
+  manufacturer: 'Macro Coats Pvt. Ltd., Chennai, India',
+  emergency:    'AIIMS Poison Control Centre: 1800-11-6117 (24/7 Toll-Free)',
+})
+
+const CORRUCUT_500_MTO_FIRE_FIGHTING = (flashPoint: string) => ({
+  flammability:       `Flammable liquid, Category 3 (flash point ${flashPoint}, calculated). Vapours are heavier than air and may travel to an ignition source.`,
+  extinguishingMedia: 'Carbon dioxide (CO₂), dry chemical powder, or foam. Water spray only to cool exposed containers.',
+  fireHazard:         'Combustion produces carbon monoxide, carbon dioxide and dense smoke. Do not use a direct water jet — it spreads the burning liquid.',
+  ppe:                'SCBA and full fire-resistant protective clothing.',
+})
+
+const CORRUCUT_500_MTO_TOXICOLOGY = 'Classification is calculated from ingredient data under GHS mixture rules; no product-level toxicity tests. Aspiration hazard Category 1: low-viscosity hydrocarbon liquid (≈ 3 – 5 cSt @ 40 °C) — if swallowed, aspiration into the lungs can cause chemical pneumonitis. STOT SE 3: solvent vapour may cause drowsiness, dizziness and headache. STOT RE 1: prolonged or repeated overexposure to hydrocarbon solvents of this type is associated with central nervous system effects. Repeated skin contact may cause dryness or cracking (EUH066).'
+
+const CORRUCUT_500_MTO_ECOLOGY = 'Aquatic Chronic Category 2 by the GHS summation method (hydrocarbon solvent and corrosion-inhibitor components). Insoluble in water; forms surface films that impair oxygen transfer. Prevent entry into drains, soil and watercourses.'
+
+const CORRUCUT_500_MTO_TRANSPORT = 'UN 1268, PETROLEUM DISTILLATES, N.O.S. (hydrocarbon solvent), Class 3, Packing Group III. Environmentally hazardous substance (Aquatic Chronic 2) — marine pollutant mark applies to sea transport.'
+
+const CORRUCUT_500_PERFORMANCE = [
+  { label: 'Salt spray resistance', val: 'Typical ≥ 96 h (ASTM B117)' },
+  { label: 'Indoor Protection',     val: '3–6 Months' },
+  { label: 'Outdoor Covered',       val: '1–3 Months' },
+  { label: 'Water displacement',    val: 'Passes (IS 1154)' },
+]
+
+export const TDS_OVERRIDES_CORRUCUT_500_WDRPO = {
+  description: 'CORRUCUT 500 – Water-Displacing RPO is a solvent-based rust preventive built on a hydrocarbon solvent carrier with a dearomatized co-solvent. The fast-evaporating carrier penetrates and displaces moisture from wet or freshly washed components, leaving a thin, lightly oily film of mineral base oil, corrosion inhibitor and film-forming barrier agent. Suited for inter-operational protection, transit, and indoor or covered storage.',
+  features: [
+    { head: 'Water-Displacing Action',        body: 'Low-surface-tension solvent carrier gets under water films and lifts moisture off wet or freshly washed parts.' },
+    { head: 'Inhibited Oil Film',             body: 'A polar corrosion inhibitor adsorbs on the metal surface while the mineral base oil carries it as a continuous protective film.' },
+    { head: 'Barrier-Reinforced Film',        body: 'A film-forming barrier agent improves film cohesion and water resistance versus a solvent-only carrier.' },
+    { head: 'Flexible Application',           body: 'Suitable for immersion tanks, spray lines, or manual brush application.' },
+  ],
+  physicalProperties: [
+    { property: 'Appearance',                  value: 'Clear, pale amber fluid',  unit: '—',     method: 'Visual' },
+    { property: 'Density @ 25°C',              value: '≈ 0.84',                   unit: 'g/mL',  method: 'Calculated (volume-additive)' },
+    { property: 'Kinematic Viscosity @ 40°C',  value: '≈ 3 – 5',                  unit: 'cSt',   method: 'Calculated (Refutas blend)' },
+    { property: 'Flash Point (PMCC)',          value: '≈ 43',                     unit: '°C',    method: 'Calculated (Le Chatelier)' },
+    { property: 'Non-volatile Film Content',   value: '≈ 39',                     unit: '% v/v', method: 'Calculated' },
+    { property: 'Protective Film Classification', value: 'Thin, lightly oily protective film', unit: '—', method: 'Internal' },
+    { property: 'Indoor Protection Period',    value: '3 – 6',                    unit: 'months', method: 'Environmental — guidance only' },
+    { property: 'Outdoor Covered Protection Period', value: '1 – 3',              unit: 'months', method: 'Environmental — guidance only' },
+  ],
   composition: [
-    { name: 'Hydrocarbon carrier (MTO)',       function: 'Primary carrier and water-displacing vehicle', percent: '30 – 40%', compat: 'Ferrous and non-ferrous metals' },
-    { name: 'Light liquid paraffin',           function: 'Lubricating base oil',                         percent: '15 – 25%', compat: 'Ferrous and non-ferrous metals' },
+    { name: 'Hydrocarbon carrier solvent',     function: 'Primary carrier and water-displacing vehicle', percent: '30 – 40%', compat: 'Ferrous and non-ferrous metals' },
+    { name: 'Mineral base oil',                function: 'Lubricating base oil',                         percent: '15 – 25%', compat: 'Ferrous and non-ferrous metals' },
     { name: 'Dearomatized solvent',            function: 'Controlled-evaporation carrier',               percent: '15 – 25%', compat: 'Ferrous and non-ferrous metals' },
     { name: 'Light wetting solvent',           function: 'Wetting and penetration aid',                  percent: '< 10%',    compat: 'Ferrous and non-ferrous metals' },
-    { name: 'Calcium petroleum sulfonate',     function: 'Corrosion inhibitor',                          percent: '10 – 15%', compat: 'Ferrous and non-ferrous metals' },
-    { name: 'White petroleum jelly',           function: 'Protective film former',                       percent: '< 10%',    compat: 'Ferrous and non-ferrous metals' },
+    { name: 'Corrosion inhibitor',             function: 'Polar film-forming rust inhibitor',            percent: '10 – 15%', compat: 'Ferrous and non-ferrous metals' },
+    { name: 'Film-forming barrier agent',      function: 'Protective film former',                       percent: '< 10%',    compat: 'Ferrous and non-ferrous metals' },
   ],
+  performance: CORRUCUT_500_PERFORMANCE,
+  safetyNote: 'Flammable liquid (flash point ≈ 43 °C, calculated) — keep away from heat and ignition sources. Contains hydrocarbon solvents: use only with adequate ventilation, as vapours may cause drowsiness. Refer to the CORRUCUT 500 – Water-Displacing RPO Safety Data Sheet before use.',
+}
+
+export const TDS_OVERRIDES_CORRUCUT_500_MTO_BASED = {
+  description: 'This CORRUCUT 500 grade is a solvent-based rust preventive built on a hydrocarbon solvent carrier. The carrier penetrates and evaporates quickly, leaving a lightly oily film of mineral base oil, corrosion inhibitor and film-forming barrier agent — slightly heavier than the standard grade owing to its higher non-volatile oil content. Suited for inter-operational protection, transit, and indoor or covered storage.',
+  features: [
+    { head: 'Fast-Penetrating Solvent Carrier', body: 'The hydrocarbon solvent carrier wets and penetrates recesses quickly, then evaporates to leave the protective film.' },
+    { head: 'Heavier Protective Film',         body: 'Higher mineral base oil content gives a slightly heavier, more persistent film than the standard grade.' },
+    { head: 'Barrier-Reinforced Film',         body: 'A film-forming barrier agent improves film cohesion and water resistance versus a solvent-only carrier.' },
+    { head: 'Flexible Application',            body: 'Suitable for immersion tanks, spray lines, or manual brush application.' },
+  ],
+  physicalProperties: [
+    { property: 'Appearance',                  value: 'Clear, pale amber fluid',  unit: '—',     method: 'Visual' },
+    { property: 'Density @ 25°C',              value: '≈ 0.84',                   unit: 'g/mL',  method: 'Calculated (volume-additive)' },
+    { property: 'Kinematic Viscosity @ 40°C',  value: '≈ 3 – 5',                  unit: 'cSt',   method: 'Calculated (Refutas blend)' },
+    { property: 'Flash Point (PMCC)',          value: '≈ 39',                     unit: '°C',    method: 'Calculated (Le Chatelier)' },
+    { property: 'Non-volatile Film Content',   value: '≈ 45',                     unit: '% v/v', method: 'Calculated' },
+    { property: 'Protective Film Classification', value: 'Lightly oily protective film', unit: '—', method: 'Internal' },
+    { property: 'Indoor Protection Period',    value: '3 – 6',                    unit: 'months', method: 'Environmental — guidance only' },
+    { property: 'Outdoor Covered Protection Period', value: '1 – 3',              unit: 'months', method: 'Environmental — guidance only' },
+  ],
+  composition: [
+    { name: 'Hydrocarbon carrier solvent',     function: 'Primary carrier and penetration vehicle', percent: '50 – 60%', compat: 'Ferrous and non-ferrous metals' },
+    { name: 'Mineral base oil',                function: 'Lubricating base oil',                    percent: '20 – 30%', compat: 'Ferrous and non-ferrous metals' },
+    { name: 'Corrosion inhibitor',             function: 'Polar film-forming rust inhibitor',       percent: '10 – 15%', compat: 'Ferrous and non-ferrous metals' },
+    { name: 'Film-forming barrier agent',      function: 'Protective film former',                  percent: '< 10%',    compat: 'Ferrous and non-ferrous metals' },
+  ],
+  performance: CORRUCUT_500_PERFORMANCE,
+  safetyNote: 'Flammable liquid (flash point ≈ 39 °C, calculated) — keep away from heat and ignition sources. Contains hydrocarbon solvents: use only with adequate ventilation, as vapours may cause drowsiness. Refer to the CORRUCUT 500 Safety Data Sheet for this grade before use.',
+}
+
+export const MSDS_OVERRIDES_CORRUCUT_500_WDRPO = {
+  hazardOverride: CORRUCUT_500_MTO_HAZARD_OVERRIDE,
+  identification: CORRUCUT_500_MTO_IDENTIFICATION('Hydrocarbon solvent-based water-displacing corrosion preventive fluid'),
+  composition: {
+    note: '* Formulation values and ingredient identities are proprietary. Concentrations are given as ranges.',
+    ingredients: [
+      { name: 'Hydrocarbon Solvent (Volatile Carrier)',  percent: '30% – 40%', tagType: 'danger', ghsClass: 'Flam. Liq. 3 / Asp. Tox. 1 / STOT SE 3 / STOT RE 1 / Aquatic Chronic 2', description: 'Volatile carrier solvent' },
+      { name: 'Dearomatized Hydrocarbon Solvent',        percent: '15% – 25%', tagType: 'danger', ghsClass: 'Asp. Tox. 1',                    description: 'Carrier solvent' },
+      { name: 'Mineral Base Oil',                        percent: '15% – 25%', tagType: 'warn',   ghsClass: 'Asp. Tox. 1',                    description: 'Residual film oil' },
+      { name: 'Corrosion Inhibitor',                     percent: '10% – 16%', tagType: 'warn',   ghsClass: 'Aquatic Chronic 2',              description: 'Rust inhibitor' },
+      { name: 'Light Hydrocarbon Solvent',               percent: '4% – 8%',   tagType: 'warn',   ghsClass: 'Flam. Liq. 3 / Asp. Tox. 1',     description: 'Light carrier fraction' },
+      { name: 'Film-Forming Barrier Agent',              percent: '4% – 8%',   tagType: 'safe',   ghsClass: 'Not Classified',                 description: 'Water resistance and film cohesion' },
+    ],
+  },
+  physical: [
+    { key: 'Physical State',        val: 'Clear, pale amber liquid' },
+    { key: 'Odour',                 val: 'Characteristic hydrocarbon solvent odour' },
+    { key: 'Flash Point',           val: '≈ 43 °C (calculated; closed cup)' },
+    { key: 'Relative Density',      val: '≈ 0.84 g/mL @ 25 °C (calculated)' },
+    { key: 'Kinematic Viscosity',   val: '≈ 3 – 5 cSt @ 40 °C (calculated)' },
+    { key: 'Initial Boiling Point', val: '≈ 150 °C (solvent fraction)' },
+    { key: 'Water Solubility',      val: 'Insoluble' },
+    { key: 'Vapour Pressure',       val: '< 1 kPa @ 20 °C (estimated)' },
+  ],
+  fireFighting: CORRUCUT_500_MTO_FIRE_FIGHTING('≈ 43 °C'),
+  toxicology:   CORRUCUT_500_MTO_TOXICOLOGY,
+  ecology:      CORRUCUT_500_MTO_ECOLOGY,
+  transport:    CORRUCUT_500_MTO_TRANSPORT,
+}
+
+export const MSDS_OVERRIDES_CORRUCUT_500_MTO_BASED = {
+  hazardOverride: CORRUCUT_500_MTO_HAZARD_OVERRIDE,
+  identification: CORRUCUT_500_MTO_IDENTIFICATION('Hydrocarbon solvent-based corrosion preventive fluid'),
+  composition: {
+    note: '* Formulation values and ingredient identities are proprietary. Concentrations are given as ranges.',
+    ingredients: [
+      { name: 'Hydrocarbon Solvent (Volatile Carrier)', percent: '50% – 60%', tagType: 'danger', ghsClass: 'Flam. Liq. 3 / Asp. Tox. 1 / STOT SE 3 / STOT RE 1 / Aquatic Chronic 2', description: 'Volatile carrier solvent' },
+      { name: 'Mineral Base Oil',                       percent: '20% – 30%', tagType: 'warn',   ghsClass: 'Asp. Tox. 1',       description: 'Residual film oil' },
+      { name: 'Corrosion Inhibitor',                    percent: '10% – 16%', tagType: 'warn',   ghsClass: 'Aquatic Chronic 2', description: 'Rust inhibitor' },
+      { name: 'Film-Forming Barrier Agent',             percent: '4% – 8%',   tagType: 'safe',   ghsClass: 'Not Classified',    description: 'Water resistance and film cohesion' },
+    ],
+  },
+  physical: [
+    { key: 'Physical State',        val: 'Clear, pale amber liquid' },
+    { key: 'Odour',                 val: 'Characteristic hydrocarbon solvent odour' },
+    { key: 'Flash Point',           val: '≈ 39 °C (calculated; closed cup)' },
+    { key: 'Relative Density',      val: '≈ 0.84 g/mL @ 25 °C (calculated)' },
+    { key: 'Kinematic Viscosity',   val: '≈ 3 – 5 cSt @ 40 °C (calculated)' },
+    { key: 'Initial Boiling Point', val: '≈ 150 °C (solvent fraction)' },
+    { key: 'Water Solubility',      val: 'Insoluble' },
+    { key: 'Vapour Pressure',       val: '< 1 kPa @ 20 °C (estimated)' },
+  ],
+  fireFighting: CORRUCUT_500_MTO_FIRE_FIGHTING('≈ 39 °C'),
+  toxicology:   CORRUCUT_500_MTO_TOXICOLOGY,
+  ecology:      CORRUCUT_500_MTO_ECOLOGY,
+  transport:    CORRUCUT_500_MTO_TRANSPORT,
 }
 
 export async function seedFormulationVariants() {
@@ -779,11 +935,11 @@ export async function seedFormulationVariants() {
     }
   }
 
-  // ── UNIKLEAN SP — Heavy Duty Alkaline SMS Variant ─────────────────────────
+  // ── UNIKLEAN SP — Heavy Duty Alkaline Variant ─────────────────────────
   if (!uniklenSpProduct) {
-    console.warn('   ⚠️  Product uniklean-sp not found — skipping Heavy Duty Alkaline SMS Variant seed')
+    console.warn('   ⚠️  Product uniklean-sp not found — skipping Heavy Duty Alkaline Variant seed')
   } else {
-    const HEAVY_DUTY_SMS_NAME = 'UNIKLEAN SP – Heavy Duty Alkaline SMS Variant'
+    const HEAVY_DUTY_SMS_NAME = 'UNIKLEAN SP – Heavy Duty Alkaline Variant'
     const [existingHeavyDutySMS] = await db
       .select()
       .from(productFormulationVariants)
@@ -795,7 +951,7 @@ export async function seedFormulationVariants() {
       )
 
     if (existingHeavyDutySMS) {
-      console.log(`   ↩️  Heavy Duty Alkaline SMS Variant for UNIKLEAN SP already exists (id: ${existingHeavyDutySMS.id})`)
+      console.log(`   ↩️  Heavy Duty Alkaline Variant for UNIKLEAN SP already exists (id: ${existingHeavyDutySMS.id})`)
     } else {
       const [heavyDutySMSVariant] = await db
         .insert(productFormulationVariants)
@@ -817,7 +973,7 @@ export async function seedFormulationVariants() {
         })),
       )
 
-      console.log(`   ✅ Created Heavy Duty Alkaline SMS Variant for UNIKLEAN SP (id: ${heavyDutySMSVariant.id})`)
+      console.log(`   ✅ Created Heavy Duty Alkaline Variant for UNIKLEAN SP (id: ${heavyDutySMSVariant.id})`)
     }
   }
 
@@ -863,14 +1019,14 @@ export async function seedFormulationVariants() {
     }
   }
 
-  // ── UNICool AL — PEG Glycol Variant ──────────────────────────────────────
+  // ── UNICool AL — Low-Evaporation Variant ──────────────────────────────────────
   const [unicoolProduct] = await db
     .select()
     .from(products)
     .where(eq(products.key, 'unicool-al'))
 
   if (!unicoolProduct) {
-    console.warn('   ⚠️  Product unicool-al not found — skipping PEG Glycol Variant seed')
+    console.warn('   ⚠️  Product unicool-al not found — skipping Low-Evaporation Variant seed')
     return
   }
 
@@ -880,12 +1036,12 @@ export async function seedFormulationVariants() {
     .where(
       and(
         eq(productFormulationVariants.productKey, 'unicool-al'),
-        eq(productFormulationVariants.variantName, 'PEG Glycol Variant'),
+        eq(productFormulationVariants.variantName, 'Low-Evaporation Variant'),
       ),
     )
 
   if (existingPEG) {
-    console.log(`   ↩️  PEG Glycol Variant for UNICool AL already exists (id: ${existingPEG.id})`)
+    console.log(`   ↩️  Low-Evaporation Variant for UNICool AL already exists (id: ${existingPEG.id})`)
     if (!existingPEG.coaTests || !existingPEG.tdsOverrides || !existingPEG.msdsOverrides) {
       await db
         .update(productFormulationVariants)
@@ -895,7 +1051,7 @@ export async function seedFormulationVariants() {
           msdsOverrides: existingPEG.msdsOverrides ?? MSDS_OVERRIDES_PEG_GLYCOL,
         })
         .where(eq(productFormulationVariants.id, existingPEG.id))
-      console.log('   ✅ Backfilled coaTests / tdsOverrides / msdsOverrides for PEG Glycol Variant')
+      console.log('   ✅ Backfilled coaTests / tdsOverrides / msdsOverrides for Low-Evaporation Variant')
     }
   } else {
     const [pegVariant] = await db
@@ -903,7 +1059,7 @@ export async function seedFormulationVariants() {
       .values({
         productKey:   'unicool-al',
         companyId:    null,
-        variantName:  'PEG Glycol Variant',
+        variantName:  'Low-Evaporation Variant',
         isDefault:    false,
         coaTests:     COA_TESTS_PEG_GLYCOL,
         tdsOverrides: TDS_OVERRIDES_PEG_GLYCOL,
@@ -921,7 +1077,7 @@ export async function seedFormulationVariants() {
       })),
     )
 
-    console.log(`   ✅ Created PEG Glycol Variant for UNICool AL (id: ${pegVariant.id})`)
+    console.log(`   ✅ Created Low-Evaporation Variant for UNICool AL (id: ${pegVariant.id})`)
   }
 
   // ── UNICool AL — Alcohol Precision Variant ────────────────────────────────
@@ -975,19 +1131,19 @@ export async function seedFormulationVariants() {
     console.log(`   ✅ Created Alcohol Precision Variant for UNICool AL (id: ${alcoholVariant.id})`)
   }
 
-  // ── UNICool AL — High IPA Variant ────────────────────────────────────────
+  // ── UNICool AL — Fast-Dry Variant ────────────────────────────────────────
   const [existingHighIPA] = await db
     .select()
     .from(productFormulationVariants)
     .where(
       and(
         eq(productFormulationVariants.productKey, 'unicool-al'),
-        eq(productFormulationVariants.variantName, 'High IPA Variant'),
+        eq(productFormulationVariants.variantName, 'Fast-Dry Variant'),
       ),
     )
 
   if (existingHighIPA) {
-    console.log(`   ↩️  High IPA Variant for UNICool AL already exists (id: ${existingHighIPA.id})`)
+    console.log(`   ↩️  Fast-Dry Variant for UNICool AL already exists (id: ${existingHighIPA.id})`)
     if (!existingHighIPA.coaTests || !existingHighIPA.tdsOverrides || !existingHighIPA.msdsOverrides) {
       await db
         .update(productFormulationVariants)
@@ -997,7 +1153,7 @@ export async function seedFormulationVariants() {
           msdsOverrides: existingHighIPA.msdsOverrides ?? MSDS_OVERRIDES_HIGH_IPA,
         })
         .where(eq(productFormulationVariants.id, existingHighIPA.id))
-      console.log('   ✅ Backfilled coaTests / tdsOverrides / msdsOverrides for High IPA Variant')
+      console.log('   ✅ Backfilled coaTests / tdsOverrides / msdsOverrides for Fast-Dry Variant')
     }
   } else {
     const [highIPAVariant] = await db
@@ -1005,7 +1161,7 @@ export async function seedFormulationVariants() {
       .values({
         productKey:    'unicool-al',
         companyId:     null,
-        variantName:   'High IPA Variant',
+        variantName:   'Fast-Dry Variant',
         isDefault:     true,
         coaTests:      COA_TESTS_HIGH_IPA,
         tdsOverrides:  TDS_OVERRIDES_HIGH_IPA,
@@ -1023,11 +1179,11 @@ export async function seedFormulationVariants() {
       })),
     )
 
-    console.log(`   ✅ Created High IPA Variant for UNICool AL (id: ${highIPAVariant.id})`)
+    console.log(`   ✅ Created Fast-Dry Variant for UNICool AL (id: ${highIPAVariant.id})`)
   }
 
-  // ── UNICool AL — PGME Enhanced Variant ───────────────────────────────────
-  const PGME_ENHANCED_NAME = 'UNICool AL – PGME Enhanced Variant'
+  // ── UNICool AL — Enhanced Wetting Variant ───────────────────────────────────
+  const PGME_ENHANCED_NAME = 'UNICool AL – Enhanced Wetting Variant'
   const [existingPGME] = await db
     .select()
     .from(productFormulationVariants)
@@ -1039,7 +1195,7 @@ export async function seedFormulationVariants() {
     )
 
   if (existingPGME) {
-    console.log(`   ↩️  PGME Enhanced Variant for UNICool AL already exists (id: ${existingPGME.id})`)
+    console.log(`   ↩️  Enhanced Wetting Variant for UNICool AL already exists (id: ${existingPGME.id})`)
     if (!existingPGME.coaTests || !existingPGME.tdsOverrides || !existingPGME.msdsOverrides) {
       await db
         .update(productFormulationVariants)
@@ -1049,7 +1205,7 @@ export async function seedFormulationVariants() {
           msdsOverrides: existingPGME.msdsOverrides ?? MSDS_OVERRIDES_PGME_ENHANCED,
         })
         .where(eq(productFormulationVariants.id, existingPGME.id))
-      console.log('   ✅ Backfilled coaTests / tdsOverrides / msdsOverrides for PGME Enhanced Variant')
+      console.log('   ✅ Backfilled coaTests / tdsOverrides / msdsOverrides for Enhanced Wetting Variant')
     }
   } else {
     const [pgmeVariant] = await db
@@ -1075,11 +1231,11 @@ export async function seedFormulationVariants() {
       })),
     )
 
-    console.log(`   ✅ Created PGME Enhanced Variant for UNICool AL (id: ${pgmeVariant.id})`)
+    console.log(`   ✅ Created Enhanced Wetting Variant for UNICool AL (id: ${pgmeVariant.id})`)
   }
 
-  // ── UNICool AL — PG High Lubricity Variant ───────────────────────────────
-  const PG_HIGH_LUBRICITY_NAME = 'UNICool AL – PG High Lubricity Variant'
+  // ── UNICool AL — High Lubricity Variant ───────────────────────────────
+  const PG_HIGH_LUBRICITY_NAME = 'UNICool AL – High Lubricity Variant'
   const [existingPGHighLubricity] = await db
     .select()
     .from(productFormulationVariants)
@@ -1091,7 +1247,7 @@ export async function seedFormulationVariants() {
     )
 
   if (existingPGHighLubricity) {
-    console.log(`   ↩️  PG High Lubricity Variant for UNICool AL already exists (id: ${existingPGHighLubricity.id})`)
+    console.log(`   ↩️  High Lubricity Variant for UNICool AL already exists (id: ${existingPGHighLubricity.id})`)
     if (!existingPGHighLubricity.coaTests || !existingPGHighLubricity.tdsOverrides || !existingPGHighLubricity.msdsOverrides) {
       await db
         .update(productFormulationVariants)
@@ -1101,7 +1257,7 @@ export async function seedFormulationVariants() {
           msdsOverrides: existingPGHighLubricity.msdsOverrides ?? MSDS_OVERRIDES_PG_HIGH_LUBRICITY,
         })
         .where(eq(productFormulationVariants.id, existingPGHighLubricity.id))
-      console.log('   ✅ Backfilled coaTests / tdsOverrides / msdsOverrides for PG High Lubricity Variant')
+      console.log('   ✅ Backfilled coaTests / tdsOverrides / msdsOverrides for High Lubricity Variant')
     }
   } else {
     const [pgHighLubricityVariant] = await db
@@ -1127,7 +1283,7 @@ export async function seedFormulationVariants() {
       })),
     )
 
-    console.log(`   ✅ Created PG High Lubricity Variant for UNICool AL (id: ${pgHighLubricityVariant.id})`)
+    console.log(`   ✅ Created High Lubricity Variant for UNICool AL (id: ${pgHighLubricityVariant.id})`)
   }
 
   // ── UNISOLVE H3 — 30 KG Variant ──────────────────────────────────────────
@@ -1270,7 +1426,8 @@ export async function seedFormulationVariants() {
           companyId:   null,
           variantName: CORRUCUT_500_WDRPO_NAME,
           isDefault:   false,
-          tdsOverrides: TDS_OVERRIDES_CORRUCUT_500_WDRPO,
+          tdsOverrides:  TDS_OVERRIDES_CORRUCUT_500_WDRPO,
+          msdsOverrides: MSDS_OVERRIDES_CORRUCUT_500_WDRPO,
         })
         .returning()
 
@@ -1287,7 +1444,8 @@ export async function seedFormulationVariants() {
       console.log(`   ✅ Created Water-Displacing RPO variant for CORRUCUT 500 (id: ${corrucut500WdrpoVariant.id})`)
     }
 
-    const CORRUCUT_500_MTO_BASED_NAME = 'MTO Based'
+    // Customer-visible name deliberately avoids naming the carrier material.
+    const CORRUCUT_500_MTO_BASED_NAME = 'Solvent Carrier Grade'
     const [existingCorrucut500MtoBased] = await db
       .select()
       .from(productFormulationVariants)
@@ -1299,7 +1457,7 @@ export async function seedFormulationVariants() {
       )
 
     if (existingCorrucut500MtoBased) {
-      console.log(`   ↩️  MTO Based variant for CORRUCUT 500 already exists (id: ${existingCorrucut500MtoBased.id})`)
+      console.log(`   ↩️  Solvent Carrier Grade variant for CORRUCUT 500 already exists (id: ${existingCorrucut500MtoBased.id})`)
     } else {
       const [corrucut500MtoBasedVariant] = await db
         .insert(productFormulationVariants)
@@ -1308,6 +1466,8 @@ export async function seedFormulationVariants() {
           companyId:   null,
           variantName: CORRUCUT_500_MTO_BASED_NAME,
           isDefault:   false,
+          tdsOverrides:  TDS_OVERRIDES_CORRUCUT_500_MTO_BASED,
+          msdsOverrides: MSDS_OVERRIDES_CORRUCUT_500_MTO_BASED,
         })
         .returning()
 
@@ -1321,7 +1481,7 @@ export async function seedFormulationVariants() {
         })),
       )
 
-      console.log(`   ✅ Created MTO Based variant for CORRUCUT 500 (id: ${corrucut500MtoBasedVariant.id})`)
+      console.log(`   ✅ Created Solvent Carrier Grade variant for CORRUCUT 500 (id: ${corrucut500MtoBasedVariant.id})`)
     }
   }
 }

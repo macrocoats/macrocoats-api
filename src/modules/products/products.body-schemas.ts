@@ -206,6 +206,50 @@ export const msdsBodySchema = z.object({
   }).passthrough(),
 }).passthrough()
 
+// ── formulation-variant overrides ────────────────────────────────────────────
+//
+// Shape of `product_formulation_variants.tds_overrides` / `msds_overrides`.
+// Flat (not nested under `sections`) and every key optional — a key that is
+// set replaces the base document's value when the variant is selected (see
+// `applyVariantOverride` in products.service.ts); an absent key falls back to
+// the base document. `.strict()` so a typo'd key is rejected instead of being
+// silently ignored on read.
+
+export const tdsOverridesSchema = z.object({
+  grade:               z.string(),
+  description:         z.string(),
+  features:            z.array(tdsFeatureSchema),
+  physicalProperties:  z.array(tdsPhysicalPropertySchema),
+  composition:         z.array(tdsCompositionRowSchema),
+  application:         z.array(tdsApplicationStepSchema),
+  packaging:           z.array(tdsPackagingRowSchema),
+  performance:         z.array(tdsPerformanceRowSchema),
+  safetyNote:          z.string(),
+}).partial().strict()
+
+export const msdsOverridesSchema = z.object({
+  hazardOverride:      msdsHazardsSchema.extend({ signalWord: z.enum(['DANGER', 'Warning']) }),
+  // Legacy pair (pre-dates hazardOverride, used by the unicool-al variants) —
+  // read as an alias of hazardOverride; hazardOverride wins when both are set.
+  hazards:             msdsHazardsSchema,
+  signalWord:          z.string(),
+  identification:      msdsIdentificationSchema,
+  composition:         msdsCompositionSchema,
+  firstAid:            msdsFirstAidSchema,
+  fireFighting:        msdsFireFightingSchema,
+  accidentalRelease:   z.array(z.string()),
+  handling:            msdsHandlingSchema,
+  exposure:            msdsExposureSchema,
+  physical:            z.array(msdsPhysicalRowSchema),
+  stability:           msdsStabilitySchema,
+  toxicology:          z.string(),
+  ecology:             z.string(),
+  disposal:            z.string(),
+  transport:           z.string(),
+  regulatory:          z.string(),
+  other:               z.string(),
+}).partial().strict()
+
 export const bodySchemaByDocType: Partial<Record<DocType, z.ZodTypeAny>> = {
   formula: formulaBodySchema,
   tds:     tdsBodySchema,

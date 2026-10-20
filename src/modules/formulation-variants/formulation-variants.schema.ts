@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { PRODUCT_KEYS } from '../../types/index.js'
 import { VARIANT_STATUSES } from '../optimizer/optimizer.types.js'
+import { tdsOverridesSchema, msdsOverridesSchema } from '../products/products.body-schemas.js'
 
 export const componentBodySchema = z.object({
   materialName: z.string().min(1),
@@ -42,8 +43,8 @@ export const updateVariantSchema = z.object({
     result:        z.string(),
     status:        z.enum(['Pass', 'Fail']),
   })).nullable().optional(),
-  tdsOverrides:  z.record(z.unknown()).nullable().optional(),
-  msdsOverrides: z.record(z.unknown()).nullable().optional(),
+  tdsOverrides:  tdsOverridesSchema.nullable().optional(),
+  msdsOverrides: msdsOverridesSchema.nullable().optional(),
 })
 
 export const replaceComponentsSchema = z.object({

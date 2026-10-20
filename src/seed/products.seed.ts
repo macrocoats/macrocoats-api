@@ -573,8 +573,8 @@ const DOCS: Array<{
           { property: 'Water Displacement',  value: '>99%',               unit: '—',    method: 'Internal' },
         ],
         composition: [
-          { name: 'Paraffinic base oil',          function: 'Primary carrier and film former',        percent: '60–70%',  compat: 'All metals' },
-          { name: 'Petroleum sulfonate additive', function: 'Corrosion inhibitor and water displacer', percent: '10–20%',  compat: 'Ferrous, non-ferrous' },
+          { name: 'Mineral base oil',          function: 'Primary carrier and film former',        percent: '60–70%',  compat: 'All metals' },
+          { name: 'Corrosion inhibitor additive', function: 'Corrosion inhibitor and water displacer', percent: '10–20%',  compat: 'Ferrous, non-ferrous' },
           { name: 'Corrosion inhibitor blend',    function: 'Enhanced protection system',              percent: '5–10%',   compat: 'All metals' },
           { name: 'Diluent / carrier',            function: 'Viscosity control',                       percent: 'Balance', compat: '—' },
         ],
@@ -799,11 +799,11 @@ const DOCS: Array<{
     },
     body: {
       grade:       'Industrial Grade',
-      description: 'UNIFLOW ECM is a petroleum sulfonate-based corrosion preventive oil designed for long-term indoor storage protection of ferrous and non-ferrous components.',
+      description: 'UNIFLOW ECM is an inhibitor-fortified corrosion preventive oil designed for long-term indoor storage protection of ferrous and non-ferrous components.',
       sections: {
         features: [
           { head: 'Long-term Protection', body: 'Provides extended corrosion protection for storage periods up to 12 months indoors' },
-          { head: 'Petroleum Sulfonate',  body: 'Contains petroleum sulfonate corrosion inhibitors for superior protection performance' },
+          { head: 'Proven Inhibitor System',  body: 'Contains film-forming corrosion inhibitors for superior protection performance' },
           { head: 'Thin Dry Film',        body: 'Deposits a thin, non-sticky film that does not attract dust or contamination' },
           { head: 'Easy Removal',         body: 'Degreaser-removable before further processing' },
         ],
@@ -815,9 +815,9 @@ const DOCS: Array<{
           { property: 'Protection Period', value: 'Up to 12 months',            unit: '—',    method: 'Indoor storage' },
         ],
         composition: [
-          { name: 'Paraffinic base oil',          function: 'Primary carrier',                       percent: '50–65%',  compat: 'All metals' },
-          { name: 'Petroleum sulfonate',           function: 'Primary corrosion inhibitor',            percent: '15–25%',  compat: 'Ferrous, non-ferrous' },
-          { name: 'Calcium sulfonate additive',    function: 'Enhanced long-term protection',          percent: '5–10%',   compat: 'All metals' },
+          { name: 'Mineral base oil',          function: 'Primary carrier',                       percent: '50–65%',  compat: 'All metals' },
+          { name: 'Primary corrosion inhibitor',           function: 'Primary corrosion inhibitor',            percent: '15–25%',  compat: 'Ferrous, non-ferrous' },
+          { name: 'Secondary corrosion inhibitor',    function: 'Enhanced long-term protection',          percent: '5–10%',   compat: 'All metals' },
           { name: 'Diluent',                       function: 'Viscosity and film control',             percent: 'Balance', compat: '—' },
         ],
         application: [
@@ -1480,9 +1480,9 @@ const DOCS: Array<{
       sections: {
         features: [
           { head: 'Heavy Zinc Phosphate Coating',  body: 'Produces a dense, microcrystalline zinc phosphate layer (1.5 – 4.5 g/m²) on ferrous substrates for superior paint adhesion and corrosion resistance' },
-          { head: 'Accelerated Bath Chemistry',    body: 'Hydroxylamine sulphate and sodium nitrate accelerators deliver fast, uniform coating formation at reduced temperatures (40 – 60 °C)' },
+          { head: 'Accelerated Bath Chemistry',    body: 'A dual accelerator system delivers fast, uniform coating formation at reduced temperatures (40 – 60 °C)' },
           { head: 'Multi-application Compatible',  body: 'Validated under powder coat, liquid paint, and cataphoresis (e-coat) topcoat systems; meets OEM pretreatment specifications for heavy-duty applications' },
-          { head: 'Low-Foam Formulation',          body: 'Alphox 200 surfactant addition provides bath wetting without foam — suitable for spray tunnel and agitated dip processes' },
+          { head: 'Low-Foam Formulation',          body: 'A low-foam non-ionic surfactant provides bath wetting without foam — suitable for spray tunnel and agitated dip processes' },
         ],
         physicalProperties: [
           { property: 'Appearance',                value: 'Clear to pale yellow-green liquid', unit: '—',      method: 'Visual' },
@@ -1574,10 +1574,10 @@ const DOCS: Array<{
           skin:       'Remove contaminated clothing immediately. Wash with soap and copious water for ≥20 min. Seek medical attention if burns develop.',
           inhalation: 'Move to fresh air immediately. If breathing is difficult, give supplemental oxygen. Seek medical attention.',
           ingestion:  'Rinse mouth with water. Do NOT induce vomiting — acid ingestion risk. Call AIIMS Poison Control: 1800-11-6117 immediately.',
-          warning:    '⚠ Phosphoric acid burns can cause deep tissue damage — always seek medical attention for eye or skin exposure, even if pain is initially mild.',
+          warning:    '⚠ Acid burns can cause deep tissue damage — always seek medical attention for eye or skin exposure, even if pain is initially mild.',
         },
         fireFighting: {
-          flammability:       'Not flammable (aqueous solution); sodium nitrate content may intensify fires involving combustible materials',
+          flammability:       'Not flammable (aqueous solution); the oxidising accelerator content may intensify fires involving combustible materials',
           extinguishingMedia: 'Water spray, dry sand, or foam. Do not use dry powder near oxidising materials.',
           fireHazard:         'Thermal decomposition may release toxic nitrogen oxides (NOₓ) and phosphorus oxides',
           ppe:                'SCBA and full chemical-resistant protective clothing',
@@ -1619,7 +1619,7 @@ const DOCS: Array<{
           polymerisation: 'Will not occur',
         },
         sections11to16: {
-          'Skin / Eye': 'Corrosive at concentrate — H314 severe skin burns and eye damage. Phosphoric acid penetrates tissue.',
+          'Skin / Eye': 'Corrosive at concentrate — H314 severe skin burns and eye damage. The acid component penetrates tissue.',
           Aquatic:      'Zinc ions are toxic to aquatic organisms; H412 with long lasting effects. Treat spent bath before discharge.',
           Disposal:     'Neutralise to pH 6–9, precipitate zinc before discharge. Dispose per CPCB/SPCB norms (E.P. Act 1986).',
           Regulatory:   'MSIHC Rules 1989 · Factories Act 1948 · HWM Rules 2016 · GHS Rev 9',
@@ -1785,7 +1785,7 @@ const DOCS: Array<{
       sections: {
         features: [
           { head: 'Dual-Action Derusting & Degreasing', body: 'Simultaneously removes rust, scale, and light oils in a single-step treatment — reduces pre-treatment steps and cycle time' },
-          { head: 'Controlled Metal Pickling',           body: 'Balanced phosphoric acid system delivers effective rust removal without excessive base metal attack at recommended dilutions' },
+          { head: 'Controlled Metal Pickling',           body: 'Balanced inorganic acid system delivers effective rust removal without excessive base metal attack at recommended dilutions' },
           { head: 'Surface Conditioning',                body: 'Leaves a light phosphate conversion layer on ferrous surfaces, improving paint adhesion and providing interim flash rust protection' },
           { head: 'Multi-application Compatible',        body: 'Validated for immersion dip, spray wash, and brush application; compatible with subsequent phosphating, painting, and powder coating processes' },
         ],
@@ -1872,7 +1872,7 @@ const DOCS: Array<{
           skin:       'Remove contaminated clothing immediately. Wash with soap and copious water for ≥20 min. Seek medical attention if burns develop.',
           inhalation: 'Move to fresh air immediately. If breathing is difficult, give supplemental oxygen. Seek medical attention.',
           ingestion:  'Rinse mouth with water. Do NOT induce vomiting — acid ingestion risk. Call AIIMS Poison Control: 1800-11-6117 immediately.',
-          warning:    '⚠ Phosphoric acid burns can cause deep tissue damage — always seek medical attention for eye or skin exposure, even if pain is initially mild.',
+          warning:    '⚠ Acid burns can cause deep tissue damage — always seek medical attention for eye or skin exposure, even if pain is initially mild.',
         },
         fireFighting: {
           flammability:       'Not flammable (aqueous solution)',
@@ -1917,7 +1917,7 @@ const DOCS: Array<{
           polymerisation: 'Will not occur',
         },
         sections11to16: {
-          'Skin / Eye': 'Corrosive at concentrate — H314 severe skin burns and eye damage. Phosphoric acid penetrates tissue; seek medical attention promptly for any exposure.',
+          'Skin / Eye': 'Corrosive at concentrate — H314 severe skin burns and eye damage. The acid component penetrates tissue; seek medical attention promptly for any exposure.',
           Aquatic:      'Aqueous phosphate solution — avoid discharge in large quantities to waterways. Treat spent bath to neutral pH before disposal.',
           Disposal:     'Neutralise to pH 6–9 before discharge. Dispose per CPCB/SPCB norms (E.P. Act 1986).',
           Regulatory:   'MSIHC Rules 1989 · Factories Act 1948 · HWM Rules 2016 · GHS Rev 9',
@@ -2073,7 +2073,7 @@ const DOCS: Array<{
       sections: {
         features: [
           { head: 'Post-Phosphating Passivation',   body: 'Seals and stabilises zinc or iron phosphate conversion coatings — extends the corrosion protection window and improves topcoat adhesion' },
-          { head: 'Dual-Mechanism Inhibition',       body: 'Citric acid chelation combined with sodium nitrite delivers anodic passivation; BTA provides supplementary film-forming protection on copper-containing alloys' },
+          { head: 'Dual-Mechanism Inhibition',       body: 'Chelation combined with an oxidising passivator delivers anodic passivation; a copper inhibitor provides supplementary film-forming protection on copper-containing alloys' },
           { head: 'Multi-Metal Compatible',          body: 'Safe for use on ferrous substrates and mixed-metal assemblies including copper and brass components at recommended dilutions and temperatures' },
           { head: 'Low-Concentration Efficacy',      body: 'Effective at 1–3% dilution — minimises chemical consumption and wastewater treatment load without compromising passivation quality' },
         ],
@@ -2107,10 +2107,10 @@ const DOCS: Array<{
         performance: [
           { label: 'Salt spray (uncoated phosphated steel)',  val: '>48 h at 2%, 45 °C, 2 min passivation' },
           { label: 'Flash rust protection (post-rinse)',       val: '>4 h at ambient humidity' },
-          { label: 'Copper corrosion (BTA film test)',         val: 'Pass at 1% (visual, 24 h immersion)' },
+          { label: 'Copper corrosion (film test)',         val: 'Pass at 1% (visual, 24 h immersion)' },
           { label: 'Coating adhesion (ISO 2409)',              val: 'Consistent Gt0 crosshatch result' },
         ],
-        safetyNote: 'Contains sodium nitrite — do not mix with strong acids at concentrate level (risk of nitrogen oxide release). Avoid ingestion. Refer to the current MSDS (SDS-UPS-001) for full hazard information and PPE requirements.',
+        safetyNote: 'Contains an oxidising passivator — do not mix with strong acids at concentrate level (risk of nitrogen oxide release). Avoid ingestion. Refer to the current MSDS (SDS-UPS-001) for full hazard information and PPE requirements.',
       },
     },
   },
@@ -2158,13 +2158,13 @@ const DOCS: Array<{
           eyes:       'Rinse with running water for ≥15 min holding eyelids open. If irritation or redness persists, seek medical attention.',
           skin:       'Wash with soap and water. Remove contaminated clothing. If irritation or rash develops, seek medical attention.',
           inhalation: 'Move to fresh air. If irritation or breathing difficulty persists, seek medical attention.',
-          ingestion:  'Rinse mouth with water. Do NOT induce vomiting. Call AIIMS Poison Control: 1800-11-6117 immediately — sodium nitrite content requires prompt medical evaluation.',
-          warning:    '⚠ Sodium nitrite can form methaemoglobin if ingested in quantity — always seek medical attention following any ingestion incident.',
+          ingestion:  'Rinse mouth with water. Do NOT induce vomiting. Call AIIMS Poison Control: 1800-11-6117 immediately — the oxidising component requires prompt medical evaluation.',
+          warning:    '⚠ The oxidising component can form methaemoglobin if ingested in quantity — always seek medical attention following any ingestion incident.',
         },
         fireFighting: {
           flammability:       'Not flammable (aqueous solution)',
           extinguishingMedia: 'Water spray or foam; avoid dry powder near oxidising material',
-          fireHazard:         'Sodium nitrite component may intensify fire in contact with combustible materials at elevated temperatures; thermal decomposition may release nitrogen oxide fumes',
+          fireHazard:         'The oxidising component may intensify fire in contact with combustible materials at elevated temperatures; thermal decomposition may release nitrogen oxide fumes',
           ppe:                'SCBA and chemical-resistant full-body protective clothing',
         },
         accidentalRelease: [
@@ -2177,7 +2177,7 @@ const DOCS: Array<{
           'Dispose per local CPCB/SPCB guidelines (HWM Rules 2016)',
         ],
         handling: {
-          handling:     'Avoid contact with skin, eyes, and clothing. Handle in well-ventilated area. Do not mix with strong acids at high concentration — risk of nitrogen oxide release from sodium nitrite component.',
+          handling:     'Avoid contact with skin, eyes, and clothing. Handle in well-ventilated area. Do not mix with strong acids at high concentration — risk of nitrogen oxide release from the oxidising component.',
           storageTemp:  '10 °C – 35 °C; cool, dry, ventilated store away from combustible materials and strong acids',
           containers:   'Sealed HDPE or polypropylene containers',
           segregation:  'Store separately from strong acids, combustible materials, and reducing agents',
@@ -2199,13 +2199,13 @@ const DOCS: Array<{
         ],
         stability: {
           stability:      'Stable under recommended storage conditions when kept away from strong acids and combustibles',
-          avoid:          'Strong acids (risk of nitrogen oxide from sodium nitrite), combustible materials, heat above 60 °C',
-          decomposition:  'Thermal decomposition of sodium nitrite above 320 °C may release nitrogen oxide fumes',
+          avoid:          'Strong acids (risk of nitrogen oxide release), combustible materials, heat above 60 °C',
+          decomposition:  'Thermal decomposition of the oxidising component above 320 °C may release nitrogen oxide fumes',
           polymerisation: 'Will not occur',
         },
         sections11to16: {
           'Skin / Eye': 'H315 skin irritation / H319 eye irritation at working concentrations. Flush affected area with water promptly.',
-          Aquatic:      'H412 — sodium nitrite is harmful to aquatic organisms with long-term effects. Avoid discharge to waterways; dilute to <0.1% before disposal.',
+          Aquatic:      'H412 — the oxidising component is harmful to aquatic organisms with long-term effects. Avoid discharge to waterways; dilute to <0.1% before disposal.',
           Disposal:     'Dilute to safe concentration before disposal. Dispose per CPCB/SPCB norms (E.P. Act 1986).',
           Regulatory:   'MSIHC Rules 1989 · Factories Act 1948 · HWM Rules 2016 · GHS Rev 9',
           'Other Info': 'SDS Rev 01 issued May 2026. Next review: May 2028 or upon formulation change.',
@@ -2355,7 +2355,7 @@ const DOCS: Array<{
       description: 'UNIKTONNER is a high-concentration accelerator solution formulated for use as a tonnage additive in zinc and iron phosphating baths. It significantly accelerates the phosphating reaction by providing an oxidising environment that suppresses hydrogen evolution, increases coating weight, and improves bath throughput for high-volume production lines. The product is supplied as a ready-to-dose aqueous solution compatible with all standard phosphating chemistries.',
       sections: {
         features: [
-          { head: 'High-Active Accelerator',   body: '~33% w/v sodium nitrite active content provides powerful oxidising acceleration for fast, consistent phosphating across high-tonnage production lines' },
+          { head: 'High-Active Accelerator',   body: 'High active content provides powerful oxidising acceleration for fast, consistent phosphating across high-tonnage production lines' },
           { head: 'Improved Coating Weight',   body: 'Accelerates nucleation and growth of the phosphate crystal layer, producing denser coatings with better corrosion protection and paint adhesion' },
           { head: 'Hydrogen Suppression',      body: 'Oxidising action suppresses hydrogen evolution at the metal surface, reducing porosity and pitting in the conversion coating' },
           { head: 'Easy Dosing',               body: 'Supplied as a liquid concentrate — no pre-dissolving required; dose directly into the phosphating bath at 2–5% by volume' },
@@ -2377,7 +2377,7 @@ const DOCS: Array<{
         ],
         application: [
           { step: '1', name: 'Initial charge', param: 'Add 2–5% UNIKTONNER to fresh or topped-up phosphating bath',           value: 'Start at 2%; increase to 5% for high-tonnage runs' },
-          { step: '2', name: 'Maintain level', param: 'Monitor bath by titration; top up UNIKTONNER as nitrite is consumed',   value: 'Target: 0.5–1.5 g/L NaNO₂ in working bath' },
+          { step: '2', name: 'Maintain level', param: 'Monitor bath by titration; top up UNIKTONNER as accelerator is consumed',   value: 'Target: 0.5–1.5 g/L NaNO₂ in working bath' },
           { step: '3', name: 'Process',        param: 'Operate phosphating bath at normal temperature and contact time',      value: 'Zinc: 45–60 °C; Iron: 60–80 °C' },
           { step: '4', name: 'Rinse',          param: 'Rinse parts with fresh water after phosphating',                       value: '2 × rinse, ambient' },
           { step: '5', name: 'Next stage',     param: 'Passivation / DI rinse / topcoat as per process specification',       value: 'As required' },
@@ -2391,7 +2391,7 @@ const DOCS: Array<{
           { label: 'Coating uniformity',    val: 'Consistent coating weight across complex geometries — holes, recesses, and blind areas' },
           { label: 'Throughput improvement', val: 'Up to 30–40% increase in parts-per-hour compared to unaccelerated baths at same temperature' },
         ],
-        safetyNote: 'UNIKTONNER contains sodium nitrite — an oxidising agent. Do not mix with acids, combustible materials, or reducing agents. Wear chemical goggles, nitrile gloves, and a chemical apron when handling. Store in cool, dry, well-ventilated area away from heat, acids, and combustibles. See SDS-UTN-001 for full safety information.',
+        safetyNote: 'UNIKTONNER contains an oxidising agent. Do not mix with acids, combustible materials, or reducing agents. Wear chemical goggles, nitrile gloves, and a chemical apron when handling. Store in cool, dry, well-ventilated area away from heat, acids, and combustibles. See SDS-UTN-001 for full safety information.',
       },
     },
   },
@@ -2410,7 +2410,7 @@ const DOCS: Array<{
       signalWord: 'Danger',
       sections: {
         identification: {
-          productType:  'Aqueous sodium nitrite accelerator solution for zinc and iron phosphating baths',
+          productType:  'Aqueous oxidising accelerator solution for zinc and iron phosphating baths',
           intendedUse:  'Tonnage additive / accelerator for phosphating baths; increases coating weight and bath throughput',
           manufacturer: 'Macro Coats Pvt Ltd, Chennai, Tamil Nadu, India',
           emergency:    'AIIMS Poison Control: 1800-11-6117 (Toll-Free)',
@@ -2437,13 +2437,13 @@ const DOCS: Array<{
           eyes:       'Rinse immediately with running water for ≥15 min holding eyelids open. Seek medical attention if redness or irritation persists.',
           skin:       'Wash thoroughly with soap and water. Remove contaminated clothing and wash before reuse. Seek medical attention if irritation develops.',
           inhalation: 'Move to fresh air. If breathing is difficult or irritation persists, seek medical attention immediately.',
-          ingestion:  'Rinse mouth with water. Do NOT induce vomiting. Call AIIMS Poison Control: 1800-11-6117 immediately — sodium nitrite can cause methaemoglobinaemia even in moderate doses.',
-          warning:    '⚠ Sodium nitrite ingestion is a medical emergency — causes methaemoglobinaemia. Seek immediate hospital treatment.',
+          ingestion:  'Rinse mouth with water. Do NOT induce vomiting. Call AIIMS Poison Control: 1800-11-6117 immediately — the oxidising component can cause methaemoglobinaemia even in moderate doses.',
+          warning:    '⚠ Ingestion is a medical emergency — causes methaemoglobinaemia. Seek immediate hospital treatment.',
         },
         fireFighting: {
           flammability:       'Not flammable (aqueous solution)',
           extinguishingMedia: 'Water spray, foam; avoid dry powder which may spread burning material',
-          fireHazard:         'Sodium nitrite is an oxidising agent and may intensify fire in contact with combustible materials; thermal decomposition above 320 °C releases toxic nitrogen oxide fumes',
+          fireHazard:         'The oxidising component may intensify fire in contact with combustible materials; thermal decomposition above 320 °C releases toxic nitrogen oxide fumes',
           ppe:                'SCBA and full chemical-resistant protective clothing; do not breathe combustion gases',
         },
         accidentalRelease: [
@@ -2479,11 +2479,11 @@ const DOCS: Array<{
         stability: {
           stability:      'Stable under recommended storage conditions; keep away from heat, acids, and combustible materials',
           avoid:          'Strong acids (risk of toxic NO gas), combustible materials, reducing agents, ammonium compounds, heat above 60 °C',
-          decomposition:  'Thermal decomposition of sodium nitrite above 320 °C releases nitrogen oxide fumes (NOx); slow decomposition in acidic conditions',
+          decomposition:  'Thermal decomposition of the oxidising component above 320 °C releases nitrogen oxide fumes (NOx); slow decomposition in acidic conditions',
           polymerisation: 'Will not occur',
         },
         sections11to16: {
-          'Toxicology':  'Sodium nitrite — LD50 oral (rat): 85 mg/kg. Causes methaemoglobinaemia on significant ingestion. No evidence of carcinogenicity at normal industrial exposure levels.',
+          'Toxicology':  'Oxidising component — LD50 oral (rat): 85 mg/kg. Causes methaemoglobinaemia on significant ingestion. No evidence of carcinogenicity at normal industrial exposure levels.',
           'Aquatic':     'H400/H411 — acutely very toxic to aquatic organisms. Prevent any release to drains or waterways. Dilute extensively before disposal to approved trade effluent system.',
           'Disposal':    'Dilute to <0.5% before disposal. Dispose per CPCB/SPCB norms (E.P. Act 1986, HWM Rules 2016). Do not dispose of to drains without authorised treatment.',
           'Regulatory':  'MSIHC Rules 1989 · Factories Act 1948 · HWM Rules 2016 · GHS Rev 9',
@@ -2930,7 +2930,7 @@ const DOCS: Array<{
           { name: 'Aliphatic hydrocarbon solvent',    function: 'Carrier and viscosity diluent — aids film deposition and penetration', percent: '—', compat: 'All metals' },
           { name: 'Mineral base oil',                 function: 'Primary film-forming base oil — provides body and protection durability', percent: '—', compat: 'All metals' },
           { name: 'Rust preventive additive system',  function: 'Proprietary inhibitor package — primary corrosion protection',         percent: '—', compat: 'Ferrous, non-ferrous' },
-          { name: 'Metal sulfonate inhibitor',        function: 'Interfacial corrosion protection — polar bonding to metal surface',    percent: '—', compat: 'All metals' },
+          { name: 'Corrosion inhibitor',        function: 'Interfacial corrosion protection — polar bonding to metal surface',    percent: '—', compat: 'All metals' },
           { name: 'Fatty acid derivative',            function: 'Surface-adhesive film agent — enhances film tenacity and adhesion',    percent: '—', compat: 'All metals' },
           { name: 'Nonionic surfactant',              function: 'Water displacement and wetting aid',                                   percent: '—', compat: 'All metals' },
         ],
@@ -2991,7 +2991,7 @@ const DOCS: Array<{
             { name: 'Aliphatic hydrocarbon solvent',   description: 'Carrier and viscosity diluent — low-aromatic aliphatic hydrocarbon',     percent: '—', ghsClass: 'Aspiration Hazard / Flammable', tagType: 'danger' },
             { name: 'Mineral base oil',                description: 'Primary film-forming base — petroleum-derived mineral oil',              percent: '—', ghsClass: 'Aspiration Hazard',             tagType: 'warn'   },
             { name: 'Rust preventive additive system', description: 'Proprietary inhibitor package for corrosion protection',                 percent: '—', ghsClass: 'Irritant',                     tagType: 'warn'   },
-            { name: 'Metal sulfonate inhibitor',       description: 'Interfacial corrosion protection agent',                                 percent: '—', ghsClass: 'None',                         tagType: 'safe'   },
+            { name: 'Corrosion inhibitor',       description: 'Interfacial corrosion protection agent',                                 percent: '—', ghsClass: 'None',                         tagType: 'safe'   },
             { name: 'Fatty acid derivative',           description: 'Film adhesion and surface protection agent',                             percent: '—', ghsClass: 'None',                         tagType: 'safe'   },
             { name: 'Nonionic surfactant',             description: 'Water displacement and wetting aid',                                     percent: '—', ghsClass: 'None',                         tagType: 'safe'   },
           ],
@@ -3196,12 +3196,12 @@ const DOCS: Array<{
     },
     body: {
       grade:       'Industrial Grade',
-      description: 'CORRUCUT 500 is a dearomatized hydrocarbon-based corrosion preventive fluid built on a three-grade dearomatized hydrocarbon solvent carrier (primary, secondary, and light fractions) for controlled evaporation and good surface penetration. Calcium petroleum sulfonate provides the primary corrosion-inhibiting film, and petroleum jelly reinforces film cohesion and water resistance, leaving a thin, lightly oily protective film over components. Suited for inter-operational handling, transit, and indoor or covered storage.',
+      description: 'CORRUCUT 500 is a dearomatized hydrocarbon-based corrosion preventive fluid built on a three-grade dearomatized hydrocarbon solvent carrier (primary, secondary, and light fractions) for controlled evaporation and good surface penetration. A polar corrosion inhibitor provides the primary corrosion-inhibiting film, and a film-forming barrier agent reinforces film cohesion and water resistance, leaving a thin, lightly oily protective film over components. Suited for inter-operational handling, transit, and indoor or covered storage.',
       sections: {
         features: [
           { head: 'Multi-Grade Hydrocarbon Carrier',  body: 'Blended primary, secondary, and light-grade fractions balance fast wetting with a controlled, staged evaporation profile.' },
           { head: 'Dearomatized Formulation',        body: 'Drastically lower aromatic content provides an improved workplace environment with minimal odour and enhanced operator comfort.' },
-          { head: 'Petroleum Jelly-Reinforced Film', body: 'Petroleum jelly content improves film cohesion and water resistance versus a solvent-only carrier.' },
+          { head: 'Barrier-Reinforced Film', body: 'A film-forming barrier agent improves film cohesion and water resistance versus a solvent-only carrier.' },
           { head: 'Flexible Application',            body: 'Suitable for use via immersion tanks, automated spray lines, or manual brush setups.' },
         ],
         physicalProperties: [
@@ -3209,7 +3209,7 @@ const DOCS: Array<{
           { property: 'Density @ 25°C',              value: '0.78 – 0.85',                                unit: 'g/mL',   method: 'ISO 2811' },
           { property: 'Kinematic Viscosity @ 40°C',  value: '3 – 8',                                       unit: 'cSt',    method: 'ASTM D445' },
           { property: 'Flash Point (PMCC)',          value: '> 35',                                       unit: '°C',     method: 'ASTM D93' },
-          { property: 'Protective Film Classification', value: 'Thin, lightly oily protective film (petroleum jelly reinforced)', unit: '—', method: 'Internal' },
+          { property: 'Protective Film Classification', value: 'Thin, lightly oily protective film (barrier-reinforced)', unit: '—', method: 'Internal' },
           { property: 'Estimated Film Thickness',    value: '2.0 – 6.0',                                  unit: 'μm',     method: 'Micrometer' },
           { property: 'Theoretical Consumption Coverage', value: '35 – 50',                                unit: 'm²/L',   method: 'Calculated' },
           { property: 'Water Displacement Performance', value: 'Passes complete shedding verification',    unit: '—',      method: 'IS 1154' },
@@ -3220,8 +3220,8 @@ const DOCS: Array<{
           { name: 'Dearomatized Hydrocarbon Solvent (Primary Grade)',   function: 'Primary carrier solvent — dearomatized aliphatic hydrocarbon',     percent: '—', compat: 'All metals' },
           { name: 'Dearomatized Hydrocarbon Solvent (Secondary Grade)', function: 'Secondary carrier — higher flash point fraction',                 percent: '—', compat: 'All metals' },
           { name: 'Dearomatized Hydrocarbon Solvent (Light Grade)',     function: 'Light, fast-evaporating carrier fraction',                        percent: '—', compat: 'All metals' },
-          { name: 'Calcium Petroleum Sulfonate',                        function: 'Primary corrosion inhibitor — polar film on metal surface',       percent: '—', compat: 'Ferrous, non-ferrous' },
-          { name: 'Petroleum Jelly',                                    function: 'Film-forming barrier agent — enhances water resistance and cohesion', percent: '—', compat: 'All metals' },
+          { name: 'Corrosion Inhibitor',                                function: 'Primary corrosion inhibitor — polar film on metal surface',       percent: '—', compat: 'Ferrous, non-ferrous' },
+          { name: 'Film-Forming Barrier Agent',                         function: 'Enhances water resistance and film cohesion',                     percent: '—', compat: 'All metals' },
         ],
         application: [
           { step: '1', name: 'Pre-clean surface',   param: 'Dry, rust-free, grease-free substrate', value: 'Essential for maximum protection life' },
@@ -3256,7 +3256,7 @@ const DOCS: Array<{
       right:  'Macro Coats Pvt Ltd · Chennai · India\nGHS Rev 9 Compliant · Page 1 of 1',
     },
     body: {
-      signalWord: 'Warning',
+      signalWord: 'Danger',
       sections: {
         identification: {
           productType:  'Dearomatized hydrocarbon-based corrosion preventive fluid',
@@ -3265,7 +3265,7 @@ const DOCS: Array<{
           emergency:    'AIIMS Poison Control Centre: 1800-11-6117 (24/7 Toll-Free)',
         },
         hazards: {
-          pictograms:      ['flammable', 'health', 'environment'],
+          pictograms:      ['flammable', 'healthhazard'],
           classifications: [
             { class: 'Flammable Liquid',           category: 'Category 3', tagType: 'warn'   },
             { class: 'Aspiration Hazard',          category: 'Category 1', tagType: 'danger' },
@@ -3273,15 +3273,15 @@ const DOCS: Array<{
             { class: 'Aquatic Toxicity (Chronic)', category: 'Category 3', tagType: 'warn'   },
           ],
           hStatements: 'H226 — Flammable liquid and vapour. H304 — May be fatal if swallowed and enters airways. H315 — Causes skin irritation. H412 — Harmful to aquatic life with long lasting effects.',
-          pStatements: 'P210 — Keep away from heat, hot surfaces, sparks, open flames and other ignition sources. No smoking. · P260 — Do not breathe dust/fume/gas/mist/vapours/spray. · P273 — Avoid release to the environment. · P280 — Wear protective gloves/protective clothing/eye protection/face protection. · P301 + P310 — IF SWALLOWED: Immediately call a POISON CENTER or doctor/physician. · P302 + P352 — IF ON SKIN: Wash with plenty of soap and water. · P331 — Do NOT induce vomiting.',
+          pStatements: 'P210 — Keep away from heat, hot surfaces, sparks, open flames and other ignition sources. No smoking. · P273 — Avoid release to the environment. · P280 — Wear protective gloves/protective clothing/eye protection/face protection. · P301 + P310 — IF SWALLOWED: Immediately call a POISON CENTER or doctor/physician. · P302 + P352 — IF ON SKIN: Wash with plenty of soap and water. · P331 — Do NOT induce vomiting.',
         },
         composition: {
           ingredients: [
-            { name: 'Exxsol D60',                             description: 'Primary carrier solvent',   percent: '50% – 65%', ghsClass: 'Asp. Tox. 1 / Flam. Liq. 3', tagType: 'danger' },
-            { name: 'Exxsol D145',                            description: 'Secondary carrier solvent', percent: '15% – 25%', ghsClass: 'Asp. Tox. 1',                tagType: 'warn'   },
-            { name: 'Exxsol 32D',                             description: 'Light carrier fraction',    percent: '2% – 6%',   ghsClass: 'Flam. Liq. 3',               tagType: 'warn'   },
-            { name: 'Calcium Petroleum Sulfonate',            description: 'Primary rust inhibitor',    percent: '10% – 16%', ghsClass: 'Skin Irrit. 2',              tagType: 'warn'   },
-            { name: 'Vaseline (Petroleum Jelly)',             description: 'Film-forming barrier agent', percent: '4% – 8%',  ghsClass: 'Not Classified',             tagType: 'safe'   },
+            { name: 'Dearomatized Hydrocarbon Solvent',       description: 'Primary carrier solvent',   percent: '50% – 65%', ghsClass: 'Asp. Tox. 1 / Flam. Liq. 3', tagType: 'danger' },
+            { name: 'Dearomatized Hydrocarbon Solvent (Heavy Grade)', description: 'Secondary carrier solvent', percent: '15% – 25%', ghsClass: 'Asp. Tox. 1',      tagType: 'warn'   },
+            { name: 'Light Hydrocarbon Solvent',              description: 'Light carrier fraction',    percent: '2% – 6%',   ghsClass: 'Flam. Liq. 3',               tagType: 'warn'   },
+            { name: 'Corrosion Inhibitor',                    description: 'Primary rust inhibitor',    percent: '10% – 16%', ghsClass: 'Skin Irrit. 2',              tagType: 'warn'   },
+            { name: 'Film-Forming Barrier Agent',             description: 'Water resistance and film cohesion', percent: '4% – 8%', ghsClass: 'Not Classified',     tagType: 'safe'   },
           ],
           note: '* Formulation values are proprietary. Structural designations are provided in full accordance with safe manufacturing norms.',
         },
@@ -3482,8 +3482,8 @@ const DOCS: Array<{
       sections: {
         features: [
           { head: 'Low-Foam Performance',      body: 'Engineered nonionic surfactant system maintains low foam under high-agitation spray or immersion cleaning, protecting pumps and enabling stable bath operation' },
-          { head: 'Heavy-Duty Degreasing',      body: 'Silicate/carbonate alkaline builder system rapidly emulsifies and lifts machining oils, greases, and carbonized oil deposits from ferrous components' },
-          { head: 'Excellent Bath Stability',   body: 'Sodium gluconate sequesters hardness ions, preventing scale build-up and maintaining consistent cleaning performance over extended bath life' },
+          { head: 'Heavy-Duty Degreasing',      body: 'Alkaline builder system rapidly emulsifies and lifts machining oils, greases, and carbonized oil deposits from ferrous components' },
+          { head: 'Excellent Bath Stability',   body: 'A sequestering agent binds hardness ions, preventing scale build-up and maintaining consistent cleaning performance over extended bath life' },
           { head: 'Dual-Process Compatible',    body: 'Formulated for both immersion and spray cleaning systems at working concentrations of 6 – 8%' },
         ],
         physicalProperties: [
@@ -3497,9 +3497,9 @@ const DOCS: Array<{
           { property: 'Solubility',                value: 'Fully miscible with water',  unit: '—',      method: '—' },
         ],
         composition: [
-          { name: 'Silicate / carbonate builder system', function: 'Primary alkalinity source — oil emulsification and carbonized deposit removal', percent: '—', compat: 'Ferrous metals' },
+          { name: 'Alkaline builder system', function: 'Primary alkalinity source — oil emulsification and carbonized deposit removal', percent: '—', compat: 'Ferrous metals' },
           { name: 'Low-foam nonionic surfactant',         function: 'Wetting and degreasing aid with low-foam stabilization for spray/immersion',       percent: '—', compat: 'All process types' },
-          { name: 'Sequestering agent (gluconate)',       function: 'Hardness control and bath stability',                                              percent: '—', compat: '—' },
+          { name: 'Sequestering agent',       function: 'Hardness control and bath stability',                                              percent: '—', compat: '—' },
           { name: 'Water',                                function: 'Carrier / diluent',                                                                percent: 'Balance', compat: '—' },
         ],
         application: [
@@ -3556,9 +3556,9 @@ const DOCS: Array<{
         },
         composition: {
           ingredients: [
-            { name: 'Silicate / carbonate builder system', description: 'Primary alkalinity source — oil emulsification and carbonized deposit removal', ghsClass: 'Corrosive', tagType: 'danger' },
+            { name: 'Alkaline builder system', description: 'Primary alkalinity source — oil emulsification and carbonized deposit removal', ghsClass: 'Corrosive', tagType: 'danger' },
             { name: 'Low-foam nonionic surfactant',         description: 'Wetting and degreasing aid with low-foam stabilization',                          ghsClass: 'Irritant',  tagType: 'warn'   },
-            { name: 'Sequestering agent (gluconate)',       description: 'Hardness control / bath stability',                                                ghsClass: 'None',      tagType: 'safe'   },
+            { name: 'Sequestering agent',       description: 'Hardness control / bath stability',                                                ghsClass: 'None',      tagType: 'safe'   },
             { name: 'Water',                                description: 'Carrier / diluent',                                                                ghsClass: 'None',      tagType: 'safe'   },
           ],
           note: 'Exact formulation is proprietary. Functional ingredient descriptions are provided for safety and emergency purposes only.',
@@ -3762,7 +3762,7 @@ const DOCS: Array<{
       description: 'CORRCUT 200 is an economical solvent-based rust preventive oil designed for temporary indoor protection of ferrous components. It forms a thin oily protective film after solvent evaporation, providing corrosion protection during storage and inter-process handling. Recommended for machined components, forged parts, castings, automotive components, and general engineering parts held in indoor storage or inter-process protection.',
       sections: {
         features: [
-          { head: 'Economical Solvent-Based Protection', body: 'MTO + dearomatized hydrocarbon carrier gives reliable indoor rust protection at a lower cost than mineral-oil-based systems' },
+          { head: 'Economical Solvent-Based Protection', body: 'Blended hydrocarbon solvent carrier gives reliable indoor rust protection at a lower cost than mineral-oil-based systems' },
           { head: 'Thin Oily Film',                       body: 'Deposits a light, non-heavy protective film that is easy to remove before further processing' },
           { head: 'Versatile Application',                body: 'Applicable by dip, spray, brush, or flow coat to suit different production line layouts' },
           { head: 'Recommended Uses',                     body: 'Indoor storage protection, temporary rust prevention, finished components before packing, and components awaiting assembly' },
@@ -3772,7 +3772,7 @@ const DOCS: Array<{
           { property: 'Colour',             value: 'Pale yellow',                            unit: '—',    method: 'Visual' },
           { property: 'Odour',              value: 'Mild solvent odour',                     unit: '—',    method: 'Organoleptic' },
           { property: 'Film Type',          value: 'Thin oily protective film',              unit: '—',    method: 'Visual (post-evaporation)' },
-          { property: 'Base Type',          value: 'Solvent-based (MTO + Dearomatized Hydrocarbon Solvent)', unit: '—', method: '—' },
+          { property: 'Base Type',          value: 'Solvent-based (blended hydrocarbon solvents)', unit: '—', method: '—' },
           { property: 'Flash Point',        value: '> 40',                                   unit: '°C',   method: 'ASTM D93' },
           { property: 'Density (25 °C)',    value: '0.79 – 0.83',                            unit: 'g/mL', method: 'ISO 2811' },
           { property: 'Viscosity (40 °C)',  value: '2 – 6',                                  unit: 'cSt',  method: 'ASTM D445' },
@@ -3780,12 +3780,12 @@ const DOCS: Array<{
           { property: 'Protection Period',  value: 'Approx. 1 – 3 months (indoor guidance)',  unit: '—',    method: 'Internal — guidance only' },
         ],
         composition: [
-          { name: 'Mineral Turpentine Oil (MTO)',        function: 'Primary carrier — fast-evaporating aliphatic solvent for economical film deposition',              percent: '—', compat: 'All metals' },
+          { name: 'Hydrocarbon Carrier Solvent',         function: 'Primary carrier — fast-evaporating aliphatic solvent for economical film deposition',              percent: '—', compat: 'All metals' },
           { name: 'Dearomatized Hydrocarbon Solvent',    function: 'Secondary carrier — controlled evaporation, low aromatic content for reduced odour',                percent: '—', compat: 'All metals' },
-          { name: 'Calcium Petroleum Sulfonate',         function: 'Primary corrosion inhibitor — polar film-forming rust preventive additive',                        percent: '—', compat: 'Ferrous, non-ferrous' },
-          { name: 'Lanolin',                             function: 'Film adhesion promoter — natural wax-like film former, enhances water repellence',                  percent: '—', compat: 'All metals' },
-          { name: 'Sorbitan Monooleate (Span 80)',       function: 'Emulsifier / dispersing agent — stabilises additive package for a uniform film',                    percent: '—', compat: 'All metals' },
-          { name: 'BHT (Antioxidant)',                   function: 'Antioxidant / stabiliser — prevents oxidative degradation of the protective film',                  percent: '—', compat: 'All metals' },
+          { name: 'Corrosion Inhibitor',                 function: 'Primary corrosion inhibitor — polar film-forming rust preventive additive',                        percent: '—', compat: 'Ferrous, non-ferrous' },
+          { name: 'Film Adhesion Promoter',              function: 'Wax-like film former — enhances adhesion and water repellence',                                    percent: '—', compat: 'All metals' },
+          { name: 'Dispersing Agent',                    function: 'Stabilises the additive package for a uniform film',                                               percent: '—', compat: 'All metals' },
+          { name: 'Stabiliser',                          function: 'Prevents oxidative degradation of the protective film',                                            percent: '—', compat: 'All metals' },
         ],
         application: [
           { step: '1', name: 'Pre-clean surface',   param: 'Dry, rust-free, grease-free substrate', value: 'Essential for maximum film adhesion' },
@@ -3843,12 +3843,12 @@ const DOCS: Array<{
         },
         composition: {
           ingredients: [
-            { name: 'Mineral Turpentine Oil (MTO)',      description: 'Primary solvent carrier — economical aliphatic petroleum distillate',        ghsClass: 'Flammable / Aspiration Hazard', tagType: 'danger' },
-            { name: 'Dearomatized Hydrocarbon Solvent',  description: 'Secondary carrier — low-aromatic hydrocarbon solvent',                       ghsClass: 'Aspiration Hazard',             tagType: 'warn'   },
-            { name: 'Calcium Petroleum Sulfonate',       description: 'Corrosion inhibitor package for interfacial rust protection',                                                                  ghsClass: 'Irritant',                     tagType: 'warn'   },
-            { name: 'Lanolin',                           description: 'Film adhesion and water-repellence agent',                                                                                      ghsClass: 'None',                         tagType: 'safe'   },
-            { name: 'Sorbitan Monooleate (Span 80)',     description: 'Emulsifier / dispersing agent',                                                                                                  ghsClass: 'None',                         tagType: 'safe'   },
-            { name: 'BHT (Antioxidant)',                 description: 'Film stabiliser — prevents oxidative degradation',                                                                              ghsClass: 'Mild Irritant',                tagType: 'warn'   },
+            { name: 'Hydrocarbon Carrier Solvent',       description: 'Primary solvent carrier — aliphatic petroleum distillate',                   percent: '—', ghsClass: 'Flammable / Aspiration Hazard', tagType: 'danger' },
+            { name: 'Dearomatized Hydrocarbon Solvent',  description: 'Secondary carrier — low-aromatic hydrocarbon solvent',                       percent: '—', ghsClass: 'Aspiration Hazard',             tagType: 'warn'   },
+            { name: 'Corrosion Inhibitor',               description: 'Corrosion inhibitor package for interfacial rust protection',                     percent: '—', ghsClass: 'Irritant',                      tagType: 'warn'   },
+            { name: 'Film Adhesion Promoter',            description: 'Film adhesion and water-repellence agent',                                         percent: '—', ghsClass: 'None',                          tagType: 'safe'   },
+            { name: 'Dispersing Agent',                  description: 'Emulsifier / dispersing agent',                                                    percent: '—', ghsClass: 'None',                          tagType: 'safe'   },
+            { name: 'Stabiliser',                        description: 'Film stabiliser — prevents oxidative degradation',                                 percent: '—', ghsClass: 'Mild Irritant',                 tagType: 'warn'   },
           ],
           note: 'Exact formulation is proprietary. Functional ingredient descriptions are provided for safety and emergency purposes only.',
         },
@@ -4056,8 +4056,8 @@ const DOCS: Array<{
           { head: 'Excellent Cooling & Lubrication', body: 'Balanced semi-synthetic chemistry delivers high heat dissipation together with good boundary lubrication for reduced tool wear and better surface finish' },
           { head: 'Aluminium-Safe Formulation',       body: 'Very low staining on aluminium and aluminium alloys — validated for CNC, VMC, turning, milling, drilling and grinding of aluminium components, extrusions and die-cast parts' },
           { head: 'Low Foaming',                      body: 'Formulated for stable performance in high-pressure coolant systems and grinding applications without excessive foam build-up' },
-          { head: 'Hard Water Stability',              body: 'Sodium gluconate sequestrant system maintains emulsion stability across a wide range of water hardness' },
-          { head: 'Corrosion Protection',              body: 'Borax and amine-based inhibitor package provides excellent corrosion protection on machine surfaces and workpieces' },
+          { head: 'Hard Water Stability',              body: 'Sequestrant system maintains emulsion stability across a wide range of water hardness' },
+          { head: 'Corrosion Protection',              body: 'Inhibitor package provides excellent corrosion protection on machine surfaces and workpieces' },
           { head: 'Long Sump Life',                    body: 'Good emulsion stability and biocide-compatible formulation extend sump life and reduce fluid changeover frequency' },
         ],
         physicalProperties: [
@@ -4073,7 +4073,7 @@ const DOCS: Array<{
         ],
         composition: [
           { name: 'Deionised Water Carrier',          function: 'Base carrier and heat-transfer medium',                     percent: '76–80%', compat: 'All aluminium alloys' },
-          { name: 'Paraffinic Mineral Oil System',    function: 'Boundary lubrication — reduces tool wear, improves finish', percent: '5–10%',  compat: 'Aluminium, ferrous metals' },
+          { name: 'Mineral Oil System',    function: 'Boundary lubrication — reduces tool wear, improves finish', percent: '5–10%',  compat: 'Aluminium, ferrous metals' },
           { name: 'Glycol & Amine Buffer System',     function: 'Corrosion inhibition and pH buffering',                     percent: '8–10%',  compat: 'Aluminium, machine surfaces' },
           { name: 'Surfactant & Sequestrant Package', function: 'Emulsification, hard water stability, low foaming',        percent: '4–6%',   compat: 'All substrates' },
         ],
@@ -4131,12 +4131,12 @@ const DOCS: Array<{
         composition: {
           ingredients: [
             { name: 'Deionised water',              description: 'Base carrier — major component',                            ghsClass: '—',              tagType: 'safe' },
-            { name: 'Light paraffinic mineral oil', description: 'Boundary lubricant — reduces tool wear, improves finish',   ghsClass: 'Not classified', tagType: 'safe' },
-            { name: 'Propylene glycol',             description: 'Co-solvent and humectant',                                   ghsClass: 'Not classified', tagType: 'safe' },
-            { name: 'Triethanolamine (TEA)',        description: 'pH buffer and corrosion inhibitor',                          ghsClass: 'Irritant',       tagType: 'warn' },
-            { name: 'Alcohol ethoxylate (LAE-7)',   description: 'Non-ionic emulsifying surfactant',                           ghsClass: 'Irritant',       tagType: 'warn' },
-            { name: 'Sodium gluconate',             description: 'Sequestrant — hard water stability',                         ghsClass: '—',              tagType: 'safe' },
-            { name: 'Borax',                        description: 'Corrosion inhibitor and buffering agent',                    ghsClass: 'Irritant',       tagType: 'warn' },
+            { name: 'Mineral base oil', description: 'Boundary lubricant — reduces tool wear, improves finish',   ghsClass: 'Not classified', tagType: 'safe' },
+            { name: 'Co-solvent',             description: 'Co-solvent and humectant',                                   ghsClass: 'Not classified', tagType: 'safe' },
+            { name: 'pH regulator',        description: 'pH buffer and corrosion inhibitor',                          ghsClass: 'Irritant',       tagType: 'warn' },
+            { name: 'Non-ionic surfactant',   description: 'Non-ionic emulsifying surfactant',                           ghsClass: 'Irritant',       tagType: 'warn' },
+            { name: 'Sequestering agent',             description: 'Sequestrant — hard water stability',                         ghsClass: '—',              tagType: 'safe' },
+            { name: 'Corrosion inhibitor / buffer',                        description: 'Corrosion inhibitor and buffering agent',                    ghsClass: 'Irritant',       tagType: 'warn' },
             { name: 'Non-silicone defoamer',        description: 'Foam control additive',                                       ghsClass: '—',              tagType: 'safe' },
           ],
           note: 'Exact formulation is proprietary. Functional ingredient descriptions are provided for safety and emergency purposes only.',
@@ -4372,8 +4372,8 @@ const DOCS: Array<{
           { name: 'Chelating agent',                                    function: 'Chelating agent for hardness control',               percent: '2–5%',   compat: 'Hard and soft water' },
           { name: 'Non-ionic surfactant — wetting and degreasing agent', function: 'Wetting & degreasing agent — non-ionic surfactant', percent: '5–10%',  compat: 'All metals' },
           { name: 'Non-ionic surfactant — wetting and degreasing agent', function: 'Wetting & degreasing agent — non-ionic surfactant', percent: '2–5%',   compat: 'All metals' },
-          { name: 'Glycol ether coupling solvent',                      function: 'Coupling solvent — improves oil/grease solvency',    percent: '5–10%',  compat: '—' },
-          { name: 'Glycol ether co-solvent',                            function: 'Co-solvent — enhances cleaning and drying performance', percent: '5–10%', compat: 'All metals' },
+          { name: 'Coupling solvent',                      function: 'Coupling solvent — improves oil/grease solvency',    percent: '5–10%',  compat: '—' },
+          { name: 'Co-solvent',                            function: 'Co-solvent — enhances cleaning and drying performance', percent: '5–10%', compat: 'All metals' },
           { name: 'Metal corrosion inhibitor / film former',            function: 'Copper corrosion inhibitor / film former',           percent: '<1%',    compat: 'Copper and copper alloys' },
         ],
         // Recommended UNIKLEAN-CU Process (brass/copper cleaning & brightening) — supplied process
@@ -4439,7 +4439,7 @@ const DOCS: Array<{
         composition: {
           ingredients: [
             { name: 'Alkalinity builder',            description: 'Alkalinity builder',            percent: '5–10%',  ghsClass: 'Serious Eye Damage',    tagType: 'warn' },
-            { name: 'Glycol ether coupling solvent',  description: 'Glycol ether coupling solvent', percent: '5–10%',  ghsClass: 'Acute Toxicity (Oral)', tagType: 'warn' },
+            { name: 'Coupling solvent',  description: 'Coupling solvent', percent: '5–10%',  ghsClass: 'Acute Toxicity (Oral)', tagType: 'warn' },
             { name: 'Proprietary Chemical Blend',     description: 'Blend of non-hazardous or below-threshold proprietary ingredients', percent: '70–90%', ghsClass: '—', tagType: 'safe' },
           ],
           note: 'Exact formulation is proprietary. Functional ingredient descriptions are provided for safety and emergency purposes only.',
@@ -4662,7 +4662,7 @@ const DOCS: Array<{
         physicalProperties: [
           { property: 'Appearance',              value: 'Clear, colourless liquid', unit: '—',    method: 'Estimated — no colourants in formulation; all components colourless/near-colourless in aqueous solution. Pending visual confirmation.' },
           { property: 'pH (neat concentrate)',    value: '1.0 – 2.0', unit: '—',    method: 'Calculated — from the organic-acid component\'s concentration (20.0% w/v ≈ 1.04 mol/L) using its first dissociation constant (Ka1, pKa1 3.13); not lab-measured. Pending lab confirmation (pH electrode, 25 °C).' },
-          { property: 'Density (calculated)',    value: '~1.21', unit: 'g/mL', method: 'Calculated — mass of formula components (20.0 kg citric acid + 3.35 L H₂O₂ 50% solution @ ~1.196 g/mL + 96.65 kg DM water) ÷ 100 L reference batch volume; not lab-measured. Pending lab (density bottle/hydrometer, 25 °C) confirmation.' },
+          { property: 'Density (calculated)',    value: '~1.21', unit: 'g/mL', method: 'Calculated — mass of formula components ÷ 100 L reference batch volume; not lab-measured. Pending lab (density bottle/hydrometer, 25 °C) confirmation.' },
           { property: 'Working Concentration',   value: '2', unit: '% v/v',    method: 'As supplied — recommended dose for the brass/copper coloring/brightening stage, per the Recommended UNIKLEAN-CU Process (brass/copper cleaning & brightening); dosed directly into the bath, not a standalone 1:10 dilution' },
           { property: 'Reference Batch Size',    value: '100', unit: 'L',    method: 'As supplied — reference formulation batch size' },
         ],

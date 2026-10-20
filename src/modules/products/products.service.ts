@@ -30,6 +30,20 @@ const STATUS_TRANSITIONS: Record<string, string[]> = {
   archived:        ['draft'],
 }
 
+/**
+ * Per-variant override keys merged by applyVariantOverride, on top of the
+ * composition/hazards handling there. Must stay in sync with
+ * tdsOverridesSchema / msdsOverridesSchema in products.body-schemas.ts.
+ */
+const TDS_TOP_LEVEL_OVERRIDE_KEYS = ['grade', 'description'] as const
+const TDS_SECTION_OVERRIDE_KEYS = [
+  'features', 'physicalProperties', 'application', 'packaging', 'performance', 'safetyNote',
+] as const
+const MSDS_SECTION_OVERRIDE_KEYS = [
+  'identification', 'firstAid', 'fireFighting', 'accidentalRelease', 'handling', 'exposure',
+  'physical', 'stability', 'toxicology', 'ecology', 'disposal', 'transport', 'regulatory', 'other',
+] as const
+
 function cacheKey(productLine: string, docType: DocType) {
   return `doc:${productLine}:${docType}`
 }
@@ -37,7 +51,9 @@ function cacheKey(productLine: string, docType: DocType) {
 /**
  * Applies formulation-variant-aware sanitized/internal composition + hazards
  * onto an already-built document envelope, in place. Only meaningful for
- * tds/msds — callers must gate on docType before calling this.
+ * tds/msds — callers must gate on docType before calling this. Any other
+ * section the variant's tds/msdsOverrides sets (see *_OVERRIDE_KEYS) replaces
+ * the base document's value; unset keys keep the base value.
  *
  * Every failure mode here (variant not found, cross-tenant mismatch) is a
  * silent no-op — falls back to the baseline `row.body` — rather than an
@@ -88,6 +104,13 @@ async function applyVariantOverride(
   if (docType === 'tds') {
     const overrides = variant.tdsOverrides as Record<string, unknown> | null
 
+    for (const key of TDS_TOP_LEVEL_OVERRIDE_KEYS) {
+      if (overrides?.[key] !== undefined) document[key] = overrides[key]
+    }
+    for (const key of TDS_SECTION_OVERRIDE_KEYS) {
+      if (overrides?.[key] !== undefined) sections[key] = overrides[key]
+    }
+
     if (overrides && overrides.composition !== undefined) {
       sections.composition = overrides.composition
     } else if (view === 'internal') {
@@ -103,8 +126,21 @@ async function applyVariantOverride(
 
   // ── msds ──────────────────────────────────────────────────────────────────
   const overrides = variant.msdsOverrides as Record<string, unknown> | null
-  const hazardOverride = overrides?.hazardOverride as HazardAggregate | undefined
   const profileMap = await getHazardProfileMap()
+
+  for (const key of MSDS_SECTION_OVERRIDE_KEYS) {
+    if (overrides?.[key] !== undefined) sections[key] = overrides[key]
+  }
+
+  // Legacy `hazards` + `signalWord` pair is an alias of hazardOverride; a missing
+  // legacy signalWord falls back to the component-derived one.
+  const legacyHazards = overrides?.hazards as Omit<HazardAggregate, 'signalWord'> | undefined
+  const hazardOverride = (overrides?.hazardOverride as HazardAggregate | undefined)
+    ?? (legacyHazards && {
+      ...legacyHazards,
+      signalWord: (overrides?.signalWord as HazardAggregate['signalWord'] | undefined)
+        ?? deriveHazardAggregate(components, profileMap).signalWord,
+    })
 
   if (overrides && overrides.composition !== undefined) {
     sections.composition = overrides.composition
