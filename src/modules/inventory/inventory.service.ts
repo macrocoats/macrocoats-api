@@ -1,6 +1,6 @@
-import { eq, asc } from 'drizzle-orm'
+import { eq, asc, and, notExists } from 'drizzle-orm'
 import { db } from '../../db/index.js'
-import { inventoryItems } from '../../db/schema/index.js'
+import { inventoryItems, purchaseEntries, vendorMaterialPrices } from '../../db/schema/index.js'
 import { getLatestPurchaseEntryPrice } from '../purchase-entries/purchase-entries.service.js'
 import { getBestEffectiveVendorPrice } from '../vendor-prices/vendor-prices.service.js'
 import type { CreateInventoryItemBody, UpdateInventoryItemBody, StockStatus } from './inventory.schema.js'
@@ -114,13 +114,28 @@ export async function deleteItem(id: string): Promise<boolean> {
 }
 
 /**
- * Resets the inventory to the 23 default materials.
- * Deletes all non-default rows; restores default rows to their seed prices.
+ * Removes non-default rows that have no pricing or purchase history.
+ * History-backed materials must remain because both relations deliberately use
+ * ON DELETE RESTRICT to preserve the commercial audit trail.
  */
 export async function resetToDefaults() {
   await db
     .delete(inventoryItems)
-    .where(eq(inventoryItems.isDefault, false))
+    .where(and(
+      eq(inventoryItems.isDefault, false),
+      notExists(
+        db
+          .select({ id: vendorMaterialPrices.id })
+          .from(vendorMaterialPrices)
+          .where(eq(vendorMaterialPrices.inventoryItemId, inventoryItems.id)),
+      ),
+      notExists(
+        db
+          .select({ id: purchaseEntries.id })
+          .from(purchaseEntries)
+          .where(eq(purchaseEntries.inventoryItemId, inventoryItems.id)),
+      ),
+    ))
 
   return getAllItems()
 }

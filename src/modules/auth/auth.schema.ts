@@ -1,7 +1,9 @@
 import { z } from 'zod'
 
 export const loginSchema = z.object({
-  username: z.string().min(1).max(30).regex(/^[a-z0-9_.-]+$/),
+  // The service canonicalizes usernames before lookup; validation must accept
+  // the same case-insensitive input surface or normalization is unreachable.
+  username: z.string().min(1).max(30).regex(/^[a-z0-9_.-]+$/i),
   password: z.string().min(1).max(200),
 })
 

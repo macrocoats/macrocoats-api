@@ -1,0 +1,215 @@
+name: Backend CI/CD
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Backend verification
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    concurrency:
+      group: backend-ci-${{ github.ref }}
+      cancel-in-progress: true
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: macrocoats_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d macrocoats_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      NODE_ENV: test
+      LOG_LEVEL: silent
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/macrocoats_ci
+      REDIS_URL: redis://127.0.0.1:6379
+      COOKIE_SECRET: ci-only-cookie-secret-that-is-longer-than-32-characters
+      COOKIE_DOMAIN: localhost
+      COOKIE_SECURE: "false"
+      ALLOWED_ORIGIN: http://localhost:5173
+      PROCUREMENT_STORAGE_PATH: /tmp/macrocoats-company-documents
+      PUPPETEER_CACHE_DIR: /tmp/puppeteer
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Cache Puppeteer browser
+        uses: actions/cache@v6
+        with:
+          path: /tmp/puppeteer
+          key: puppeteer-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chrome and system dependencies
+        run: npx puppeteer browsers install chrome --install-deps
+
+      - name: Create isolated test configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out "$RUNNER_TEMP/jwt-private.pem" 2>/dev/null
+          openssl rsa -in "$RUNNER_TEMP/jwt-private.pem" -pubout -out "$RUNNER_TEMP/jwt-public.pem" 2>/dev/null
+          private_key_b64="$(base64 -w 0 "$RUNNER_TEMP/jwt-private.pem")"
+          public_key_b64="$(base64 -w 0 "$RUNNER_TEMP/jwt-public.pem")"
+          mkdir -p "$PROCUREMENT_STORAGE_PATH"
+          {
+            printf 'JWT_PRIVATE_KEY_B64=%s\n' "$private_key_b64"
+            printf 'JWT_PUBLIC_KEY_B64=%s\n' "$public_key_b64"
+          } >> "$GITHUB_ENV"
+          {
+            printf 'NODE_ENV=test\n'
+            printf 'DATABASE_URL=%s\n' "$DATABASE_URL"
+            printf 'REDIS_URL=%s\n' "$REDIS_URL"
+            printf 'JWT_PRIVATE_KEY_B64=%s\n' "$private_key_b64"
+            printf 'JWT_PUBLIC_KEY_B64=%s\n' "$public_key_b64"
+            printf 'COOKIE_SECRET=%s\n' "$COOKIE_SECRET"
+            printf 'COOKIE_DOMAIN=localhost\n'
+            printf 'COOKIE_SECURE=false\n'
+            printf 'ALLOWED_ORIGIN=%s\n' "$ALLOWED_ORIGIN"
+            printf 'PROCUREMENT_STORAGE_PATH=%s\n' "$PROCUREMENT_STORAGE_PATH"
+          } > .env.local
+
+      - name: Typecheck
+        run: npm run lint
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Apply migrations to clean database
+        run: npm run db:migrate
+
+      - name: Seed integration-test data
+        run: npm run seed
+
+      - name: Run full integration and PDF suite
+        run: npm test
+
+  deploy-production:
+    name: Deploy production
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment:
+      name: production
+      url: https://api.macrocoats.in/health
+    concurrency:
+      group: macrocoats-api-production
+      cancel-in-progress: false
+
+    steps:
+      - name: Check out tested commit
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install Ansible
+        run: python -m pip install "ansible-core~=2.19.0"
+
+      - name: Configure production credentials
+        shell: bash
+        env:
+          OCI_SSH_PRIVATE_KEY: ${{ secrets.OCI_SSH_PRIVATE_KEY }}
+          OCI_SSH_KNOWN_HOSTS: ${{ secrets.OCI_SSH_KNOWN_HOSTS }}
+          ANSIBLE_VAULT_FILE_B64: ${{ secrets.ANSIBLE_VAULT_FILE_B64 }}
+          ANSIBLE_VAULT_PASSWORD: ${{ secrets.ANSIBLE_VAULT_PASSWORD }}
+        run: |
+          set -euo pipefail
+          test -n "$OCI_SSH_PRIVATE_KEY"
+          test -n "$OCI_SSH_KNOWN_HOSTS"
+          test -n "$ANSIBLE_VAULT_FILE_B64"
+          test -n "$ANSIBLE_VAULT_PASSWORD"
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$OCI_SSH_PRIVATE_KEY" > "$HOME/.ssh/macrocoats-oci.key"
+          chmod 600 "$HOME/.ssh/macrocoats-oci.key"
+          printf '%s\n' "$OCI_SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+          printf '%s' "$ANSIBLE_VAULT_FILE_B64" | base64 --decode > ansible/group_vars/vault.yml
+          printf '%s' "$ANSIBLE_VAULT_PASSWORD" > ansible/.vault_pass.txt
+          chmod 600 ansible/group_vars/vault.yml ansible/.vault_pass.txt
+
+      - name: Capture rollback checkpoint
+        id: checkpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          previous_sha="$(ssh -i "$HOME/.ssh/macrocoats-oci.key" ubuntu@92.4.91.25 \
+            'cd /var/www/macrocoats-api && git rev-parse HEAD')"
+          if [[ ! "$previous_sha" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Could not capture a valid production SHA" >&2
+            exit 1
+          fi
+          printf 'previous_sha=%s\n' "$previous_sha" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy exact tested commit
+        working-directory: ansible
+        run: ansible-playbook deploy.yml -e "repo_version=${GITHUB_SHA}" -e force_deploy=true
+
+      - name: Verify production service and commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          remote_sha="$(ssh -i "$HOME/.ssh/macrocoats-oci.key" ubuntu@92.4.91.25 \
+            'sudo systemctl is-active macrocoats-api >/dev/null && cd /var/www/macrocoats-api && git rev-parse HEAD')"
+          if [[ "$remote_sha" != "$GITHUB_SHA" ]]; then
+            echo "Production SHA mismatch: expected $GITHUB_SHA, found $remote_sha" >&2
+            exit 1
+          fi
+          health="$(curl --fail --silent --show-error --retry 12 --retry-delay 5 \
+            --retry-all-errors https://api.macrocoats.in/health)"
+          jq -e '.status == "ok" and .checks.db == "ok" and .checks.redis != "down"' <<< "$health" >/dev/null
+          ssh -i "$HOME/.ssh/macrocoats-oci.key" ubuntu@92.4.91.25 \
+            'sudo journalctl -u macrocoats-api -n 50 --no-pager'
+
+      - name: Publish deployment summary
+        if: always()
+        shell: bash
+        env:
+          PREVIOUS_SHA: ${{ steps.checkpoint.outputs.previous_sha }}
+          DEPLOY_STATUS: ${{ job.status }}
+        run: |
+          {
+            echo "## macrocoats-api production deployment"
+            echo
+            echo "- Status: ${DEPLOY_STATUS}"
+            echo "- Requested SHA: \`${GITHUB_SHA}\`"
+            echo "- Previous SHA: \`${PREVIOUS_SHA:-not captured}\`"
+            echo "- Health URL: https://api.macrocoats.in/health"
+            if [[ "$DEPLOY_STATUS" != "success" && -n "${PREVIOUS_SHA:-}" ]]; then
+              echo "- Rollback: run the **Rollback production** workflow with target SHA \`${PREVIOUS_SHA}\`."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

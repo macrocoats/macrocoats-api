@@ -78,7 +78,7 @@ describe('POST /v1/auth/token', () => {
       .expect(200)
 
     expect(res.body.user.companyName).toBe('sanmar')
-    expect(res.body.redirectTo).toMatch(/\/products\/uniklean-sp\/tds/)
+    expect(res.body.redirectTo).toBe('/formulas')
   })
 
   it('returns 401 on invalid token', async () => {

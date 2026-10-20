@@ -464,7 +464,7 @@ All endpoints require `superadmin` role.
 | POST   | `/inventory`          | Create a new item |
 | PATCH  | `/inventory/:id`      | Update item fields (partial) |
 | DELETE | `/inventory/:id`      | Delete item |
-| POST   | `/inventory/reset`    | Remove user-added items; restore 23 defaults |
+| POST   | `/inventory/reset`    | Remove unreferenced user-added items; preserve pricing/purchase history |
 
 ---
 

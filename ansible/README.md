@@ -49,14 +49,59 @@ confirmation via the link OCI emails to it before alerts actually deliver — `i
 `lifecycle-state` won't tell you that from the CLI, check `oci ons subscription list`.
 To run just this part: `ansible-playbook oci-monitoring.yml`.
 
-## Deploy (run on every release)
+## Automated CI/CD (GitHub Actions)
+
+`.github/workflows/backend-ci-cd.yml` is the normal release path. Pull requests and pushes to
+`main` run typechecking, the production build, migrations and seeds against clean PostgreSQL 16,
+and the complete integration/PDF test suite. A successful `main` push then deploys that exact Git
+SHA to production through this Ansible role. Production deployments are serialized and are never
+cancelled by a newer run. Actions passes `force_deploy=true`, so rerunning a failed deployment
+rebuilds and retries migrations even when the VM already checked out the requested SHA.
+
+Create a GitHub environment named `production` before enabling the workflow. It needs these
+environment secrets:
+
+| Secret | Value |
+|---|---|
+| `OCI_SSH_PRIVATE_KEY` | Contents of `~/.ssh/macrocoats-oci.key` |
+| `OCI_SSH_KNOWN_HOSTS` | Pinned `known_hosts` entry for `92.4.91.25` |
+| `ANSIBLE_VAULT_FILE_B64` | Base64-encoded encrypted `group_vars/vault.yml` |
+| `ANSIBLE_VAULT_PASSWORD` | Contents of `.vault_pass.txt` |
+
+Generate the vault secret without decrypting or printing it:
+
+```bash
+base64 < group_vars/vault.yml | tr -d '\n' | gh secret set ANSIBLE_VAULT_FILE_B64 --env production
+gh secret set ANSIBLE_VAULT_PASSWORD --env production < .vault_pass.txt
+gh secret set OCI_SSH_PRIVATE_KEY --env production < ~/.ssh/macrocoats-oci.key
+ssh-keyscan -H 92.4.91.25 | gh secret set OCI_SSH_KNOWN_HOSTS --env production
+```
+
+Confirm the SSH host-key fingerprint through OCI before accepting a new or changed key. Protect
+`main` so it requires one approving review, an up-to-date branch, and the `Backend verification`
+status, with direct pushes, force pushes, and deletion disabled.
+
+Each deployment captures the previously running SHA, takes a database backup, runs migrations,
+restarts the service, and verifies both the checked-out SHA and `https://api.macrocoats.in/health`.
+If verification fails, the workflow stops and reports the captured SHA; it does not automatically
+rollback code or data.
+
+### Manual rollback
+
+Run the `Rollback production` workflow, provide the full prior 40-character SHA from the failed
+deployment summary, and enter `ROLLBACK` as confirmation. The workflow performs a forward deploy
+of that older code through the same Ansible role. It does not reverse migrations or restore the
+database; schema/data rollback remains a separate, explicitly approved operation.
+
+## Local deploy (run on every release)
 
 ```bash
 ansible-playbook deploy.yml --ask-vault-pass
 ```
 
 Pulls `repo_version` (default `main`), runs `npm ci && npm run build` only if the checkout changed,
-writes `.env`, runs `db:migrate`, restarts the `macrocoats-api` systemd service.
+writes `.env`, takes a pre-migration database backup, runs `db:migrate`, restarts the
+`macrocoats-api` systemd service, and waits for `/health` to report PostgreSQL and Redis healthy.
 
 Seed data is **not** run by default (it's idempotent but there's no reason to run it every deploy).
 To run it explicitly:
