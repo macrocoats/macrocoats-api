@@ -35,6 +35,7 @@ import { investorDashboardRoutes } from './modules/investor-dashboard/investor-d
 import { productionPlanningRoutes } from './modules/production-planning/production-planning.routes.js'
 import { letterheadRoutes } from './modules/letterheads/letterheads.routes.js'
 import { zohoInvoiceRoutes } from './modules/zoho-invoice/zoho-invoice.routes.js'
+import { customerSupplyRoutes } from './modules/customer-supply/customer-supply.routes.js'
 import { AppErrors } from './types/errors.js'
 
 export async function buildApp() {
@@ -134,6 +135,7 @@ export async function buildApp() {
   await app.register(productionPlanningRoutes,    { prefix: `${prefix}/production-planning` })
   await app.register(letterheadRoutes,            { prefix: `${prefix}/letterheads` })
   await app.register(zohoInvoiceRoutes,           { prefix: `${prefix}/zoho-invoices` })
+  await app.register(customerSupplyRoutes,        { prefix: `${prefix}/customer-supply` })
 
   // ── Global error handler ──────────────────────────────────────────────────
   app.setErrorHandler((error, _request, reply) => {

@@ -16,7 +16,7 @@ interface ZohoInvoiceApiRow {
   currency_code?: string
 }
 
-function isZohoConfigured(): boolean {
+export function isZohoConfigured(): boolean {
   return !!(env.ZOHO_CLIENT_ID && env.ZOHO_CLIENT_SECRET && env.ZOHO_REFRESH_TOKEN && env.ZOHO_ORG_ID)
 }
 
@@ -43,6 +43,25 @@ async function getAccessToken(): Promise<string> {
 
   cachedToken = { accessToken: body.access_token, expiresAt: now + (body.expires_in ?? 3600) * 1000 }
   return cachedToken.accessToken
+}
+
+/**
+ * Authenticated read-only GET against the Zoho Invoice API (organization_id is
+ * added here). Shared with the customer-supply module, which needs invoice
+ * line items; throws on a non-2xx response.
+ */
+export async function zohoGet<T>(path: string, params: Record<string, string> = {}): Promise<T> {
+  const token = await getAccessToken()
+  const url = new URL(path, env.ZOHO_API_DOMAIN)
+  url.searchParams.set('organization_id', env.ZOHO_ORG_ID!)
+  for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value)
+
+  const res = await fetch(url, {
+    headers: { Authorization: `Zoho-oauthtoken ${token}` },
+    signal:  AbortSignal.timeout(15_000),
+  })
+  if (!res.ok) throw new Error(`Zoho Invoice API error (${res.status})`)
+  return await res.json() as T
 }
 
 async function fetchZohoInvoiceByNumber(invoiceNumber: string): Promise<ZohoInvoiceApiRow | null> {

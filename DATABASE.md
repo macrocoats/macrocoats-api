@@ -43,6 +43,7 @@ Reference for the PostgreSQL schema and Drizzle migration workflow. See `CLAUDE.
 | `customer_purchase_order_batches` | Junction: links a manufactured batch to the customer PO item it was produced against — the traceability chain |
 | `customer_purchase_order_timeline` | Append-only event log per customer PO (po_received, status_changed, batch_linked, dispatched, etc.) |
 | `customer_purchase_order_sequences` | Per-year atomic counter for customer PO numbering (CPO-YYYY-NNN) |
+| `customer_pipeline_entries` | Prospective customers' trial status and vendor-registration status (Customer Supply tab); optional `companyId`, archived via `archivedAt` |
 
 ## Migration workflow (canonical)
 

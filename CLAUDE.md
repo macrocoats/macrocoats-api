@@ -132,6 +132,7 @@ Routes never import from other modules' services. Cross-cutting concerns (auth, 
 | `production-planning` | GET /production-planning/overview |
 | `letterheads` | GET/POST /letterheads/templates, GET/PUT/DELETE /letterheads/templates/:id, POST /letterheads/templates/:id/duplicate, GET/POST /letterheads/documents, GET/PUT /letterheads/documents/:id, GET/POST /letterheads/documents/:id/versions |
 | `zoho-invoice` | GET /zoho-invoices (live list from Zoho), GET /zoho-invoices/:dispatchId (stored status), POST /zoho-invoices/:dispatchId/sync |
+| `customer-supply` | GET /customer-supply/summary (Zoho-derived supply), GET/POST /customer-supply/pipeline, PATCH/DELETE /customer-supply/pipeline/:id |
 
 All endpoints except auth are `superadmin`-only, except product document reads which use `checkProductAccess` for company users. Within `products`, only `GET /products/:productLine/:docType` uses `checkProductAccess` — every other `products` endpoint (including status transitions, audit trail, and expiry summary) is `requireSuperAdmin`-only. `GET /products/expiry-summary` is registered before the `/:productLine/:docType` route so the literal segment `expiry-summary` never matches as a `:productLine` param.
 
@@ -306,6 +307,14 @@ Read-only mirror of Zoho Invoice's status for a dispatch — not an accounting i
 - **Auth**: Zoho self-client OAuth2 (server-to-server refresh-token grant, scope `ZohoInvoice.invoices.READ`). Access tokens are cached in-memory only (module-level, not persisted) and refreshed on demand via `${ZOHO_ACCOUNTS_DOMAIN}/oauth/v2/token` — a cold restart just costs one extra refresh round trip. Outbound calls use native `fetch` (Node ≥20) rather than adding a new HTTP client dependency; this is the first outbound third-party API call anywhere in this backend.
 - **`ZOHO_NOT_CONFIGURED`** (400) is returned instead of a startup crash when the `ZOHO_*` env vars aren't set — they're optional in `env.ts` specifically so the server keeps booting before the Zoho self-client is set up.
 - **`ZOHO_SYNC_FAILED`** uses `502` — a deliberate, documented exception to the status-code list in root `CLAUDE.md` §3, since this is the only route in the codebase proxying a third-party upstream call.
+
+### Customer Supply (customer-supply)
+
+Backs the Operations Center "Customer Supply" tab and the MacroIntel Android "Customer supply" screen (both read-only on Zoho). Superadmin-only, `{data: ...}` envelope.
+
+- **`GET /customer-supply/summary`** (`from`/`to`/`customerId`/`product`/`refresh`) — customer-wise, product-wise and monthly supply built from **Zoho invoice line items**, nothing stored. The service lists every invoice (`zohoGet` exported from `zoho-invoice.service.ts`, 200 per page) and reads each invoice's detail for its `line_items`. Zoho allows ~100 calls/min, so details are cached in memory per `invoice_id` until Zoho's `last_modified_time` changes, at most `DETAIL_FETCH_LIMIT` (60) new/changed invoices are read per request, and the rest come back as `coverage.detailsPending` (the UI says quantities are understated until a refresh). The invoice list itself is cached for 2 minutes; `refresh=true` bypasses it. Drafts and voids are not executed orders and are excluded.
+- **Aggregation is pure** — `src/utils/supplySummary.ts` (`buildSupplySummary`, unit-tested in `tests/unit/supply-summary.test.ts`). Units are normalized to `KG` / `L` (`normalizeUnit`) and **never converted into each other** (no density data). "Confirmed" quantity = invoiced quantity on invoices that have a non-voided `dispatches` row with the same `invoiceNumber` — the only delivery evidence the portal has. "Currently supplying" = invoiced within `ACTIVE_WINDOW_DAYS` (180), computed over all invoices, not the selected window. With a `product` filter, values are that product's line amounts but `outstanding` stays the whole-invoice balance.
+- **Pipeline** (`customer_pipeline_entries`) — prospects that Zoho can't know about: `trialStatus` and `vendorRegistration` (TypeScript-only enums, validated by Zod), optional `companyId`, `archivedAt` for archiving (PATCH `{ archived }`), hard DELETE for mistakes. Entered by a superadmin in the web tab; the Android app only reads it.
 
 ### Database schema
 
