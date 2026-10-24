@@ -184,20 +184,21 @@ export async function getMeById(userId: string): Promise<AuthUser | null> {
 }
 
 /**
- * Changes the caller's password after re-verifying the current one, then revokes
- * every refresh token for the user so other sessions must log in again.
- * Returns false when the current password is wrong.
+ * Changes the caller's password after re-verifying the current one. Every existing
+ * refresh token for the user is revoked — other sessions must log in again — and a
+ * fresh token pair is issued so the session that made the change stays signed in.
+ * Returns null when the current password is wrong.
  */
 export async function changePassword(
   userId: string,
   currentPassword: string,
   newPassword: string,
-): Promise<boolean> {
+): Promise<{ authUser: AuthUser; accessToken: string; refreshToken: string } | null> {
   const [user] = await db.select().from(users).where(eq(users.id, userId))
-  if (!user) return false
+  if (!user) return null
 
   const valid = await verifyPassword(currentPassword, user.passwordHash)
-  if (!valid) return false
+  if (!valid) return null
 
   const passwordHash = await hashPassword(newPassword)
   await db.transaction(async (tx) => {
@@ -207,5 +208,5 @@ export async function changePassword(
       .set({ revokedAt: new Date() })
       .where(and(eq(refreshTokens.userId, userId), isNull(refreshTokens.revokedAt)))
   })
-  return true
+  return issueTokens(user)
 }

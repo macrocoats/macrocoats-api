@@ -216,7 +216,7 @@ Two-token RS256 system. Both tokens carry a `typ` claim (`'access'` / `'refresh'
 - `loginWithToken` — company magic/QR token (POST /auth/token); token checked against `companies.accessToken`, respects `tokenExpiresAt`
 - `rotateRefreshToken` — POST /auth/refresh, POST /auth/mobile/refresh. For company users it re-checks `companies.tokenExpiresAt`, so an expired company can't keep a session alive by refreshing
 
-`POST /companies/:id/rotate-token` (companies module) also re-hashes the company user's password to the new token and revokes that user's refresh tokens — the company password *is* the access token (see `createCompany`). `POST /auth/change-password` (`{ currentPassword, newPassword ≥12 }`) re-verifies the current password and revokes all of the user's refresh tokens.
+`POST /companies/:id/rotate-token` (companies module) also re-hashes the company user's password to the new token and revokes that user's refresh tokens — the company password *is* the access token (see `createCompany`). `POST /auth/change-password` (`{ currentPassword, newPassword ≥12 }`) re-verifies the current password (wrong one → **400**, not 401, because the web client's interceptor treats 401 as an expired session), revokes all of the user's refresh tokens, and issues the calling session a fresh pair — as cookies when the request came with the `accessToken` cookie, otherwise in the body.
 
 `trustProxy` is `1` (exactly one nginx hop) — `true` would take the client-supplied left-most `X-Forwarded-For` entry as `req.ip` and let callers reset the per-IP login rate limits.
 
