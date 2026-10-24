@@ -129,6 +129,19 @@ jobs:
       - name: Run full integration and PDF suite
         run: npm test
 
+      - name: Package tested production build
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: tar -czf macrocoats-api-dist.tar.gz dist
+
+      - name: Upload tested production build
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v6
+        with:
+          name: production-build-${{ github.sha }}
+          path: macrocoats-api-dist.tar.gz
+          if-no-files-found: error
+          retention-days: 30
+
   deploy-production:
     name: Deploy production
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -152,6 +165,12 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: "3.12"
+
+      - name: Download tested production build
+        uses: actions/download-artifact@v7
+        with:
+          name: production-build-${{ github.sha }}
+          path: release
 
       - name: Install Ansible
         run: python -m pip install "ansible-core~=2.19.0"
@@ -194,7 +213,12 @@ jobs:
 
       - name: Deploy exact tested commit
         working-directory: ansible
-        run: ansible-playbook deploy.yml -e "repo_version=${GITHUB_SHA}" -e force_deploy=true
+        run: >-
+          ansible-playbook deploy.yml
+          -e "repo_version=${GITHUB_SHA}"
+          -e force_deploy=true
+          -e "release_artifact=${GITHUB_WORKSPACE}/release/macrocoats-api-dist.tar.gz"
+          -e "release_artifact_sha=${GITHUB_SHA}"
 
       - name: Verify production service and commit
         shell: bash
