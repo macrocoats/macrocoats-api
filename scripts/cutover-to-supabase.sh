@@ -81,12 +81,19 @@ restore_local() {
   if [ "$SWITCHED" = false ]; then
     echo; echo "↩ Restarting the API on the local database (nothing was switched)."
     ssh_run "sudo systemctl start macrocoats-api" || echo "  ⚠ restart failed — run: sudo systemctl start macrocoats-api" >&2
+    ssh_run "sudo rm -f /var/lib/macrocoats/supabase-replica.paused" || true
   fi
 }
 trap restore_local EXIT
 
 # ── 2. Write freeze ───────────────────────────────────────────────────────────
-step "2/5 Stopping the API"
+step "2/5 Pausing the hourly replica sync and stopping the API"
+# Pause the hourly local→Supabase sync (roles/supabase-replica) and wait for a run in
+# progress to finish, so it can't restore into Supabase alongside this cutover. After
+# the switch, deploying with database_mode=supabase removes its cron job for good.
+ssh_run "sudo mkdir -p /var/lib/macrocoats && sudo touch /var/lib/macrocoats/supabase-replica.paused \
+  && sudo flock /run/lock/macrocoats-supabase-replica.lock true"
+echo "✓ Replica sync paused"
 ssh_run "sudo systemctl stop macrocoats-api && ! systemctl is-active --quiet macrocoats-api"
 echo "✓ macrocoats-api stopped"
 

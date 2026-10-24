@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+# Managed by ansible (roles/supabase-replica). Hourly one-way copy:
+#   local PostgreSQL ({{ db_name }})  →  Supabase (macrocoats-portal)
+# Anything written directly in Supabase is overwritten on the next run.
+set -euo pipefail
+
+STATE_DIR=/var/lib/macrocoats
+LAST_SUCCESS="$STATE_DIR/supabase-replica.last-success"
+APP_ENV={{ app_dir }}/.env
+LOCKDOWN_SQL={{ app_dir }}/scripts/supabase-lockdown.sql
+
+log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"; }
+
+# One run at a time — a slow run must not overlap the next hour's
+exec 9>/run/lock/macrocoats-supabase-replica.lock
+flock -n 9 || { log "previous run still in progress — skipping"; exit 0; }
+
+# scripts/cutover-to-supabase.sh pauses the sync for the duration of the cutover
+if [[ -e "$STATE_DIR/supabase-replica.paused" ]]; then
+  log "paused ($STATE_DIR/supabase-replica.paused exists) — skipping"
+  exit 0
+fi
+
+# Never copy the local database over Supabase once production runs on Supabase
+if grep -q '^DATABASE_URL=.*pooler\.supabase\.com' "$APP_ENV"; then
+  log "production DATABASE_URL points at Supabase — replica sync disabled, nothing done"
+  exit 0
+fi
+
+# shellcheck disable=SC1091
+source /etc/macrocoats/supabase-replica.env
+[[ -n "${SUPABASE_REPLICA_URL:-}" ]] || { log "SUPABASE_REPLICA_URL missing"; exit 1; }
+
+ROWCOUNT_SQL="select table_schema||'.'||table_name,
+  (xpath('/row/n/text()', query_to_xml(format('select count(*) as n from %I.%I', table_schema, table_name), false, true, '')))[1]::text::bigint
+  from information_schema.tables
+  where table_type='BASE TABLE' and table_schema in ('public','drizzle') order by 1"
+local_counts() { runuser -u postgres -- psql -d {{ db_name }} -At -F '|' -c "$ROWCOUNT_SQL"; }
+
+TMP=$(mktemp -d /var/tmp/supabase-replica.XXXXXX)
+trap 'rm -rf "$TMP"' EXIT
+START=$(date +%s)
+
+local_counts > "$TMP/before.txt"
+runuser -u postgres -- pg_dump -Fc --no-owner --no-acl {{ db_name }} > "$TMP/db.dump"
+local_counts > "$TMP/after.txt"
+[[ -s "$TMP/db.dump" ]] || { log "dump is empty — aborting"; exit 1; }
+
+# One transaction: Supabase holds either the previous copy or the new one, never half
+timeout 600 pg_restore --clean --if-exists --no-owner --no-acl --single-transaction --exit-on-error \
+  -d "$SUPABASE_REPLICA_URL" "$TMP/db.dump"
+
+timeout 120 psql "$SUPABASE_REPLICA_URL" -q -f "$LOCKDOWN_SQL"
+
+psql "$SUPABASE_REPLICA_URL" -At -F '|' -c "$ROWCOUNT_SQL" > "$TMP/replica.txt"
+TABLES=$(wc -l < "$TMP/before.txt" | tr -d ' ')
+ROWS=$(awk -F'|' '{s+=$2} END {print s+0}' "$TMP/before.txt")
+if cmp -s "$TMP/before.txt" "$TMP/after.txt"; then
+  # No writes while dumping, so the replica must match exactly
+  if ! cmp -s "$TMP/before.txt" "$TMP/replica.txt"; then
+    log "row counts differ between production and the replica:"
+    diff "$TMP/before.txt" "$TMP/replica.txt" || true
+    exit 1
+  fi
+  CHECK="row counts verified"
+else
+  CHECK="writes happened during the dump — counts not compared this run"
+fi
+
+date '+%Y-%m-%d %H:%M:%S %z' > "$LAST_SUCCESS"
+log "ok — $TABLES tables, $ROWS rows copied in $(( $(date +%s) - START ))s; $CHECK"

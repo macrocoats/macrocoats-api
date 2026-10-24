@@ -36,6 +36,12 @@ db_pool_max: "{{ 10 if database_mode == 'supabase' else 20 }}"
 # Supabase server version (17.x) or pg_dump refuses to dump it.
 supabase_pg_client_version: "17"
 
+# Hourly one-way copy local → Supabase (roles/supabase-replica) while
+# database_mode=local: a warm standby and off-host backup, at most an hour old.
+# Needs vault_supabase_database_url; removed automatically in supabase mode.
+supabase_replica_enabled: true
+supabase_replica_minute: "17"   # off the hour, away from the 02:30 nightly backup
+
 api_port: 3001
 
 # OCI control-plane resources (used by roles/oci-network, roles/oci-monitoring —

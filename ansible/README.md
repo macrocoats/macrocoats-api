@@ -137,6 +137,33 @@ A deploy refuses to change `database_mode` relative to what production currently
 `-e allow_db_mode_change=true` is passed — so a branch still saying `local` can't quietly point
 production back at the stale local copy after the cutover.
 
+### Hourly Supabase replica (while `database_mode: local`)
+
+`roles/supabase-replica` copies the local production database into Supabase every hour at
+:17 — a warm standby and off-host backup that is at most an hour old. It is **one-way**:
+anything written directly in Supabase is overwritten on the next run.
+
+Each run (`/usr/local/bin/sync-supabase-replica.sh`, cron as root):
+1. takes a lock (runs never overlap) and skips if paused or if production already points at Supabase
+2. `pg_dump -Fc` of the local database → `pg_restore --clean --single-transaction` into Supabase,
+   so the replica is always a complete copy, never half-loaded
+3. reruns `scripts/supabase-lockdown.sql`
+4. compares every table's row count with production (skipped, and logged, if writes happened
+   during the dump) and records the time in `/var/lib/macrocoats/supabase-replica.last-success`
+
+```bash
+sudo tail -n 20 /var/log/macrocoats/supabase-replica.log        # recent runs
+sudo cat /var/lib/macrocoats/supabase-replica.last-success       # last good copy
+sudo /usr/local/bin/sync-supabase-replica.sh                     # run one now
+```
+
+- Needs `vault_supabase_database_url` in the vault — and in the `ANSIBLE_VAULT_FILE_B64` secret,
+  since CI deploys use that copy. Without it the deploy prints a warning and the replica doesn't run.
+- `supabase_replica_enabled: false` in `group_vars/all.yml` removes the cron job on the next deploy.
+- `scripts/cutover-to-supabase.sh` pauses it (`/var/lib/macrocoats/supabase-replica.paused`) and
+  waits for a running copy before it starts; deploying with `database_mode: supabase` removes it.
+- Failures only go to the log for now — there is no alert.
+
 ### Prerequisites
 
 1. **Supabase Pro plan.** Free projects pause after a week without activity (production would go

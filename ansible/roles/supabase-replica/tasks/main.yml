@@ -1,0 +1,83 @@
+---
+# Hourly one-way copy of the local production database into Supabase
+# (macrocoats-portal) — a warm standby / off-host backup, at most an hour old.
+# Only meaningful while database_mode=local: once production runs on Supabase,
+# copying the retired local database over it would destroy live data, so the
+# cron job is removed in that mode (and the script refuses on its own too).
+
+- name: Decide whether the hourly Supabase replica should run
+  ansible.builtin.set_fact:
+    supabase_replica_active: >-
+      {{ (supabase_replica_enabled | bool)
+         and database_mode == 'local'
+         and (vault_supabase_database_url | default('') | length > 0) }}
+
+- name: Warn when the replica is enabled but the vault has no Supabase URL
+  ansible.builtin.debug:
+    msg: >-
+      supabase_replica_enabled is true but vault_supabase_database_url is not set in
+      this vault — the hourly Supabase replica is NOT running. Add it to the vault
+      (and the ANSIBLE_VAULT_FILE_B64 secret for CI) and redeploy.
+  when:
+    - supabase_replica_enabled | bool
+    - database_mode == 'local'
+    - vault_supabase_database_url | default('') | length == 0
+
+- name: Ensure config, state and log directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+  loop:
+    - /etc/macrocoats
+    - /var/lib/macrocoats
+    - /var/log/macrocoats
+  when: supabase_replica_active | bool
+
+- name: Store the Supabase connection string (root only)
+  ansible.builtin.copy:
+    dest: /etc/macrocoats/supabase-replica.env
+    content: "SUPABASE_REPLICA_URL={{ vault_supabase_database_url }}\n"
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+  when: supabase_replica_active | bool
+
+- name: Install the replica sync script
+  ansible.builtin.template:
+    src: sync-supabase-replica.sh.j2
+    dest: /usr/local/bin/sync-supabase-replica.sh
+    owner: root
+    group: root
+    mode: "0700"
+  when: supabase_replica_active | bool
+
+- name: Rotate the replica sync log
+  ansible.builtin.copy:
+    dest: /etc/logrotate.d/macrocoats-supabase-replica
+    content: |
+      /var/log/macrocoats/supabase-replica.log {
+        weekly
+        rotate 8
+        compress
+        missingok
+        notifempty
+      }
+    mode: "0644"
+  when: supabase_replica_active | bool
+
+- name: Schedule the hourly replica sync (removed when inactive)
+  ansible.builtin.cron:
+    name: "macrocoats supabase replica"
+    minute: "{{ supabase_replica_minute }}"
+    job: "/usr/local/bin/sync-supabase-replica.sh >> /var/log/macrocoats/supabase-replica.log 2>&1"
+    state: "{{ 'present' if supabase_replica_active | bool else 'absent' }}"
+
+- name: Remove the stored Supabase URL when the replica is inactive
+  ansible.builtin.file:
+    path: /etc/macrocoats/supabase-replica.env
+    state: absent
+  when: not (supabase_replica_active | bool)
