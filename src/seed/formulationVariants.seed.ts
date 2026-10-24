@@ -666,6 +666,27 @@ const CORRUCUT_500_MTO_BASED_COMPONENTS = [
   { materialName: 'Vaseline',                     percentage: 6.0,  unit: 'Kg' as const },
 ]
 
+/**
+ * CORRUCUT 500 — Sodium + Barium Sulfonate formulation. Calcium Petroleum
+ * Sulfonate is replaced entirely by Barium Petroleum Sulfonate at an 80:20
+ * Na:Ba sulfonate ratio. Supplied sheet (nominal 75 L batch) by weight:
+ * MTO 37.920 kg, 32D Oil 9.350 kg, Exxsol D145 1.418 kg, Sodium Petroleum
+ * Sulfonate 7.800 kg, Barium Petroleum Sulfonate 1.950 kg, Vaseline 4.500 kg —
+ * 62.938 kg total. Converted to litres with typical densities (g/mL @ 25 °C,
+ * not measured): 76.096 L calculated volume, so calculated SG ≈ 0.827.
+ * Percentages are % v/v of that volume (the FormulaPage convention — SG is
+ * Σ v/v × density), so every row is in L with its density. '32D Oil' /
+ * 'Exxsol D145' use the inventory's 'Exxol 32D' / 'Exxol D145' names.
+ */
+const CORRUCUT_500_NA_BA_SULFONATE_COMPONENTS = [
+  { materialName: 'Mineral Turpentine Oil (MTO)', percentage: 63.48, unit: 'L' as const, density: 0.785 },  // 37.920 kg → 48.306 L
+  { materialName: 'Exxol 32D',                    percentage: 15.36, unit: 'L' as const, density: 0.80  },  //  9.350 kg → 11.687 L — 32D Oil
+  { materialName: 'Exxol D145',                   percentage: 2.27,  unit: 'L' as const, density: 0.82  },  //  1.418 kg →  1.729 L — Exxsol D145
+  { materialName: 'Sodium Petroleum Sulfonate',   percentage: 9.76,  unit: 'L' as const, density: 1.05  },  //  7.800 kg →  7.429 L
+  { materialName: 'Barium Petroleum Sulfonate',   percentage: 2.33,  unit: 'L' as const, density: 1.10  },  //  1.950 kg →  1.773 L
+  { materialName: 'Vaseline',                     percentage: 6.80,  unit: 'L' as const, density: 0.87  },  //  4.500 kg →  5.172 L
+]
+
 export async function seedFormulationVariants() {
   console.log('🌱 Seeding formulation variants...')
 
@@ -1319,6 +1340,45 @@ export async function seedFormulationVariants() {
       )
 
       console.log(`   ✅ Created Solvent Carrier Grade variant for CORRUCUT 500 (id: ${corrucut500MtoBasedVariant.id})`)
+    }
+
+    // No TDS/MSDS overrides yet — barium sulfonate hazard data is pending.
+    const CORRUCUT_500_NA_BA_SULFONATE_NAME = 'Mixed Sulfonate Grade'
+    const [existingCorrucut500NaBa] = await db
+      .select()
+      .from(productFormulationVariants)
+      .where(
+        and(
+          eq(productFormulationVariants.productKey, 'corrucut-500'),
+          eq(productFormulationVariants.variantName, CORRUCUT_500_NA_BA_SULFONATE_NAME),
+        ),
+      )
+
+    if (existingCorrucut500NaBa) {
+      console.log(`   ↩️  Mixed Sulfonate Grade variant for CORRUCUT 500 already exists (id: ${existingCorrucut500NaBa.id})`)
+    } else {
+      const [corrucut500NaBaVariant] = await db
+        .insert(productFormulationVariants)
+        .values({
+          productKey:  'corrucut-500',
+          companyId:   null,
+          variantName: CORRUCUT_500_NA_BA_SULFONATE_NAME,
+          isDefault:   false,
+        })
+        .returning()
+
+      await db.insert(formulationVariantComponents).values(
+        CORRUCUT_500_NA_BA_SULFONATE_COMPONENTS.map((c, i) => ({
+          variantId:    corrucut500NaBaVariant.id,
+          materialName: c.materialName,
+          percentage:   String(c.percentage),
+          unit:         c.unit,
+          density:      String(c.density),
+          sortOrder:    i,
+        })),
+      )
+
+      console.log(`   ✅ Created Mixed Sulfonate Grade variant for CORRUCUT 500 (id: ${corrucut500NaBaVariant.id})`)
     }
   }
 }

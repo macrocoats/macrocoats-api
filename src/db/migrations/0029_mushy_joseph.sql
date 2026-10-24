@@ -1,0 +1,1 @@
+ALTER TABLE "formulation_variant_components" ADD COLUMN "density" numeric(6, 3);
