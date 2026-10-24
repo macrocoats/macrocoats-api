@@ -19,6 +19,15 @@ ANSIBLE_DIR="$SCRIPT_DIR/../ansible"
 
 DUMP_FILE="${1:?Usage: restore-db.sh <path-to-dump-file>}"
 
+# This script restores into the OCI host's local PostgreSQL. After the Supabase
+# cutover that database is retired — restoring into it would silently do nothing useful.
+if grep -Eq '^database_mode:[[:space:]]*supabase' "$ANSIBLE_DIR/group_vars/all.yml"; then
+  echo "ERROR: database_mode is 'supabase' — production data is no longer on the OCI host." >&2
+  echo "Restore into Supabase with pg_restore against vault_supabase_database_url instead" >&2
+  echo "(see ansible/README.md → 'Supabase cutover' → 'Restoring a backup')." >&2
+  exit 1
+fi
+
 if [ ! -f "$DUMP_FILE" ]; then
   echo "ERROR: dump file not found: $DUMP_FILE" >&2
   exit 1

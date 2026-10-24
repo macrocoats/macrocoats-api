@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Managed by ansible (roles/db-backup) — database_mode={{ database_mode }}
+set -euo pipefail
+DEST=/var/backups/macrocoats
+mkdir -p "$DEST"
+STAMP=$(date +%Y%m%d-%H%M%S)
+FILE="$DEST/{{ db_name }}-$STAMP.sql.gz"
+
+{% if database_mode == 'supabase' %}
+# Remote Supabase database. Only the portal's own schemas — Supabase's auth/storage/etc.
+# schemas aren't ours to back up or restore. pg_dump must be >= the server's major version.
+DATABASE_URL=$(grep '^DATABASE_URL=' {{ app_dir }}/.env | cut -d= -f2-)
+/usr/lib/postgresql/{{ supabase_pg_client_version }}/bin/pg_dump \
+  --no-owner --no-acl --schema=public --schema=drizzle \
+  --dbname="$DATABASE_URL" | gzip > "$FILE"
+{% else %}
+sudo -u postgres pg_dump {{ db_name }} | gzip > "$FILE"
+{% endif %}
+
+# A gzip of an empty dump is still ~20 bytes — check the uncompressed content instead
+if ! gzip -dc "$FILE" | grep -q 'PostgreSQL database dump complete'; then
+  echo "Backup failed: $FILE is empty or incomplete" >&2
+  exit 1
+fi
+find "$DEST" -name '*.sql.gz' -mtime +14 -delete

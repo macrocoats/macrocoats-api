@@ -7,4 +7,5 @@
   vars_files:
     - group_vars/vault.yml
   roles:
+    - db-backup
     - app

@@ -11,7 +11,9 @@
     - group_vars/vault.yml
   roles:
     - common
-    - postgres
+    - role: postgres
+      when: database_mode == 'local'
+    - db-backup
     - role: redis
       when: install_redis
     - nginx

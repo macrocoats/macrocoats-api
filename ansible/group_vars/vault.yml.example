@@ -18,3 +18,8 @@ vault_db_password: CHANGE_ME
 vault_jwt_private_key_b64: CHANGE_ME
 vault_jwt_public_key_b64: CHANGE_ME
 vault_cookie_secret: CHANGE_ME
+
+# Only needed when database_mode=supabase (group_vars/all.yml). Session pooler URL from
+# the Supabase dashboard → Connect → Session pooler, password filled in, sslmode=require:
+#   postgresql://postgres.<ref>:<password>@aws-0-ap-south-1.pooler.supabase.com:5432/postgres?sslmode=require
+vault_supabase_database_url: CHANGE_ME

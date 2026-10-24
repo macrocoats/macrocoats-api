@@ -7,6 +7,9 @@ const envSchema = z.object({
   LOG_LEVEL:            z.enum(['fatal','error','warn','info','debug','trace','silent']).default('info'),
 
   DATABASE_URL:         z.string().min(1),
+  // Max connections in the app's pool. Behind Supabase's session pooler every client
+  // connection holds a server connection, so this must stay under the pooler's pool size.
+  DB_POOL_MAX:          z.coerce.number().int().min(1).max(100).default(20),
 
   PROCUREMENT_STORAGE_PATH: z.string().min(1),
 

@@ -17,6 +17,25 @@ db_name: macrocoats
 db_user: macrocoats
 # db_password comes from vault.yml
 
+# Where production data lives:
+#   local    — PostgreSQL on this host (postgres role), DATABASE_URL via localhost
+#   supabase — Supabase project macrocoats-portal (ap-south-1), via its IPv4 session
+#              pooler; DATABASE_URL is vault_supabase_database_url. See README
+#              "Supabase cutover" before flipping this — the data must be copied first.
+database_mode: local
+
+app_database_url: >-
+  {{ vault_supabase_database_url if database_mode == 'supabase'
+     else 'postgresql://' ~ db_user ~ ':' ~ vault_db_password ~ '@localhost:5432/' ~ db_name }}
+
+# App pool size (DB_POOL_MAX). Supabase's session pooler gives each client
+# connection its own server connection, so stay under the project's pool size.
+db_pool_max: "{{ 10 if database_mode == 'supabase' else 20 }}"
+
+# pg_dump major version used for backups in supabase mode — must be >= the
+# Supabase server version (17.x) or pg_dump refuses to dump it.
+supabase_pg_client_version: "17"
+
 api_port: 3001
 
 # OCI control-plane resources (used by roles/oci-network, roles/oci-monitoring —
