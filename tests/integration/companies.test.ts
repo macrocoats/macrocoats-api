@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import supertest from 'supertest'
 import type { FastifyInstance } from 'fastify'
 import { buildApp } from '../../src/app.js'
+import { ADMIN_PASSWORD } from '../helpers/credentials.js'
 
 let app: FastifyInstance
 let adminCookies: string[]
@@ -16,7 +17,7 @@ beforeAll(async () => {
 
   const adminLogin = await req()
     .post('/v1/auth/login')
-    .send({ username: 'admin', password: 'mc2024Xp7NrK9L3vQeJbF2wTa' })
+    .send({ username: 'admin', password: ADMIN_PASSWORD })
     .expect(200)
   adminCookies = adminLogin.headers['set-cookie']
 })

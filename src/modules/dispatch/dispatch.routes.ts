@@ -124,7 +124,7 @@ export async function dispatchRoutes(app: FastifyInstance) {
       return reply.code(404).send({ error: AppErrors.DISPATCH_NOT_FOUND })
     }
     if ('code' in result && result.code === 'DISPATCH_ALREADY_VOIDED') {
-      return reply.code(404).send({ error: AppErrors.DISPATCH_ALREADY_VOIDED })
+      return reply.code(409).send({ error: AppErrors.DISPATCH_ALREADY_VOIDED })
     }
 
     return reply.send({ data: result })

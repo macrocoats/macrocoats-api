@@ -218,6 +218,13 @@
       "when": 1792840950446,
       "tag": "0030_aberrant_namor",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1792844645657,
+      "tag": "0031_backfill_schema_drift",
+      "breakpoints": true
     }
   ]
 }

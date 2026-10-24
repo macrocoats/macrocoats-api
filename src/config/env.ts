@@ -23,6 +23,11 @@ const envSchema = z.object({
 
   ALLOWED_ORIGIN:       z.string().default('http://localhost:5173'),
 
+  // Passwords for the seeded `admin` / `operator` users. Only read by the seed, and only
+  // when that user doesn't exist yet — never stored in source control.
+  SEED_ADMIN_PASSWORD:    z.string().min(12).max(200).optional(),
+  SEED_OPERATOR_PASSWORD: z.string().min(12).max(200).optional(),
+
   PDF_BROWSER_POOL_SIZE:  z.coerce.number().default(3),
   PDF_PAGE_TIMEOUT_MS:    z.coerce.number().default(30_000),
   PDF_RENDER_TIMEOUT_MS:  z.coerce.number().default(60_000),

@@ -267,11 +267,15 @@ npm run seed
 
 The seed is **idempotent** — safe to run multiple times.
 
-Default credentials created by the seed:
+Users created by the seed. The `admin` and `operator` passwords come from
+`SEED_ADMIN_PASSWORD` / `SEED_OPERATOR_PASSWORD` in `.env.local` (outside production a
+random one is generated and printed when unset; in production the user is skipped). The
+test companies below exist only outside production.
 
 | Username          | Password                       | Role       |
 |-------------------|--------------------------------|------------|
-| `admin`           | `mc2024Xp7NrK9L3vQeJbF2wTa`   | superadmin |
+| `admin`           | `$SEED_ADMIN_PASSWORD`         | superadmin |
+| `operator`        | `$SEED_OPERATOR_PASSWORD`      | operator   |
 | `rane`            | `r7Kx9mNpQ2wLvYtA8bZeJ3dF`   | company    |
 | `sanmar`          | `sN4wP8tRmXkL2vBqA7cYeJ5G`   | company    |
 | `galva`           | `gL3mQ9xNvKpR7wYtA2bZeJ8F`   | company    |
@@ -413,7 +417,7 @@ All request bodies are JSON. Authentication uses httpOnly cookies — no `Author
 #### POST `/auth/login`
 ```json
 // Request
-{ "username": "admin", "password": "mc2024Xp7NrK9L3vQeJbF2wTa" }
+{ "username": "admin", "password": "<your password>" }
 
 // Response 200
 {

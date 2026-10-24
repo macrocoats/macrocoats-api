@@ -169,10 +169,11 @@ export async function incrementDispatchedQuantity(
 }
 
 /**
- * Symmetric atomic decrement used by dispatch-void. Never touches a
- * 'Cancelled' row (excluded via WHERE). Recomputes status: back to
+ * Symmetric atomic decrement used by dispatch-void. Recomputes status: back to
  * 'Available' if the remaining dispatched quantity is <= 0, else
- * 'Partially Dispatched'.
+ * 'Partially Dispatched'. A 'Cancelled' row keeps its status but still gets the
+ * quantity back — skipping it would void the dispatch while leaving its quantity
+ * counted as dispatched.
  */
 export async function reverseDispatchedQuantity(
   tx: DB,
@@ -183,11 +184,11 @@ export async function reverseDispatchedQuantity(
     UPDATE finished_goods
     SET    dispatched_quantity = dispatched_quantity - ${qty}::numeric,
            status = CASE
+                       WHEN status = 'Cancelled' THEN 'Cancelled'
                        WHEN (dispatched_quantity - ${qty}::numeric) <= 0 THEN 'Available'
                        ELSE 'Partially Dispatched' END,
            updated_at = now()
     WHERE  batch_id = ${batchId}
-      AND  status <> 'Cancelled'
     RETURNING *
   `)
   return rows[0]
@@ -268,10 +269,18 @@ export async function setFinishedGoodsStatus(
     return { code: 'REASON_REQUIRED' }
   }
 
+  // Un-cancelling restores the status the quantities imply (same rule as
+  // incrementDispatchedQuantity) — a flat 'Available' would re-open stock that
+  // has already been dispatched.
+  const restoredStatus = sql`CASE
+    WHEN ${finishedGoods.dispatchedQuantity} <= 0 THEN 'Available'
+    WHEN ${finishedGoods.producedQuantity} - ${finishedGoods.dispatchedQuantity} - ${finishedGoods.reservedQuantity} <= 0 THEN 'Fully Dispatched'
+    ELSE 'Partially Dispatched' END`
+
   const [updated] = await db
     .update(finishedGoods)
     .set({
-      status,
+      status:       status === 'Cancelled' ? status : restoredStatus,
       cancelReason: status === 'Cancelled' ? (reason ?? null) : null,
       updatedAt:    new Date(),
     })

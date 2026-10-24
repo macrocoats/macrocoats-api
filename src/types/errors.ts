@@ -3,6 +3,8 @@ export const AppErrors = {
   VALIDATION_ERROR:        'VALIDATION_ERROR',
   NOT_FOUND:               'NOT_FOUND',
   FORBIDDEN:               'FORBIDDEN',
+  CONFLICT:                'CONFLICT',            // unique constraint violation
+  REFERENCED_RECORD:       'REFERENCED_RECORD',   // FK violation — record is referenced, or references a missing one
   // Auth
   NOT_AUTHENTICATED:       'NOT_AUTHENTICATED',
   INVALID_CREDENTIALS:     'INVALID_CREDENTIALS',
