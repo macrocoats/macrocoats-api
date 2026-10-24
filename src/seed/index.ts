@@ -10,6 +10,7 @@ import { seedInventory }            from './inventory.seed.js'
 import { seedCompanies }            from './companies.seed.js'
 import { seedFormulationVariants }  from './formulationVariants.seed.js'
 import { seedVariantDensities }     from './variantDensities.seed.js'
+import { seedVariantFunctions }     from './variantFunctions.seed.js'
 import { seedHazardProfiles }       from './hazardProfiles.seed.js'
 
 async function main() {
@@ -20,6 +21,7 @@ async function main() {
   await seedCompanies()
   await seedFormulationVariants()
   await seedVariantDensities()
+  await seedVariantFunctions()
   await seedHazardProfiles()
 
   console.log('\n✅ Seed complete.')

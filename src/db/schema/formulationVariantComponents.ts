@@ -9,6 +9,7 @@ export const formulationVariantComponents = pgTable('formulation_variant_compone
   percentage:   numeric('percentage', { precision: 5, scale: 2 }),  // null = water (auto-calculated)
   unit:         text('unit', { enum: ['L', 'Kg'] }).notNull(),
   density:      numeric('density', { precision: 6, scale: 3 }),     // g/mL; null = not recorded (treated as 1.0)
+  materialFunction: text('material_function'),                       // what this material does in this formulation
   sortOrder:    integer('sort_order').notNull().default(0),
 }, (t) => [
   index('fvc_variant_id_idx').on(t.variantId),

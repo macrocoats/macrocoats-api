@@ -1,0 +1,1 @@
+ALTER TABLE "formulation_variant_components" ADD COLUMN "material_function" text;

@@ -28,6 +28,7 @@ function toComponentResponse(row: typeof formulationVariantComponents.$inferSele
     percentage:   row.percentage !== null ? Number(row.percentage) : null,
     unit:         row.unit,
     density:      row.density !== null ? Number(row.density) : null,
+    materialFunction: row.materialFunction,
     sortOrder:    row.sortOrder,
   }
 }
@@ -297,6 +298,7 @@ export async function createVariant(data: CreateVariantBody) {
       percentage:   c.percentage !== null ? String(c.percentage) : null,
       unit:         c.unit as 'L' | 'Kg',
       density:      c.density != null ? String(c.density) : null,
+      materialFunction: c.materialFunction || null,
       sortOrder:    c.sortOrder ?? i,
     }))
 
@@ -414,6 +416,7 @@ export async function replaceComponents(variantId: string, components: Component
       percentage:   c.percentage !== null ? String(c.percentage) : null,
       unit:         c.unit as 'L' | 'Kg',
       density:      c.density != null ? String(c.density) : null,
+      materialFunction: c.materialFunction || null,
       sortOrder:    c.sortOrder ?? i,
     }))
 

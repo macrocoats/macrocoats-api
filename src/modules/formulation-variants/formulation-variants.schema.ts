@@ -8,6 +8,7 @@ export const componentBodySchema = z.object({
   percentage:   z.number().min(0).max(100).nullable(),
   unit:         z.enum(['L', 'Kg']),
   density:      z.number().positive().max(99).nullable().optional(),
+  materialFunction: z.string().trim().max(500).nullable().optional(),
   sortOrder:    z.number().int().default(0),
 })
 

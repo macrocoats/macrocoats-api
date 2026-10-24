@@ -329,6 +329,7 @@ See `DATABASE.md` for the full 33-table schema reference, the canonical migratio
 - `companies.seed.ts` — test companies (`SEED_COMPANIES`, tokens in source) with product access mappings and their users, plus the `admin`/`operator` users. Test companies are **skipped when `NODE_ENV=production`** (production `.env` sets it) — real companies are managed in the admin UI; `admin`/`operator` are still created if missing
 - `formulationVariants.seed.ts` — formulation variant headers and components
 - `variantDensities.seed.ts` — fills NULL `formulation_variant_components.density` (product's formula-doc density first, then a typical-value table; dissolved powders stay NULL = kg only). Never overwrites a set value. Dry run: `npx tsx --env-file=.env.local scripts/backfill-variant-densities.ts` (`--apply` to write)
+- `variantFunctions.seed.ts` — fills NULL `formulation_variant_components.material_function` (what the material does in that formulation): the product's formula-doc `function` by the same name match FormulaPage used, then drafted texts (`DRAFT_FUNCTIONS`, for R&D review). Never overwrites a set value; edit live values in the variant editor. Dry run: `scripts/backfill-variant-functions.ts`
 - `inventory.seed.ts` — 23 factory-default raw materials
 - `reset.ts` — dev-only; drops all tables (invoked by `npm run db:reset`)
 
