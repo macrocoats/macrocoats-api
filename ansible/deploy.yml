@@ -9,3 +9,4 @@
   roles:
     - db-backup
     - app
+    - supabase-replica
