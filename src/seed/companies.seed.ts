@@ -88,7 +88,16 @@ const OPERATOR_TOKEN = 'fW8mQ2vLtK9pXsA4nJ6dYcRe'
 export async function seedCompanies() {
   console.log('🌱 Seeding companies and users...')
 
-  for (const co of SEED_COMPANIES) {
+  // SEED_COMPANIES are test fixtures whose access tokens (and so their users'
+  // passwords) live in source control. Production companies are managed through
+  // the admin UI — a production seed run once recreated a test company deleted
+  // there months earlier, along with a working repo-known login.
+  const seedTestCompanies = process.env.NODE_ENV !== 'production'
+  if (!seedTestCompanies) {
+    console.log(`   ⏭️  NODE_ENV=production — skipping ${SEED_COMPANIES.length} test companies`)
+  }
+
+  for (const co of seedTestCompanies ? SEED_COMPANIES : []) {
     const [existing] = await db.select().from(companies).where(eq(companies.key, co.key))
 
     let companyId: string
@@ -180,5 +189,5 @@ export async function seedCompanies() {
     console.log('   ↩️  Operator user already exists')
   }
 
-  console.log(`   ✅ Seeded ${SEED_COMPANIES.length} companies`)
+  if (seedTestCompanies) console.log(`   ✅ Seeded ${SEED_COMPANIES.length} companies`)
 }
