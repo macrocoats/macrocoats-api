@@ -1,6 +1,12 @@
 [Unit]
 Description=Macro Coats API
+{% if database_mode == 'local' %}
 After=network.target postgresql.service
+{% else %}
+# Database is remote (Supabase) — wait for the network to be up, not a local postgres
+After=network-online.target
+Wants=network-online.target
+{% endif %}
 
 [Service]
 Type=simple

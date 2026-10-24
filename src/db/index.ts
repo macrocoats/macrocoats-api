@@ -6,7 +6,7 @@ import * as schema from './schema/index.js'
 // In test mode use a single connection; in prod use a pool
 const connectionOptions = env.NODE_ENV === 'test'
   ? { max: 1 }
-  : { max: 20, idle_timeout: 30 }
+  : { max: env.DB_POOL_MAX, idle_timeout: 30, connect_timeout: 10 }
 
 export const queryClient = postgres(env.DATABASE_URL, connectionOptions)
 

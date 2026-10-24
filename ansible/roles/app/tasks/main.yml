@@ -2,6 +2,33 @@
 # Prerequisite: the SSH key used to connect to this host (or an agent-forwarded key)
 # must be registered as a deploy key with read access on git@github.com:macrocoats/macrocoats-api.git
 
+# ── database_mode guard ─────────────────────────────────────────────────────
+# Switching where the live data is (local ↔ supabase) is only safe right after the
+# data has been copied (scripts/cutover-to-supabase.sh, which passes
+# allow_db_mode_change=true). Without this, a routine deploy from a branch that
+# still says database_mode=local would quietly point production back at the
+# stale local database after the cutover — and vice versa.
+- name: Read the currently deployed .env
+  ansible.builtin.slurp:
+    src: "{{ app_dir }}/.env"
+  register: current_env
+  failed_when: false
+  no_log: true
+
+- name: Refuse an unplanned database_mode change
+  vars:
+    deployed_mode: >-
+      {{ 'supabase' if (current_env.content is defined
+                        and 'pooler.supabase.com' in (current_env.content | b64decode))
+         else ('local' if current_env.content is defined else 'none') }}
+  ansible.builtin.assert:
+    that: deployed_mode in ['none', database_mode] or (allow_db_mode_change | default(false) | bool)
+    fail_msg: >-
+      Production currently uses database_mode={{ deployed_mode }} but this deploy says
+      database_mode={{ database_mode }}. Use scripts/cutover-to-supabase.sh for a planned
+      switch, or pass -e allow_db_mode_change=true for a deliberate rollback.
+    quiet: true
+
 - name: Ensure app directory exists
   ansible.builtin.file:
     path: "{{ app_dir }}"
@@ -24,15 +51,86 @@
   ansible.builtin.set_fact:
     deploy_required: "{{ checkout.changed or (force_deploy | default(false) | bool) }}"
 
+- name: Check whether dependencies are already installed
+  ansible.builtin.stat:
+    path: "{{ app_dir }}/node_modules/.package-lock.json"
+  register: installed_dependencies
+
+- name: Check whether the dependency lockfile changed
+  ansible.builtin.command:
+    argv:
+      - git
+      - diff
+      - --quiet
+      - "{{ checkout.before }}"
+      - "{{ checkout.after }}"
+      - --
+      - package-lock.json
+  args:
+    chdir: "{{ app_dir }}"
+  become: true
+  become_user: "{{ app_user }}"
+  register: dependency_lockfile_diff
+  changed_when: false
+  failed_when: dependency_lockfile_diff.rc not in [0, 1]
+  when:
+    - deploy_required
+    - checkout.before is defined
+    - checkout.before | length > 0
+    - checkout.after is defined
+    - checkout.after | length > 0
+
+- name: Decide whether dependencies must be installed
+  ansible.builtin.set_fact:
+    dependency_install_required: >-
+      {{
+        not installed_dependencies.stat.exists
+        or checkout.before is not defined
+        or (checkout.before | default('') | length == 0)
+        or (dependency_lockfile_diff.rc | default(1)) == 1
+      }}
+  when: deploy_required
+
 - name: Install dependencies (npm ci)
   ansible.builtin.command:
     cmd: npm ci
     chdir: "{{ app_dir }}"
   become: true
   become_user: "{{ app_user }}"
-  when: deploy_required
+  when:
+    - deploy_required
+    - dependency_install_required
 
-- name: Build (tsc)
+- name: Verify the CI artifact belongs to the requested release
+  ansible.builtin.assert:
+    that:
+      - release_artifact_sha is defined
+      - release_artifact_sha == repo_version
+    fail_msg: The release artifact SHA must match repo_version.
+  when:
+    - deploy_required
+    - release_artifact is defined
+
+- name: Remove the previous compiled application
+  ansible.builtin.file:
+    path: "{{ app_dir }}/dist"
+    state: absent
+  when:
+    - deploy_required
+    - release_artifact is defined
+
+- name: Install the tested production build
+  ansible.builtin.unarchive:
+    src: "{{ release_artifact }}"
+    dest: "{{ app_dir }}"
+    owner: "{{ app_user }}"
+    group: "{{ app_user }}"
+  when:
+    - deploy_required
+    - release_artifact is defined
+  notify: restart macrocoats-api
+
+- name: Build on the target when no CI artifact was supplied
   # Incident 2026-07-22: npm ci + this build, run directly on the live
   # VM.Standard.E2.1.Micro (1GB RAM, no swap at the time) alongside the running
   # app/Postgres/Redis/nginx, exhausted memory hard enough to make the whole
@@ -45,7 +143,9 @@
     chdir: "{{ app_dir }}"
   become: true
   become_user: "{{ app_user }}"
-  when: deploy_required
+  when:
+    - deploy_required
+    - release_artifact is not defined
   notify: restart macrocoats-api
 
 - name: Ensure procurement storage directory exists
@@ -97,10 +197,22 @@
     cmd: npm run db:migrate
     chdir: "{{ app_dir }}"
   environment:
-    DATABASE_URL: "postgresql://{{ db_user }}:{{ vault_db_password }}@localhost:5432/{{ db_name }}"
+    DATABASE_URL: "{{ app_database_url }}"
   become: true
   become_user: "{{ app_user }}"
   when: deploy_required
+  no_log: true
+
+- name: Keep the Supabase Data API closed over the portal's tables (incl. ones just migrated)
+  ansible.builtin.command:
+    cmd: psql "$DATABASE_URL" -q -f scripts/supabase-lockdown.sql
+    chdir: "{{ app_dir }}"
+  environment:
+    DATABASE_URL: "{{ app_database_url }}"
+  become: true
+  become_user: "{{ app_user }}"
+  when: deploy_required and database_mode == 'supabase'
+  changed_when: false
   no_log: true
 
 - name: Apply the new service configuration after migrations succeed
@@ -111,7 +223,7 @@
     cmd: npm run seed
     chdir: "{{ app_dir }}"
   environment:
-    DATABASE_URL: "postgresql://{{ db_user }}:{{ vault_db_password }}@localhost:5432/{{ db_name }}"
+    DATABASE_URL: "{{ app_database_url }}"
   become: true
   become_user: "{{ app_user }}"
   tags: [seed, never]

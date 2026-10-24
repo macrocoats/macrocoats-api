@@ -41,6 +41,7 @@ All variables are validated by Zod at startup (`src/config/env.ts`); the server 
 | Variable | Required | Default | Description |
 |---|---|---|---|
 | `DATABASE_URL` | yes | — | PostgreSQL connection string |
+| `DB_POOL_MAX` | no | 20 | App connection pool size. 10 behind Supabase's session pooler (see `ansible/README.md` → Supabase cutover) |
 | `JWT_PRIVATE_KEY_B64` | yes | — | RS256 private key, base64-encoded |
 | `JWT_PUBLIC_KEY_B64` | yes | — | RS256 public key, base64-encoded |
 | `COOKIE_SECRET` | yes | — | Cookie signing secret (≥32 chars) |

@@ -53,10 +53,13 @@ To run just this part: `ansible-playbook oci-monitoring.yml`.
 
 `.github/workflows/backend-ci-cd.yml` is the normal release path. Pull requests and pushes to
 `main` run typechecking, the production build, migrations and seeds against clean PostgreSQL 16,
-and the complete integration/PDF test suite. A successful `main` push then deploys that exact Git
-SHA to production through this Ansible role. Production deployments are serialized and are never
-cancelled by a newer run. Actions passes `force_deploy=true`, so rerunning a failed deployment
-rebuilds and retries migrations even when the VM already checked out the requested SHA.
+and the complete integration/PDF test suite. On a `main` push, that tested `dist` directory is
+uploaded as a workflow artifact and installed on the production VM, so production does not repeat
+the TypeScript build. A successful push deploys that exact Git SHA through this Ansible role.
+Production deployments are serialized and are never cancelled by a newer run. Actions passes
+`force_deploy=true`, so rerunning a failed deployment reinstalls the artifact and retries migrations
+even when the VM already checked out the requested SHA. `npm ci` runs only when `package-lock.json`
+changed or the VM's installed dependency tree is missing.
 
 Create a GitHub environment named `production` before enabling the workflow. It needs these
 environment secrets:
@@ -99,8 +102,9 @@ database; schema/data rollback remains a separate, explicitly approved operation
 ansible-playbook deploy.yml --ask-vault-pass
 ```
 
-Pulls `repo_version` (default `main`), runs `npm ci && npm run build` only if the checkout changed,
-writes `.env`, takes a pre-migration database backup, runs `db:migrate`, restarts the
+Pulls `repo_version` (default `main`), installs dependencies only if needed, and builds on the VM
+when no CI release artifact was supplied. It writes `.env`, takes a pre-migration database backup,
+runs `db:migrate`, restarts the
 `macrocoats-api` systemd service, and waits for `/health` to report PostgreSQL and Redis healthy.
 
 Seed data is **not** run by default (it's idempotent but there's no reason to run it every deploy).
@@ -109,6 +113,87 @@ To run it explicitly:
 ```bash
 ansible-playbook deploy.yml --ask-vault-pass --tags seed
 ```
+
+## Supabase cutover (local PostgreSQL → Supabase, one-time)
+
+`database_mode` in `group_vars/all.yml` decides where production data lives: `local` (PostgreSQL
+on this host, the default) or `supabase` (project **macrocoats-portal**, `ap-south-1` Mumbai —
+same city as this OCI host). The app connects through Supabase's **session pooler** on port
+5432: the direct `db.<ref>.supabase.co` host is IPv6-only and this box has no IPv6, and the
+transaction pooler (6543) breaks the server-side prepared statements `postgres-js` uses.
+
+What `database_mode: supabase` changes:
+
+| | local | supabase |
+|---|---|---|
+| `DATABASE_URL` | `localhost:5432` with `vault_db_password` | `vault_supabase_database_url` |
+| `DB_POOL_MAX` | 20 | 10 (stay under the pooler's pool size) |
+| systemd unit | `After=postgresql.service` | `After=network-online.target` |
+| backups (`roles/db-backup`) | `sudo -u postgres pg_dump` | `pg_dump` 17 (PGDG) over the pooler, `public` + `drizzle` schemas only |
+| after `db:migrate` | — | `scripts/supabase-lockdown.sql` (keeps the Data API closed over new tables) |
+| `provision.yml` | runs the `postgres` role | skips it |
+
+A deploy refuses to change `database_mode` relative to what production currently uses unless
+`-e allow_db_mode_change=true` is passed — so a branch still saying `local` can't quietly point
+production back at the stale local copy after the cutover.
+
+### Prerequisites
+
+1. **Supabase Pro plan.** Free projects pause after a week without activity (production would go
+   down) and have no downloadable backups.
+2. **This PR merged and deployed** — the cutover redeploys the running commit and needs
+   `scripts/supabase-lockdown.sql` on the host. The script checks this.
+3. **Vault value:** `ansible-vault edit group_vars/vault.yml` → add
+   `vault_supabase_database_url: "postgresql://postgres.<ref>:<password>@aws-0-ap-south-1.pooler.supabase.com:5432/postgres?sslmode=require"`
+   (Dashboard → Connect → Session pooler; percent-encode special characters in the password).
+4. **No other deploys in flight** — don't merge to `main` until "After the switch" is done.
+
+### Run it
+
+```bash
+# working copy only — do not push yet
+sed -i '' 's/^database_mode: local/database_mode: supabase/' ansible/group_vars/all.yml
+scripts/cutover-to-supabase.sh
+```
+
+The script preflights (Supabase reachable from here and from the OCI host, matching pg tool
+versions, running commit), asks you to type `cutover`, then: stops the API → dumps with the
+server's own `pg_dump` → restores into Supabase in one transaction → runs the lockdown → compares
+every table's row count with production → redeploys the running commit with
+`database_mode=supabase` → checks `/health`. Downtime is the copy plus one deploy (a few minutes
+at today's ~14 MB).
+
+**If anything fails before the deploy step, the script restarts the API on the local database —
+production is exactly as it was.** Dumps are kept in `/var/backups/macrocoats/cutover-*.dump`
+on the host and `~/macrocoats-backups/cutover/` locally.
+
+### After the switch
+
+1. Update the CI copy of the vault **before** pushing, or the next CI deploy fails:
+   `base64 -i ansible/group_vars/vault.yml | tr -d '\n' | gh secret set ANSIBLE_VAULT_FILE_B64 -R macrocoats/macrocoats-api`
+2. Commit and push the `database_mode: supabase` change.
+3. Leave the local PostgreSQL running and untouched for at least a week as the rollback copy.
+   Then stop it (`sudo systemctl disable --now postgresql`) and delete the cutover dumps.
+
+### Rolling back
+
+Writes made after the switch exist only in Supabase. To go back, freeze writes, copy Supabase →
+local (`pg_dump --schema=public --schema=drizzle` with a v17 client, `pg_restore --clean` into the
+local database), then:
+
+```bash
+sed -i '' 's/^database_mode: supabase/database_mode: local/' group_vars/all.yml
+ansible-playbook deploy.yml --vault-password-file .vault_pass.txt -e force_deploy=true -e allow_db_mode_change=true
+```
+
+If the switch itself failed seconds ago and nothing was written yet, skip the copy.
+
+### Restoring a backup (supabase mode)
+
+`scripts/restore-db.sh` only targets the local database and refuses to run in supabase mode.
+Backups are plain SQL (`.sql.gz`), so restore with
+`gunzip -c <file> | psql "<vault_supabase_database_url>"` into a cleared schema, then run
+`psql "<url>" -f scripts/supabase-lockdown.sql`.
 
 ## Notes / things to double check after first run
 

@@ -1,0 +1,44 @@
+---
+# Backup script + nightly cron for whichever database_mode is active. Lives outside the
+# postgres role so deploy.yml applies it too — flipping database_mode must repoint the
+# pre-migration backup (app role) before the next migration runs.
+
+- name: Add the PostgreSQL (PGDG) apt repository for a client matching Supabase's server version
+  when: database_mode == 'supabase'
+  block:
+    - name: Ensure the apt keyrings directory exists
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: "0755"
+
+    - name: Install the PGDG signing key
+      ansible.builtin.get_url:
+        url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+        dest: /etc/apt/keyrings/postgresql.asc
+        mode: "0644"
+
+    - name: Add the PGDG repository
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by=/etc/apt/keyrings/postgresql.asc] https://apt.postgresql.org/pub/repos/apt {{ ansible_facts.distribution_release }}-pgdg main"
+        filename: pgdg
+        state: present
+
+    - name: Install postgresql-client-{{ supabase_pg_client_version }}
+      ansible.builtin.apt:
+        name: "postgresql-client-{{ supabase_pg_client_version }}"
+        state: present
+        update_cache: true
+
+- name: Install the database backup script
+  ansible.builtin.template:
+    src: backup-macrocoats-db.sh.j2
+    dest: /usr/local/bin/backup-macrocoats-db.sh
+    mode: "0700"
+
+- name: Schedule nightly backup via cron
+  ansible.builtin.cron:
+    name: "macrocoats db backup"
+    minute: "30"
+    hour: "2"
+    job: "/usr/local/bin/backup-macrocoats-db.sh"
