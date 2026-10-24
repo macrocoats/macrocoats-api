@@ -116,17 +116,18 @@ describe('company sessions', () => {
 })
 
 describe('change password', () => {
-  it('requires the current password and revokes other sessions', async () => {
+  it('requires the current password, keeps this session and revokes the others', async () => {
     const company = await createCompany()
     const login = await req().post('/v1/auth/login').send({ username: company.key, password: company.accessToken }).expect(200)
     const cookies = login.headers['set-cookie'] as unknown as string[]
-    const refreshToken = cookieValue(cookies, 'refreshToken')
+    const otherSession = await req().post('/v1/auth/mobile/login').send({ username: company.key, password: company.accessToken }).expect(200)
 
+    // 400, not 401 — the web client treats 401 as an expired session
     await req()
       .post('/v1/auth/change-password')
       .set('Cookie', cookies)
       .send({ currentPassword: 'wrong-password', newPassword: 'a-brand-new-password' })
-      .expect(401)
+      .expect(400)
 
     await req()
       .post('/v1/auth/change-password')
@@ -134,15 +135,36 @@ describe('change password', () => {
       .send({ currentPassword: company.accessToken, newPassword: 'short' })
       .expect(400)
 
-    await req()
+    const changed = await req()
       .post('/v1/auth/change-password')
       .set('Cookie', cookies)
       .send({ currentPassword: company.accessToken, newPassword: 'a-brand-new-password' })
       .expect(200)
+    expect(changed.body.data.accessToken).toBeUndefined()   // cookie client: tokens only as cookies
 
-    await req().post('/v1/auth/mobile/refresh').send({ refreshToken }).expect(401)
+    // This session got a fresh pair and can keep refreshing…
+    const newCookies = changed.headers['set-cookie'] as unknown as string[]
+    await req().post('/v1/auth/mobile/refresh').send({ refreshToken: cookieValue(newCookies, 'refreshToken') }).expect(200)
+    // …while the old refresh token and every other session are revoked
+    await req().post('/v1/auth/mobile/refresh').send({ refreshToken: cookieValue(cookies, 'refreshToken') }).expect(401)
+    await req().post('/v1/auth/mobile/refresh').send({ refreshToken: otherSession.body.refreshToken }).expect(401)
+
     await req().post('/v1/auth/login').send({ username: company.key, password: company.accessToken }).expect(401)
     await req().post('/v1/auth/login').send({ username: company.key, password: 'a-brand-new-password' }).expect(200)
+  })
+
+  it('returns the new tokens in the body for Bearer clients', async () => {
+    const company = await createCompany()
+    const login = await req().post('/v1/auth/mobile/login').send({ username: company.key, password: company.accessToken }).expect(200)
+
+    const changed = await req()
+      .post('/v1/auth/change-password')
+      .set('Authorization', `Bearer ${login.body.accessToken}`)
+      .send({ currentPassword: company.accessToken, newPassword: 'another-new-password' })
+      .expect(200)
+
+    await req().get('/v1/auth/me').set('Authorization', `Bearer ${changed.body.data.accessToken}`).expect(200)
+    await req().post('/v1/auth/mobile/refresh').send({ refreshToken: changed.body.data.refreshToken }).expect(200)
   })
 })
 

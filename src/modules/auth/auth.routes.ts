@@ -104,7 +104,10 @@ export async function authRoutes(app: FastifyInstance) {
 
   // ── POST /auth/change-password ───────────────────────────────────────────
   // Re-verifies the current password; on success every refresh token for the
-  // user is revoked, so other sessions must log in again.
+  // user is revoked (other sessions must log in again) and this session gets a
+  // fresh pair — as cookies for the browser, in the body for Bearer clients.
+  // A wrong current password is 400, not 401: the web client treats 401 as an
+  // expired session and would refresh and retry.
   app.post(
     '/change-password',
     { preHandler: [authenticate, requireAuth], config: { rateLimit: CREDENTIAL_RATE_LIMIT } },
@@ -114,11 +117,18 @@ export async function authRoutes(app: FastifyInstance) {
         return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten(), details: body.error.flatten() })
       }
 
-      const changed = await changePassword(request.authUser!.id, body.data.currentPassword, body.data.newPassword)
-      if (!changed) {
-        return reply.code(401).send({ error: AppErrors.INVALID_CREDENTIALS })
+      const result = await changePassword(request.authUser!.id, body.data.currentPassword, body.data.newPassword)
+      if (!result) {
+        return reply.code(400).send({ error: AppErrors.INVALID_CREDENTIALS })
       }
-      return reply.send({ data: { changed: true } })
+
+      if (request.cookies?.accessToken) {
+        reply
+          .setCookie('accessToken', result.accessToken, accessCookieOptions)
+          .setCookie('refreshToken', result.refreshToken, refreshCookieOptions)
+        return reply.send({ data: { changed: true } })
+      }
+      return reply.send({ data: { changed: true, accessToken: result.accessToken, refreshToken: result.refreshToken } })
     },
   )
 
