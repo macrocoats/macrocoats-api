@@ -335,6 +335,8 @@ See `DATABASE.md` for the full 33-table schema reference, the canonical migratio
 ### Seed & Data Integrity
 
 - Seed scripts must be idempotent — always check for existing records before inserting/upserting
+- **Renaming a seeded variant:** add the old name to `LEGACY_VARIANT_NAMES` in `formulationVariants.seed.ts`. Existence checks match by name, so an environment still carrying the old name (production never got the `502bfd3` renames) would otherwise get a duplicate.
+- **Inventory seed never resets live stock or prices** — `STOCK_UPDATE`/`PRICE_UPDATE` apply to new inserts, and to existing items only while `stockQty` is null / price is 0. Change a live price or stock level through the Inventory UI.
 - **"Idempotent" here means insert-if-missing, not upsert.** `products.seed.ts` (and the other seed files) insert via `.onConflictDoNothing()` — safe to re-run, but a row that already exists is never touched. Editing a product's TDS/MSDS/formula body (or any other seeded field) in the seed file and re-running `npm run seed` is a silent no-op for every product that was already seeded; it only affects genuinely new rows. There is no seed-driven update path.
 - When updating data, propagate changes to both seed files AND the live database; seed-only edits won't reflect in the running DB — for an existing row this means an explicit `UPDATE`/API call against the live DB, not just re-running the seed
 - Handle name normalization when matching DB records (e.g., `'LAE 9'` vs `'LAE-9'`)

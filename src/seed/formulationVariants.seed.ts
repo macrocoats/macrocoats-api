@@ -1,4 +1,4 @@
-import { eq, and } from 'drizzle-orm'
+import { eq, and, inArray, isNull } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import {
   companies,
@@ -10,6 +10,23 @@ import {
   TDS_OVERRIDES_CORRUCUT_500_WDRPO, MSDS_OVERRIDES_CORRUCUT_500_WDRPO,
   TDS_OVERRIDES_CORRUCUT_500_MTO_BASED, MSDS_OVERRIDES_CORRUCUT_500_MTO_BASED,
 } from './corrucut500Overrides.data.js'
+
+/**
+ * Earlier names of seeded variants (renamed in 502bfd3). An environment where the
+ * rename was never applied still carries the old name, so every existence check
+ * must match either one — an exact-name check misses it and inserts a duplicate.
+ */
+const LEGACY_VARIANT_NAMES: Record<string, string[]> = {
+  'Solvent Carrier Grade':                       ['MTO Based'],
+  'Fast-Dry Variant':                            ['High IPA Variant'],
+  'Low-Evaporation Variant':                     ['PEG Glycol Variant'],
+  'UNICool AL – High Lubricity Variant':         ['UNICool AL – PG High Lubricity Variant'],
+  'UNICool AL – Enhanced Wetting Variant':       ['UNICool AL – PGME Enhanced Variant'],
+  'UNIKLEAN SP – Heavy Duty Alkaline Variant':   ['UNIKLEAN SP – Heavy Duty Alkaline SMS Variant'],
+}
+
+const variantNameIs = (name: string) =>
+  inArray(productFormulationVariants.variantName, [name, ...(LEGACY_VARIANT_NAMES[name] ?? [])])
 
 /**
  * Seeds a default UNIROLS formulation variant for UNIKOAT LT 700.
@@ -762,7 +779,7 @@ export async function seedFormulationVariants() {
       .where(
         and(
           eq(productFormulationVariants.productKey, 'uniklean-sp'),
-          eq(productFormulationVariants.variantName, 'UNIKLEAN SP – Low Foam Rust Inhibiting Variant'),
+          variantNameIs('UNIKLEAN SP – Low Foam Rust Inhibiting Variant'),
         ),
       )
 
@@ -804,7 +821,7 @@ export async function seedFormulationVariants() {
       .where(
         and(
           eq(productFormulationVariants.productKey, 'uniklean-sp'),
-          eq(productFormulationVariants.variantName, HEAVY_DUTY_SMS_NAME),
+          variantNameIs(HEAVY_DUTY_SMS_NAME),
         ),
       )
 
@@ -846,7 +863,7 @@ export async function seedFormulationVariants() {
       .where(
         and(
           eq(productFormulationVariants.productKey, 'uniklean-sp'),
-          eq(productFormulationVariants.variantName, ENHANCED_FLASH_RUST_NAME),
+          variantNameIs(ENHANCED_FLASH_RUST_NAME),
         ),
       )
 
@@ -894,7 +911,7 @@ export async function seedFormulationVariants() {
     .where(
       and(
         eq(productFormulationVariants.productKey, 'unicool-al'),
-        eq(productFormulationVariants.variantName, 'Low-Evaporation Variant'),
+        variantNameIs('Low-Evaporation Variant'),
       ),
     )
 
@@ -945,7 +962,7 @@ export async function seedFormulationVariants() {
     .where(
       and(
         eq(productFormulationVariants.productKey, 'unicool-al'),
-        eq(productFormulationVariants.variantName, 'Alcohol Precision Variant'),
+        variantNameIs('Alcohol Precision Variant'),
       ),
     )
 
@@ -996,7 +1013,7 @@ export async function seedFormulationVariants() {
     .where(
       and(
         eq(productFormulationVariants.productKey, 'unicool-al'),
-        eq(productFormulationVariants.variantName, 'Fast-Dry Variant'),
+        variantNameIs('Fast-Dry Variant'),
       ),
     )
 
@@ -1014,13 +1031,26 @@ export async function seedFormulationVariants() {
       console.log('   ✅ Backfilled coaTests / tdsOverrides / msdsOverrides for Fast-Dry Variant')
     }
   } else {
+    // Only take the default slot if it's free — pfv_product_global_default_unique
+    // allows one global default per product, and another variant may hold it.
+    const [unicoolDefault] = await db
+      .select({ id: productFormulationVariants.id })
+      .from(productFormulationVariants)
+      .where(
+        and(
+          eq(productFormulationVariants.productKey, 'unicool-al'),
+          isNull(productFormulationVariants.companyId),
+          eq(productFormulationVariants.isDefault, true),
+        ),
+      )
+
     const [highIPAVariant] = await db
       .insert(productFormulationVariants)
       .values({
         productKey:    'unicool-al',
         companyId:     null,
         variantName:   'Fast-Dry Variant',
-        isDefault:     true,
+        isDefault:     !unicoolDefault,
         coaTests:      COA_TESTS_HIGH_IPA,
         tdsOverrides:  TDS_OVERRIDES_HIGH_IPA,
         msdsOverrides: MSDS_OVERRIDES_HIGH_IPA,
@@ -1048,7 +1078,7 @@ export async function seedFormulationVariants() {
     .where(
       and(
         eq(productFormulationVariants.productKey, 'unicool-al'),
-        eq(productFormulationVariants.variantName, PGME_ENHANCED_NAME),
+        variantNameIs(PGME_ENHANCED_NAME),
       ),
     )
 
@@ -1100,7 +1130,7 @@ export async function seedFormulationVariants() {
     .where(
       and(
         eq(productFormulationVariants.productKey, 'unicool-al'),
-        eq(productFormulationVariants.variantName, PG_HIGH_LUBRICITY_NAME),
+        variantNameIs(PG_HIGH_LUBRICITY_NAME),
       ),
     )
 
@@ -1160,7 +1190,7 @@ export async function seedFormulationVariants() {
       .where(
         and(
           eq(productFormulationVariants.productKey, 'unisolve-h3'),
-          eq(productFormulationVariants.variantName, UNISOLVE_H3_30KG_NAME),
+          variantNameIs(UNISOLVE_H3_30KG_NAME),
         ),
       )
 
@@ -1207,7 +1237,7 @@ export async function seedFormulationVariants() {
       .where(
         and(
           eq(productFormulationVariants.productKey, 'unikbrightner'),
-          eq(productFormulationVariants.variantName, UNIKBRIGHTNER_BASE_NAME),
+          variantNameIs(UNIKBRIGHTNER_BASE_NAME),
         ),
       )
 
@@ -1268,7 +1298,7 @@ export async function seedFormulationVariants() {
       .where(
         and(
           eq(productFormulationVariants.productKey, 'corrucut-500'),
-          eq(productFormulationVariants.variantName, CORRUCUT_500_WDRPO_NAME),
+          variantNameIs(CORRUCUT_500_WDRPO_NAME),
         ),
       )
 
@@ -1310,7 +1340,7 @@ export async function seedFormulationVariants() {
       .where(
         and(
           eq(productFormulationVariants.productKey, 'corrucut-500'),
-          eq(productFormulationVariants.variantName, CORRUCUT_500_MTO_BASED_NAME),
+          variantNameIs(CORRUCUT_500_MTO_BASED_NAME),
         ),
       )
 
@@ -1350,7 +1380,7 @@ export async function seedFormulationVariants() {
       .where(
         and(
           eq(productFormulationVariants.productKey, 'corrucut-500'),
-          eq(productFormulationVariants.variantName, CORRUCUT_500_NA_BA_SULFONATE_NAME),
+          variantNameIs(CORRUCUT_500_NA_BA_SULFONATE_NAME),
         ),
       )
 

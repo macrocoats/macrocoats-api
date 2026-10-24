@@ -1,8 +1,9 @@
 import { db } from '../db/index.js'
 import { inventoryItems } from '../db/schema/index.js'
-import { eq } from 'drizzle-orm'
+import { and, eq, isNull, or } from 'drizzle-orm'
 
-// Confirmed market rates — applied to both new inserts and existing item updates on every `npm run seed`
+// Confirmed market rates — used for new inserts, and for existing items only while their price is
+// unset (null or 0). A live price edited in the Inventory UI is never overwritten.
 const PRICE_UPDATE: Record<string, string> = {
   'Zinc Oxide':                         '265',
   'Phosphoric Acid':                    '158',
@@ -33,7 +34,8 @@ const PRICE_UPDATE: Record<string, string> = {
   'Alphox 200 (Non-ionic Surfactant)':  '200',
 }
 
-// Current stock quantities — applied to both new inserts and existing item updates on every `npm run seed`
+// Opening stock quantities — used for new inserts, and for existing items only while stockQty is
+// unset. Live stock moves with batches/receipts, so a seed run must never reset it.
 const STOCK_UPDATE: Record<string, { stock: string; stockQty: string }> = {
   'Non-silicone Defoamer':              { stock: '10 Kg',   stockQty: '10'   },
   'Silicone Defoamer':                  { stock: '2 Kg',    stockQty: '2'    },
@@ -206,6 +208,7 @@ export async function seedInventory() {
         const stockData = STOCK_UPDATE[item.material]
         return {
           ...item,
+          price:     PRICE_UPDATE[item.material] ?? item.price,
           stock:     stockData?.stock    ?? '',
           stockQty:  stockData?.stockQty ?? null,
           supplier:  '',
@@ -218,28 +221,36 @@ export async function seedInventory() {
     console.log('   ⏭️  All inventory items already exist — nothing inserted')
   }
 
-  // Update stock quantities for items that already existed in the DB
-  const toUpdateStock = Object.entries(STOCK_UPDATE).filter(([material]) => existingNames.has(material))
-  for (const [material, stockData] of toUpdateStock) {
-    await db
+  // Existing items: fill stock only where none is recorded yet
+  let stockFilled = 0
+  for (const [material, stockData] of Object.entries(STOCK_UPDATE)) {
+    if (!existingNames.has(material)) continue
+    const updated = await db
       .update(inventoryItems)
       .set({ stock: stockData.stock, stockQty: stockData.stockQty })
-      .where(eq(inventoryItems.material, material))
+      .where(and(eq(inventoryItems.material, material), isNull(inventoryItems.stockQty)))
+      .returning({ id: inventoryItems.id })
+    stockFilled += updated.length
   }
-  if (toUpdateStock.length > 0) {
-    console.log(`   ✅ Updated stock for ${toUpdateStock.length} existing inventory items`)
+  if (stockFilled > 0) {
+    console.log(`   ✅ Filled missing stock for ${stockFilled} existing inventory items`)
   }
 
-  // Update confirmed market prices for all items in the DB (new + existing)
-  const allNames = new Set([...existingNames, ...toInsert.map((i) => i.material)])
-  const toUpdatePrice = Object.entries(PRICE_UPDATE).filter(([material]) => allNames.has(material))
-  for (const [material, price] of toUpdatePrice) {
-    await db
+  // Existing items: fill price only where it is unset (null or 0)
+  let priceFilled = 0
+  for (const [material, price] of Object.entries(PRICE_UPDATE)) {
+    if (!existingNames.has(material)) continue
+    const updated = await db
       .update(inventoryItems)
       .set({ price })
-      .where(eq(inventoryItems.material, material))
+      .where(and(
+        eq(inventoryItems.material, material),
+        or(isNull(inventoryItems.price), eq(inventoryItems.price, '0')),
+      ))
+      .returning({ id: inventoryItems.id })
+    priceFilled += updated.length
   }
-  if (toUpdatePrice.length > 0) {
-    console.log(`   ✅ Updated price for ${toUpdatePrice.length} inventory items`)
+  if (priceFilled > 0) {
+    console.log(`   ✅ Filled missing price for ${priceFilled} existing inventory items`)
   }
 }
