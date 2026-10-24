@@ -17,11 +17,21 @@ import {
  *     backfill reproduces exactly what the formula sheet already showed.
  *  2. DRAFT_FUNCTIONS below, for materials the document doesn't list. These are
  *     drafts written from the variant's composition and its TDS override text —
- *     R&D should review them and correct any in the variant editor.
+ *     R&D should review them and correct any in the variant editor. A key of
+ *     `<material> @ <variant name>` applies to that variant only and wins over
+ *     the plain `<material>` key, for a material whose role differs by variant.
  * Never overwrites a set value.
  */
 const DRAFT_FUNCTIONS: Record<string, Record<string, string>> = {
+  'corrcut-200': {
+    // Formula document lists it as 'Exxsol D145'; production's component says 'Exxol'
+    'exxol d145': 'Secondary carrier solvent — dearomatized, higher flash point hydrocarbon for controlled evaporation and low odour',
+  },
   'corrucut-500': {
+    // Formula document text for 'Exxsol D60' (57% in the base formula)
+    'exxol d60': 'Primary carrier solvent — dearomatized aliphatic hydrocarbon, principal film-forming vehicle',
+    // At 20% next to 35% MTO it is not the primary carrier — wording from the variant's TDS
+    'exxol d60 @ corrucut 500 - water-displacing rpo': 'Dearomatized co-solvent — controlled-evaporation carrier alongside the MTO',
     'mineral turpentine oil (mto)': 'Primary carrier solvent — dissolves the inhibitor and film formers, penetrates and displaces moisture, then evaporates to leave the protective film',
     'light paraffinic mineral oil': 'Mineral base oil — non-volatile film oil that carries the corrosion inhibitor as a continuous, lightly oily protective film',
     'exxol 32d': 'Light, fast-evaporating fraction — aids initial wetting and penetration',
@@ -92,7 +102,8 @@ export async function seedVariantFunctions({ apply = true } = {}) {
       const ck = key(c.name)
       return ck === k || ck.includes(k) || k.includes(ck)
     })
-    const text = match?.function || DRAFT_FUNCTIONS[r.productKey]?.[k]
+    const drafts = DRAFT_FUNCTIONS[r.productKey] ?? {}
+    const text = match?.function || drafts[`${k} @ ${key(r.variantName)}`] || drafts[k]
     if (!text) continue
     fills.push({ ...r, text, source: match?.function ? 'formula doc' : 'draft' })
   }
