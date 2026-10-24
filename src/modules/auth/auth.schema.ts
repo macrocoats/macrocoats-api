@@ -12,7 +12,12 @@ export const tokenSchema = z.object({
 })
 
 export const mobileRefreshSchema = z.object({
-  refreshToken: z.string().min(1),
+  refreshToken: z.string().min(1).max(2048),
+})
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1).max(200),
+  newPassword:     z.string().min(12).max(200),
 })
 
 export const userResponseSchema = z.object({
@@ -26,4 +31,5 @@ export const userResponseSchema = z.object({
 export type LoginBody         = z.infer<typeof loginSchema>
 export type TokenBody         = z.infer<typeof tokenSchema>
 export type MobileRefreshBody = z.infer<typeof mobileRefreshSchema>
+export type ChangePasswordBody = z.infer<typeof changePasswordSchema>
 export type UserResponse      = z.infer<typeof userResponseSchema>

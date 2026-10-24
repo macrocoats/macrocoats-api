@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import supertest from 'supertest'
 import type { FastifyInstance } from 'fastify'
 import { buildApp } from '../../src/app.js'
+import { ADMIN_PASSWORD } from '../helpers/credentials.js'
 
 // ── Test setup ─────────────────────────────────────────────────────────────────
 let app: FastifyInstance
@@ -22,7 +23,7 @@ describe('POST /v1/auth/login', () => {
   it('returns 200 and sets cookies on valid superadmin credentials', async () => {
     const res = await request()
       .post('/v1/auth/login')
-      .send({ username: 'admin', password: 'mc2024Xp7NrK9L3vQeJbF2wTa' })
+      .send({ username: 'admin', password: ADMIN_PASSWORD })
       .expect(200)
 
     expect(res.body.user.role).toBe('superadmin')
@@ -62,7 +63,7 @@ describe('POST /v1/auth/login', () => {
   it('normalises username case', async () => {
     const res = await request()
       .post('/v1/auth/login')
-      .send({ username: 'ADMIN', password: 'mc2024Xp7NrK9L3vQeJbF2wTa' })
+      .send({ username: 'ADMIN', password: ADMIN_PASSWORD })
       .expect(200)
 
     expect(res.body.user.role).toBe('superadmin')
@@ -99,7 +100,7 @@ describe('GET /v1/auth/me', () => {
     // Login to get cookie
     const login = await request()
       .post('/v1/auth/login')
-      .send({ username: 'admin', password: 'mc2024Xp7NrK9L3vQeJbF2wTa' })
+      .send({ username: 'admin', password: ADMIN_PASSWORD })
 
     const cookies = login.headers['set-cookie']
 
@@ -128,7 +129,7 @@ describe('POST /v1/auth/refresh', () => {
   it('rotates a valid refresh token: new cookies, new access token works, old refresh token is rejected on reuse', async () => {
     const login = await request()
       .post('/v1/auth/login')
-      .send({ username: 'admin', password: 'mc2024Xp7NrK9L3vQeJbF2wTa' })
+      .send({ username: 'admin', password: ADMIN_PASSWORD })
     const loginCookies = login.headers['set-cookie'] as string[]
 
     const refresh = await request()
@@ -165,7 +166,7 @@ describe('POST /v1/auth/mobile/login + /v1/auth/mobile/refresh', () => {
   it('logs in, refreshes, and rejects reuse of the rotated-away refresh token', async () => {
     const login = await request()
       .post('/v1/auth/mobile/login')
-      .send({ username: 'admin', password: 'mc2024Xp7NrK9L3vQeJbF2wTa' })
+      .send({ username: 'admin', password: ADMIN_PASSWORD })
       .expect(200)
 
     expect(login.body.accessToken).toBeTruthy()
@@ -192,7 +193,7 @@ describe('POST /v1/auth/logout revokes the refresh token', () => {
   it('a refresh token can no longer be used after logout', async () => {
     const login = await request()
       .post('/v1/auth/login')
-      .send({ username: 'admin', password: 'mc2024Xp7NrK9L3vQeJbF2wTa' })
+      .send({ username: 'admin', password: ADMIN_PASSWORD })
     const cookies = login.headers['set-cookie'] as string[]
 
     await request().post('/v1/auth/logout').set('Cookie', cookies).expect(204)

@@ -3,6 +3,7 @@ import { env } from './config/env.js'
 import { connectRedis, disconnectRedis } from './plugins/redis.js'
 import { pdfService } from './modules/pdf/pdf.service.js'
 import { ensureProcurementStorageDir } from './utils/procurementStorage.js'
+import { queryClient } from './db/index.js'
 
 async function main() {
   const app = await buildApp()
@@ -13,17 +14,35 @@ async function main() {
   // Connect to Redis (optional — no-ops if REDIS_URL not set)
   await connectRedis()
 
-  // Graceful shutdown
+  // Graceful shutdown — once only, with a hard deadline so a hung close can't block restarts
+  let shuttingDown = false
   const shutdown = async (signal: string) => {
+    if (shuttingDown) return
+    shuttingDown = true
     app.log.info(`Received ${signal} — shutting down gracefully`)
-    await app.close()
-    await disconnectRedis()
-    await pdfService.shutdown()
-    process.exit(0)
+    setTimeout(() => {
+      app.log.error('Shutdown timed out — forcing exit')
+      process.exit(1)
+    }, 10_000).unref()
+
+    let exitCode = 0
+    try {
+      await app.close()
+      await disconnectRedis()
+      await pdfService.shutdown()
+      await queryClient.end({ timeout: 5 })
+    } catch (err) {
+      app.log.error(err, 'Error during shutdown')
+      exitCode = 1
+    }
+    process.exit(exitCode)
   }
 
-  process.on('SIGINT',  () => shutdown('SIGINT'))
-  process.on('SIGTERM', () => shutdown('SIGTERM'))
+  process.on('SIGINT',  () => void shutdown('SIGINT'))
+  process.on('SIGTERM', () => void shutdown('SIGTERM'))
+  process.on('unhandledRejection', (reason) => {
+    app.log.error({ err: reason }, 'Unhandled promise rejection')
+  })
 
   try {
     await app.listen({ port: env.PORT, host: '0.0.0.0' })
@@ -34,4 +53,7 @@ async function main() {
   }
 }
 
-main()
+main().catch((err) => {
+  console.error('❌ Failed to start macrocoats-api:', err)
+  process.exit(1)
+})

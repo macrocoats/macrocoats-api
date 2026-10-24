@@ -1,11 +1,12 @@
 import type { FastifyInstance } from 'fastify'
-import { loginSchema, tokenSchema, mobileRefreshSchema } from './auth.schema.js'
+import { loginSchema, tokenSchema, mobileRefreshSchema, changePasswordSchema } from './auth.schema.js'
 import {
   loginWithCredentials,
   loginWithToken,
   rotateRefreshToken,
   revokeRefreshToken,
   getMeById,
+  changePassword,
 } from './auth.service.js'
 import { accessCookieOptions, refreshCookieOptions } from '../../plugins/cookie.js'
 import { authenticate, requireAuth } from '../../middleware/authenticate.js'
@@ -78,9 +79,12 @@ export async function authRoutes(app: FastifyInstance) {
       await revokeRefreshToken(rawRefresh)
     }
 
+    // Clear with the same domain/path/flags they were set with, or the browser keeps them
+    const { maxAge: _a, ...clearAccess }  = accessCookieOptions
+    const { maxAge: _r, ...clearRefresh } = refreshCookieOptions
     reply
-      .clearCookie('accessToken', { path: '/' })
-      .clearCookie('refreshToken', { path: '/v1/auth' })
+      .clearCookie('accessToken', clearAccess)
+      .clearCookie('refreshToken', clearRefresh)
       .code(204)
       .send()
   })
@@ -95,6 +99,26 @@ export async function authRoutes(app: FastifyInstance) {
         return reply.code(401).send({ error: AppErrors.NOT_AUTHENTICATED })
       }
       return reply.send({ user })
+    },
+  )
+
+  // ── POST /auth/change-password ───────────────────────────────────────────
+  // Re-verifies the current password; on success every refresh token for the
+  // user is revoked, so other sessions must log in again.
+  app.post(
+    '/change-password',
+    { preHandler: [authenticate, requireAuth], config: { rateLimit: CREDENTIAL_RATE_LIMIT } },
+    async (request, reply) => {
+      const body = changePasswordSchema.safeParse(request.body)
+      if (!body.success) {
+        return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten(), details: body.error.flatten() })
+      }
+
+      const changed = await changePassword(request.authUser!.id, body.data.currentPassword, body.data.newPassword)
+      if (!changed) {
+        return reply.code(401).send({ error: AppErrors.INVALID_CREDENTIALS })
+      }
+      return reply.send({ data: { changed: true } })
     },
   )
 

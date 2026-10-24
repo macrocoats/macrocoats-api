@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import supertest from 'supertest'
 import type { FastifyInstance } from 'fastify'
 import { buildApp } from '../../src/app.js'
+import { ADMIN_PASSWORD, OPERATOR_PASSWORD } from '../helpers/credentials.js'
 
 let app: FastifyInstance
 let adminCookies: string[]
@@ -14,12 +15,12 @@ beforeAll(async () => {
 
   const adminLogin = await supertest(app.server)
     .post('/v1/auth/login')
-    .send({ username: 'admin', password: 'mc2024Xp7NrK9L3vQeJbF2wTa' })
+    .send({ username: 'admin', password: ADMIN_PASSWORD })
   adminCookies = adminLogin.headers['set-cookie']
 
   const operatorLogin = await supertest(app.server)
     .post('/v1/auth/login')
-    .send({ username: 'operator', password: 'fW8mQ2vLtK9pXsA4nJ6dYcRe' })
+    .send({ username: 'operator', password: OPERATOR_PASSWORD })
   operatorCookies = operatorLogin.headers['set-cookie']
 
   // A real batch with formula/cost data, created by admin, to prove the
@@ -61,7 +62,7 @@ describe('operator role — login and identity', () => {
   it('logs in with role "operator" and null allowedProducts', async () => {
     const res = await req()
       .post('/v1/auth/login')
-      .send({ username: 'operator', password: 'fW8mQ2vLtK9pXsA4nJ6dYcRe' })
+      .send({ username: 'operator', password: OPERATOR_PASSWORD })
       .expect(200)
 
     expect(res.body.user.role).toBe('operator')

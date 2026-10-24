@@ -55,6 +55,8 @@ All variables are validated by Zod at startup (`src/config/env.ts`); the server 
 | `COOKIE_DOMAIN` | no | localhost | Cookie domain |
 | `COOKIE_SECURE` | no | false | Set Secure flag on cookies |
 | `ALLOWED_ORIGIN` | no | http://localhost:5173 | CORS allowed origin |
+| `SEED_ADMIN_PASSWORD` | no | — | Password for the seeded `admin` user (≥12 chars). Read only by the seed when the user is missing; unset → random printed password outside production, user skipped in production. Integration tests read it too |
+| `SEED_OPERATOR_PASSWORD` | no | — | Same, for the seeded `operator` user |
 | `ZOHO_CLIENT_ID` | no | — | Zoho self-client OAuth client ID (invoice sync disabled until set) |
 | `ZOHO_CLIENT_SECRET` | no | — | Zoho self-client OAuth client secret |
 | `ZOHO_REFRESH_TOKEN` | no | — | Zoho self-client refresh token (long-lived, doesn't expire unless revoked) |
@@ -93,6 +95,8 @@ Success responses are `{ data: ... }` (list results that carry pagination wrap t
 
 Error bodies are `{ error, ... }`; validation errors still use `issues` (not `details`) because the frontend reads it.
 
+The global `setErrorHandler` in `app.ts` is registered **before** the route plugins — Fastify routes capture the error handler in effect when they are added, so registering it last (as it once was) left every module on Fastify's default handler. It maps a thrown `ZodError` → 400 `{ error: VALIDATION_ERROR, issues, details }`, Postgres `22P02` (e.g. a malformed uuid path param) → 400, `23505` → 409 `CONFLICT`, `23503` → 409 `REFERENCED_RECORD`; anything else ≥500 is a generic `Internal Server Error`.
+
 ### Module layout
 
 Each module under `src/modules/<name>/` has three files with strict roles:
@@ -106,7 +110,7 @@ Routes never import from other modules' services. Cross-cutting concerns (auth, 
 
 | Module | Endpoints |
 |---|---|
-| `auth` | POST /auth/login, /auth/token, /auth/refresh, /auth/logout; GET /auth/me; POST /auth/mobile/login, /auth/mobile/refresh, /auth/mobile/logout |
+| `auth` | POST /auth/login, /auth/token, /auth/refresh, /auth/logout, /auth/change-password; GET /auth/me; POST /auth/mobile/login, /auth/mobile/refresh, /auth/mobile/logout |
 | `products` | GET /products, GET /products/expiry-summary, GET /products/:productLine/:docType, PUT /products/:productLine/:docType, PATCH /products/:productLine/:docType/status, GET /products/:productLine/:docType/audit |
 | `companies` | GET /companies, GET /companies/:id, POST /companies, PATCH /companies/:id, POST /companies/:id/rotate-token, DELETE /companies/:id |
 | `company-pricing` | GET /companies/:id/pricing, PUT /companies/:id/pricing |
@@ -203,14 +207,18 @@ Five middleware files in `src/middleware/` (six functions):
 
 ### Auth tokens
 
-Two-token RS256 system:
+Two-token RS256 system. Both tokens carry a `typ` claim (`'access'` / `'refresh'`) that `verifyAccessToken`/`verifyRefreshToken` require — they share one signing key, so without it a refresh token sent as a Bearer access token would verify. Access tokens without a `role` are rejected.
 - **Access token** (15m): JWT carrying full `AuthUser` payload (id, role, companyName, allowedProducts). Verified on every request by decoding the `accessToken` httpOnly cookie. The payload is trusted directly — no DB lookup on each request.
 - **Refresh token** (7d): JWT whose payload carries `sub` (user id), `jti` (UUID matching a row in `refresh_tokens`), and `sec` (a short opaque random secret). The JWT itself is what's handed to the client — the JWT string is never stored; only a `bcrypt` hash of `sec` is (bcrypt silently truncates inputs over 72 bytes, so the much-longer JWT string is deliberately never what gets hashed — only the short `sec` claim is). Rotation verifies the RS256 signature, revokes the old row by `jti`, bcrypt-verifies `sec` against the stored hash as a second factor, and calls `issueTokens()` to produce a new pair.
 
 `issueTokens()` in `auth.service.ts` is the single function that creates both tokens and inserts the refresh token row. Three login paths funnel through it:
 - `loginWithCredentials` — username + password (POST /auth/login, POST /auth/mobile/login)
 - `loginWithToken` — company magic/QR token (POST /auth/token); token checked against `companies.accessToken`, respects `tokenExpiresAt`
-- `rotateRefreshToken` — POST /auth/refresh, POST /auth/mobile/refresh
+- `rotateRefreshToken` — POST /auth/refresh, POST /auth/mobile/refresh. For company users it re-checks `companies.tokenExpiresAt`, so an expired company can't keep a session alive by refreshing
+
+`POST /companies/:id/rotate-token` (companies module) also re-hashes the company user's password to the new token and revokes that user's refresh tokens — the company password *is* the access token (see `createCompany`). `POST /auth/change-password` (`{ currentPassword, newPassword ≥12 }`) re-verifies the current password and revokes all of the user's refresh tokens.
+
+`trustProxy` is `1` (exactly one nginx hop) — `true` would take the client-supplied left-most `X-Forwarded-For` entry as `req.ip` and let callers reset the per-IP login rate limits.
 
 **Fixed — refresh rotation previously did not work (web or mobile).** `issueTokens()` used to sign a JWT via `signRefreshToken()` but discard it, returning a raw random string as the client-facing refresh token instead; `rotateRefreshToken()` then called `verifyRefreshToken()` (a JWT verify) on whatever the client sent back, which always failed since the client never received a JWT. Fixed by generating the `refresh_tokens` row id (`jti`) client-side via `randomUUID()` before insert, so the JWT (now embedding `sub`/`jti`/`sec`) can be signed and returned in the same pass — see `issueTokens()` for the full flow. `tests/integration/auth.test.ts` now covers a real rotation (new cookies, new access token works, old refresh token rejected on reuse), the mobile refresh flow, and logout revocation.
 
@@ -275,11 +283,11 @@ production → approved                (bounce back)
 
 ### Redis caching
 
-Redis is entirely optional. `src/plugins/redis.ts` exports `cacheGet/cacheSet/cacheDel/cacheDelPattern` helpers that no-op silently when `REDIS_URL` is not set. Product documents are cached at key `doc:{productLine}:{docType}` with a 300s TTL, invalidated on PUT.
+Redis is entirely optional. `src/plugins/redis.ts` exports `cacheGet/cacheSet/cacheDel/cacheDelPattern` helpers that no-op silently when `REDIS_URL` is not set, and fail open (warn + fall through to the DB) when Redis errors. Product documents are cached at key `doc:{productLine}:{docType}` with a 300s TTL, invalidated on PUT.
 
 ### Testing
 
-Integration tests use a real PostgreSQL database (the same one in `.env.local`). They must run sequentially (`singleFork: true` in vitest config) because they share DB state. Each test file builds its own Fastify app instance via `buildApp()` and tears it down in `afterAll`. Tests depend on seed data — run `npm run seed` before testing.
+Integration tests use a real PostgreSQL database (the same one in `.env.local`). Log in through `tests/helpers/credentials.ts` (`ADMIN_PASSWORD`/`OPERATOR_PASSWORD`, from `SEED_ADMIN_PASSWORD`/`SEED_OPERATOR_PASSWORD`) — never hardcode staff passwords in tests. They must run sequentially (`singleFork: true` in vitest config) because they share DB state. Each test file builds its own Fastify app instance via `buildApp()` and tears it down in `afterAll`. Tests depend on seed data — run `npm run seed` before testing.
 
 ### Quotation numbering
 
@@ -326,7 +334,7 @@ See `DATABASE.md` for the full 33-table schema reference, the canonical migratio
 
 - `index.ts` — entry point; runs all seeds in order
 - `products.seed.ts` — 17 product lines (uniklean-sp, uniklean-fe, uniprotect-oil, uniflow-ecm, unicool-al, unikoat-lt-700, unisolve-h3, unipass, uniktonner, corroklean, corrcut-100, corrucut-500, uniklean-sf, corrcut-200, unicut-al, uniklean-cu, unikbrightner)
-- `companies.seed.ts` — test companies (`SEED_COMPANIES`, tokens in source) with product access mappings and their users, plus the `admin`/`operator` users. Test companies are **skipped when `NODE_ENV=production`** (production `.env` sets it) — real companies are managed in the admin UI; `admin`/`operator` are still created if missing
+- `companies.seed.ts` — test companies (`SEED_COMPANIES`, tokens in source) with product access mappings and their users, plus the `admin`/`operator` users (passwords from `SEED_ADMIN_PASSWORD`/`SEED_OPERATOR_PASSWORD`, never in source). Test companies are **skipped when `NODE_ENV=production`** (production `.env` sets it) — real companies are managed in the admin UI; `admin`/`operator` are still created if missing
 - `formulationVariants.seed.ts` — formulation variant headers and components
 - `variantDensities.seed.ts` — fills NULL `formulation_variant_components.density` (product's formula-doc density first, then a typical-value table; dissolved powders stay NULL = kg only). Never overwrites a set value. Dry run: `npx tsx --env-file=.env.local scripts/backfill-variant-densities.ts` (`--apply` to write)
 - `variantFunctions.seed.ts` — fills NULL `formulation_variant_components.material_function` (what the material does in that formulation): the product's formula-doc `function` by the same name match FormulaPage used, then drafted texts (`DRAFT_FUNCTIONS`, for R&D review). Never overwrites a set value; edit live values in the variant editor. Dry run: `scripts/backfill-variant-functions.ts`

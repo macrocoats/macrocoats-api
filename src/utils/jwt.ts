@@ -6,7 +6,10 @@ import type { AuthUser } from '../types/index.js'
 const PRIVATE_KEY = Buffer.from(env.JWT_PRIVATE_KEY_B64, 'base64').toString('utf-8')
 const PUBLIC_KEY  = Buffer.from(env.JWT_PUBLIC_KEY_B64, 'base64').toString('utf-8')
 
+// `typ` separates the two token kinds: both are signed with the same RS256 key, so
+// without it a refresh token presented as a Bearer access token would verify.
 export interface AccessTokenPayload {
+  typ:             'access'
   sub:             string     // user id
   name:            string
   role:            AuthUser['role']
@@ -15,6 +18,7 @@ export interface AccessTokenPayload {
 }
 
 export interface RefreshTokenPayload {
+  typ: 'refresh'
   sub: string   // user id
   jti: string   // unique token id (matches refresh_tokens.id in DB)
   // Opaque random secret (short — see auth.service.ts's issueTokens), bcrypt-hashed
@@ -27,6 +31,7 @@ export interface RefreshTokenPayload {
 
 export function signAccessToken(user: AuthUser): string {
   const payload: AccessTokenPayload = {
+    typ:             'access',
     sub:             user.id,
     name:            user.name,
     role:            user.role,
@@ -40,7 +45,7 @@ export function signAccessToken(user: AuthUser): string {
 }
 
 export function signRefreshToken(userId: string, tokenId: string, secret: string): string {
-  const payload: RefreshTokenPayload = { sub: userId, jti: tokenId, sec: secret }
+  const payload: RefreshTokenPayload = { typ: 'refresh', sub: userId, jti: tokenId, sec: secret }
   return jwt.sign(payload, PRIVATE_KEY, {
     algorithm: 'RS256',
     expiresIn: env.JWT_REFRESH_EXPIRES as SignOptions['expiresIn'],
@@ -48,11 +53,15 @@ export function signRefreshToken(userId: string, tokenId: string, secret: string
 }
 
 export function verifyAccessToken(token: string): AccessTokenPayload {
-  return jwt.verify(token, PUBLIC_KEY, { algorithms: ['RS256'] }) as AccessTokenPayload
+  const payload = jwt.verify(token, PUBLIC_KEY, { algorithms: ['RS256'] }) as AccessTokenPayload
+  if (payload.typ !== 'access' || !payload.role) throw new jwt.JsonWebTokenError('wrong token type')
+  return payload
 }
 
 export function verifyRefreshToken(token: string): RefreshTokenPayload {
-  return jwt.verify(token, PUBLIC_KEY, { algorithms: ['RS256'] }) as RefreshTokenPayload
+  const payload = jwt.verify(token, PUBLIC_KEY, { algorithms: ['RS256'] }) as RefreshTokenPayload
+  if (payload.typ !== 'refresh') throw new jwt.JsonWebTokenError('wrong token type')
+  return payload
 }
 
 /** Returns payload or null — does NOT throw on invalid token */

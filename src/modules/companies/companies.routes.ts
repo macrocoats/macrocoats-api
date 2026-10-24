@@ -114,10 +114,8 @@ export async function companyRoutes(app: FastifyInstance) {
 
   // ── POST /companies/:id/rotate-token ──────────────────────────────────────
   app.post<{ Params: { id: string } }>('/:id/rotate-token', { preHandler }, async (request, reply) => {
-    const company = await getCompanyById(request.params.id)
-    if (!company) return reply.code(404).send({ error: AppErrors.COMPANY_NOT_FOUND })
-
     const result = await rotateCompanyToken(request.params.id)
+    if (!result) return reply.code(404).send({ error: AppErrors.COMPANY_NOT_FOUND })
     return reply.send({ data: result })
   })
 

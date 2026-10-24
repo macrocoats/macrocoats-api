@@ -1,6 +1,6 @@
-import { eq, inArray } from 'drizzle-orm'
+import { and, eq, inArray, isNull } from 'drizzle-orm'
 import { db } from '../../db/index.js'
-import { companies, companyFormulaAssignments, companyProductAccess, users } from '../../db/schema/index.js'
+import { companies, companyFormulaAssignments, companyProductAccess, refreshTokens, users } from '../../db/schema/index.js'
 import { generateToken, hashPassword } from '../../utils/crypto.js'
 import type { CreateCompanyBody, UpdateCompanyBody } from './companies.schema.js'
 
@@ -186,13 +186,34 @@ export async function updateCompany(id: string, data: UpdateCompanyBody) {
 
 export async function rotateCompanyToken(id: string) {
   const newToken = generateToken(24)
+  // The company user's password is the access token (see createCompany), so rotate it
+  // too and end existing sessions — otherwise the old token keeps working as a password
+  // and open sessions keep refreshing.
+  const passwordHash = await hashPassword(newToken)
 
-  await db
-    .update(companies)
-    .set({ accessToken: newToken })
-    .where(eq(companies.id, id))
+  return db.transaction(async (tx) => {
+    const [company] = await tx
+      .update(companies)
+      .set({ accessToken: newToken })
+      .where(eq(companies.id, id))
+      .returning({ id: companies.id })
+    if (!company) return null
 
-  return { accessToken: newToken }
+    const companyUsers = await tx
+      .update(users)
+      .set({ passwordHash, updatedAt: new Date() })
+      .where(eq(users.companyId, id))
+      .returning({ id: users.id })
+
+    if (companyUsers.length) {
+      await tx
+        .update(refreshTokens)
+        .set({ revokedAt: new Date() })
+        .where(and(inArray(refreshTokens.userId, companyUsers.map((u) => u.id)), isNull(refreshTokens.revokedAt)))
+    }
+
+    return { accessToken: newToken }
+  })
 }
 
 export async function deleteCompany(id: string): Promise<boolean> {

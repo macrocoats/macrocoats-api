@@ -1,7 +1,8 @@
 import { eq, and } from 'drizzle-orm'
 import { db } from '../db/index.js'
 import { companies, companyProductAccess, users } from '../db/schema/index.js'
-import { hashPassword } from '../utils/crypto.js'
+import { env } from '../config/env.js'
+import { generateToken, hashPassword } from '../utils/crypto.js'
 
 /**
  * IMPORTANT: These are the initial seed tokens.
@@ -82,8 +83,18 @@ const SEED_COMPANIES = [
   },
 ]
 
-const SUPERADMIN_TOKEN = 'mc2024Xp7NrK9L3vQeJbF2wTa'
-const OPERATOR_TOKEN = 'fW8mQ2vLtK9pXsA4nJ6dYcRe'
+/**
+ * Password for a seeded staff user, from env. Outside production a missing value
+ * falls back to a random one printed once; in production the user is not created.
+ */
+function seedPassword(envName: 'SEED_ADMIN_PASSWORD' | 'SEED_OPERATOR_PASSWORD'): string | null {
+  const fromEnv = env[envName]
+  if (fromEnv) return fromEnv
+  if (env.NODE_ENV === 'production') return null
+  const generated = generateToken(18)
+  console.log(`   🔑 ${envName} not set — generated password: ${generated}`)
+  return generated
+}
 
 export async function seedCompanies() {
   console.log('🌱 Seeding companies and users...')
@@ -158,8 +169,11 @@ export async function seedCompanies() {
 
   // Superadmin user
   const [existingAdmin] = await db.select().from(users).where(eq(users.username, 'admin'))
-  if (!existingAdmin) {
-    const passwordHash = await hashPassword(SUPERADMIN_TOKEN)
+  const adminPassword = existingAdmin ? null : seedPassword('SEED_ADMIN_PASSWORD')
+  if (!existingAdmin && !adminPassword) {
+    console.warn('   ⚠️  SEED_ADMIN_PASSWORD not set — superadmin user NOT created')
+  } else if (!existingAdmin && adminPassword) {
+    const passwordHash = await hashPassword(adminPassword)
     await db.insert(users).values({
       name:         'Aswin Kumar S',
       username:     'admin',
@@ -175,8 +189,11 @@ export async function seedCompanies() {
   // Factory Operator user — batches/finished-goods/dispatch/production-planning
   // access only, no pricing/formula visibility. See root CLAUDE.md's RBAC notes.
   const [existingOperator] = await db.select().from(users).where(eq(users.username, 'operator'))
-  if (!existingOperator) {
-    const passwordHash = await hashPassword(OPERATOR_TOKEN)
+  const operatorPassword = existingOperator ? null : seedPassword('SEED_OPERATOR_PASSWORD')
+  if (!existingOperator && !operatorPassword) {
+    console.warn('   ⚠️  SEED_OPERATOR_PASSWORD not set — operator user NOT created')
+  } else if (!existingOperator && operatorPassword) {
+    const passwordHash = await hashPassword(operatorPassword)
     await db.insert(users).values({
       name:         'Factory Operator',
       username:     'operator',

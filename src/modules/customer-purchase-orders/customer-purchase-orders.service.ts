@@ -3,7 +3,7 @@ import { mkdir, unlink, stat } from 'node:fs/promises'
 import { createWriteStream } from 'node:fs'
 import { pipeline } from 'node:stream/promises'
 import { randomUUID } from 'node:crypto'
-import { eq, and, isNull, sql, type SQL } from 'drizzle-orm'
+import { eq, and, isNull, sql, TransactionRollbackError, type SQL } from 'drizzle-orm'
 import { db, type DB } from '../../db/index.js'
 import {
   customerPurchaseOrders, customerPurchaseOrderItems, customerPurchaseOrderDocuments,
@@ -195,6 +195,17 @@ export type UpdateOrderResult =
   | { code: 'LOCKED' }
 
 export async function updateOrder(id: string, data: UpdateCustomerOrderBody): Promise<UpdateOrderResult> {
+  try {
+    return await updateOrderTx(id, data)
+  } catch (err) {
+    // updateOrderTx rolls back (after the header update) when items with batch
+    // links or dispatches would be replaced
+    if (err instanceof TransactionRollbackError) return { code: 'LOCKED' as const }
+    throw err
+  }
+}
+
+function updateOrderTx(id: string, data: UpdateCustomerOrderBody): Promise<UpdateOrderResult> {
   return db.transaction(async (tx) => {
     const [existing] = await tx.select().from(customerPurchaseOrders)
       .where(and(eq(customerPurchaseOrders.id, id), isNull(customerPurchaseOrders.deletedAt)))
@@ -224,6 +235,53 @@ export async function updateOrder(id: string, data: UpdateCustomerOrderBody): Pr
       })
       .where(eq(customerPurchaseOrders.id, id))
       .returning()
+
+    const existingItems = await tx
+      .select({
+        id:         customerPurchaseOrderItems.id,
+        productKey: customerPurchaseOrderItems.productKey,
+        variantId:  customerPurchaseOrderItems.variantId,
+      })
+      .from(customerPurchaseOrderItems)
+      .where(eq(customerPurchaseOrderItems.orderId, id))
+      .orderBy(customerPurchaseOrderItems.sortOrder)
+
+    // Same product lineup → update the items in place so their ids survive.
+    // Delete + re-insert would cascade away batch links and orphan dispatches
+    // (customer_purchase_order_item_id is ON DELETE SET NULL).
+    const sameLineup = existingItems.length === itemsWithAmount.length
+      && existingItems.every((row, i) =>
+        row.productKey === itemsWithAmount[i].productKey
+        && (row.variantId ?? null) === (itemsWithAmount[i].variantId ?? null))
+
+    if (sameLineup) {
+      for (const [index, item] of itemsWithAmount.entries()) {
+        await tx.update(customerPurchaseOrderItems)
+          .set({
+            customerProductCode: item.customerProductCode ?? null,
+            quantityOrdered:     String(item.quantityOrdered),
+            unit:                item.unit,
+            unitPrice:           String(item.unitPrice),
+            amount:              String(item.amount),
+            remarks:             item.remarks ?? null,
+          })
+          .where(eq(customerPurchaseOrderItems.id, existingItems[index].id))
+      }
+      return toOrderResponse(orderRow)
+    }
+
+    // The lineup changed, so items are replaced — only allowed while nothing references them.
+    const itemIds = existingItems.map((row) => row.id)
+    if (itemIds.length) {
+      const [linked] = await tx.execute<{ n: number }>(sql`
+        SELECT (SELECT COUNT(*) FROM customer_purchase_order_batches
+                 WHERE order_item_id IN (${sql.join(itemIds.map((itemId) => sql`${itemId}`), sql`, `)}))
+             + (SELECT COUNT(*) FROM dispatches
+                 WHERE customer_purchase_order_item_id IN (${sql.join(itemIds.map((itemId) => sql`${itemId}`), sql`, `)}))
+               AS n
+      `)
+      if (Number(linked?.n ?? 0) > 0) tx.rollback()
+    }
 
     await tx.delete(customerPurchaseOrderItems).where(eq(customerPurchaseOrderItems.orderId, id))
     await tx.insert(customerPurchaseOrderItems).values(

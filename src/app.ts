@@ -3,6 +3,7 @@ import multipart from '@fastify/multipart'
 import helmet from '@fastify/helmet'
 import rateLimit from '@fastify/rate-limit'
 import { sql } from 'drizzle-orm'
+import { ZodError } from 'zod'
 import { env } from './config/env.js'
 import { db } from './db/index.js'
 import { getRedis } from './plugins/redis.js'
@@ -61,7 +62,9 @@ export async function buildApp() {
         censor: '[REDACTED]',
       },
     },
-    trustProxy: true,   // needed for accurate req.ip behind nginx/load balancer
+    // Trust exactly one hop (nginx). `true` would take the left-most, client-supplied
+    // X-Forwarded-For entry as req.ip, letting callers reset the per-IP login limits.
+    trustProxy: 1,
     bodyLimit:  1_048_576,   // 1 MB — prevent oversized JSONB payloads
   })
 
@@ -107,6 +110,33 @@ export async function buildApp() {
   })
 
   // ── API routes ───────────────────────���────────────────────────────────────
+  // ── Global error handler ──────────────────────────────────────────────────
+  // Must be set before the route plugins are registered: each route captures the
+  // error handler in effect when it is added.
+  app.setErrorHandler((error, _request, reply) => {
+    app.log.error(error)
+
+    if (error.validation) {
+      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, message: error.message })
+    }
+
+    if (error instanceof ZodError) {
+      const flattened = error.flatten()
+      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: flattened, details: flattened })
+    }
+
+    // Postgres constraint/input errors are client errors, not server faults
+    const pgCode = (error as { code?: unknown }).code
+    if (pgCode === '22P02') return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR })
+    if (pgCode === '23505') return reply.code(409).send({ error: AppErrors.CONFLICT })
+    if (pgCode === '23503') return reply.code(409).send({ error: AppErrors.REFERENCED_RECORD })
+
+    const statusCode = error.statusCode ?? 500
+    const message    = statusCode < 500 ? error.message : 'Internal Server Error'
+
+    return reply.code(statusCode).send({ error: message })
+  })
+
   const prefix = `/${env.API_VERSION}`
 
   await app.register(authRoutes,      { prefix: `${prefix}/auth` })
@@ -136,20 +166,6 @@ export async function buildApp() {
   await app.register(letterheadRoutes,            { prefix: `${prefix}/letterheads` })
   await app.register(zohoInvoiceRoutes,           { prefix: `${prefix}/zoho-invoices` })
   await app.register(customerSupplyRoutes,        { prefix: `${prefix}/customer-supply` })
-
-  // ── Global error handler ──────────────────────────────────────────────────
-  app.setErrorHandler((error, _request, reply) => {
-    app.log.error(error)
-
-    if (error.validation) {
-      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, message: error.message })
-    }
-
-    const statusCode = error.statusCode ?? 500
-    const message    = statusCode < 500 ? error.message : 'Internal Server Error'
-
-    return reply.code(statusCode).send({ error: message })
-  })
 
   // ── 404 handler ───────────────────────────────────────────────────────────
   app.setNotFoundHandler((_request, reply) => {

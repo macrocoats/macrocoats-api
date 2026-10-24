@@ -6,7 +6,7 @@ import {
   refreshTokens,
 } from '../../db/schema/index.js'
 import {
-  verifyPassword, hashToken, verifyTokenHash, generateToken, normalizeUsername,
+  verifyPassword, hashPassword, hashToken, verifyTokenHash, generateToken, normalizeUsername,
 } from '../../utils/crypto.js'
 import {
   signAccessToken, signRefreshToken, verifyRefreshToken,
@@ -151,6 +151,16 @@ export async function rotateRefreshToken(
   const [user] = await db.select().from(users).where(eq(users.id, revoked.userId))
   if (!user) return null
 
+  // A company's access ends at tokenExpiresAt even for sessions opened before it —
+  // without this, each refresh would mint a fresh 7-day token indefinitely.
+  if (user.companyId) {
+    const [co] = await db
+      .select({ tokenExpiresAt: companies.tokenExpiresAt })
+      .from(companies)
+      .where(eq(companies.id, user.companyId))
+    if (!co || (co.tokenExpiresAt && co.tokenExpiresAt < new Date())) return null
+  }
+
   return issueTokens(user)
 }
 
@@ -171,4 +181,31 @@ export async function getMeById(userId: string): Promise<AuthUser | null> {
   const [user] = await db.select().from(users).where(eq(users.id, userId))
   if (!user) return null
   return buildAuthUser(user)
+}
+
+/**
+ * Changes the caller's password after re-verifying the current one, then revokes
+ * every refresh token for the user so other sessions must log in again.
+ * Returns false when the current password is wrong.
+ */
+export async function changePassword(
+  userId: string,
+  currentPassword: string,
+  newPassword: string,
+): Promise<boolean> {
+  const [user] = await db.select().from(users).where(eq(users.id, userId))
+  if (!user) return false
+
+  const valid = await verifyPassword(currentPassword, user.passwordHash)
+  if (!valid) return false
+
+  const passwordHash = await hashPassword(newPassword)
+  await db.transaction(async (tx) => {
+    await tx.update(users).set({ passwordHash, updatedAt: new Date() }).where(eq(users.id, userId))
+    await tx
+      .update(refreshTokens)
+      .set({ revokedAt: new Date() })
+      .where(and(eq(refreshTokens.userId, userId), isNull(refreshTokens.revokedAt)))
+  })
+  return true
 }

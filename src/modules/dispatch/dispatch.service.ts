@@ -191,6 +191,22 @@ export type UpdateDispatchResult =
  * stock in the same transaction (mirrors createDispatch's guard).
  */
 export async function updateDispatch(id: string, data: UpdateDispatchBody, _updatedBy: string): Promise<UpdateDispatchResult> {
+  // Set when the re-validation fails; the transaction is rolled back so the
+  // reversal of the old quantity below is not committed on its own.
+  let insufficientAvailable: number | null = null
+  try {
+    return await updateDispatchTx(id, data, (available) => { insufficientAvailable = available })
+  } catch (err) {
+    if (insufficientAvailable !== null) return { code: 'INSUFFICIENT_STOCK' as const, available: insufficientAvailable }
+    throw err
+  }
+}
+
+function updateDispatchTx(
+  id: string,
+  data: UpdateDispatchBody,
+  onInsufficient: (available: number) => void,
+): Promise<UpdateDispatchResult> {
   return db.transaction(async (tx) => {
     const [dispatch] = await tx.select().from(dispatches).where(eq(dispatches.id, id))
     if (!dispatch) return { code: 'DISPATCH_NOT_FOUND' as const }
@@ -228,7 +244,8 @@ export async function updateDispatch(id: string, data: UpdateDispatchBody, _upda
         const available = fg
           ? Number(fg.producedQuantity) - Number(fg.dispatchedQuantity) - Number(fg.reservedQuantity)
           : 0
-        return { code: 'INSUFFICIENT_STOCK' as const, available }
+        onInsufficient(available)
+        tx.rollback()
       }
     }
 
