@@ -72,7 +72,7 @@ function dispatch(quantity: number) {
 }
 
 describe('money path: batch → finished goods → customer PO → dispatch', () => {
-  it('creating a batch creates an Available finished-goods record for the full batch size', async () => {
+  it('creating a batch creates a Quarantined finished-goods record for the full batch size', async () => {
     const res = await req()
       .post('/v1/batches')
       .set('Cookie', adminCookies)
@@ -99,7 +99,7 @@ describe('money path: batch → finished goods → customer PO → dispatch', ()
     const fg = await getFinishedGoods()
     expect(Number(fg.producedQuantity)).toBe(BATCH_SIZE)
     expect(Number(fg.dispatchedQuantity)).toBe(0)
-    expect(fg.status).toBe('Available')
+    expect(fg.status).toBe('Quarantined')   // held until the batch is released
   })
 
   it('a batch must pass QC and be released before it can be dispatched', async () => {
@@ -119,6 +119,7 @@ describe('money path: batch → finished goods → customer PO → dispatch', ()
       .expect(200)
     const released = await req().post(`/v1/batches/${batchNumber}/release`).set('Cookie', adminCookies).send({}).expect(200)
     expect(released.body.data.lifecycleStatus).toBe('released')
+    expect((await getFinishedGoods()).status).toBe('Available')
   })
 
   it('a confirmed order moves to ready_for_dispatch once a batch covers the ordered quantity', async () => {

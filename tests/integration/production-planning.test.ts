@@ -53,6 +53,17 @@ const todayPlusDays = (days: number) => {
   return d.toISOString().slice(0, 10)
 }
 
+// Planning only counts confirmed-or-later orders (drafts are not demand yet).
+async function createConfirmedOrder(body: Record<string, unknown>) {
+  const created = await req().post('/v1/customer-purchase-orders').set('Cookie', adminCookies).send(body).expect(201)
+  await req()
+    .patch(`/v1/customer-purchase-orders/${created.body.data.id}/status`)
+    .set('Cookie', adminCookies)
+    .send({ status: 'confirmed' })
+    .expect(200)
+  return created
+}
+
 const createOrder = (overrides: Record<string, unknown> = {}) => ({
   customerId: sanmarCompanyId,
   customerPoNumber: `PP-TEST-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
@@ -88,11 +99,7 @@ describe('GET /v1/production-planning/overview — base-formula item (no variant
     // could validly own.
     const waterBefore = before.body.data.materials.find((m: { materialName: string }) => m.materialName === 'Water')?.requiredQty ?? 0
 
-    const created = await req()
-      .post('/v1/customer-purchase-orders')
-      .set('Cookie', adminCookies)
-      .send(createOrder())
-      .expect(201)
+    const created = await createConfirmedOrder(createOrder())
 
     const res = await req()
       .get('/v1/production-planning/overview')
@@ -120,11 +127,7 @@ describe('GET /v1/production-planning/overview — base-formula item (no variant
   })
 
   it('excludes an item due outside the requested window', async () => {
-    const created = await req()
-      .post('/v1/customer-purchase-orders')
-      .set('Cookie', adminCookies)
-      .send(createOrder({ expectedDeliveryDate: todayPlusDays(60) }))
-      .expect(201)
+    const created = await createConfirmedOrder(createOrder({ expectedDeliveryDate: todayPlusDays(60) }))
 
     const narrow = await req().get('/v1/production-planning/overview').query({ days: 7 }).set('Cookie', adminCookies).expect(200)
     expect(narrow.body.data.items.some((i: { orderId: string }) => i.orderId === created.body.data.id)).toBe(false)
@@ -134,11 +137,7 @@ describe('GET /v1/production-planning/overview — base-formula item (no variant
   })
 
   it('surfaces an item with no expectedDeliveryDate as unscheduled, regardless of window', async () => {
-    const created = await req()
-      .post('/v1/customer-purchase-orders')
-      .set('Cookie', adminCookies)
-      .send(createOrder({ expectedDeliveryDate: null }))
-      .expect(201)
+    const created = await createConfirmedOrder(createOrder({ expectedDeliveryDate: null }))
 
     const res = await req().get('/v1/production-planning/overview').query({ days: 1 }).set('Cookie', adminCookies).expect(200)
     const item = res.body.data.items.find((i: { orderId: string }) => i.orderId === created.body.data.id)
@@ -169,13 +168,9 @@ describe('GET /v1/production-planning/overview — variant-based item', () => {
       })
       .expect(201)
 
-    const created = await req()
-      .post('/v1/customer-purchase-orders')
-      .set('Cookie', adminCookies)
-      .send(createOrder({
+    const created = await createConfirmedOrder(createOrder({
         items: [{ productKey: 'uniklean-sp', variantId: variant.body.data.id, quantityOrdered: 50, unit: 'L', unitPrice: 92 }],
       }))
-      .expect(201)
 
     const res = await req().get('/v1/production-planning/overview').query({ days: 7 }).set('Cookie', adminCookies).expect(200)
     const item = res.body.data.items.find((i: { orderId: string }) => i.orderId === created.body.data.id)
