@@ -1,77 +1,73 @@
-<main class="brochure">
-  <header class="brochure-hero">
-    <div class="brochure-hero__copy">
-      <span class="brochure-eyebrow">{{category}} · Technical guide</span>
-      <h1>{{productName}}</h1>
-      {{#if subtitle}}<p class="brochure-subtitle">{{subtitle}}</p>{{/if}}
-      {{#if brochureDescription}}<p class="brochure-description">{{brochureDescription}}</p>{{/if}}
-    </div>
-    <div class="brochure-hero__visual" aria-hidden="true">
-      <img class="brochure-hero__photo" src="{{brochureHeroDataUri}}" alt="">
-      <div class="brochure-brand"><img src="{{brochureLogoDataUri}}" alt=""><span><b>MACRO COATS P LTD</b><small>Specialty surface treatment chemicals</small></span></div>
-    </div>
+<main class="brochure" style="--brochure-accent: {{brochureAccent}}; --brochure-accent-light: {{brochureAccentLight}}; --brochure-accent-sub: {{brochureAccentSub}};">
+  <header class="brochure-top">
+    <img src="{{brochureLogoDataUri}}" alt="{{brochureCompany.name}}">
+    <span>Product Brochure</span>
   </header>
 
-  <section class="brochure-ribbon">
-    <span>Engineered performance</span><span>Process consistency</span><span>Surface protection</span><span>Industrial reliability</span>
+  <section class="brochure-hero">
+    <img class="brochure-hero__photo" src="{{brochureHeroDataUri}}" alt="">
+    <div class="brochure-hero__shade"></div>
+    <div class="brochure-hero__copy">
+      {{#if category}}<span class="brochure-eyebrow"><i></i>{{category}}</span>{{/if}}
+      <h1>{{productName}}</h1>
+      {{#if subtitle}}<p class="brochure-subtitle">{{subtitle}}</p>{{/if}}
+      {{#if brochureDescription}}<p class="brochure-overview">{{brochureDescription}}</p>{{/if}}
+    </div>
   </section>
 
-  <div class="brochure-grid">
-    <div class="brochure-column">
-      <section class="brochure-panel brochure-panel--dark">
-        <h2>Product overview</h2>
-        <ul class="brochure-checks">
-          {{#each brochureFeatures}}<li><b>{{head}}</b><span>{{body}}</span></li>{{/each}}
-        </ul>
-      </section>
+  {{#if brochureBenefits.length}}
+  <section class="brochure-benefits" style="grid-template-columns: repeat({{brochureBenefits.length}}, minmax(0, 1fr));">
+    {{#each brochureBenefits}}
+    <div><span class="brochure-benefits__label">{{label}}</span><span class="brochure-benefits__value{{#if isLong}} is-long{{/if}}">{{value}}</span>{{#if note}}<span class="brochure-benefits__note">{{note}}</span>{{/if}}</div>
+    {{/each}}
+  </section>
+  {{/if}}
 
-      {{#if hasBrochureSpecs}}
-      <section class="brochure-panel">
-        <h2>Technical profile</h2>
-        <table class="brochure-table"><tbody>
-          {{#each brochureSpecs}}<tr><th>{{property}}</th><td>{{displayValue}}</td></tr>{{/each}}
-        </tbody></table>
-      </section>
-      {{/if}}
+  <div class="brochure-body">
+    {{#if brochureFeatures.length}}
+    <section class="brochure-features" style="grid-template-columns: repeat({{brochureFeatures.length}}, minmax(0, 1fr));">
+      {{#each brochureFeatures}}
+      <div><b><i></i>{{head}}</b><span>{{body}}</span></div>
+      {{/each}}
+    </section>
+    {{/if}}
 
-    </div>
-
-    <div class="brochure-column">
-      {{#if hasBrochureApplication}}
-      <section class="brochure-panel">
-        <h2>Typical process sequence</h2>
-        <ol class="brochure-process">
-          {{#each brochureApplication}}<li><span>{{step}}</span><div><b>{{name}}</b><small>{{param}}{{#if value}} · {{value}}{{/if}}</small></div></li>{{/each}}
-        </ol>
-      </section>
-      {{/if}}
-
-      <section class="brochure-panel">
-        <h2>Key benefits</h2>
-        <div class="brochure-benefits">
-          {{#each brochureBenefits}}<div><span>✓</span><p><b>{{label}}</b>{{val}}</p></div>{{/each}}
-          {{#unless brochureBenefits}}{{#each brochureFeatures}}<div><span>✓</span><p><b>{{head}}</b>{{body}}</p></div>{{/each}}{{/unless}}
-        </div>
-      </section>
-
-      {{#if sections.safetyNote}}
-      <section class="brochure-note"><b>Safe application</b><p>{{sections.safetyNote}}</p><span>Refer to the current SDS before handling or use.</span></section>
-      {{/if}}
-    </div>
-
-    <section class="brochure-advantages">
-      <h2><span></span>Advantages of {{productName}}<span></span></h2>
-      <div class="brochure-advantages__grid">
-        {{#each brochureHighlights}}
-        <div><span class="brochure-advantages__icon">✓</span><b>{{this}}</b></div>
+    {{#if brochureSteps.length}}
+    <section class="brochure-section">
+      <h2><span>Typical Process Sequence</span><i></i>{{#if brochureHasProductStep}}<small><em></em>{{productName}} stage</small>{{/if}}</h2>
+      <ol class="brochure-steps" style="grid-template-columns: repeat({{brochureSteps.length}}, minmax(0, 1fr));">
+        {{#each brochureSteps}}
+        <li class="{{#if isProduct}}is-product{{/if}}">
+          <div class="brochure-steps__head"><span class="brochure-steps__num">{{number}}</span>{{#if isProduct}}<span class="brochure-steps__tag">{{../productName}}</span>{{/if}}</div>
+          <b>{{name}}</b>
+          {{#if param}}<span class="brochure-steps__param">{{param}}</span>{{/if}}
+          {{#if value}}<span class="brochure-steps__value">{{value}}</span>{{/if}}
+        </li>
         {{/each}}
+      </ol>
+    </section>
+    {{/if}}
+
+    {{#if brochureSpecs.length}}
+    <section class="brochure-section">
+      <h2><span>Technical Profile</span><i></i></h2>
+      <div class="brochure-specs">
+        {{#each brochureSpecs}}<div><span>{{property}}</span><span>{{displayValue}}</span></div>{{/each}}
       </div>
     </section>
+    {{/if}}
+
+    {{#if sections.safetyNote}}
+    <section class="brochure-safety"><b>Safe Application</b><p>{{sections.safetyNote}} <span>Refer to the current SDS before handling or use.</span></p></section>
+    {{/if}}
   </div>
 
   <footer class="brochure-footer">
-    <div><b>Macro Coats P Ltd</b><span>{{_meta.docTitle}} · {{productName}}</span></div>
-    <div><b>9444961815 · info@macrocoats.in</b><span>www.macrocoats.in</span></div>
-    <div class="brochure-footer__qr"><img src="{{brochureQrDataUri}}" alt="QR code for macrocoats.in"><span><b>Scan to visit our website</b>www.macrocoats.in</span></div>
+    <div class="brochure-footer__row">
+      <div class="brochure-footer__brand"><b>{{brochureCompany.legalName}}</b><span>Engineered Performance · Process Consistency · Surface Protection · Industrial Reliability</span></div>
+      <div class="brochure-footer__contact"><span>{{brochureCompany.phone}}</span><span>{{brochureCompany.email}}</span><span>{{brochureCompany.website}}</span></div>
+      <div class="brochure-footer__qr"><img src="{{brochureQrDataUri}}" alt="QR code for {{brochureCompany.website}}"><span>Scan to visit<br>our website</span></div>
+    </div>
+    <div class="brochure-footer__bar"></div>
   </footer>
 </main>

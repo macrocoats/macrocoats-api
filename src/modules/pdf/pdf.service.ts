@@ -164,32 +164,70 @@ function buildTdsContext(payload: Record<string, unknown>): Record<string, unkno
   };
 }
 
+// Mixes a #rrggbb colour toward white by weight w (0–1) — the brochure's
+// light accent tints, same formula as the Claude Design source.
+const tint = (hex: string, w: number): string => {
+  const n = parseInt(hex.slice(1), 16);
+  return '#' + [n >> 16, (n >> 8) & 255, n & 255]
+    .map((v) => Math.round(v + (255 - v) * w).toString(16).padStart(2, '0'))
+    .join('');
+};
+const alnum = (s: string): string => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+// Splits a TDS performance value like "Typical ≥ 96 h (ASTM B117)" into the
+// big figure ("≥ 96 h") and the small note ("ASTM B117") the benefit strip shows.
+// With no parenthetical, a trailing "at <conditions>" clause becomes the note
+// (">99% at 2%, 55 °C, 5 min" → ">99%" / "at 2%, 55 °C, 5 min").
+function splitPerformanceVal(val: string): { value: string; note: string; isLong: boolean } {
+  const trimmed = val.trim();
+  const paren = /^(.*?)\s*\(([^()]*)\)\s*$/.exec(trimmed);
+  const at = paren ? null : /^(.+?)\s+(at\s.+)$/i.exec(trimmed);
+  const m = paren ?? at;
+  const value = (m ? m[1] : trimmed).replace(/^typical\s+/i, '').trim();
+  const out = value || trimmed;
+  return { value: out, note: m ? m[2].trim() : '', isLong: out.length > 14 };
+}
+
+// One-page layout from Claude Design "Product Brochure v3": hero, 4-up
+// benefit strip, 4-up features, process sequence (steps that name the product
+// are highlighted in its accent), 8-row technical profile, safety note.
 function buildBrochureContext(payload: Record<string, unknown>): Record<string, unknown> {
   const sections = (payload['sections'] as Record<string, unknown> | undefined) ?? {};
   const features = (sections['features'] as Array<{ head?: string; body?: string }> | undefined) ?? [];
   const specs = (sections['physicalProperties'] as SpecRow[] | undefined) ?? [];
   const application = (sections['application'] as Array<Record<string, unknown>> | undefined) ?? [];
   const performance = (sections['performance'] as Array<Record<string, unknown>> | undefined) ?? [];
-  const packaging = (sections['packaging'] as Array<Record<string, unknown>> | undefined) ?? [];
+  const accent = String(payload['accentColor'] ?? '#123a6d');
+  const productKey = alnum(String(payload['productName'] ?? ''));
   const description = String(payload['description'] ?? '').trim();
-  const brochureDescription = description.length > 240
-    ? `${description.slice(0, 237).replace(/\s+\S*$/, '')}...`
+  const brochureDescription = description.length > 260
+    ? `${description.slice(0, 257).replace(/\s+\S*$/, '')}...`
     : description;
-  const brochureHighlights = [
-    ...performance.map((row) => String(row['label'] ?? '')).filter(Boolean),
-    ...features.map((row) => String(row.head ?? '')).filter(Boolean),
-  ].filter((label, index, all) => all.indexOf(label) === index).slice(0, 6);
+  const brochureSteps = application.slice(0, 7).map((row, i) => {
+    const name = String(row['name'] ?? '');
+    const param = String(row['param'] ?? '');
+    return {
+      number: String(i + 1).padStart(2, '0'),
+      name,
+      param,
+      value: String(row['value'] ?? ''),
+      isProduct: productKey.length > 0 && alnum(`${name} ${param}`).includes(productKey),
+    };
+  });
   return {
     brochureDescription,
-    brochureFeatures: features.slice(0, 5),
-    brochureSpecs: specs.slice(0, 7).map((row) => ({ ...row, displayValue: withUnit(row.value, row.unit) })),
-    brochureApplication: application.slice(0, 8),
-    brochureBenefits: performance.slice(0, 6),
-    brochurePackaging: packaging.slice(0, 4),
-    brochurePackageLine: packaging.slice(0, 4).map((row) => `${String(row['size'] ?? '')} ${String(row['unit'] ?? '')}`.trim()).filter(Boolean).join(' / '),
-    brochureHighlights,
-    hasBrochureSpecs: specs.length > 0,
-    hasBrochureApplication: application.length > 0,
+    brochureAccent: accent,
+    brochureAccentLight: tint(accent, 0.55),
+    brochureAccentSub: tint(accent, 0.75),
+    brochureBenefits: performance.slice(0, 4).map((row) => ({
+      label: String(row['label'] ?? ''),
+      ...splitPerformanceVal(String(row['val'] ?? '')),
+    })),
+    brochureFeatures: features.slice(0, 4),
+    brochureSteps,
+    brochureHasProductStep: brochureSteps.some((s) => s.isProduct),
+    brochureSpecs: specs.slice(0, 8).map((row) => ({ ...row, displayValue: withUnit(row.value, row.unit) })),
+    brochureCompany: COMPANY,
   };
 }
 
@@ -508,6 +546,40 @@ class PDFService {
 
   // ── Core generation ───────────────────────────────────────────────────────
 
+  /**
+   * Renders a document's full standalone HTML page: the template body, the
+   * shared CSS and the watermark, with every asset embedded as a data: URI.
+   * generatePDF feeds this to Puppeteer; the brochure HTML view serves it as-is.
+   */
+  async renderHTML(docType: DocType, payload: Record<string, unknown>): Promise<string> {
+    const { date, time } = nowFormatted();
+    const brochure         = BROCHURE_DOC_TYPES.has(docType);
+    const watermarkDataUri = WATERMARK_DOC_TYPES.has(docType) ? await getWatermarkDataUri() : null;
+
+    const brochureProductLine = String(payload['productLine'] ?? '');
+    const brochureFamily = BROCHURE_HERO_FAMILY[brochureProductLine] ?? 'conversion';
+    const ctx: Record<string, unknown> = {
+      ...payload,
+      ...(docType === 'msds' ? buildMsdsContext(payload) : {}),
+      ...(docType === 'tds' ? buildTdsContext(payload) : {}),
+      ...(docType === 'brochure' ? buildBrochureContext(payload) : {}),
+      ...(docType === 'investor-report' ? buildInvestorReportContext(payload) : {}),
+      brochureLogoDataUri: brochure ? await getBrochureAssetDataUri('logo-2026.png') : null,
+      brochureHeroDataUri: brochure ? await getBrochureAssetDataUri(`${brochureFamily}.png`) : null,
+      brochureQrDataUri: brochure ? await getBrochureAssetDataUri('website-qr.png') : null,
+      _meta: { generatedDate: date, generatedTime: time, docTitle: docTypeLabel(docType) },
+    };
+
+    try {
+      const css  = await templateService.getCSS();
+      const body = await templateService.renderTemplate(docType, ctx);
+      return wrapBody(body, css, watermarkDataUri);
+    } catch (err) {
+      if (err instanceof PDFError) throw err;
+      throw new PDFError('Template render failed', 'RENDER_FAILED', err);
+    }
+  }
+
   async generatePDF(
     docType: DocType,
     payload: Record<string, unknown>,
@@ -519,35 +591,11 @@ class PDFService {
     const executive      = !printMatched && !legacyBranded && EXECUTIVE_DOC_TYPES.has(docType);
     const letterhead     = !printMatched && !legacyBranded && !executive && LETTERHEAD_DOC_TYPES.has(docType);
     const brochure       = BROCHURE_DOC_TYPES.has(docType);
-    const watermarked    = WATERMARK_DOC_TYPES.has(docType);
-    const logoDataUri      = (legacyBranded || executive || letterhead || brochure) ? await getLogoDataUri() : null;
-    const watermarkDataUri = watermarked ? await getWatermarkDataUri() : null;
+    const logoDataUri    = (legacyBranded || executive || letterhead) ? await getLogoDataUri() : null;
 
-    const brochureProductLine = String(payload['productLine'] ?? '');
-    const brochureFamily = BROCHURE_HERO_FAMILY[brochureProductLine] ?? 'conversion';
-    const ctx: Record<string, unknown> = {
-      ...payload,
-      ...(docType === 'msds' ? buildMsdsContext(payload) : {}),
-      ...(docType === 'tds' ? buildTdsContext(payload) : {}),
-      ...(docType === 'brochure' ? buildBrochureContext(payload) : {}),
-      ...(docType === 'investor-report' ? buildInvestorReportContext(payload) : {}),
-      brochureLogoDataUri: brochure ? logoDataUri : null,
-      brochureHeroDataUri: brochure ? await getBrochureAssetDataUri(`${brochureFamily}.png`) : null,
-      brochureQrDataUri: brochure ? await getBrochureAssetDataUri('website-qr.png') : null,
-      _meta: { generatedDate: date, generatedTime: time, docTitle: docTypeLabel(docType) },
-    };
+    const html = await this.renderHTML(docType, payload);
 
-    let html: string;
-    try {
-      const css  = await templateService.getCSS();
-      const body = await templateService.renderTemplate(docType, ctx);
-      html = wrapBody(body, css, watermarkDataUri);
-    } catch (err) {
-      if (err instanceof PDFError) throw err;
-      throw new PDFError('Template render failed', 'RENDER_FAILED', err);
-    }
-
-    const docTitle    = docTypeLabel(docType);
+    const docTitle   = docTypeLabel(docType);
     const productName = String(payload['productName'] ?? '');
     const docNumber   = String(
       payload['productCode'] ?? payload['quotationNumber'] ?? payload['batchNumber'] ?? payload['referenceNo'] ?? '',
@@ -713,7 +761,7 @@ function wrapBody(body: string, css: string, watermarkDataUri?: string | null): 
 <head>
   <meta charset="UTF-8" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <style>${css}${watermarkCss}</style>
 </head>
 <body>${watermarkHtml}${body}</body>

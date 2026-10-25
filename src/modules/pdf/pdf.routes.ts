@@ -92,6 +92,30 @@ export async function pdfRoutes(app: FastifyInstance): Promise<void> {
     },
   );
 
+  // Same brochure as the PDF route, returned as a standalone HTML page (all
+  // assets inlined) for viewing in a browser tab.
+  app.post<{ Params: { productLine: string; docType: string }; Body: unknown }>(
+    '/brochure/:productLine/html',
+    { preHandler: [authenticate, requireAuth, checkProductAccess] },
+    async (request, reply) => {
+      try {
+        const body = request.body as Record<string, unknown>;
+        if (body?.['productLine'] !== request.params.productLine) {
+          return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR });
+        }
+        const parsed = pdfBodySchemas.brochure.safeParse(body);
+        if (!parsed.success) {
+          return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, details: parsed.error.flatten() });
+        }
+        const html = await pdfService.renderHTML('brochure', parsed.data as Record<string, unknown>);
+        return reply
+          .code(200)
+          .headers({ 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' })
+          .send(html);
+      } catch (err) { return pdfErrorReply(err, reply); }
+    },
+  );
+
   app.post<{ Body: unknown }>('/coa', { preHandler }, async (request, reply) => {
     try { return await sendPDF('coa', request.body, reply); }
     catch (err) { return pdfErrorReply(err, reply); }

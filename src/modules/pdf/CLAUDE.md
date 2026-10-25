@@ -102,6 +102,15 @@ so this is a read composition, not a new data source. `buildInvestorReportContex
   (see root `CLAUDE.md`); the report shows `kpis.pendingOrderValue` labeled "Pending
   Order Value" instead, same as the on-screen dashboard.
 
+## Product Brochure
+
+`brochure.hbs` (`POST /pdf/brochure/:productLine`) is a one-page, full-bleed A4 customer brochure ported from the Claude Design project "Product Brochure v3" (IBM Plex, dark hero + benefit strip, process sequence, technical profile, safety note). It has no Puppeteer header/footer and zero margins (`BROCHURE_DOC_TYPES`); its own header/footer are in the body. The frontend's `downloadBrochurePDF()` sends the effective customer-view TDS plus the product's `category`/`subtitle`/`accentColor`. `buildBrochureContext()` derives everything else:
+- `--brochure-accent*` CSS vars (accent, plus 55%/75% white tints) set inline on `.brochure`.
+- Benefit strip from the first 4 `performance` rows. `splitPerformanceVal()` splits `val` into a big figure and a small note: a trailing `(…)` first, otherwise a trailing `at …` clause. Values over 14 chars get `.is-long` (smaller type).
+- Features (first 4), process steps (first 7; `isProduct` when the step's name/param contains the product name, alnum-normalised, which highlights it in the accent), specs (first 8, two columns).
+- **HTML view:** `POST /pdf/brochure/:productLine/html` (same preHandlers and validation) returns the same page as `text/html` via `pdfService.renderHTML()`, the HTML step `generatePDF()` also uses. The frontend (`BrochureCards.jsx` → `fetchBrochureHTMLUrl()`) opens it in a new tab as a blob URL. An `@media screen` rule in `document.css` centres the page on a grey desk. Puppeteer renders with print media, so the PDF is unaffected.
+- Company strings come from `COMPANY` (`branding.constants.ts`). Images: `assets/brochure/logo-2026.png` (full lockup, mirrors `safteyDataSheet/src/assets/logo-2026.png`), the family hero photo (`BROCHURE_HERO_FAMILY`), and `website-qr.png`.
+
 ## Service split
 
 - **`template.service.ts`** — loads and compiles `.hbs` templates + partials, registers helpers, returns rendered HTML. Has no knowledge of Puppeteer or HTTP.
