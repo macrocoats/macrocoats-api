@@ -52,6 +52,15 @@ const msdsSchema = z.object({
   sections:   object,
 }).passthrough()
 
+const brochureSchema = z.object({
+  ...docHeader,
+  category:    text(300),
+  subtitle:    optText(300),
+  description: z.string().max(20_000),
+  accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+  sections:    object,
+}).passthrough()
+
 const coaSchema = z.object({
   productName:       text(),
   productCode:       text(100),
@@ -118,6 +127,7 @@ export const pdfBodySchemas: Record<DocType, z.ZodTypeAny> = {
   quotation:         quotationSchema,
   tds:               tdsSchema,
   msds:              msdsSchema,
+  brochure:          brochureSchema,
   coa:               coaSchema,
   batch:             batchSchema,
   'investor-report': investorReportSchema,

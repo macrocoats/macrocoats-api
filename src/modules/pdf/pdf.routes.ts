@@ -1,6 +1,7 @@
 import type { FastifyInstance, FastifyReply } from 'fastify';
 import { authenticate, requireAuth } from '../../middleware/authenticate.js';
 import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js';
+import { checkProductAccess } from '../../middleware/checkProductAccess.js';
 import { pdfService } from './pdf.service.js';
 import { PDFError } from './pdf.types.js';
 import { pdfBodySchemas } from './pdf.schema.js';
@@ -13,6 +14,7 @@ const filenames: Record<DocType, (payload: Record<string, unknown>) => string> =
   quotation: (p) => `quotation-${p['quotationNumber'] ?? 'draft'}.pdf`,
   tds:       (p) => `tds-${p['productCode'] ?? 'product'}.pdf`,
   msds:      (p) => `msds-${p['productCode'] ?? 'product'}.pdf`,
+  brochure:  (p) => `brochure-${p['productName'] ?? 'product'}.pdf`,
   coa:       (p) => `coa-${p['batchNumber'] ?? 'batch'}.pdf`,
   batch:     (p) => `batch-${p['batchNumber'] ?? 'batch'}.pdf`,
   'investor-report': (p) => `investor-report-${p['from'] ?? ''}_to_${p['to'] ?? ''}.pdf`,
@@ -75,6 +77,20 @@ export async function pdfRoutes(app: FastifyInstance): Promise<void> {
     try { return await sendPDF('msds', request.body, reply); }
     catch (err) { return pdfErrorReply(err, reply); }
   });
+
+  app.post<{ Params: { productLine: string; docType: string }; Body: unknown }>(
+    '/brochure/:productLine',
+    { preHandler: [authenticate, requireAuth, checkProductAccess] },
+    async (request, reply) => {
+      try {
+        const body = request.body as Record<string, unknown>;
+        if (body?.['productLine'] !== request.params.productLine) {
+          return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR });
+        }
+        return await sendPDF('brochure', request.body, reply);
+      } catch (err) { return pdfErrorReply(err, reply); }
+    },
+  );
 
   app.post<{ Body: unknown }>('/coa', { preHandler }, async (request, reply) => {
     try { return await sendPDF('coa', request.body, reply); }

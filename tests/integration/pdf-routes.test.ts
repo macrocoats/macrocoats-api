@@ -57,12 +57,45 @@ describe('PDF routes — body validation', () => {
     await req().post('/v1/pdf/letterhead').set('Cookie', adminCookies).send({ subject: 'Hi' }).expect(400)
   })
 
+  it('rejects a brochure body whose URL and payload product do not match', async () => {
+    await req()
+      .post('/v1/pdf/brochure/uniklean-sp')
+      .set('Cookie', adminCookies)
+      .send({
+        productName: 'UNIKLEAN-FE', productCode: 'FE', productLine: 'uniklean-fe',
+        category: 'Cleaner', description: '', accentColor: '#123a6d', sections: {},
+      })
+      .expect(400)
+  })
+
   it('stays superadmin-only', async () => {
     await req().post('/v1/pdf/letterhead').set('Cookie', raneCookies).send({ bodyHtml: '<p>x</p>' }).expect(403)
   })
 })
 
 describe('PDF routes — render lockdown', () => {
+  it('allows a company user to download a brochure for an assigned product', async () => {
+    const res = await req()
+      .post('/v1/pdf/brochure/uniklean-sp')
+      .set('Cookie', raneCookies)
+      .send({
+        productName: 'UNIKLEAN-SP', productCode: 'SP', productLine: 'uniklean-sp',
+        category: 'Alkaline Cleaner', subtitle: 'Industrial Surface Cleaner',
+        description: 'Customer-safe brochure render test.', accentColor: '#1e6b5a',
+        sections: { features: [{ head: 'Cleaning', body: 'Removes industrial soils.' }] },
+      })
+      .buffer(true)
+      .parse((r, cb) => {
+        const chunks: Buffer[] = []
+        r.on('data', (c: Buffer) => chunks.push(c))
+        r.on('end', () => cb(null, Buffer.concat(chunks)))
+      })
+      .expect(200)
+
+    expect(res.headers['content-type']).toBe('application/pdf')
+    expect((res.body as Buffer).subarray(0, 4).toString()).toBe('%PDF')
+  }, 60_000)
+
   it('renders letterhead HTML containing script and internal-URL markup without executing or fetching it', async () => {
     const res = await req()
       .post('/v1/pdf/letterhead')

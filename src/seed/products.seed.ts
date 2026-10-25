@@ -2,7 +2,7 @@ import { db } from '../db/index.js'
 import { products, productDocuments } from '../db/schema/index.js'
 
 // ── Product master data ────────────────────────────────────────────────────────
-const PRODUCTS = [
+export const PRODUCTS = [
   { key: 'uniklean-sp',    displayName: 'UNIKLEAN-SP',    code: 'SP',  category: 'Alkaline Cleaner - Cast Iron',      subtitle: 'Industrial Surface Cleaner & Metal Conditioner',                  accentColor: '#1e6b5a' },
   { key: 'uniklean-fe',    displayName: 'UNIKLEAN-FE',    code: 'FE',  category: 'Iron-based Cleaner',                subtitle: 'Iron Phosphating & Metal Conditioning Agent',                     accentColor: '#7a3a1a' },
   { key: 'uniprotect-oil', displayName: 'UNIPROTECT OIL', code: 'UP',  category: 'Rust Preventive Oil',               subtitle: 'Water Displacing Rust Preventive',                                accentColor: '#1a4971' },
@@ -25,7 +25,7 @@ const PRODUCTS = [
 // ── Document data ──────────────────────────────────────────────────────────────
 // Full TDS/MSDS/Formula/Label/CoA bodies — migrated verbatim from handlers.js
 
-const DOCS: Array<{
+export const DOCS: Array<{
   productKey: string
   docType:    'tds' | 'msds' | 'formula' | 'label' | 'coa'
   docNumber:  string

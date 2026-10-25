@@ -33,6 +33,7 @@ const EXECUTIVE_DOC_TYPES: ReadonlySet<DocType> = new Set(['investor-report']);
 // treatment so it can carry the reference-info band's absence from the
 // header/footer bands without borrowing another doc type's semantics.
 const LETTERHEAD_DOC_TYPES: ReadonlySet<DocType> = new Set(['letterhead']);
+const BROCHURE_DOC_TYPES: ReadonlySet<DocType> = new Set(['brochure']);
 
 // All five get the faint centered watermark.
 const WATERMARK_DOC_TYPES: ReadonlySet<DocType> = new Set(['tds', 'msds', 'coa', 'investor-report', 'letterhead']);
@@ -55,7 +56,23 @@ async function loadDataUri(cache: string | null, filename: string): Promise<stri
   if (cache) return cache;
   const filePath = path.resolve(__dirname, 'assets', filename);
   const buf = await fs.readFile(filePath);
-  return `data:image/png;base64,${buf.toString('base64')}`;
+  const mime = filename.endsWith('.svg') ? 'image/svg+xml' : 'image/png';
+  return `data:${mime};base64,${buf.toString('base64')}`;
+}
+
+const BROCHURE_HERO_FAMILY: Record<string, string> = {
+  'uniklean-sp': 'cleaning', 'corroklean': 'cleaning', 'uniklean-sf': 'cleaning', 'uniklean-cu': 'cleaning',
+  'uniklean-fe': 'conversion', 'unikoat-lt-700': 'conversion', 'unipass': 'conversion', 'uniktonner': 'conversion',
+  'uniprotect-oil': 'protection', 'uniflow-ecm': 'protection', 'corrcut-100': 'protection', 'corrucut-500': 'protection', 'corrcut-200': 'protection',
+  'unicool-al': 'coolant', 'unicut-al': 'coolant',
+  'unisolve-h3': 'brightening', 'unikbrightner': 'brightening',
+};
+
+async function getBrochureAssetDataUri(filename: string): Promise<string> {
+  const filePath = path.resolve(__dirname, 'assets', 'brochure', filename);
+  const buf = await fs.readFile(filePath);
+  const mime = filename.endsWith('.svg') ? 'image/svg+xml' : 'image/png';
+  return `data:${mime};base64,${buf.toString('base64')}`;
 }
 
 // Header logo (all header/footer treatments) — the icon-only mark.
@@ -144,6 +161,35 @@ function buildTdsContext(payload: Record<string, unknown>): Record<string, unkno
     specRows: specs.map((p) => ({ property: p.property, method: p.method || '—', value: withUnit(p.value, p.unit) })),
     keyFacts: specs.slice(0, 4).map((p) => ({ k: p.property, v: withUnit(p.value, p.unit) })),
     hasSpecs: specs.length > 0,
+  };
+}
+
+function buildBrochureContext(payload: Record<string, unknown>): Record<string, unknown> {
+  const sections = (payload['sections'] as Record<string, unknown> | undefined) ?? {};
+  const features = (sections['features'] as Array<{ head?: string; body?: string }> | undefined) ?? [];
+  const specs = (sections['physicalProperties'] as SpecRow[] | undefined) ?? [];
+  const application = (sections['application'] as Array<Record<string, unknown>> | undefined) ?? [];
+  const performance = (sections['performance'] as Array<Record<string, unknown>> | undefined) ?? [];
+  const packaging = (sections['packaging'] as Array<Record<string, unknown>> | undefined) ?? [];
+  const description = String(payload['description'] ?? '').trim();
+  const brochureDescription = description.length > 240
+    ? `${description.slice(0, 237).replace(/\s+\S*$/, '')}...`
+    : description;
+  const brochureHighlights = [
+    ...performance.map((row) => String(row['label'] ?? '')).filter(Boolean),
+    ...features.map((row) => String(row.head ?? '')).filter(Boolean),
+  ].filter((label, index, all) => all.indexOf(label) === index).slice(0, 6);
+  return {
+    brochureDescription,
+    brochureFeatures: features.slice(0, 5),
+    brochureSpecs: specs.slice(0, 7).map((row) => ({ ...row, displayValue: withUnit(row.value, row.unit) })),
+    brochureApplication: application.slice(0, 8),
+    brochureBenefits: performance.slice(0, 6),
+    brochurePackaging: packaging.slice(0, 4),
+    brochurePackageLine: packaging.slice(0, 4).map((row) => `${String(row['size'] ?? '')} ${String(row['unit'] ?? '')}`.trim()).filter(Boolean).join(' / '),
+    brochureHighlights,
+    hasBrochureSpecs: specs.length > 0,
+    hasBrochureApplication: application.length > 0,
   };
 }
 
@@ -472,15 +518,22 @@ class PDFService {
     const legacyBranded  = !printMatched && LEGACY_BRANDED_DOC_TYPES.has(docType);
     const executive      = !printMatched && !legacyBranded && EXECUTIVE_DOC_TYPES.has(docType);
     const letterhead     = !printMatched && !legacyBranded && !executive && LETTERHEAD_DOC_TYPES.has(docType);
+    const brochure       = BROCHURE_DOC_TYPES.has(docType);
     const watermarked    = WATERMARK_DOC_TYPES.has(docType);
-    const logoDataUri      = (legacyBranded || executive || letterhead) ? await getLogoDataUri() : null;
+    const logoDataUri      = (legacyBranded || executive || letterhead || brochure) ? await getLogoDataUri() : null;
     const watermarkDataUri = watermarked ? await getWatermarkDataUri() : null;
 
+    const brochureProductLine = String(payload['productLine'] ?? '');
+    const brochureFamily = BROCHURE_HERO_FAMILY[brochureProductLine] ?? 'conversion';
     const ctx: Record<string, unknown> = {
       ...payload,
       ...(docType === 'msds' ? buildMsdsContext(payload) : {}),
       ...(docType === 'tds' ? buildTdsContext(payload) : {}),
+      ...(docType === 'brochure' ? buildBrochureContext(payload) : {}),
       ...(docType === 'investor-report' ? buildInvestorReportContext(payload) : {}),
+      brochureLogoDataUri: brochure ? logoDataUri : null,
+      brochureHeroDataUri: brochure ? await getBrochureAssetDataUri(`${brochureFamily}.png`) : null,
+      brochureQrDataUri: brochure ? await getBrochureAssetDataUri('website-qr.png') : null,
       _meta: { generatedDate: date, generatedTime: time, docTitle: docTypeLabel(docType) },
     };
 
@@ -505,14 +558,18 @@ class PDFService {
       ? `${formatDate(String(payload['from'] ?? ''))} – ${formatDate(String(payload['to'] ?? ''))}`
       : '';
 
-    const headerHtml = printMatched
+    const headerHtml = brochure
+      ? '<span></span>'
+      : printMatched
       ? buildPrintMatchedHeader(docType, productName)
       : executive
         ? buildExecutiveHeader(logoDataUri, periodLabel)
         : letterhead
           ? buildLetterheadHeader(logoDataUri)
           : buildHeaderTemplate(docTitle, productName, docNumber, { docType, logoDataUri, revisionDate });
-    const footerHtml = printMatched
+    const footerHtml = brochure
+      ? '<span></span>'
+      : printMatched
       ? buildPrintMatchedFooter()
       : executive
         ? buildExecutiveFooter()
@@ -532,7 +589,9 @@ class PDFService {
     // tds/msds: the header band ends ~25mm down; the extra ~5mm is breathing
     // room so a section that opens a continuation page (its margin-top is
     // dropped at the break) doesn't butt its rule against the header's.
-    const margin = printMatched
+    const margin = brochure
+      ? { top: '0', bottom: '0', left: '0', right: '0' }
+      : printMatched
       ? { top: '31mm', bottom: '16mm', left: '14mm', right: '14mm' }
       : executive
         ? { top: '32mm', bottom: '20mm', left: '16mm', right: '16mm' }
@@ -565,7 +624,7 @@ class PDFService {
         printBackground: true,
         preferCSSPageSize: false,
         margin,
-        displayHeaderFooter: true,
+        displayHeaderFooter: !brochure,
         headerTemplate: headerHtml,
         footerTemplate: footerHtml,
       });
@@ -612,6 +671,7 @@ function docTypeLabel(docType: DocType): string {
     quotation: 'Quotation',
     tds:       'Technical Data Sheet',
     msds:      'Material Safety Data Sheet',
+    brochure:  'Product Brochure',
     coa:       'Certificate of Analysis',
     batch:     'Batch Manufacturing Record',
     'investor-report': 'Investor Report',
