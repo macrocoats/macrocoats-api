@@ -16,6 +16,7 @@ interface FinishedGoodsJoinRow {
   batchId:            string
   productCode:        string
   companyName:        string
+  companyId:          string | null
   variantId:          string | null
   variantName:        string | null
   producedQuantity:   string
@@ -28,6 +29,8 @@ interface FinishedGoodsJoinRow {
   batchNumber:        string
   productionDate:     string
   dispatchCount:      string
+  lifecycleStatus:    string
+  expiryDate:         string | null
 }
 
 function toResponse(row: FinishedGoodsJoinRow) {
@@ -35,6 +38,8 @@ function toResponse(row: FinishedGoodsJoinRow) {
   const dispatchedQuantity = Number(row.dispatchedQuantity)
   const reservedQuantity   = Number(row.reservedQuantity)
 
+  const released = row.lifecycleStatus === 'released'
+  const unexpired = !row.expiryDate || row.expiryDate >= new Date().toISOString().slice(0, 10)
   return {
     id:                 row.id,
     batchId:            row.batchId,
@@ -42,6 +47,7 @@ function toResponse(row: FinishedGoodsJoinRow) {
     productionDate:     row.productionDate,
     productCode:        row.productCode,
     companyName:        row.companyName,
+    companyId:          row.companyId,
     variantId:          row.variantId,
     variantName:        row.variantName,
     producedQuantity,
@@ -49,6 +55,10 @@ function toResponse(row: FinishedGoodsJoinRow) {
     reservedQuantity,
     availableQuantity:  producedQuantity - dispatchedQuantity - reservedQuantity,
     status:             row.status,
+    releaseStatus:      row.lifecycleStatus,
+    expiryDate:         row.expiryDate,
+    blockingReasons:    [!released ? 'batch_not_released' : null, !unexpired ? 'batch_expired' : null].filter(Boolean),
+    capabilities:       { canDispatch: released && unexpired && row.status !== 'Cancelled' && (producedQuantity - dispatchedQuantity - reservedQuantity) > 0 },
     cancelReason:       row.cancelReason,
     dispatchCount:      Number(row.dispatchCount),
     createdAt:          new Date(row.createdAt).toISOString(),
@@ -63,6 +73,7 @@ const SELECT_COLUMNS = sql`
   fg.batch_id            AS "batchId",
   fg.product_code        AS "productCode",
   fg.company_name        AS "companyName",
+  (SELECT c.id FROM companies c WHERE lower(c.display_name) = lower(fg.company_name) LIMIT 1) AS "companyId",
   fg.variant_id          AS "variantId",
   fg.variant_name        AS "variantName",
   fg.produced_quantity   AS "producedQuantity",
@@ -74,6 +85,8 @@ const SELECT_COLUMNS = sql`
   fg.updated_at          AS "updatedAt",
   b.batch_number         AS "batchNumber",
   b.production_date      AS "productionDate",
+  b.lifecycle_status     AS "lifecycleStatus",
+  b.expiry_date          AS "expiryDate",
   (SELECT COUNT(*) FROM dispatches d WHERE d.batch_id = fg.batch_id AND d.voided_at IS NULL) AS "dispatchCount"
 `
 
@@ -91,7 +104,7 @@ export async function createFinishedGoodsRecord(tx: DB, batchRow: typeof batches
     variantName:        batchRow.variantName ?? null,
     producedQuantity:   batchRow.batchSize,
     dispatchedQuantity: '0',
-    status:             'Available',
+    status:             'Quarantined',
   })
 }
 
@@ -162,6 +175,7 @@ export async function incrementDispatchedQuantity(
            updated_at = now()
     WHERE  batch_id = ${batchId}
       AND  status <> 'Cancelled'
+      AND  EXISTS (SELECT 1 FROM batches b WHERE b.id = finished_goods.batch_id AND b.lifecycle_status = 'released' AND (b.expiry_date IS NULL OR b.expiry_date >= CURRENT_DATE::text))
       AND  produced_quantity - dispatched_quantity - reserved_quantity >= ${qty}::numeric
     RETURNING *
   `)
@@ -189,6 +203,8 @@ export async function reverseDispatchedQuantity(
                        ELSE 'Partially Dispatched' END,
            updated_at = now()
     WHERE  batch_id = ${batchId}
+      AND  status <> 'Cancelled'
+      AND  dispatched_quantity >= ${qty}::numeric
     RETURNING *
   `)
   return rows[0]
@@ -267,6 +283,15 @@ export async function setFinishedGoodsStatus(
 ): Promise<SetFinishedGoodsStatusResult> {
   if (status === 'Cancelled' && !reason) {
     return { code: 'REASON_REQUIRED' }
+  }
+
+  const [existing] = await db.select().from(finishedGoods).where(eq(finishedGoods.id, id))
+  if (!existing) return null
+  // Cancelling stock that is still reserved would orphan the reservation.
+  if (status === 'Cancelled' && Number(existing.reservedQuantity) > 0) return { code: 'REASON_REQUIRED' }
+  if (status === 'Available') {
+    const [batch] = await db.select({ lifecycleStatus: batches.lifecycleStatus }).from(batches).where(eq(batches.id, existing.batchId))
+    if (!batch || batch.lifecycleStatus !== 'released') return { code: 'REASON_REQUIRED' }
   }
 
   // Un-cancelling restores the status the quantities imply (same rule as

@@ -12,6 +12,8 @@ export const queryClient = postgres(env.DATABASE_URL, connectionOptions)
 
 export const db = drizzle(queryClient, { schema, logger: env.LOG_LEVEL === 'debug' })
 
+export const closeDb = () => queryClient.end()
+
 export type DB = typeof db
 
 export { schema }

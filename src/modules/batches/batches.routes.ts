@@ -3,8 +3,8 @@ import { authenticate, requireAuth } from '../../middleware/authenticate.js'
 import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js'
 import { requireRole } from '../../middleware/requireRole.js'
 import { AppErrors } from '../../types/errors.js'
-import { createBatchSchema, listBatchesQuerySchema, saveCoaSnapshotSchema, setPaymentStatusSchema } from './batches.schema.js'
-import { createBatch, listBatches, getBatchByNumber, deleteBatch, saveCoaSnapshot, clearCoaSnapshot, setPaymentStatus } from './batches.service.js'
+import { createBatchSchema, listBatchesQuerySchema, saveCoaSnapshotSchema, setPaymentStatusSchema, releaseBatchSchema, setBatchLifecycleSchema } from './batches.schema.js'
+import { createBatch, listBatches, getBatchByNumber, deleteBatch, saveCoaSnapshot, clearCoaSnapshot, setPaymentStatus, releaseBatch, setBatchLifecycle } from './batches.service.js'
 
 const preHandler = [authenticate, requireAuth, requireSuperAdmin]
 // Operators may VIEW batches (with formula/cost stripped — see toOperatorBatchResponse
@@ -29,6 +29,12 @@ export async function batchRoutes(app: FastifyInstance) {
         error: 'VARIANT_NOT_USABLE',
         message: `Variant '${result.variantName}' is not approved for production use (status: ${result.status})`,
       })
+    }
+    if ('code' in result && result.code === 'MATERIAL_NOT_FOUND') {
+      return reply.code(409).send({ error: result.code, message: `No usable inventory balance exists for ${result.materialName}.` })
+    }
+    if ('code' in result && result.code === 'INSUFFICIENT_MATERIAL') {
+      return reply.code(409).send({ error: result.code, message: `Insufficient ${result.materialName}.`, available: result.available, required: result.required })
     }
 
     return reply.code(201).send({ data: result })
@@ -63,7 +69,30 @@ export async function batchRoutes(app: FastifyInstance) {
 
     const batch = await saveCoaSnapshot(request.params.batchNumber, body.data)
     if (!batch) return reply.code(404).send({ error: AppErrors.BATCH_NOT_FOUND })
+    if ('code' in batch) return reply.code(409).send({ error: batch.code, message: 'Released batch QC evidence is immutable.' })
     return reply.send({ data: batch })
+  })
+
+  app.post<{ Params: { batchNumber: string } }>('/:batchNumber/release', { preHandler }, async (request, reply) => {
+    const body = releaseBatchSchema.safeParse(request.body ?? {})
+    if (!body.success) return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
+    const result = await releaseBatch(request.params.batchNumber, request.authUser!.id, body.data.notes, body.data.version)
+    if ('code' in result) {
+      const status = result.code === 'BATCH_NOT_FOUND' ? 404 : 409
+      return reply.code(status).send({ error: result.code, blockingReasons: result.blockingReasons })
+    }
+    return reply.send({ data: result })
+  })
+
+  app.post<{ Params: { batchNumber: string } }>('/:batchNumber/lifecycle', { preHandler }, async (request, reply) => {
+    const body = setBatchLifecycleSchema.safeParse(request.body)
+    if (!body.success) return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
+    const result = await setBatchLifecycle(request.params.batchNumber, body.data.status, body.data.reason, body.data.version)
+    if ('code' in result) {
+      const status = result.code === 'BATCH_NOT_FOUND' ? 404 : 409
+      return reply.code(status).send({ error: result.code, blockingReasons: result.blockingReasons })
+    }
+    return reply.send({ data: result })
   })
 
   // ── PATCH /batches/:batchNumber/payment ──────────────────────────────────

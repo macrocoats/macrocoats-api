@@ -348,9 +348,9 @@ async function recomputeStatus(tx: DB, orderId: string): Promise<void> {
 
   const rows = await tx.execute<{ ordered: string; produced: string; dispatched: string }>(sql`
     SELECT
-      COALESCE(SUM(i.quantity_ordered), 0) AS ordered,
-      COALESCE(SUM(pb.produced), 0)        AS produced,
-      COALESCE(SUM(db.dispatched), 0)      AS dispatched
+      i.quantity_ordered AS ordered,
+      COALESCE(pb.produced, 0) AS produced,
+      COALESCE(db.dispatched, 0) AS dispatched
     FROM customer_purchase_order_items i
     LEFT JOIN (
       SELECT order_item_id, SUM(linked_quantity) AS produced
@@ -362,16 +362,16 @@ async function recomputeStatus(tx: DB, orderId: string): Promise<void> {
     ) db ON db.customer_purchase_order_item_id = i.id
     WHERE i.order_id = ${orderId}
   `)
-  const agg = rows[0]
-  const ordered    = Number(agg?.ordered ?? 0)
-  const produced   = Number(agg?.produced ?? 0)
-  const dispatched = Number(agg?.dispatched ?? 0)
+  const anyDispatched = rows.some((r) => Number(r.dispatched) > 0)
+  const allDispatched = rows.length > 0 && rows.every((r) => Number(r.dispatched) >= Number(r.ordered))
+  const anyProduced = rows.some((r) => Number(r.produced) > 0)
+  const allProduced = rows.length > 0 && rows.every((r) => Number(r.produced) >= Number(r.ordered))
 
   let nextStatus: OrderStatus
-  if (dispatched > 0 && dispatched >= ordered)      nextStatus = 'completed'
-  else if (dispatched > 0)                          nextStatus = 'partially_dispatched'
-  else if (produced > 0 && produced >= ordered)     nextStatus = 'ready_for_dispatch'
-  else if (produced > 0)                            nextStatus = 'partially_produced'
+  if (allDispatched)                                 nextStatus = 'completed'
+  else if (anyDispatched)                            nextStatus = 'partially_dispatched'
+  else if (allProduced)                              nextStatus = 'ready_for_dispatch'
+  else if (anyProduced)                              nextStatus = 'partially_produced'
   else if (['confirmed', 'production_planned'].includes(order.status)) nextStatus = 'in_production'
   else                                               nextStatus = order.status as OrderStatus
 
@@ -636,19 +636,46 @@ export type LinkBatchResult =
   | { code: 'ORDER_NOT_FOUND' }
   | { code: 'ITEM_NOT_FOUND' }
   | { code: 'BATCH_NOT_FOUND' }
+  | { code: 'INVALID_BATCH_LINK'; message: string; available?: number }
 
 export async function linkBatch(orderId: string, data: LinkBatchBody, userId: string): Promise<LinkBatchResult> {
   return db.transaction(async (tx) => {
     const [order] = await tx.select().from(customerPurchaseOrders)
       .where(and(eq(customerPurchaseOrders.id, orderId), isNull(customerPurchaseOrders.deletedAt)))
+      .for('update')
     if (!order) return { code: 'ORDER_NOT_FOUND' as const }
 
     const [item] = await tx.select().from(customerPurchaseOrderItems)
       .where(and(eq(customerPurchaseOrderItems.id, data.orderItemId), eq(customerPurchaseOrderItems.orderId, orderId)))
+      .for('update')
     if (!item) return { code: 'ITEM_NOT_FOUND' as const }
 
-    const [batch] = await tx.select().from(batches).where(eq(batches.id, data.batchId))
+    const [batch] = await tx.select().from(batches).where(eq(batches.id, data.batchId)).for('update')
     if (!batch) return { code: 'BATCH_NOT_FOUND' as const }
+    if (['draft', 'cancelled', 'completed'].includes(order.status)) {
+      return { code: 'INVALID_BATCH_LINK' as const, message: 'Order is not open for production allocation.' }
+    }
+    if (batch.lifecycleStatus !== 'released') {
+      return { code: 'INVALID_BATCH_LINK' as const, message: 'Only released batches can be allocated to orders.' }
+    }
+    if (batch.productCode !== item.productKey || (item.variantId && batch.variantId && item.variantId !== batch.variantId)) {
+      return { code: 'INVALID_BATCH_LINK' as const, message: 'Batch product or variant does not match the order line.' }
+    }
+    const [customer] = await tx.select({ displayName: companies.displayName }).from(companies).where(eq(companies.id, order.customerId))
+    if (customer && customer.displayName.toLowerCase() !== batch.companyName.toLowerCase()) {
+      return { code: 'INVALID_BATCH_LINK' as const, message: 'Batch customer does not match the order customer.' }
+    }
+    const totals = await tx.execute<{ itemLinked: string; batchLinked: string }>(sql`
+      SELECT
+        COALESCE((SELECT SUM(linked_quantity) FROM customer_purchase_order_batches WHERE order_item_id = ${item.id}), 0) AS "itemLinked",
+        COALESCE((SELECT SUM(linked_quantity) FROM customer_purchase_order_batches WHERE batch_id = ${batch.id}), 0) AS "batchLinked"
+    `)
+    const itemRemaining = Number(item.quantityOrdered) - Number(totals[0]?.itemLinked ?? 0)
+    const batchCapacity = Number(batch.actualYield ?? batch.batchSize) - Number(totals[0]?.batchLinked ?? 0)
+    const available = Math.max(0, Math.min(itemRemaining, batchCapacity))
+    if (data.linkedQuantity > available) {
+      return { code: 'INVALID_BATCH_LINK' as const, message: 'Allocation exceeds order demand or released batch capacity.', available }
+    }
 
     const [link] = await tx.insert(customerPurchaseOrderBatches).values({
       orderId, orderItemId: data.orderItemId, batchId: data.batchId,
@@ -680,6 +707,12 @@ export async function unlinkBatch(orderId: string, linkId: string): Promise<'del
     const [existing] = await tx.select().from(customerPurchaseOrderBatches)
       .where(and(eq(customerPurchaseOrderBatches.id, linkId), eq(customerPurchaseOrderBatches.orderId, orderId)))
     if (!existing) return null
+
+    const dispatched = await tx.execute<{ count: string }>(sql`
+      SELECT COUNT(*) AS count FROM dispatches
+      WHERE batch_id = ${existing.batchId} AND customer_purchase_order_item_id = ${existing.orderItemId} AND voided_at IS NULL
+    `)
+    if (Number(dispatched[0]?.count ?? 0) > 0) return null
 
     await tx.delete(customerPurchaseOrderBatches).where(eq(customerPurchaseOrderBatches.id, linkId))
     await recomputeStatus(tx as unknown as DB, orderId)

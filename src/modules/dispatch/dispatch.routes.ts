@@ -34,6 +34,15 @@ export async function dispatchRoutes(app: FastifyInstance) {
     if ('code' in result && result.code === 'FINISHED_GOODS_NOT_FOUND') {
       return reply.code(404).send({ error: AppErrors.FINISHED_GOODS_NOT_FOUND })
     }
+    if ('code' in result && result.code === 'BATCH_NOT_RELEASED') {
+      return reply.code(409).send({ error: 'BATCH_NOT_RELEASED', message: 'Only released, unexpired batches can be dispatched.' })
+    }
+    if ('code' in result && result.code === 'DISPATCH_CONTEXT_INVALID') {
+      return reply.code(409).send({ error: result.code, message: result.message })
+    }
+    if ('code' in result && result.code === 'ORDER_QUANTITY_EXCEEDED') {
+      return reply.code(409).send({ error: result.code, message: 'Dispatch quantity exceeds the order-line remainder.', remaining: result.remaining })
+    }
     if ('code' in result && result.code === 'INSUFFICIENT_STOCK') {
       return reply.code(409).send({
         error:     AppErrors.DISPATCH_INSUFFICIENT_STOCK,

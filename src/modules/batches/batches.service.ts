@@ -1,12 +1,13 @@
 import { eq, ilike, and, gte, lte, desc, count, sql, isNull, isNotNull } from 'drizzle-orm'
 import { db } from '../../db/index.js'
-import { batches, productFormulationVariants } from '../../db/schema/index.js'
+import { batches, productFormulationVariants, finishedGoods } from '../../db/schema/index.js'
 import { nextBatchNumber } from '../../utils/batchNumber.js'
 import { createFinishedGoodsRecord } from '../finished-goods/finished-goods.service.js'
 import { USABLE_VARIANT_STATUSES, type VariantStatus } from '../../types/index.js'
 import type { CreateBatchBody, ListBatchesQuery, SaveCoaSnapshotBody } from './batches.schema.js'
 
 function toBatchResponse(row: typeof batches.$inferSelect) {
+  const blockingReasons = getReleaseBlockingReasons(row)
   return {
     id:                  row.id,
     batchNumber:         row.batchNumber,
@@ -23,10 +24,34 @@ function toBatchResponse(row: typeof batches.$inferSelect) {
     variantId:           row.variantId ?? null,
     variantName:         row.variantName ?? null,
     batchType:           row.batchType,
+    lifecycleStatus:     row.lifecycleStatus,
+    actualYield:         row.actualYield === null ? null : Number(row.actualYield),
+    expiryDate:          row.expiryDate ?? null,
+    releaseNotes:        row.releaseNotes ?? null,
+    releasedAt:          row.releasedAt ? row.releasedAt.toISOString() : null,
+    version:             row.version,
+    blockingReasons,
+    capabilities: {
+      canSubmitQc: !['released', 'rejected', 'cancelled', 'closed'].includes(row.lifecycleStatus),
+      canRelease: row.lifecycleStatus !== 'released' && blockingReasons.length === 0,
+      canDispatch: row.lifecycleStatus === 'released' && (!row.expiryDate || row.expiryDate >= new Date().toISOString().slice(0, 10)),
+    },
     coaSnapshot:         row.coaSnapshot ?? null,
     notes:               row.notes ?? null,
     createdAt:           row.createdAt.toISOString(),
   }
+}
+
+function getReleaseBlockingReasons(row: typeof batches.$inferSelect): string[] {
+  const blockers: string[] = []
+  if (row.batchType !== 'Production') blockers.push('trial_batch')
+  const tests = (row.coaSnapshot as { tests?: Array<{ status?: string }> } | null)?.tests
+  if (!tests?.length) blockers.push('coa_missing')
+  else if (tests.some((test) => test.status !== 'Pass')) blockers.push('qc_failed')
+  if (!row.labelSnapshot) blockers.push('label_missing')
+  if (!row.expiryDate) blockers.push('expiry_missing')
+  else if (row.expiryDate < new Date().toISOString().slice(0, 10)) blockers.push('expired')
+  return blockers
 }
 
 /**
@@ -53,6 +78,8 @@ export type CreateBatchResult =
   | ReturnType<typeof toBatchResponse>
   | { code: 'VARIANT_NOT_FOUND' }
   | { code: 'VARIANT_NOT_USABLE'; variantName: string; status: VariantStatus }
+  | { code: 'MATERIAL_NOT_FOUND'; materialName: string }
+  | { code: 'INSUFFICIENT_MATERIAL'; materialName: string; available: number; required: number }
 
 export async function createBatch(data: CreateBatchBody, createdBy: string | null): Promise<CreateBatchResult> {
   // ── Variant approval gate ────────────────────────────────────────────────
@@ -80,13 +107,36 @@ export async function createBatch(data: CreateBatchBody, createdBy: string | nul
     // read-modify-write race: `stock_qty = stock_qty - qty` is a delta applied
     // at the row lock level, so two concurrent batch creations using the same
     // material will serialize correctly instead of silently overwriting each other.
-    const activeComponents = data.formulationSnapshot.components.filter(
-      (c) => c.quantityUsed && c.quantityUsed > 0,
-    )
+    const componentTotals = new Map<string, { name: string; quantity: number }>()
+    for (const component of data.formulationSnapshot.components) {
+      if (!component.quantityUsed || component.quantityUsed <= 0) continue
+      const key = component.name.trim().toLowerCase()
+      const current = componentTotals.get(key) ?? { name: component.name, quantity: 0 }
+      current.quantity += component.quantityUsed
+      componentTotals.set(key, current)
+    }
+    const activeComponents = [...componentTotals.entries()].map(([key, value]) => ({ key, ...value }))
 
     if (activeComponents.length > 0) {
+      const keys = activeComponents.map((component) => component.key)
+      const inventoryRows = await tx.execute<{ materialKey: string; stockQty: string | null }>(sql`
+        SELECT lower(material) AS "materialKey", stock_qty AS "stockQty"
+        FROM inventory_items
+        WHERE lower(material) IN (${sql.join(keys.map((key) => sql`${key}`), sql`, `)})
+        FOR UPDATE
+      `)
+      const stockByKey = new Map(inventoryRows.map((row) => [row.materialKey, row.stockQty]))
+      for (const component of activeComponents) {
+        if (!stockByKey.has(component.key) || stockByKey.get(component.key) === null) {
+          return { code: 'MATERIAL_NOT_FOUND' as const, materialName: component.name }
+        }
+        const available = Number(stockByKey.get(component.key))
+        if (available < component.quantity) {
+          return { code: 'INSUFFICIENT_MATERIAL' as const, materialName: component.name, available, required: component.quantity }
+        }
+      }
       const valuesList = sql.join(
-        activeComponents.map((c) => sql`(${c.name.toLowerCase()}, ${c.quantityUsed}::numeric)`),
+        activeComponents.map((c) => sql`(${c.key}, ${c.quantity}::numeric)`),
         sql`, `,
       )
       await tx.execute(sql`
@@ -119,6 +169,8 @@ export async function createBatch(data: CreateBatchBody, createdBy: string | nul
         variantId:           data.variantId ?? null,
         variantName:         data.variantName ?? null,
         batchType:           data.batchType ?? 'Production',
+        lifecycleStatus:     'awaiting_qc',
+        expiryDate:          data.labelSnapshot.expiryDate,
         notes:               data.notes ?? null,
         createdBy:           createdBy ?? undefined,
       })
@@ -174,6 +226,9 @@ export async function getBatchByNumber(batchNumber: string, role: 'superadmin' |
 }
 
 export async function saveCoaSnapshot(batchNumber: string, snapshot: SaveCoaSnapshotBody) {
+  const [existing] = await db.select().from(batches).where(eq(batches.batchNumber, batchNumber))
+  if (!existing) return null
+  if (['released', 'closed'].includes(existing.lifecycleStatus)) return { code: 'BATCH_IMMUTABLE' as const }
   const [row] = await db
     .update(batches)
     .set({ coaSnapshot: snapshot })
@@ -192,12 +247,51 @@ export async function setPaymentStatus(batchNumber: string, paid: boolean) {
 }
 
 export async function clearCoaSnapshot(batchNumber: string): Promise<boolean> {
+  const [existing] = await db.select().from(batches).where(eq(batches.batchNumber, batchNumber))
+  if (!existing || ['released', 'closed'].includes(existing.lifecycleStatus)) return false
   const result = await db
     .update(batches)
     .set({ coaSnapshot: null })
     .where(eq(batches.batchNumber, batchNumber))
     .returning({ id: batches.id })
   return result.length > 0
+}
+
+export type ReleaseBatchResult =
+  | ReturnType<typeof toBatchResponse>
+  | { code: 'BATCH_NOT_FOUND' | 'BATCH_NOT_RELEASABLE' | 'VERSION_CONFLICT'; blockingReasons?: string[] }
+
+export async function releaseBatch(batchNumber: string, releasedBy: string, notes?: string, version?: number): Promise<ReleaseBatchResult> {
+  return db.transaction(async (tx) => {
+    const [row] = await tx.select().from(batches).where(eq(batches.batchNumber, batchNumber)).for('update')
+    if (!row) return { code: 'BATCH_NOT_FOUND' as const }
+    if (row.lifecycleStatus === 'released') return toBatchResponse(row)
+    if (version !== undefined && row.version !== version) return { code: 'VERSION_CONFLICT' as const }
+    const blockingReasons = getReleaseBlockingReasons(row)
+    if (blockingReasons.length) return { code: 'BATCH_NOT_RELEASABLE' as const, blockingReasons }
+    const [updated] = await tx.update(batches).set({
+      lifecycleStatus: 'released', releasedBy, releasedAt: new Date(), releaseNotes: notes ?? null,
+      actualYield: row.actualYield ?? row.batchSize, version: row.version + 1,
+    }).where(and(eq(batches.id, row.id), eq(batches.version, row.version))).returning()
+    if (!updated) return { code: 'VERSION_CONFLICT' as const }
+    await tx.update(finishedGoods).set({ status: 'Available', updatedAt: new Date() })
+      .where(and(eq(finishedGoods.batchId, row.id), eq(finishedGoods.status, 'Quarantined')))
+    return toBatchResponse(updated)
+  })
+}
+
+export async function setBatchLifecycle(batchNumber: string, status: 'on_hold' | 'rejected' | 'cancelled', reason: string, version?: number): Promise<ReleaseBatchResult> {
+  const [existing] = await db.select().from(batches).where(eq(batches.batchNumber, batchNumber))
+  if (!existing) return { code: 'BATCH_NOT_FOUND' }
+  if (existing.lifecycleStatus === 'released' || existing.lifecycleStatus === 'closed') {
+    return { code: 'BATCH_NOT_RELEASABLE', blockingReasons: ['released_batch_immutable'] }
+  }
+  if (version !== undefined && existing.version !== version) return { code: 'VERSION_CONFLICT' }
+  const [updated] = await db.update(batches).set({ lifecycleStatus: status, releaseNotes: reason, version: existing.version + 1 })
+    .where(and(eq(batches.id, existing.id), eq(batches.version, existing.version))).returning()
+  if (!updated) return { code: 'VERSION_CONFLICT' }
+  await db.update(finishedGoods).set({ status: 'Quarantined', updatedAt: new Date() }).where(eq(finishedGoods.batchId, existing.id))
+  return toBatchResponse(updated)
 }
 
 export async function deleteBatch(id: string): Promise<boolean> {

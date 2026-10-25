@@ -95,6 +95,7 @@ export async function customerPurchaseOrderRoutes(app: FastifyInstance) {
     if ('code' in result && result.code === 'ORDER_NOT_FOUND') return reply.code(404).send({ error: AppErrors.CUSTOMER_ORDER_NOT_FOUND })
     if ('code' in result && result.code === 'ITEM_NOT_FOUND') return reply.code(404).send({ error: AppErrors.CUSTOMER_ORDER_ITEM_NOT_FOUND })
     if ('code' in result && result.code === 'BATCH_NOT_FOUND') return reply.code(404).send({ error: AppErrors.BATCH_NOT_FOUND })
+    if ('code' in result && result.code === 'INVALID_BATCH_LINK') return reply.code(409).send({ error: result.code, message: result.message, available: result.available })
     return reply.code(201).send({ data: result })
   })
 

@@ -13,6 +13,7 @@ let adminCookies: string[]
 let raneCookies: string[]
 
 let companyId: string
+let companyName: string
 let batchId: string
 let batchNumber: string
 let orderId: string
@@ -39,6 +40,7 @@ beforeAll(async () => {
 
   const companies = await req().get('/v1/companies').set('Cookie', adminCookies).expect(200)
   companyId = companies.body.data[0].id
+  companyName = companies.body.data[0].displayName
 })
 
 afterAll(async () => {
@@ -76,11 +78,11 @@ describe('money path: batch → finished goods → customer PO → dispatch', ()
       .set('Cookie', adminCookies)
       .send({
         productCode:         'uniklean-sp',
-        companyName:         `Money Path Test ${Date.now()}`,
+        companyName,                                // must match the order customer for allocation
         batchSize:           BATCH_SIZE,
         formulationSnapshot: { components: [] },   // no components → no inventory deduction side effects
         labelSnapshot: {
-          productName: 'UNIKLEAN SP', manufactureDate: '2026-01-01', expiryDate: '2027-01-01',
+          productName: 'UNIKLEAN SP', manufactureDate: '2026-01-01', expiryDate: '2099-01-01',
           netWeight: '100 L', hazardPictograms: [], signalWord: 'Warning',
         },
         costSummary: {
@@ -98,6 +100,25 @@ describe('money path: batch → finished goods → customer PO → dispatch', ()
     expect(Number(fg.producedQuantity)).toBe(BATCH_SIZE)
     expect(Number(fg.dispatchedQuantity)).toBe(0)
     expect(fg.status).toBe('Available')
+  })
+
+  it('a batch must pass QC and be released before it can be dispatched', async () => {
+    await req()
+      .post('/v1/dispatches')
+      .set('Cookie', adminCookies)
+      .send({
+        batchId, companyId, dispatchDate: new Date().toISOString().slice(0, 10), quantity: 1,
+        dispatchCategory: 'sample', exceptionReason: 'release gate test',
+      })
+      .expect(409)
+
+    await req()
+      .patch(`/v1/batches/${batchNumber}/coa`)
+      .set('Cookie', adminCookies)
+      .send({ tests: [{ parameter: 'pH', method: 'IS 1', specification: '10-12', result: '11', status: 'Pass' }] })
+      .expect(200)
+    const released = await req().post(`/v1/batches/${batchNumber}/release`).set('Cookie', adminCookies).send({}).expect(200)
+    expect(released.body.data.lifecycleStatus).toBe('released')
   })
 
   it('a confirmed order moves to ready_for_dispatch once a batch covers the ordered quantity', async () => {
@@ -133,9 +154,9 @@ describe('money path: batch → finished goods → customer PO → dispatch', ()
     expect(await getOrderStatus()).toBe('ready_for_dispatch')
   })
 
-  it('rejects a dispatch larger than available stock with 409 and writes nothing', async () => {
+  it('rejects a dispatch larger than the order-line remainder with 409 and writes nothing', async () => {
     const res = await dispatch(BATCH_SIZE + 50).expect(409)
-    expect(res.body.available).toBe(BATCH_SIZE)
+    expect(res.body.remaining).toBe(BATCH_SIZE)
 
     const fg = await getFinishedGoods()
     expect(Number(fg.dispatchedQuantity)).toBe(0)

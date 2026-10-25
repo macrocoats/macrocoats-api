@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const FINISHED_GOODS_STATUSES = ['Available', 'Partially Dispatched', 'Fully Dispatched', 'Cancelled'] as const
+export const FINISHED_GOODS_STATUSES = ['Quarantined', 'Available', 'Partially Dispatched', 'Fully Dispatched', 'Cancelled'] as const
 export type FinishedGoodsStatus = typeof FINISHED_GOODS_STATUSES[number]
 
 export const listFinishedGoodsQuerySchema = z.object({

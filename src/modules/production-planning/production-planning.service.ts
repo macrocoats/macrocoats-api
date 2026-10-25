@@ -13,6 +13,7 @@ interface OpenItemRow {
   variantId: string | null; variantName: string | null
   quantityOrdered: string; unit: string
   producedQty: string
+  plannedQty: string
 }
 
 /**
@@ -32,7 +33,8 @@ export async function getProductionPlanningOverview(query: OverviewQuery) {
       i.product_key AS "productKey", p.display_name AS "productDisplayName",
       i.variant_id AS "variantId", v.variant_name AS "variantName",
       i.quantity_ordered AS "quantityOrdered", i.unit,
-      COALESCE(pb.produced, 0) AS "producedQty"
+      COALESCE(pb.produced, 0) AS "producedQty",
+      COALESCE(pw.planned, 0) AS "plannedQty"
     FROM customer_purchase_order_items i
     JOIN customer_purchase_orders o ON o.id = i.order_id
     JOIN companies c ON c.id = o.customer_id
@@ -43,8 +45,15 @@ export async function getProductionPlanningOverview(query: OverviewQuery) {
       FROM customer_purchase_order_batches
       GROUP BY order_item_id
     ) pb ON pb.order_item_id = i.id
+    LEFT JOIN (
+      SELECT d.order_item_id, SUM(d.planned_quantity) AS planned
+      FROM production_work_order_demands d
+      JOIN production_work_orders w ON w.id = d.work_order_id
+      WHERE w.status IN ('planned', 'released_to_production', 'in_progress')
+      GROUP BY d.order_item_id
+    ) pw ON pw.order_item_id = i.id
     WHERE o.deleted_at IS NULL
-      AND o.status NOT IN ('completed', 'cancelled')
+      AND o.status NOT IN ('draft', 'completed', 'cancelled')
       AND (
         o.expected_delivery_date IS NULL
         OR o.expected_delivery_date <= CURRENT_DATE + (${query.days} || ' days')::interval
@@ -56,8 +65,9 @@ export async function getProductionPlanningOverview(query: OverviewQuery) {
     .map((r) => {
       const quantityOrdered = Number(r.quantityOrdered)
       const producedQty = Number(r.producedQty)
-      const remainingQty = Math.max(0, quantityOrdered - producedQty)
-      return { ...r, quantityOrdered, producedQty, remainingQty }
+      const plannedQty = Number(r.plannedQty)
+      const remainingQty = Math.max(0, quantityOrdered - producedQty - plannedQty)
+      return { ...r, quantityOrdered, producedQty, plannedQty, remainingQty }
     })
     .filter((r) => r.remainingQty > 0)
 
@@ -140,6 +150,7 @@ export async function getProductionPlanningOverview(query: OverviewQuery) {
       variantName: item.variantName,
       quantityOrdered: item.quantityOrdered,
       producedQty: item.producedQty,
+      plannedQty: item.plannedQty,
       remainingQty: item.remainingQty,
       unit: item.unit,
       materialsResolved,

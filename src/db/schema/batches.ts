@@ -23,6 +23,15 @@ export const batches = pgTable('batches', {
   variantId:           uuid('variant_id').references(() => productFormulationVariants.id, { onDelete: 'set null' }),
   variantName:         text('variant_name'),
   batchType:           text('batch_type').notNull().default('Production'),
+  lifecycleStatus:     text('lifecycle_status', {
+                           enum: ['planned', 'in_progress', 'awaiting_qc', 'on_hold', 'released', 'rejected', 'cancelled', 'closed', 'needs_review'],
+                         }).notNull().default('needs_review'),
+  actualYield:         numeric('actual_yield', { precision: 12, scale: 3 }),
+  expiryDate:          text('expiry_date'),
+  releaseNotes:        text('release_notes'),
+  releasedBy:          uuid('released_by').references(() => users.id),
+  releasedAt:          timestamp('released_at', { withTimezone: true }),
+  version:             integer('version').notNull().default(1),
   coaSnapshot:         jsonb('coa_snapshot'),
   notes:               text('notes'),
   createdBy:           uuid('created_by').references(() => users.id),
@@ -34,6 +43,7 @@ export const batches = pgTable('batches', {
   index('batches_production_date_idx').on(t.productionDate),
   index('batches_product_code_idx').on(t.productCode),
   index('batches_variant_id_idx').on(t.variantId),
+  index('batches_lifecycle_status_idx').on(t.lifecycleStatus),
   index('batches_created_at_idx').on(t.createdAt),
 ])
 

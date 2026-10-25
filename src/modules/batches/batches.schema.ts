@@ -80,6 +80,17 @@ export const setPaymentStatusSchema = z.object({
   paid: z.boolean(),
 })
 
+export const releaseBatchSchema = z.object({
+  notes: z.string().max(2000).optional(),
+  version: z.number().int().positive().optional(),
+})
+
+export const setBatchLifecycleSchema = z.object({
+  status: z.enum(['on_hold', 'rejected', 'cancelled']),
+  reason: z.string().min(1).max(2000),
+  version: z.number().int().positive().optional(),
+})
+
 export type SetPaymentStatusBody = z.infer<typeof setPaymentStatusSchema>
 
 export const listBatchesQuerySchema = z.object({

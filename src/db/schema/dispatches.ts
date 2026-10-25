@@ -18,6 +18,8 @@ export const dispatches = pgTable('dispatches', {
   customerPurchaseOrderId:     uuid('customer_purchase_order_id').references(() => customerPurchaseOrders.id, { onDelete: 'set null' }),
   customerPurchaseOrderItemId: uuid('customer_purchase_order_item_id').references(() => customerPurchaseOrderItems.id, { onDelete: 'set null' }),
   invoiceNumber:               text('invoice_number'),
+  dispatchCategory:            text('dispatch_category', { enum: ['order_fulfillment', 'stock_transfer', 'sample', 'replacement', 'other'] }).notNull().default('order_fulfillment'),
+  exceptionReason:             text('exception_reason'),
   dispatchDate:                date('dispatch_date').notNull(),
   quantity:                    numeric('quantity', { precision: 12, scale: 3 }).notNull(),
   transportDetails: jsonb('transport_details').$type<{

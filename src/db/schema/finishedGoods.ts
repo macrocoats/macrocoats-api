@@ -14,7 +14,7 @@ export const finishedGoods = pgTable('finished_goods', {
   producedQuantity:   numeric('produced_quantity', { precision: 12, scale: 3 }).notNull(),
   dispatchedQuantity: numeric('dispatched_quantity', { precision: 12, scale: 3 }).notNull().default('0'),
   reservedQuantity:   numeric('reserved_quantity', { precision: 12, scale: 3 }).notNull().default('0'),
-  status:             text('status', { enum: ['Available', 'Partially Dispatched', 'Fully Dispatched', 'Cancelled'] })
+  status:             text('status', { enum: ['Quarantined', 'Available', 'Partially Dispatched', 'Fully Dispatched', 'Cancelled'] })
                         .notNull()
                         .default('Available'),
   cancelReason:       text('cancel_reason'),

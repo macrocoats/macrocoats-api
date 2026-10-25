@@ -11,6 +11,7 @@
     "db:migrate": "node --import tsx node_modules/drizzle-kit/bin.cjs migrate",
     "db:push": "node --import tsx node_modules/drizzle-kit/bin.cjs push",
     "db:studio": "node --import tsx node_modules/drizzle-kit/bin.cjs studio",
+    "db:backfill-production-control": "tsx --env-file=.env.local scripts/backfill-production-control.ts",
     "db:reset": "tsx --env-file=.env.local src/seed/reset.ts",
     "seed": "tsx --env-file=.env.local src/seed/index.ts",
     "test": "vitest run",

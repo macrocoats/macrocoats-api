@@ -29,20 +29,22 @@ async function createCompany() {
     .send({ key, displayName: `Audit Fix ${key}`, allowedProducts: ['uniklean-sp'] })
     .expect(201)
   createdCompanyIds.push(res.body.data.id)
-  return { id: res.body.data.id as string, key, accessToken: res.body.data.accessToken as string }
+  return { id: res.body.data.id as string, key, displayName: `Audit Fix ${key}`, accessToken: res.body.data.accessToken as string }
 }
 
-async function createBatch(batchSize: number) {
+// Creates a batch for `companyName` and releases it (passing CoA → release),
+// since dispatch and order allocation only accept released batches.
+async function createBatch(batchSize: number, companyName: string) {
   const res = await req()
     .post('/v1/batches')
     .set('Cookie', adminCookies)
     .send({
       productCode:         'uniklean-sp',
-      companyName:         `Audit Fix ${Date.now()}`,
+      companyName,
       batchSize,
       formulationSnapshot: { components: [] },
       labelSnapshot: {
-        productName: 'UNIKLEAN SP', manufactureDate: '2026-01-01', expiryDate: '2027-01-01',
+        productName: 'UNIKLEAN SP', manufactureDate: '2026-01-01', expiryDate: '2099-01-01',
         netWeight: `${batchSize} L`, hazardPictograms: [], signalWord: 'Warning',
       },
       costSummary: {
@@ -51,7 +53,14 @@ async function createBatch(batchSize: number) {
       },
     })
     .expect(201)
-  return { id: res.body.data.id as string, batchNumber: res.body.data.batchNumber as string }
+  const batchNumber = res.body.data.batchNumber as string
+  await req()
+    .patch(`/v1/batches/${batchNumber}/coa`)
+    .set('Cookie', adminCookies)
+    .send({ tests: [{ parameter: 'pH', method: 'IS 1', specification: '10-12', result: '11', status: 'Pass' }] })
+    .expect(200)
+  await req().post(`/v1/batches/${batchNumber}/release`).set('Cookie', adminCookies).send({}).expect(200)
+  return { id: res.body.data.id as string, batchNumber }
 }
 
 beforeAll(async () => {
@@ -177,12 +186,15 @@ describe('error mapping', () => {
 describe('finished goods un-cancel', () => {
   it('restores Fully Dispatched rather than Available when everything was dispatched', async () => {
     const company = await createCompany()
-    const batch = await createBatch(10)
+    const batch = await createBatch(10, company.displayName)
 
     await req()
       .post('/v1/dispatches')
       .set('Cookie', adminCookies)
-      .send({ batchId: batch.id, companyId: company.id, dispatchDate: new Date().toISOString().slice(0, 10), quantity: 10 })
+      .send({
+        batchId: batch.id, companyId: company.id, dispatchDate: new Date().toISOString().slice(0, 10), quantity: 10,
+        dispatchCategory: 'sample', exceptionReason: 'audit regression test',
+      })
       .expect(201)
 
     const fg = await req().get(`/v1/finished-goods/${batch.batchNumber}`).set('Cookie', adminCookies).expect(200)
@@ -198,9 +210,9 @@ describe('finished goods un-cancel', () => {
 })
 
 describe('customer PO edit with batch links', () => {
-  it('keeps item ids when the lineup is unchanged and locks a lineup change', async () => {
+  it('keeps item ids on a draft edit, refuses links to drafts, and locks a linked order', async () => {
     const company = await createCompany()
-    const batch = await createBatch(50)
+    const batch = await createBatch(50, company.displayName)
     const header = {
       customerId:       company.id,
       customerPoNumber: `AF-${Date.now()}`,
@@ -216,12 +228,6 @@ describe('customer PO edit with batch links', () => {
     const detail = await req().get(`/v1/customer-purchase-orders/${orderId}`).set('Cookie', adminCookies).expect(200)
     const itemId = detail.body.data.items[0].id
 
-    await req()
-      .post(`/v1/customer-purchase-orders/${orderId}/batches`)
-      .set('Cookie', adminCookies)
-      .send({ orderItemId: itemId, batchId: batch.id, linkedQuantity: 20 })
-      .expect(201)
-
     // Same product, new quantity/price → in-place update, item id survives
     await req()
       .put(`/v1/customer-purchase-orders/${orderId}`)
@@ -233,7 +239,25 @@ describe('customer PO edit with batch links', () => {
     expect(after.body.data.items[0].id).toBe(itemId)
     expect(Number(after.body.data.items[0].quantityOrdered)).toBe(60)
 
-    // Adding a line would replace the linked item → locked, and nothing changes
+    // Draft orders are not open for production allocation
+    await req()
+      .post(`/v1/customer-purchase-orders/${orderId}/batches`)
+      .set('Cookie', adminCookies)
+      .send({ orderItemId: itemId, batchId: batch.id, linkedQuantity: 20 })
+      .expect(409)
+
+    await req()
+      .patch(`/v1/customer-purchase-orders/${orderId}/status`)
+      .set('Cookie', adminCookies)
+      .send({ status: 'confirmed' })
+      .expect(200)
+    await req()
+      .post(`/v1/customer-purchase-orders/${orderId}/batches`)
+      .set('Cookie', adminCookies)
+      .send({ orderItemId: itemId, batchId: batch.id, linkedQuantity: 20 })
+      .expect(201)
+
+    // Linking moves the order into production → edits are locked, and nothing changes
     await req()
       .put(`/v1/customer-purchase-orders/${orderId}`)
       .set('Cookie', adminCookies)

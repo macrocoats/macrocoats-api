@@ -1,6 +1,6 @@
-import { eq, sql, type SQL } from 'drizzle-orm'
+import { and, eq, sql, type SQL } from 'drizzle-orm'
 import { db, type DB } from '../../db/index.js'
-import { dispatches } from '../../db/schema/index.js'
+import { dispatches, batches, companies, customerPurchaseOrders, customerPurchaseOrderItems } from '../../db/schema/index.js'
 import { nextDispatchNumber } from '../../utils/dispatchNumber.js'
 import { incrementDispatchedQuantity, reverseDispatchedQuantity } from '../finished-goods/finished-goods.service.js'
 import { recordDispatchAgainstOrder, reverseDispatchAgainstOrder } from '../customer-purchase-orders/customer-purchase-orders.service.js'
@@ -16,6 +16,8 @@ function toDispatchResponse(row: typeof dispatches.$inferSelect) {
     customerPurchaseOrderId:     row.customerPurchaseOrderId ?? null,
     customerPurchaseOrderItemId: row.customerPurchaseOrderItemId ?? null,
     invoiceNumber:    row.invoiceNumber ?? null,
+    dispatchCategory: row.dispatchCategory,
+    exceptionReason:  row.exceptionReason ?? null,
     dispatchDate:     row.dispatchDate,
     quantity:         Number(row.quantity),
     transportDetails: row.transportDetails ?? null,
@@ -40,6 +42,8 @@ interface DispatchJoinRow {
   customerPurchaseOrderId:     string | null
   customerPurchaseOrderItemId: string | null
   invoiceNumber:    string | null
+  dispatchCategory: string
+  exceptionReason:  string | null
   dispatchDate:     string
   quantity:         string
   transportDetails: DispatchRow['transportDetails']
@@ -65,6 +69,8 @@ function toJoinedResponse(row: DispatchJoinRow) {
     customerPurchaseOrderId:     row.customerPurchaseOrderId,
     customerPurchaseOrderItemId: row.customerPurchaseOrderItemId,
     invoiceNumber:    row.invoiceNumber,
+    dispatchCategory: row.dispatchCategory,
+    exceptionReason:  row.exceptionReason,
     dispatchDate:     row.dispatchDate,
     quantity:         Number(row.quantity),
     transportDetails: row.transportDetails ?? null,
@@ -88,6 +94,8 @@ const SELECT_COLUMNS = sql`
   d.customer_purchase_order_id      AS "customerPurchaseOrderId",
   d.customer_purchase_order_item_id AS "customerPurchaseOrderItemId",
   d.invoice_number    AS "invoiceNumber",
+  d.dispatch_category AS "dispatchCategory",
+  d.exception_reason  AS "exceptionReason",
   d.dispatch_date     AS "dispatchDate",
   d.quantity,
   d.transport_details AS "transportDetails",
@@ -111,10 +119,83 @@ const JOINS = sql`
 export type CreateDispatchResult =
   | DispatchRow
   | { code: 'FINISHED_GOODS_NOT_FOUND' }
+  | { code: 'BATCH_NOT_RELEASED' }
+  | { code: 'DISPATCH_CONTEXT_INVALID'; message: string }
+  | { code: 'ORDER_QUANTITY_EXCEEDED'; remaining: number }
   | { code: 'INSUFFICIENT_STOCK'; available: number }
+
+async function validateDispatchContext(tx: DB, data: CreateDispatchBody): Promise<Exclude<CreateDispatchResult, DispatchRow> | null> {
+  const [batch] = await tx.select({
+    productCode: batches.productCode,
+    companyName: batches.companyName,
+    variantId: batches.variantId,
+    lifecycleStatus: batches.lifecycleStatus,
+    expiryDate: batches.expiryDate,
+  }).from(batches).where(eq(batches.id, data.batchId))
+  if (!batch) return { code: 'FINISHED_GOODS_NOT_FOUND' }
+  if (batch.lifecycleStatus !== 'released' || (batch.expiryDate && batch.expiryDate < data.dispatchDate)) {
+    return { code: 'BATCH_NOT_RELEASED' }
+  }
+  const [company] = await tx.select({ id: companies.id, displayName: companies.displayName }).from(companies).where(eq(companies.id, data.companyId))
+  if (!company) return { code: 'DISPATCH_CONTEXT_INVALID', message: 'Customer does not exist.' }
+
+  if (data.customerPurchaseOrderId && data.customerPurchaseOrderItemId) {
+    const [context] = await tx.select({
+      orderId: customerPurchaseOrderItems.orderId,
+      productKey: customerPurchaseOrderItems.productKey,
+      variantId: customerPurchaseOrderItems.variantId,
+      quantityOrdered: customerPurchaseOrderItems.quantityOrdered,
+      customerId: customerPurchaseOrders.customerId,
+      orderStatus: customerPurchaseOrders.status,
+    }).from(customerPurchaseOrderItems)
+      .innerJoin(customerPurchaseOrders, eq(customerPurchaseOrders.id, customerPurchaseOrderItems.orderId))
+      .where(and(eq(customerPurchaseOrderItems.id, data.customerPurchaseOrderItemId), eq(customerPurchaseOrders.id, data.customerPurchaseOrderId)))
+      .for('update')
+    if (!context || context.customerId !== data.companyId || context.productKey !== batch.productCode || ['draft', 'cancelled', 'completed'].includes(context.orderStatus)) {
+      return { code: 'DISPATCH_CONTEXT_INVALID', message: 'Order, customer, product, or status does not match the selected batch.' }
+    }
+    if (context.variantId && batch.variantId && context.variantId !== batch.variantId) {
+      return { code: 'DISPATCH_CONTEXT_INVALID', message: 'Order-line variant does not match the selected batch.' }
+    }
+    const dispatchedRows = await tx.execute<{ dispatched: string }>(sql`
+      SELECT COALESCE(SUM(quantity), 0) AS dispatched FROM dispatches
+      WHERE customer_purchase_order_item_id = ${data.customerPurchaseOrderItemId} AND voided_at IS NULL
+    `)
+    const remaining = Math.max(0, Number(context.quantityOrdered) - Number(dispatchedRows[0]?.dispatched ?? 0))
+    if (data.quantity > remaining) return { code: 'ORDER_QUANTITY_EXCEEDED', remaining }
+
+    const allocationRows = await tx.execute<{ allocated: string; dispatched: string }>(sql`
+      SELECT
+        COALESCE((SELECT SUM(linked_quantity)
+          FROM customer_purchase_order_batches
+          WHERE order_item_id = ${data.customerPurchaseOrderItemId}
+            AND batch_id = ${data.batchId}), 0) AS allocated,
+        COALESCE((SELECT SUM(quantity)
+          FROM dispatches
+          WHERE customer_purchase_order_item_id = ${data.customerPurchaseOrderItemId}
+            AND batch_id = ${data.batchId}
+            AND voided_at IS NULL), 0) AS dispatched
+    `)
+    const allocationRemaining = Math.max(
+      0,
+      Number(allocationRows[0]?.allocated ?? 0) - Number(allocationRows[0]?.dispatched ?? 0),
+    )
+    if (data.quantity > allocationRemaining) {
+      return {
+        code: 'DISPATCH_CONTEXT_INVALID',
+        message: 'Dispatch quantity exceeds the released batch allocation for this order line.',
+      }
+    }
+  } else if (company.displayName.toLowerCase() !== batch.companyName.toLowerCase()) {
+    return { code: 'DISPATCH_CONTEXT_INVALID', message: 'Customer does not match the batch customer.' }
+  }
+  return null
+}
 
 export async function createDispatch(data: CreateDispatchBody, createdBy: string): Promise<CreateDispatchResult> {
   return db.transaction(async (tx) => {
+    const contextError = await validateDispatchContext(tx as unknown as DB, data)
+    if (contextError) return contextError
     const updated = await incrementDispatchedQuantity(tx as unknown as DB, data.batchId, data.quantity)
 
     if (!updated) {
@@ -140,6 +221,9 @@ export async function createDispatch(data: CreateDispatchBody, createdBy: string
         return { code: 'FINISHED_GOODS_NOT_FOUND' as const }
       }
 
+      const [batch] = await tx.select({ lifecycleStatus: batches.lifecycleStatus }).from(batches).where(eq(batches.id, data.batchId))
+      if (!batch || batch.lifecycleStatus !== 'released') return { code: 'BATCH_NOT_RELEASED' as const }
+
       const available = Number(fg.producedQuantity) - Number(fg.dispatchedQuantity) - Number(fg.reservedQuantity)
       return { code: 'INSUFFICIENT_STOCK' as const, available }
     }
@@ -156,6 +240,8 @@ export async function createDispatch(data: CreateDispatchBody, createdBy: string
         customerPurchaseOrderId:     data.customerPurchaseOrderId ?? null,
         customerPurchaseOrderItemId: data.customerPurchaseOrderItemId ?? null,
         invoiceNumber:    data.invoiceNumber ?? null,
+        dispatchCategory: data.dispatchCategory ?? 'order_fulfillment',
+        exceptionReason:  data.exceptionReason ?? null,
         dispatchDate:     data.dispatchDate,
         quantity:         String(data.quantity),
         transportDetails: data.transportDetails ?? null,
@@ -208,7 +294,7 @@ function updateDispatchTx(
   onInsufficient: (available: number) => void,
 ): Promise<UpdateDispatchResult> {
   return db.transaction(async (tx) => {
-    const [dispatch] = await tx.select().from(dispatches).where(eq(dispatches.id, id))
+    const [dispatch] = await tx.select().from(dispatches).where(eq(dispatches.id, id)).for('update')
     if (!dispatch) return { code: 'DISPATCH_NOT_FOUND' as const }
     if (dispatch.voidedAt) return { code: 'DISPATCH_ALREADY_VOIDED' as const }
 
@@ -223,10 +309,10 @@ function updateDispatchTx(
         return { code: 'DISPATCH_BATCH_CANCELLED' as const }
       }
 
-      // Free the old amount first so the re-validation below checks against
-      // true availability rather than double-counting this dispatch's own stake.
-      await reverseDispatchedQuantity(tx as unknown as DB, dispatch.batchId, oldQuantity)
-      const updatedFg = await incrementDispatchedQuantity(tx as unknown as DB, dispatch.batchId, data.quantity!)
+      const delta = data.quantity! - oldQuantity
+      const updatedFg = delta > 0
+        ? await incrementDispatchedQuantity(tx as unknown as DB, dispatch.batchId, delta)
+        : await reverseDispatchedQuantity(tx as unknown as DB, dispatch.batchId, Math.abs(delta))
 
       if (!updatedFg) {
         const rows = await tx.execute<{
@@ -278,7 +364,7 @@ export type VoidDispatchResult =
 
 export async function voidDispatch(id: string, reason: string, _voidedBy: string): Promise<VoidDispatchResult> {
   return db.transaction(async (tx) => {
-    const [dispatch] = await tx.select().from(dispatches).where(eq(dispatches.id, id))
+    const [dispatch] = await tx.select().from(dispatches).where(eq(dispatches.id, id)).for('update')
     if (!dispatch) return { code: 'DISPATCH_NOT_FOUND' as const }
     if (dispatch.voidedAt) return { code: 'DISPATCH_ALREADY_VOIDED' as const }
 
@@ -287,8 +373,10 @@ export async function voidDispatch(id: string, reason: string, _voidedBy: string
     const [row] = await tx
       .update(dispatches)
       .set({ voidedAt: new Date(), voidReason: reason })
-      .where(eq(dispatches.id, id))
+      .where(and(eq(dispatches.id, id), sql`${dispatches.voidedAt} IS NULL`))
       .returning()
+
+    if (!row) return { code: 'DISPATCH_ALREADY_VOIDED' as const }
 
     if (row.customerPurchaseOrderId) {
       await reverseDispatchAgainstOrder(tx as unknown as DB, row.customerPurchaseOrderId)

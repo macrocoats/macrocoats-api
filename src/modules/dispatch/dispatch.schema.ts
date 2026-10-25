@@ -15,6 +15,8 @@ export const createDispatchSchema = z.object({
   customerPurchaseOrderId:     z.string().uuid().nullable().optional(),
   customerPurchaseOrderItemId: z.string().uuid().nullable().optional(),
   invoiceNumber:    z.string().max(100).nullable().optional(),
+  dispatchCategory: z.enum(['order_fulfillment', 'stock_transfer', 'sample', 'replacement', 'other']).optional(),
+  exceptionReason:  z.string().max(500).nullable().optional(),
   dispatchDate:     z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   quantity:         z.number().positive(),
   transportDetails: transportDetailsSchema.optional(),
@@ -25,7 +27,20 @@ export const createDispatchSchema = z.object({
 ).refine(
   (data) => !data.customerPurchaseOrderItemId || !!data.customerPurchaseOrderId,
   { message: 'customerPurchaseOrderId is required when customerPurchaseOrderItemId is set', path: ['customerPurchaseOrderId'] },
-)
+).superRefine((data, ctx) => {
+  if (!!data.customerPurchaseOrderId !== !!data.customerPurchaseOrderItemId) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['customerPurchaseOrderItemId'], message: 'Order-backed dispatch requires both order and order item.' })
+  }
+  if (!data.customerPurchaseOrderId && !data.exceptionReason?.trim()) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['exceptionReason'], message: 'Non-PO dispatch requires an exception reason.' })
+  }
+  if (!data.customerPurchaseOrderId && (!data.dispatchCategory || data.dispatchCategory === 'order_fulfillment')) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['dispatchCategory'], message: 'Non-PO dispatch requires an exception category.' })
+  }
+  if (data.customerPurchaseOrderId && data.dispatchCategory && data.dispatchCategory !== 'order_fulfillment') {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['dispatchCategory'], message: 'Order-backed dispatch must use order_fulfillment.' })
+  }
+})
 
 export const updateDispatchSchema = z.object({
   companyId:        z.string().uuid().optional(),
