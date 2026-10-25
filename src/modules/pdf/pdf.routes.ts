@@ -15,7 +15,6 @@ const filenames: Record<DocType, (payload: Record<string, unknown>) => string> =
   msds:      (p) => `msds-${p['productCode'] ?? 'product'}.pdf`,
   coa:       (p) => `coa-${p['batchNumber'] ?? 'batch'}.pdf`,
   batch:     (p) => `batch-${p['batchNumber'] ?? 'batch'}.pdf`,
-  salary:    (p) => `salary-${p['employeeId'] ?? 'staff'}.pdf`,
   'investor-report': (p) => `investor-report-${p['from'] ?? ''}_to_${p['to'] ?? ''}.pdf`,
   letterhead: (p) => `letterhead-${p['referenceNo'] ?? 'draft'}.pdf`,
 };
@@ -38,7 +37,7 @@ export async function pdfRoutes(app: FastifyInstance): Promise<void> {
   const preHandler = [authenticate, requireAuth, requireSuperAdmin];
 
   async function sendPDF(
-    docType: Exclude<DocType, 'salary'>,
+    docType: DocType,
     body: unknown,
     reply: FastifyReply,
   ): Promise<FastifyReply> {

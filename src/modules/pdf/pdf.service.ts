@@ -614,7 +614,6 @@ function docTypeLabel(docType: DocType): string {
     msds:      'Material Safety Data Sheet',
     coa:       'Certificate of Analysis',
     batch:     'Batch Manufacturing Record',
-    salary:    'Salary Slip',
     'investor-report': 'Investor Report',
     letterhead: 'Company Letterhead',
   };

@@ -21,7 +21,7 @@ import {
   transitionVariantStatus,
   isFormulaAssignedToCompany,
 } from './formulation-variants.service.js'
-import type { VariantStatus } from '../optimizer/optimizer.types.js'
+import type { VariantStatus } from '../../types/index.js'
 
 const adminHandler = [authenticate, requireAuth, requireSuperAdmin]
 const readHandler  = [authenticate, requireAuth]

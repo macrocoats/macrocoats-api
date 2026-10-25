@@ -191,10 +191,4 @@ describe('money path RBAC', () => {
     await req().post('/v1/dispatches').set('Cookie', raneCookies).send({}).expect(403)
     await req().post('/v1/customer-purchase-orders').set('Cookie', raneCookies).send({}).expect(403)
   })
-
-  it('salary records are superadmin-only', async () => {
-    await req().get('/v1/salary-records').expect(401)
-    await req().get('/v1/salary-records').set('Cookie', raneCookies).expect(403)
-    await req().get('/v1/salary-records').set('Cookie', adminCookies).expect(200)
-  })
 })

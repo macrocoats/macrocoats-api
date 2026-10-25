@@ -121,8 +121,6 @@ Routes never import from other modules' services. Cross-cutting concerns (auth, 
 | `batches` | POST /batches, GET /batches, GET /batches/:batchNumber, PATCH /batches/:batchNumber/coa, DELETE /batches/:batchNumber/coa, PATCH /batches/:batchNumber/payment, DELETE /batches/:id |
 | `inventory` | GET /inventory, GET /inventory/receipt-prices, POST /inventory, PATCH /inventory/:id, DELETE /inventory/:id, POST /inventory/reset |
 | `analytics` | GET /analytics/access-log, GET /analytics/summary |
-| `salaryRecords` | GET /salary-records, GET /salary-records/:id, POST /salary-records |
-| `staff` | GET /staff, GET /staff/:id, POST /staff, PUT /staff/:id, DELETE /staff/:id |
 | `vendors` | GET /vendors, GET /vendors/:id, POST /vendors, PUT /vendors/:id, DELETE /vendors/:id, GET /vendors/:id/purchase-summary |
 | `vendor-prices` | GET /vendors/:vendorId/prices, GET /vendors/:vendorId/prices/active, GET /vendors/:vendorId/prices/effective, POST /vendors/:vendorId/prices |
 | `purchase-entries` | GET /purchase-entries, GET /purchase-entries/:id, POST /purchase-entries |
@@ -130,7 +128,6 @@ Routes never import from other modules' services. Cross-cutting concerns (auth, 
 | `finished-goods` | GET /finished-goods, GET /finished-goods/summary, GET /finished-goods/:batchNumber, POST /finished-goods/backfill/:batchNumber, PATCH /finished-goods/:id/status |
 | `dispatch` | POST /dispatches, GET /dispatches, GET /dispatches/summary, GET /dispatches/:dispatchNumber, PATCH /dispatches/:id, PATCH /dispatches/:id/void |
 | `pdf` | POST /pdf/quotation, POST /pdf/tds, POST /pdf/msds, POST /pdf/coa, POST /pdf/batch, POST /pdf/investor-report, POST /pdf/letterhead |
-| `optimizer` | POST /optimizer/analyze |
 | `cost-intelligence` | GET /cost-intelligence/overview, /trends, /batches, /materials, /alerts, /profitability, /comparison |
 | `customer-purchase-orders` | POST /customer-purchase-orders, GET /customer-purchase-orders, GET /customer-purchase-orders/dashboard-summary, GET /customer-purchase-orders/analytics, GET /customer-purchase-orders/search, GET /customer-purchase-orders/from-quotation/:quotationId, GET /customer-purchase-orders/:id, PUT /customer-purchase-orders/:id, PATCH /customer-purchase-orders/:id/status, DELETE /customer-purchase-orders/:id (soft-delete), POST /customer-purchase-orders/:id/batches, DELETE /customer-purchase-orders/:id/batches/:linkId, GET/POST /customer-purchase-orders/:id/timeline, POST/GET /customer-purchase-orders/:id/documents, GET /customer-purchase-orders/:id/documents/:docId/download, DELETE /customer-purchase-orders/:id/documents/:docId |
 | `investor-dashboard` | GET /investor-dashboard/executive-kpis, GET /investor-dashboard/sales-analytics, GET /investor-dashboard/projections, GET /investor-dashboard/insights |
@@ -148,8 +145,6 @@ All endpoints except auth are `superadmin`-only, except product document reads w
 **Multipart upload gotcha:** text fields sent after the file part in a multipart body are not guaranteed to be present on `request.file()`'s returned `.fields` until the file stream has been fully consumed — busboy (the parser underlying `@fastify/multipart`) only finishes parsing a field once everything preceding it in the body is drained. `company-documents.service.ts` exposes a two-phase API (`writeUploadedFile()` then `saveDocumentRecord()`) specifically so the route can drain the file to disk *before* reading `data.fields` — this app's own upload code (`FormData.append('file', ...)` before the metadata fields) sends fields after the file, so reading fields first would silently see them as missing for anything but tiny files. Any new multipart upload route in this codebase should follow the same two-phase pattern rather than reading `data.fields` immediately after `request.file()`.
 
 > **Note:** The `pdf` module has a non-standard directory layout — see `src/modules/pdf/CLAUDE.md` for its structure and conventions.
-
-> **Note:** The `optimizer` module (AI Formulation Optimizer) also deviates from the 3-file pattern — see `src/modules/optimizer/CLAUDE.md` for its structure, including the `VARIANT_STATUS_TRANSITIONS` export that `formulation-variants` imports (see "Formulation variant approval workflow" below).
 
 > **Note:** `document-sanitization` is a service-only module (`*.service.ts` + `*.types.ts`, no `*.routes.ts`) — it is not registered in `app.ts` and exposes no endpoints. It's consumed directly by other modules to derive IP-safe TDS/MSDS composition and hazard sections (via `ingredient_hazard_profiles`) for non-superadmin roles.
 
@@ -233,7 +228,7 @@ Three roles: `superadmin`, `company`, and `operator`.
 
 - `superadmin`: unrestricted access to all routes.
 - `company`: can only access TDS/MSDS for products in their `allowedProducts` list. `formula`, `label`, `coa` doc types are always blocked for company users (`RESTRICTED_DOC_TYPES` in `src/types/index.ts`).
-- `operator` ("Factory Operator"): a narrow, curated grant — view access to Batches (formula/cost stripped, see below), Finished Goods (full, incl. status transitions), Dispatch (full, incl. creation), and Production Planning (already formula/cost-free by design). No pricing, no formula composition, no company/customer/staff/vendor management, no batch creation, no dispatch void. Not tied to a `companyId` — `allowedProducts` stays `null` for this role, same as superadmin, since batches/dispatch/finished-goods are cross-company operational data, not company-scoped.
+- `operator` ("Factory Operator"): a narrow, curated grant — view access to Batches (formula/cost stripped, see below), Finished Goods (full, incl. status transitions), Dispatch (full, incl. creation), and Production Planning (already formula/cost-free by design). No pricing, no formula composition, no company/customer/vendor management, no batch creation, no dispatch void. Not tied to a `companyId` — `allowedProducts` stays `null` for this role, same as superadmin, since batches/dispatch/finished-goods are cross-company operational data, not company-scoped.
 
 `allowedProducts` is loaded from `company_product_access` at login and embedded in the JWT — not re-queried per request.
 
@@ -264,23 +259,19 @@ draft ← archived                  (archived can only return to draft)
 
 ### Formulation variant approval workflow
 
-`product_formulation_variants.status` is a second linear state machine, defined as `VARIANT_STATUS_TRANSITIONS` in `src/modules/optimizer/optimizer.types.ts`:
+`product_formulation_variants.status` is a second linear state machine, defined as `VARIANT_STATUS_TRANSITIONS` in `src/types/index.ts`:
 
 ```
 draft → reviewed → approved → production
-ai_suggested → reviewed | draft      (AI-generated variants enter here)
+ai_suggested → reviewed | draft      (legacy: variants saved by the retired AI Optimizer)
 reviewed → draft                     (bounce back)
 approved → reviewed                  (bounce back)
 production → approved                (bounce back)
 ```
 
-`transitionVariantStatus(variantId, newStatus)` in `formulation-variants.service.ts` mirrors the return contract of `transitionDocumentStatus`: `null` (→ 404), `'invalid_transition'` (→ 409), or the updated variant. Variants created directly via POST default to `approved`; variants saved from the AI Optimizer start at `ai_suggested`.
+`transitionVariantStatus(variantId, newStatus)` in `formulation-variants.service.ts` mirrors the return contract of `transitionDocumentStatus`: `null` (→ 404), `'invalid_transition'` (→ 409), or the updated variant. Variants created directly via POST default to `approved`; `ai_suggested` remains only for variants saved by the AI Optimizer before it was removed.
 
 **Approving/creating a usable variant silently changes what TDS/MSDS content gets served — with no explicit action on the document itself.** The frontend's `resolveActiveVariant()` (`safteyDataSheet/src/components/shared/VariantSelector.jsx`) falls back to `usable.find(v => v.isDefault) ?? usable[0]` whenever no variant is explicitly selected — "usable" meaning status `approved` or `production`. The moment a product has any such variant, TDS/MSDS pages start passing that variant's id as `opts.variantId` to `getDocument()`, which routes into `applyVariantOverride()` (this file, in `products.service.ts`) and rewrites `document.sections.composition`, and for MSDS also `sections.hazards` (pictograms/classifications/hStatements/pStatements) and `document.signalWord` — recomputed from the variant's raw `components` via `deriveHazardAggregate()`/`getHazardProfileMap()`, unless the variant has explicit `tdsOverrides.composition` / `msdsOverrides.hazardOverride` set (the legacy `msdsOverrides.hazards` + `signalWord` pair, still used by the unicool-al variants, is read as an alias of `hazardOverride`). Any other TDS/MSDS section the variant's overrides set — TDS `grade`/`description`/`features`/`physicalProperties`/`application`/`packaging`/`performance`/`safetyNote`, MSDS `identification`/`firstAid`/`fireFighting`/`accidentalRelease`/`handling`/`exposure`/`physical`/`stability`/`toxicology`/`ecology`/`disposal`/`transport`/`regulatory`/`other` — replaces the base document's value; unset keys keep the base value. Override shapes are validated on `PUT /formulation-variants/:variantId` by the strict `tdsOverridesSchema`/`msdsOverridesSchema` in `products.body-schemas.ts` (unknown keys → 400); the key lists in `products.service.ts` (`*_OVERRIDE_KEYS`) must stay in sync with them. This only fires when a `variantId` is present (no variant on a product → the authored document is served byte-for-byte, untouched), but once one exists, its hazard content — not the document's own authored hazard section — is what most viewers see by default. After creating or approving a variant for a product that has a live MSDS, re-check the hazard fields actually shown before treating the document as final.
-
-### AI Formulation Optimizer
-
-`POST /optimizer/analyze` (superadmin-only) takes a product/variant's component list plus optimization goals, enriches components with inventory prices (name-normalized: `'LAE 9'` ≡ `'LAE-9'`), and calls an AI provider (`src/modules/optimizer/ai/`) to produce recommendations and financial impact. Suggested variants can then be saved through the normal `formulation-variants` module with status `ai_suggested` and promoted via the approval workflow above.
 
 ### Redis caching
 
@@ -327,7 +318,7 @@ Backs the Operations Center "Customer Supply" tab and the MacroIntel Android "Cu
 
 ### Database schema
 
-See `DATABASE.md` for the full 33-table schema reference, the canonical migration workflow, entity relationship rules, and failed-migration recovery steps.
+See `DATABASE.md` for the full 31-table schema reference, the canonical migration workflow, entity relationship rules, and failed-migration recovery steps.
 
 ### Seed data
 

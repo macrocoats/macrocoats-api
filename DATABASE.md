@@ -6,7 +6,7 @@ Reference for the PostgreSQL schema and Drizzle migration workflow. See `CLAUDE.
 
 ## Database schema
 
-33 tables across `src/db/schema/`:
+31 tables across `src/db/schema/`:
 
 | Table | Purpose |
 |---|---|
@@ -27,8 +27,6 @@ Reference for the PostgreSQL schema and Drizzle migration workflow. See `CLAUDE.
 | `batch_sequences` | Per-company per-day atomic counter for batch numbering |
 | `access_log` | Audit trail: who accessed which product/docType, when, from where |
 | `refresh_tokens` | Valid refresh token bcrypt hashes; null `revokedAt` = still valid |
-| `employee_salary_records` | Staff salary payments and records |
-| `staff` | Employee information |
 | `vendors` | Vendor/supplier information |
 | `vendor_material_prices` | Date-effective vendor pricing per inventory item; at most one currently-active row (`effective_to IS NULL`) per `(vendor, material)` |
 | `purchase_entries` | Purchase receipts logged against an inventory item; `unitPrice` is the actual price paid, `suggestedUnitPrice`/`priceSource` retain what auto-lookup from `vendor_material_prices` returned for audit |
@@ -63,7 +61,7 @@ Always use Drizzle's generator — **never hand-write migration SQL files**. Han
 
 ## Entity relationship rules
 
-- **Staff** and **Vendors** are standalone entities — they are NOT linked to the `companies` table and have no FK to it.
+- **Vendors** are a standalone entity — NOT linked to the `companies` table and with no FK to it.
 - `companies` links only to: `users`, `company_product_access`, `quotations`, `batches`, `access_log`, `company_documents`, `customer_purchase_orders`.
 - When building new modules, confirm relationship assumptions before writing the schema — do not assume a new entity belongs to a company unless the user explicitly says so.
 

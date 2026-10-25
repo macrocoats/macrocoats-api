@@ -1,6 +1,6 @@
 // ─── Document types ───────────────────────────────────────────────────────────
 
-export type DocType = 'quotation' | 'tds' | 'msds' | 'coa' | 'batch' | 'salary' | 'investor-report' | 'letterhead';
+export type DocType = 'quotation' | 'tds' | 'msds' | 'coa' | 'batch' | 'investor-report' | 'letterhead';
 
 export type OutputFormat = 'buffer' | 'stream' | 'file';
 

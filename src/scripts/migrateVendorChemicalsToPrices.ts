@@ -56,8 +56,7 @@ import { and, eq } from 'drizzle-orm'
 // (do not invent a new regex here; if that function ever changes, update
 // this comment/copy together with it since this is a one-off script that
 // intentionally does not import across module boundaries for a throwaway
-// tool — see optimizer/CLAUDE.md's guidance against unnecessary
-// cross-module imports).
+// tool).
 // ---------------------------------------------------------------------------
 function normalizeMaterialName(name: string): string {
   return name.trim().toLowerCase().replace(/[-_\s]+/g, ' ')

@@ -43,3 +43,28 @@ export const RESTRICTED_DOC_TYPES: DocType[] = ['formula', 'label', 'coa']
 
 export const DOCUMENT_VIEW_MODES = ['customer', 'internal'] as const
 export type DocumentViewMode = typeof DOCUMENT_VIEW_MODES[number]
+
+// ── Formulation variant approval workflow ────────────────────────────────────
+
+// 'ai_suggested' is kept for existing rows created by the retired AI optimizer.
+export const VARIANT_STATUSES = [
+  'draft',
+  'ai_suggested',
+  'reviewed',
+  'approved',
+  'production',
+] as const
+
+export type VariantStatus = (typeof VARIANT_STATUSES)[number]
+
+/** Statuses that permit batch generation, inventory deduction, labels, CoA, TDS, MSDS. */
+export const USABLE_VARIANT_STATUSES: VariantStatus[] = ['approved', 'production']
+
+/** Linear approval state machine (same style as product_documents STATUS_TRANSITIONS). */
+export const VARIANT_STATUS_TRANSITIONS: Record<VariantStatus, VariantStatus[]> = {
+  draft:        ['reviewed'],
+  ai_suggested: ['reviewed', 'draft'],
+  reviewed:     ['approved', 'draft'],
+  approved:     ['production', 'reviewed'],
+  production:   ['approved'],
+}

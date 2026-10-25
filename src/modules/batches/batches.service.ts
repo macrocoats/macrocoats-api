@@ -3,7 +3,7 @@ import { db } from '../../db/index.js'
 import { batches, productFormulationVariants } from '../../db/schema/index.js'
 import { nextBatchNumber } from '../../utils/batchNumber.js'
 import { createFinishedGoodsRecord } from '../finished-goods/finished-goods.service.js'
-import { USABLE_VARIANT_STATUSES, type VariantStatus } from '../optimizer/optimizer.types.js'
+import { USABLE_VARIANT_STATUSES, type VariantStatus } from '../../types/index.js'
 import type { CreateBatchBody, ListBatchesQuery, SaveCoaSnapshotBody } from './batches.schema.js'
 
 function toBatchResponse(row: typeof batches.$inferSelect) {

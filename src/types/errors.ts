@@ -34,10 +34,6 @@ export const AppErrors = {
   // Purchase entries
   PURCHASE_ENTRY_NOT_FOUND: 'PURCHASE_ENTRY_NOT_FOUND',
   PRICE_NOT_AVAILABLE:      'PRICE_NOT_AVAILABLE',
-  // Staff
-  STAFF_NOT_FOUND:         'STAFF_NOT_FOUND',
-  // Salary records
-  SALARY_RECORD_NOT_FOUND: 'SALARY_RECORD_NOT_FOUND',
   // Hazard profiles
   HAZARD_PROFILE_NOT_FOUND: 'HAZARD_PROFILE_NOT_FOUND',
   // Finished goods / dispatches

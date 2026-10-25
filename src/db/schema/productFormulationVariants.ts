@@ -10,7 +10,7 @@ export const productFormulationVariants = pgTable('product_formulation_variants'
   companyId:   uuid('company_id').references(() => companies.id, { onDelete: 'cascade' }),
   variantName: text('variant_name').notNull(),
   isDefault:   boolean('is_default').notNull().default(false),
-  /** AI Formulation Optimizer approval workflow — see VARIANT_STATUS_TRANSITIONS in modules/optimizer/optimizer.types.ts */
+  /** Variant approval workflow — see VARIANT_STATUS_TRANSITIONS in src/types/index.ts */
   status:      text('status', { enum: ['draft', 'ai_suggested', 'reviewed', 'approved', 'production'] })
                  .notNull()
                  .default('approved'),

@@ -1,6 +1,5 @@
 import { z } from 'zod'
-import { PRODUCT_KEYS } from '../../types/index.js'
-import { VARIANT_STATUSES } from '../optimizer/optimizer.types.js'
+import { PRODUCT_KEYS, VARIANT_STATUSES } from '../../types/index.js'
 import { tdsOverridesSchema, msdsOverridesSchema } from '../products/products.body-schemas.js'
 
 export const componentBodySchema = z.object({

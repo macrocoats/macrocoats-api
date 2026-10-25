@@ -9,7 +9,7 @@ import {
   companies,
 } from '../../db/schema/index.js'
 import { cacheGet, cacheSet, cacheDel } from '../../plugins/redis.js'
-import { VARIANT_STATUS_TRANSITIONS, type VariantStatus } from '../optimizer/optimizer.types.js'
+import { VARIANT_STATUS_TRANSITIONS, type VariantStatus } from '../../types/index.js'
 import type { CreateVariantBody, UpdateVariantBody, ComponentBody, ListVariantsQuery } from './formulation-variants.schema.js'
 
 type AssignmentSummary = {
@@ -369,7 +369,7 @@ export async function updateVariant(variantId: string, data: UpdateVariantBody) 
 
 /**
  * Validates and applies a variant status transition against
- * VARIANT_STATUS_TRANSITIONS (optimizer.types.ts).
+ * VARIANT_STATUS_TRANSITIONS (src/types/index.ts).
  *
  * Return contract mirrors products.service.ts transitionDocumentStatus:
  * - `null` — variant not found (route → 404)

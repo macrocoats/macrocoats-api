@@ -114,7 +114,7 @@ const letterheadSchema = z.object({
   bodyHtml:     z.string().max(500_000),
 }).passthrough()
 
-export const pdfBodySchemas: Record<Exclude<DocType, 'salary'>, z.ZodTypeAny> = {
+export const pdfBodySchemas: Record<DocType, z.ZodTypeAny> = {
   quotation:         quotationSchema,
   tds:               tdsSchema,
   msds:              msdsSchema,

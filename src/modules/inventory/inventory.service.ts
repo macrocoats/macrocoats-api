@@ -143,8 +143,8 @@ export async function resetToDefaults() {
 /**
  * Fuzzy-normalizes a material name for cross-source matching: lowercase,
  * trim, collapse runs of hyphens/underscores/whitespace to a single space.
- * Same regex as cost-intelligence.service.ts::normalizeMaterialName and
- * optimizer.service.ts::normalizeName — duplicated locally rather than
+ * Same regex as cost-intelligence.service.ts::normalizeMaterialName —
+ * duplicated locally rather than
  * imported to avoid an unsanctioned cross-module coupling.
  */
 function normalizeMaterialName(name: string): string {

@@ -18,13 +18,10 @@ import { companyRoutes } from './modules/companies/companies.routes.js'
 import { analyticsRoutes } from './modules/analytics/analytics.routes.js'
 import { batchRoutes } from './modules/batches/batches.routes.js'
 import { vendorRoutes } from './modules/vendors/vendors.routes.js'
-import { staffRoutes } from './modules/staff/staff.routes.js'
-import { salaryRecordRoutes } from './modules/salaryRecords/salaryRecords.routes.js'
 import { formulationVariantRoutes } from './modules/formulation-variants/formulation-variants.routes.js'
 import { hazardProfileRoutes } from './modules/hazard-profiles/hazard-profiles.routes.js'
 import { companyPricingRoutes } from './modules/company-pricing/company-pricing.routes.js'
 import { pdfRoutes } from './modules/pdf/pdf.routes.js'
-import { optimizerRoutes } from './modules/optimizer/optimizer.routes.js'
 import { costIntelligenceRoutes } from './modules/cost-intelligence/cost-intelligence.routes.js'
 import { finishedGoodsRoutes } from './modules/finished-goods/finished-goods.routes.js'
 import { dispatchRoutes } from './modules/dispatch/dispatch.routes.js'
@@ -147,13 +144,10 @@ export async function buildApp() {
   await app.register(analyticsRoutes, { prefix: `${prefix}/analytics` })
   await app.register(batchRoutes,     { prefix: `${prefix}/batches` })
   await app.register(vendorRoutes,    { prefix: `${prefix}/vendors` })
-  await app.register(staffRoutes,        { prefix: `${prefix}/staff` })
-  await app.register(salaryRecordRoutes,          { prefix: `${prefix}/salary-records` })
   await app.register(formulationVariantRoutes,    { prefix: `${prefix}/formulation-variants` })
   await app.register(hazardProfileRoutes,         { prefix: `${prefix}/hazard-profiles` })
   await app.register(companyPricingRoutes,        { prefix: `${prefix}/companies` })
   await app.register(pdfRoutes,                   { prefix: `${prefix}/pdf` })
-  await app.register(optimizerRoutes,             { prefix: `${prefix}/optimizer` })
   await app.register(costIntelligenceRoutes,      { prefix: `${prefix}/cost-intelligence` })
   await app.register(finishedGoodsRoutes,         { prefix: `${prefix}/finished-goods` })
   await app.register(dispatchRoutes,              { prefix: `${prefix}/dispatches` })
