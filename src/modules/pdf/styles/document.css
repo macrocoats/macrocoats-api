@@ -1921,66 +1921,73 @@ body:has(.ds-print) {
 .lh-body [style*="text-align: right"]   { text-align: right; }
 .lh-body [style*="text-align: justify"] { text-align: justify; }
 
-/* PRODUCT BROCHURE - one-page customer-facing technical overview (Claude Design "Product Brochure v3").
- * --brochure-accent* are set inline per product from buildBrochureContext(). */
-.brochure { --brochure-ink: #1c222b; --brochure-dark: #151b23; --brochure-muted: #545c67; --brochure-line: #e4e6e9; width: 210mm; height: 297mm; overflow: hidden; display: flex; flex-direction: column; background: #fff; color: var(--brochure-ink); font-family: 'IBM Plex Sans', system-ui, sans-serif; }
+/* PRODUCT BROCHURE - one-page customer-facing technical overview (front sheet of Claude Design "Product Brochure v5";
+ * the design's back sheet is deliberately not rendered). --brochure-accent* are set inline per product from buildBrochureContext(). */
+.brochure { --brochure-ink: #1c222b; --brochure-dark: #151b23; --brochure-muted: #4a525d; --brochure-line: #e4e6e9; --brochure-stripes: repeating-linear-gradient(135deg, rgba(255,255,255,.022) 0 1px, transparent 1px 7px); width: 210mm; height: 297mm; overflow: hidden; display: flex; flex-direction: column; background: #fff; color: var(--brochure-ink); font-family: 'IBM Plex Sans', system-ui, sans-serif; }
 .brochure * { box-sizing: border-box; }
 /* Browser-tab HTML view only — Puppeteer renders the PDF with print media. */
 @media screen { body:has(> .brochure) { background: #e9ebee; padding: 24px 0; } .brochure { margin: 0 auto; box-shadow: 0 2px 14px rgba(0,0,0,.18); } }
 .brochure-top { flex-shrink: 0; height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; background: #fff; border-bottom: 1px solid var(--brochure-line); }
 .brochure-top img { height: 34px; width: auto; display: block; }
-.brochure-top span { font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--brochure-ink); }
-.brochure-hero { position: relative; flex-shrink: 0; height: 300px; overflow: hidden; background: var(--brochure-dark); }
+.brochure-top__meta { display: flex; align-items: center; gap: 14px; font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: #6a727e; }
+.brochure-top__meta i { width: 1px; height: 12px; background: #d4d8dd; }
+.brochure-top__meta b { font-weight: 400; color: var(--brochure-ink); }
+.brochure-hero { position: relative; flex-shrink: 0; height: 262px; overflow: hidden; background: var(--brochure-dark); }
 .brochure-hero__photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
-.brochure-hero__shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(17,22,29,.94) 0%, rgba(17,22,29,.86) 48%, rgba(17,22,29,.35) 100%); }
-.brochure-hero__copy { position: absolute; left: 32px; top: 0; bottom: 0; width: 480px; display: flex; flex-direction: column; justify-content: center; gap: 12px; }
+.brochure-hero__shade { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(17,22,29,.95) 0%, rgba(17,22,29,.82) 55%, rgba(17,22,29,.45) 100%); }
+.brochure-hero__copy { position: absolute; left: 32px; top: 0; bottom: 0; width: 470px; display: flex; flex-direction: column; justify-content: center; gap: 12px; }
 .brochure-eyebrow { display: flex; align-items: center; gap: 10px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--brochure-accent-light); }
 .brochure-eyebrow i { width: 24px; height: 1px; background: var(--brochure-accent-light); }
-.brochure h1 { margin: 0; font-size: 54px; line-height: .98; font-weight: 600; letter-spacing: -.02em; color: #fff; }
+.brochure h1 { margin: 0; font-size: 50px; line-height: .98; font-weight: 600; letter-spacing: -.02em; color: #fff; }
 .brochure-subtitle { margin: 0; font-size: 17px; line-height: 1.3; font-weight: 300; color: #e3e7ec; text-wrap: balance; }
 .brochure-overview { margin: 6px 0 0; font-size: 11.5px; line-height: 1.6; color: #b4bcc6; text-wrap: pretty; }
-.brochure-benefits { flex-shrink: 0; display: grid; background: var(--brochure-dark); border-top: 1px solid #2a323d; }
+.brochure-benefits { flex-shrink: 0; display: grid; background: var(--brochure-dark); background-image: var(--brochure-stripes); border-top: 1px solid #2a323d; }
 .brochure-benefits > div { display: flex; flex-direction: column; gap: 4px; padding: 12px 16px 12px 18px; border-left: 1px solid #2a323d; }
 .brochure-benefits__label { font-size: 9px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: #98a1ad; }
 .brochure-benefits__value { font-size: 24px; font-weight: 300; line-height: 1.1; letter-spacing: -.01em; color: #fff; }
 .brochure-benefits__value.is-long { font-size: 15px; line-height: 1.25; }
 .brochure-benefits__note { font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; color: var(--brochure-accent-light); }
-.brochure-body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 18px; padding: 20px 32px 16px; background: #fff; }
+.brochure-body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 14px; padding: 16px 32px 12px; background: #fff; }
+.brochure-section { display: flex; flex-direction: column; gap: 9px; }
+.brochure-section h2 { margin: 0; display: flex; align-items: center; gap: 10px; font-size: 10.5px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--brochure-ink); }
+.brochure-section h2 em { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500; font-style: normal; letter-spacing: 0; color: var(--brochure-accent); }
+.brochure-section h2 i { flex: 1; height: 1px; background: #d9dde2; }
+.brochure-section h2 small { display: flex; align-items: center; gap: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 9px; font-weight: 400; letter-spacing: .1em; color: #545c67; }
+.brochure-section h2 small u { width: 10px; height: 10px; background: var(--brochure-accent); }
 .brochure-features { display: grid; border: 1px solid #e1e4e8; }
 .brochure-features > div { display: flex; flex-direction: column; gap: 5px; padding: 11px 13px; background: #f7f8f9; border-right: 1px solid #e1e4e8; }
 .brochure-features > div:last-child { border-right: 0; }
 .brochure-features b { display: flex; align-items: center; gap: 7px; font-size: 11.5px; font-weight: 600; line-height: 1.25; }
 .brochure-features b i { width: 6px; height: 6px; flex-shrink: 0; background: var(--brochure-accent); transform: rotate(45deg); }
-.brochure-features span { font-size: 10px; line-height: 1.45; color: var(--brochure-muted); text-wrap: pretty; }
-.brochure-section { display: flex; flex-direction: column; gap: 9px; }
-.brochure-section h2 { margin: 0; display: flex; align-items: center; gap: 12px; font-size: 10px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: var(--brochure-ink); }
-.brochure-section h2 i { flex: 1; height: 1px; background: #d9dde2; }
-.brochure-section h2 small { display: flex; align-items: center; gap: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 9px; font-weight: 400; letter-spacing: .1em; color: var(--brochure-muted); }
-.brochure-section h2 small em { width: 10px; height: 10px; background: var(--brochure-accent); }
-.brochure-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
-.brochure-steps li { display: flex; flex-direction: column; gap: 5px; padding: 10px 11px 11px; background: #f2f3f5; border-top: 3px solid #c9ced5; color: var(--brochure-ink); }
-.brochure-steps li.is-product { background: var(--brochure-accent); border-top-color: var(--brochure-dark); color: #fff; }
+.brochure-features span { font-size: 10.5px; line-height: 1.45; color: var(--brochure-muted); text-wrap: pretty; }
+/* Chevron steps: each overlaps the previous by 6px so the notches interlock. */
+.brochure-steps { list-style: none; margin: 0; padding: 0 0 0 6px; display: grid; gap: 0; }
+.brochure-steps li { display: flex; flex-direction: column; gap: 5px; margin-left: -6px; padding: 11px 16px 12px 20px; background: #f1f3f5; color: var(--brochure-ink); clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%, 12px 50%); }
+.brochure-steps li:nth-child(even) { background: #e9ecef; }
+.brochure-steps li.is-product { background: var(--brochure-accent); color: #fff; }
 .brochure-steps__head { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
 .brochure-steps__num { font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 500; line-height: 1; color: #8a929d; }
 .brochure-steps li.is-product .brochure-steps__num { color: #fff; }
 .brochure-steps__tag { padding: 2px 5px; background: #fff; font-family: 'IBM Plex Mono', monospace; font-size: 7.5px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--brochure-accent); }
 .brochure-steps b { font-size: 11.5px; font-weight: 600; line-height: 1.25; }
-.brochure-steps__param { font-size: 9.5px; line-height: 1.4; color: var(--brochure-muted); }
+.brochure-steps__param { font-size: 10px; line-height: 1.4; color: #545c67; }
 .brochure-steps li.is-product .brochure-steps__param { color: var(--brochure-accent-sub); }
-.brochure-steps__value { font-family: 'IBM Plex Mono', monospace; font-size: 9px; line-height: 1.4; }
+.brochure-steps__value { font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; line-height: 1.4; }
 .brochure-specs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 28px; border-top: 1px solid var(--brochure-ink); }
-.brochure-specs > div { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--brochure-line); font-size: 10.5px; line-height: 1.35; }
+.brochure-specs > div { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; padding: 6px 8px; background: #fff; border-bottom: 1px solid var(--brochure-line); font-size: 11px; line-height: 1.35; }
+.brochure-specs > div:nth-child(4n+3), .brochure-specs > div:nth-child(4n+4) { background: #f6f7f8; }
 .brochure-specs > div > span:first-child { color: var(--brochure-muted); }
 .brochure-specs > div > span:last-child { font-family: 'IBM Plex Mono', monospace; text-align: right; }
-.brochure-safety { margin-top: auto; display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 16px; align-items: center; padding: 9px 14px; background: #fbf5ea; border-left: 3px solid #b26b00; }
-.brochure-safety b { font-size: 9.5px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: #7a4800; }
-.brochure-safety p { margin: 0; font-size: 10px; line-height: 1.5; color: #4a3f2c; }
+.brochure-safety { margin-top: auto; display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 16px; align-items: center; padding: 10px 14px; background: #fbf5ea; border-left: 3px solid #b26b00; }
+.brochure-safety b { display: flex; align-items: center; gap: 8px; font-size: 9.5px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: #7a4800; }
+.brochure-safety b i { width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; border-radius: 2px; background: #b26b00; color: #fff; font-size: 10px; font-weight: 700; font-style: normal; letter-spacing: 0; }
+.brochure-safety p { margin: 0; font-size: 10.5px; line-height: 1.5; color: #4a3f2c; }
 .brochure-safety p span { font-weight: 600; color: var(--brochure-ink); }
-.brochure-footer { flex-shrink: 0; display: flex; flex-direction: column; background: var(--brochure-dark); color: #fff; }
+.brochure-footer { flex-shrink: 0; display: flex; flex-direction: column; background: var(--brochure-dark); background-image: var(--brochure-stripes); color: #fff; }
 .brochure-footer__row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 28px; align-items: center; padding: 12px 32px; }
 .brochure-footer__brand { display: flex; flex-direction: column; gap: 4px; }
 .brochure-footer__brand b { font-size: 12.5px; font-weight: 600; letter-spacing: .02em; }
-.brochure-footer__brand span { font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: #98a1ad; }
+.brochure-footer__brand span { font-size: 8.5px; line-height: 1.5; letter-spacing: .1em; text-transform: uppercase; color: #98a1ad; text-wrap: balance; }
 .brochure-footer__contact { display: flex; flex-direction: column; gap: 3px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #d3d8de; text-align: right; }
 .brochure-footer__contact span:last-child { color: #fff; }
 .brochure-footer__qr { display: flex; align-items: center; gap: 10px; }

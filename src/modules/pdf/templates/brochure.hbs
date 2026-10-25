@@ -1,7 +1,7 @@
 <main class="brochure" style="--brochure-accent: {{brochureAccent}}; --brochure-accent-light: {{brochureAccentLight}}; --brochure-accent-sub: {{brochureAccentSub}};">
   <header class="brochure-top">
     <img src="{{brochureLogoDataUri}}" alt="{{brochureCompany.name}}">
-    <span>Product Brochure</span>
+    <div class="brochure-top__meta"><span>Product Brochure</span><i></i><b>{{productName}}</b></div>
   </header>
 
   <section class="brochure-hero">
@@ -25,16 +25,19 @@
 
   <div class="brochure-body">
     {{#if brochureFeatures.length}}
-    <section class="brochure-features" style="grid-template-columns: repeat({{brochureFeatures.length}}, minmax(0, 1fr));">
-      {{#each brochureFeatures}}
-      <div><b><i></i>{{head}}</b><span>{{body}}</span></div>
-      {{/each}}
+    <section class="brochure-section">
+      <h2><em>{{brochureNum.features}}</em><span>Product Features</span><i></i></h2>
+      <div class="brochure-features" style="grid-template-columns: repeat({{brochureFeatures.length}}, minmax(0, 1fr));">
+        {{#each brochureFeatures}}
+        <div><b><i></i>{{head}}</b><span>{{body}}</span></div>
+        {{/each}}
+      </div>
     </section>
     {{/if}}
 
     {{#if brochureSteps.length}}
     <section class="brochure-section">
-      <h2><span>Typical Process Sequence</span><i></i>{{#if brochureHasProductStep}}<small><em></em>{{productName}} stage</small>{{/if}}</h2>
+      <h2><em>{{brochureNum.steps}}</em><span>Typical Process Sequence</span><i></i>{{#if brochureHasProductStep}}<small><u></u>{{productName}} stage</small>{{/if}}</h2>
       <ol class="brochure-steps" style="grid-template-columns: repeat({{brochureSteps.length}}, minmax(0, 1fr));">
         {{#each brochureSteps}}
         <li class="{{#if isProduct}}is-product{{/if}}">
@@ -50,7 +53,7 @@
 
     {{#if brochureSpecs.length}}
     <section class="brochure-section">
-      <h2><span>Technical Profile</span><i></i></h2>
+      <h2><em>{{brochureNum.specs}}</em><span>Technical Profile</span><i></i></h2>
       <div class="brochure-specs">
         {{#each brochureSpecs}}<div><span>{{property}}</span><span>{{displayValue}}</span></div>{{/each}}
       </div>
@@ -58,7 +61,7 @@
     {{/if}}
 
     {{#if sections.safetyNote}}
-    <section class="brochure-safety"><b>Safe Application</b><p>{{sections.safetyNote}} <span>Refer to the current SDS before handling or use.</span></p></section>
+    <section class="brochure-safety"><b><i>!</i>Safe Application</b><p>{{sections.safetyNote}} <span>Refer to the current SDS before handling or use.</span></p></section>
     {{/if}}
   </div>
 

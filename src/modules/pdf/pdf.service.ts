@@ -188,7 +188,7 @@ function splitPerformanceVal(val: string): { value: string; note: string; isLong
   return { value: out, note: m ? m[2].trim() : '', isLong: out.length > 14 };
 }
 
-// One-page layout from Claude Design "Product Brochure v3": hero, 4-up
+// One-page layout from Claude Design "Product Brochure v5" (front sheet only): hero, 4-up
 // benefit strip, 4-up features, process sequence (steps that name the product
 // are highlighted in its accent), 8-row technical profile, safety note.
 function buildBrochureContext(payload: Record<string, unknown>): Record<string, unknown> {
@@ -214,8 +214,16 @@ function buildBrochureContext(payload: Record<string, unknown>): Record<string, 
       isProduct: productKey.length > 0 && alnum(`${name} ${param}`).includes(productKey),
     };
   });
+  // Section headings are numbered 01, 02, … over the sections actually shown.
+  let n = 0;
+  const num = (present: boolean) => (present ? String(++n).padStart(2, '0') : '');
   return {
     brochureDescription,
+    brochureNum: {
+      features: num(features.length > 0),
+      steps: num(brochureSteps.length > 0),
+      specs: num(specs.length > 0),
+    },
     brochureAccent: accent,
     brochureAccentLight: tint(accent, 0.55),
     brochureAccentSub: tint(accent, 0.75),
