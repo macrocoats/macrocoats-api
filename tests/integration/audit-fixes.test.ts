@@ -170,7 +170,7 @@ describe('change password', () => {
 
 describe('error mapping', () => {
   it('a malformed uuid path param is a 400, not a 500', async () => {
-    await req().get('/v1/staff/not-a-uuid').set('Cookie', adminCookies).expect(400)
+    await req().get('/v1/vendors/not-a-uuid').set('Cookie', adminCookies).expect(400)
   })
 })
 
