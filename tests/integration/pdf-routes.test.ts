@@ -75,15 +75,16 @@ describe('PDF routes — body validation', () => {
 
 describe('PDF routes — render lockdown', () => {
   it('allows a company user to download a brochure for an assigned product', async () => {
-    const res = await req()
-      .post('/v1/pdf/brochure/uniklean-sp')
-      .set('Cookie', raneCookies)
-      .send({
+    const payload = {
         productName: 'UNIKLEAN-SP', productCode: 'SP', productLine: 'uniklean-sp',
         category: 'Alkaline Cleaner', subtitle: 'Industrial Surface Cleaner',
         description: 'Customer-safe brochure render test.', accentColor: '#1e6b5a',
         sections: { features: [{ head: 'Cleaning', body: 'Removes industrial soils.' }] },
-      })
+      }
+    const download = () => req()
+      .post('/v1/pdf/brochure/uniklean-sp')
+      .set('Cookie', raneCookies)
+      .send(payload)
       .buffer(true)
       .parse((r, cb) => {
         const chunks: Buffer[] = []
@@ -92,8 +93,17 @@ describe('PDF routes — render lockdown', () => {
       })
       .expect(200)
 
+    const res = await download()
+
     expect(res.headers['content-type']).toBe('application/pdf')
     expect((res.body as Buffer).subarray(0, 4).toString()).toBe('%PDF')
+
+    const cachedStartedAt = performance.now()
+    const cached = await download()
+    const cachedDurationMs = performance.now() - cachedStartedAt
+    expect(cached.headers['x-pdf-cache']).toBe('HIT')
+    expect(cached.body).toEqual(res.body)
+    expect(cachedDurationMs).toBeLessThan(500)
   }, 60_000)
 
   it('renders letterhead HTML containing script and internal-URL markup without executing or fetching it', async () => {

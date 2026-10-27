@@ -68,11 +68,17 @@ const BROCHURE_HERO_FAMILY: Record<string, string> = {
   'unisolve-h3': 'brightening', 'unikbrightner': 'brightening',
 };
 
+const brochureAssetDataUriCache = new Map<string, string>();
+
 async function getBrochureAssetDataUri(filename: string): Promise<string> {
+  const cached = brochureAssetDataUriCache.get(filename);
+  if (cached) return cached;
   const filePath = path.resolve(__dirname, 'assets', 'brochure', filename);
   const buf = await fs.readFile(filePath);
   const mime = filename.endsWith('.svg') ? 'image/svg+xml' : 'image/png';
-  return `data:${mime};base64,${buf.toString('base64')}`;
+  const dataUri = `data:${mime};base64,${buf.toString('base64')}`;
+  brochureAssetDataUriCache.set(filename, dataUri);
+  return dataUri;
 }
 
 // Header logo (all header/footer treatments) — the icon-only mark.

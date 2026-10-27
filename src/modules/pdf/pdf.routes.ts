@@ -1,4 +1,5 @@
 import type { FastifyInstance, FastifyReply } from 'fastify';
+import { createHash } from 'node:crypto';
 import { authenticate, requireAuth } from '../../middleware/authenticate.js';
 import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js';
 import { checkProductAccess } from '../../middleware/checkProductAccess.js';
@@ -6,7 +7,46 @@ import { pdfService } from './pdf.service.js';
 import { PDFError } from './pdf.types.js';
 import { pdfBodySchemas } from './pdf.schema.js';
 import { AppErrors } from '../../types/errors.js';
-import type { DocType } from './pdf.types.js';
+import type { DocType, RenderResult } from './pdf.types.js';
+
+const BROCHURE_CACHE_TTL_MS = 10 * 60 * 1000;
+const BROCHURE_CACHE_MAX_ENTRIES = 32;
+const brochureCache = new Map<string, { result: RenderResult; expiresAt: number }>();
+const brochureRenders = new Map<string, Promise<RenderResult>>();
+
+function brochureCacheKey(payload: Record<string, unknown>): string {
+  return createHash('sha256').update(JSON.stringify(payload)).digest('hex');
+}
+
+async function generateBrochure(
+  payload: Record<string, unknown>,
+): Promise<{ result: RenderResult; cacheStatus: 'HIT' | 'MISS' }> {
+  const key = brochureCacheKey(payload);
+  const now = Date.now();
+  const cached = brochureCache.get(key);
+  if (cached && cached.expiresAt > now) {
+    return { result: cached.result, cacheStatus: 'HIT' };
+  }
+  if (cached) brochureCache.delete(key);
+
+  const pending = brochureRenders.get(key);
+  if (pending) return { result: await pending, cacheStatus: 'HIT' };
+
+  const render = pdfService.generatePDF('brochure', payload);
+  brochureRenders.set(key, render);
+  try {
+    const result = await render;
+    brochureCache.set(key, { result, expiresAt: now + BROCHURE_CACHE_TTL_MS });
+    while (brochureCache.size > BROCHURE_CACHE_MAX_ENTRIES) {
+      const oldest = brochureCache.keys().next().value as string | undefined;
+      if (!oldest) break;
+      brochureCache.delete(oldest);
+    }
+    return { result, cacheStatus: 'MISS' };
+  } finally {
+    brochureRenders.delete(key);
+  }
+}
 
 // ─── Filename helpers ─────────────────────────────────────────────────────────
 
@@ -49,7 +89,10 @@ export async function pdfRoutes(app: FastifyInstance): Promise<void> {
     }
     const payload = parsed.data as Record<string, unknown>;
 
-    const result = await pdfService.generatePDF(docType, payload);
+    const generated = docType === 'brochure'
+      ? await generateBrochure(payload)
+      : { result: await pdfService.generatePDF(docType, payload), cacheStatus: null };
+    const { result, cacheStatus } = generated;
     if (!result.buffer) throw new PDFError('PDF buffer missing', 'RENDER_FAILED');
     const filename = filenames[docType](payload);
     return reply
@@ -59,6 +102,7 @@ export async function pdfRoutes(app: FastifyInstance): Promise<void> {
         'Content-Disposition': `attachment; filename="${filename}"`,
         'Content-Length': String(result.buffer.length),
         'X-Generated-At': result.generatedAt,
+        ...(cacheStatus ? { 'X-PDF-Cache': cacheStatus } : {}),
       })
       .send(result.buffer);
   }

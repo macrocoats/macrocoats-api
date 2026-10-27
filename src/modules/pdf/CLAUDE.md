@@ -110,6 +110,7 @@ so this is a read composition, not a new data source. `buildInvestorReportContex
 - Features (first 4), process steps (first 7; `isProduct` when the step's name/param contains the product name, alnum-normalised, which highlights it in the accent), specs (first 8, two columns). `brochureNum` numbers the section headings 01, 02, … over only the sections shown.
 - **HTML view:** `POST /pdf/brochure/:productLine/html` (same preHandlers and validation) returns the same page as `text/html` via `pdfService.renderHTML()`, the HTML step `generatePDF()` also uses. The frontend (`BrochureCards.jsx` → `fetchBrochureHTMLUrl()`) opens it in a new tab as a blob URL. An `@media screen` rule in `document.css` centres the page on a grey desk. Puppeteer renders with print media, so the PDF is unaffected.
 - Company strings come from `COMPANY` (`branding.constants.ts`). Images: `assets/brochure/logo-2026.png` (full lockup, mirrors `safteyDataSheet/src/assets/logo-2026.png`), the family hero photo (`BROCHURE_HERO_FAMILY`), and `website-qr.png`.
+- Identical brochure PDF requests are deduplicated while rendering and cached in memory for 10 minutes (maximum 32 payloads). The SHA-256 key covers the complete validated payload, so any product-document change produces a fresh PDF; responses expose `X-PDF-Cache: MISS|HIT` for latency checks.
 
 ## Service split
 
