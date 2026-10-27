@@ -4,10 +4,12 @@ import { authenticate, requireAuth } from '../../middleware/authenticate.js';
 import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js';
 import { checkProductAccess } from '../../middleware/checkProductAccess.js';
 import { pdfService } from './pdf.service.js';
+import { findStoredPdf } from './pdf-store.service.js';
 import { PDFError } from './pdf.types.js';
 import { pdfBodySchemas } from './pdf.schema.js';
 import { AppErrors } from '../../types/errors.js';
 import type { DocType, RenderResult } from './pdf.types.js';
+import type { StoredDocType } from './pdf-store.service.js';
 
 const BROCHURE_CACHE_TTL_MS = 10 * 60 * 1000;
 const BROCHURE_CACHE_MAX_ENTRIES = 32;
@@ -17,6 +19,8 @@ const brochureRenders = new Map<string, Promise<RenderResult>>();
 function brochureCacheKey(payload: Record<string, unknown>): string {
   return createHash('sha256').update(JSON.stringify(payload)).digest('hex');
 }
+
+const STORED_DOC_TYPES = new Set<DocType>(['tds', 'msds', 'brochure']);
 
 async function generateBrochure(
   payload: Record<string, unknown>,
@@ -89,9 +93,15 @@ export async function pdfRoutes(app: FastifyInstance): Promise<void> {
     }
     const payload = parsed.data as Record<string, unknown>;
 
-    const generated = docType === 'brochure'
-      ? await generateBrochure(payload)
-      : { result: await pdfService.generatePDF(docType, payload), cacheStatus: null };
+    // Pre-rendered copy from the deploy-time queue, served only on an exact payload match.
+    const stored = STORED_DOC_TYPES.has(docType)
+      ? await findStoredPdf(docType as StoredDocType, payload)
+      : null;
+    const generated: { result: RenderResult; cacheStatus: 'HIT' | 'MISS' | 'STORED' | null } = stored
+      ? { result: stored, cacheStatus: 'STORED' }
+      : docType === 'brochure'
+        ? await generateBrochure(payload)
+        : { result: await pdfService.generatePDF(docType, payload), cacheStatus: null };
     const { result, cacheStatus } = generated;
     if (!result.buffer) throw new PDFError('PDF buffer missing', 'RENDER_FAILED');
     const filename = filenames[docType](payload);

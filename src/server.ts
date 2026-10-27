@@ -2,6 +2,7 @@ import { buildApp } from './app.js'
 import { env } from './config/env.js'
 import { connectRedis, disconnectRedis } from './plugins/redis.js'
 import { pdfService } from './modules/pdf/pdf.service.js'
+import { scheduleStoredPdfRegeneration, stopStoredPdfQueue } from './modules/pdf/pdf-store.service.js'
 import { ensureProcurementStorageDir } from './utils/procurementStorage.js'
 import { queryClient } from './db/index.js'
 
@@ -29,6 +30,7 @@ async function main() {
     try {
       await app.close()
       await disconnectRedis()
+      stopStoredPdfQueue()
       await pdfService.shutdown()
       await queryClient.end({ timeout: 5 })
     } catch (err) {
@@ -47,6 +49,9 @@ async function main() {
   try {
     await app.listen({ port: env.PORT, host: '0.0.0.0' })
     app.log.info(`🚀 macrocoats-api listening on http://0.0.0.0:${env.PORT}/${env.API_VERSION}`)
+
+    // Every deploy restarts the server, so every deploy re-renders the stored PDFs (queued, one at a time)
+    scheduleStoredPdfRegeneration(app.log)
   } catch (err) {
     app.log.error(err)
     process.exit(1)

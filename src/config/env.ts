@@ -34,6 +34,9 @@ const envSchema = z.object({
   PDF_BROWSER_POOL_SIZE:  z.coerce.number().default(3),
   PDF_PAGE_TIMEOUT_MS:    z.coerce.number().default(30_000),
   PDF_RENDER_TIMEOUT_MS:  z.coerce.number().default(60_000),
+  // Pre-rendered TDS/MSDS/brochure PDFs, regenerated one at a time on every boot.
+  PDF_STORAGE_PATH:       z.string().min(1).default('generated-pdfs'),
+  PDF_PREGENERATE:        z.enum(['true', 'false']).default('true').transform((v) => v === 'true'),
 
   AI_PROVIDER:          z.enum(['heuristic', 'openai', 'azure-openai', 'local']).default('heuristic'),
 

@@ -46,6 +46,8 @@ All variables are validated by Zod at startup (`src/config/env.ts`); the server 
 | `JWT_PUBLIC_KEY_B64` | yes | — | RS256 public key, base64-encoded |
 | `COOKIE_SECRET` | yes | — | Cookie signing secret (≥32 chars) |
 | `PROCUREMENT_STORAGE_PATH` | yes | — | Base directory for uploaded document storage, e.g. `company-documents` (created if missing at startup) |
+| `PDF_STORAGE_PATH` | no | generated-pdfs | Directory for the pre-rendered TDS/MSDS/brochure PDFs (`<productLine>/<docType>-<sha256>.pdf`) the download routes serve on an exact payload match; created if missing |
+| `PDF_PREGENERATE` | no | true | `false` disables regenerating those PDFs on boot (never runs under `NODE_ENV=test`) |
 | `NODE_ENV` | no | development | development \| test \| production |
 | `PORT` | no | 3001 | HTTP server port |
 | `API_VERSION` | no | v1 | Route prefix |

@@ -10,3 +10,6 @@ ansible/.vault_pass.txt
 # Local OS and tool state
 .DS_Store
 .serena/
+
+# Pre-rendered product PDFs (src/modules/pdf/pdf-store.service.ts)
+generated-pdfs/
