@@ -5,6 +5,7 @@ dist/
 coverage/
 graphify-out/
 ansible/group_vars/vault.yml
+ansible/group_vars/vault.yml.bak-*
 ansible/.vault_pass.txt
 
 # Local OS and tool state

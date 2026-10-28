@@ -5,7 +5,8 @@ import { asc, eq } from 'drizzle-orm';
 import { db } from '../../db/index.js';
 import { products } from '../../db/schema/index.js';
 import { env } from '../../config/env.js';
-import { getDocument } from '../products/products.service.js';
+import { documentEvents, getDocument } from '../products/products.service.js';
+import type { DocumentChange } from '../products/products.service.js';
 import { pdfService } from './pdf.service.js';
 import { pdfBodySchemas } from './pdf.schema.js';
 import type { RenderResult } from './pdf.types.js';
@@ -20,6 +21,9 @@ import type { RenderResult } from './pdf.types.js';
 // they receive and serve the stored file only on an exact match, so a variant,
 // the internal view or a just-edited document always falls through to a live
 // render instead of getting a stale copy.
+//
+// Saving or re-statusing a TDS/MSDS queues that product's affected PDFs again
+// (`watchDocumentChanges`), so edits don't wait for the next deploy.
 
 export type StoredDocType = 'tds' | 'msds' | 'brochure';
 const STORED_DOC_TYPES: StoredDocType[] = ['tds', 'msds', 'brochure'];
@@ -125,9 +129,22 @@ async function buildPayload(productLine: string, docType: StoredDocType): Promis
   };
 }
 
+/** Delete a doc type's stored renders, except `keep`. */
+async function removeStoredPdfs(productLine: string, docType: StoredDocType, keep?: string): Promise<void> {
+  const dir = productDir(productLine);
+  const names = await fs.readdir(dir).catch(() => [] as string[]);
+  for (const name of names) {
+    const file = path.join(dir, name);
+    if (name.startsWith(`${docType}-`) && name.endsWith('.pdf') && file !== keep) {
+      await fs.rm(file, { force: true });
+    }
+  }
+}
+
 async function runJob(job: Job): Promise<void> {
   const payload = await buildPayload(job.productLine, job.docType);
   if (!payload) {
+    await removeStoredPdfs(job.productLine, job.docType);
     logger.info(job, 'Stored PDF skipped — document missing or not published');
     return;
   }
@@ -145,16 +162,10 @@ async function runJob(job: Job): Promise<void> {
   // then drop this doc type's older renders.
   const target = storedPdfPath(job.productLine, job.docType, payloadHash(validated));
   const tmp = `${target}.${process.pid}.tmp`;
-  const dir = productDir(job.productLine);
-  await fs.mkdir(dir, { recursive: true });
+  await fs.mkdir(productDir(job.productLine), { recursive: true });
   await fs.writeFile(tmp, result.buffer);
   await fs.rename(tmp, target);
-  for (const name of await fs.readdir(dir)) {
-    const file = path.join(dir, name);
-    if (name.startsWith(`${job.docType}-`) && name.endsWith('.pdf') && file !== target) {
-      await fs.rm(file, { force: true });
-    }
-  }
+  await removeStoredPdfs(job.productLine, job.docType, target);
   logger.info({ ...job, bytes: result.buffer.length }, 'Stored PDF written');
 }
 
@@ -205,10 +216,27 @@ export async function enqueueAllStoredPdfs(): Promise<number> {
   return rows.length * STORED_DOC_TYPES.length;
 }
 
-/** Called at boot: regenerate everything after a short delay, off the startup path. */
+let watching = false;
+
+/** Re-render a product's stored PDFs whenever its TDS (also feeds the brochure) or MSDS changes. */
+export function watchDocumentChanges(): void {
+  if (watching) return;
+  watching = true;
+  documentEvents.on('changed', ({ productLine, docType }: DocumentChange) => {
+    if (docType === 'tds') {
+      enqueueStoredPdf(productLine, 'tds');
+      enqueueStoredPdf(productLine, 'brochure');
+    } else if (docType === 'msds') {
+      enqueueStoredPdf(productLine, 'msds');
+    }
+  });
+}
+
+/** Called at boot: watch for edits, and regenerate everything after a short delay, off the startup path. */
 export function scheduleStoredPdfRegeneration(log?: Logger): void {
   if (!env.PDF_PREGENERATE || env.NODE_ENV === 'test') return;
   if (log) logger = log;
+  watchDocumentChanges();
   setTimeout(() => {
     enqueueAllStoredPdfs()
       .then((count) => logger.info({ count, dir: path.resolve(env.PDF_STORAGE_PATH) }, 'Stored PDF regeneration queued'))

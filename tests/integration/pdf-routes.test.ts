@@ -4,7 +4,11 @@ import type { FastifyInstance } from 'fastify'
 import { buildApp } from '../../src/app.js'
 import { ADMIN_PASSWORD } from '../helpers/credentials.js'
 import { pdfService } from '../../src/modules/pdf/pdf.service.js'
-import { enqueueStoredPdf, waitForStoredPdfQueue } from '../../src/modules/pdf/pdf-store.service.js'
+import fs from 'node:fs/promises'
+import path from 'node:path'
+import { enqueueStoredPdf, waitForStoredPdfQueue, watchDocumentChanges } from '../../src/modules/pdf/pdf-store.service.js'
+import { documentEvents } from '../../src/modules/products/products.service.js'
+import { env } from '../../src/config/env.js'
 
 let app: FastifyInstance
 let adminCookies: string[]
@@ -177,6 +181,25 @@ describe('PDF routes — stored copies', () => {
     const res = await pdfBody(req().post('/v1/pdf/brochure/uniklean-sp').set('Cookie', raneCookies).send(brochure)).expect(200)
     expect(res.headers['x-pdf-cache']).toBe('STORED')
   }, 60_000)
+
+  it('re-renders the TDS and brochure when the TDS changes', async () => {
+    const dir = path.resolve(env.PDF_STORAGE_PATH, 'uniklean-sp')
+    for (const name of await fs.readdir(dir)) {
+      if (/^(tds|brochure)-.*\.pdf$/.test(name)) await fs.rm(path.join(dir, name))
+    }
+    const payloads = await frontendPayloads()
+    const download = () => pdfBody(req().post('/v1/pdf/tds').set('Cookie', adminCookies).send(payloads.tds)).expect(200)
+    expect((await download()).headers['x-pdf-cache']).toBeUndefined()
+
+    // What updateDocument / transitionDocumentStatus emit after committing.
+    watchDocumentChanges()
+    documentEvents.emit('changed', { productLine: 'uniklean-sp', docType: 'tds' })
+    await waitForStoredPdfQueue()
+
+    expect((await download()).headers['x-pdf-cache']).toBe('STORED')
+    const brochure = await pdfBody(req().post('/v1/pdf/brochure/uniklean-sp').set('Cookie', adminCookies).send(payloads.brochure)).expect(200)
+    expect(brochure.headers['x-pdf-cache']).toBe('STORED')
+  }, 120_000)
 
   it('renders live when the payload differs from the stored one (e.g. a variant)', async () => {
     const { tds } = await frontendPayloads()

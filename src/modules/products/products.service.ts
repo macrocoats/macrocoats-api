@@ -1,3 +1,4 @@
+import { EventEmitter } from 'node:events'
 import { eq, and, desc } from 'drizzle-orm'
 import { db } from '../../db/index.js'
 import { productDocuments, products, documentAuditLog, users } from '../../db/schema/index.js'
@@ -17,6 +18,15 @@ import type { AuthUser, DocumentViewMode, DocType } from '../../types/index.js'
 import type { UpdateDocumentBody } from './products.schema.js'
 
 const CACHE_TTL = 300   // 5 minutes
+
+export interface DocumentChange { productLine: string; docType: DocType }
+
+/**
+ * Emits 'changed' (a DocumentChange) after a document's content or status
+ * change is committed. Lets other modules react (the pdf module re-renders its
+ * stored copies) without this module importing them.
+ */
+export const documentEvents = new EventEmitter()
 
 const EXPIRED_AFTER_MS = 365 * 24 * 60 * 60 * 1000
 const DUE_AFTER_MS     = 335 * 24 * 60 * 60 * 1000
@@ -288,6 +298,7 @@ export async function updateDocument(
 
   // Invalidate cache
   await cacheDel(cacheKey(productLine, docType))
+  documentEvents.emit('changed', { productLine, docType } satisfies DocumentChange)
 
   return getDocument(productLine, docType)
 }
@@ -334,6 +345,7 @@ export async function transitionDocumentStatus(
 
   // Invalidate cache — the published/visible state for company users just changed
   await cacheDel(cacheKey(productLine, docType))
+  documentEvents.emit('changed', { productLine, docType } satisfies DocumentChange)
 
   return getDocument(productLine, docType)
 }
