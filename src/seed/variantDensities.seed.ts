@@ -56,7 +56,7 @@ const DENSITY_G_PER_ML: Record<string, number> = {
   'corrosion inhibitor blend': 0.98, 'rust preventive additive package (barium-free)': 0.98,
   'vci additive': 0.98, 'rust inhibitor additive (vci)': 0.98,
   // Semi-solid film formers (melted in)
-  'vaseline': 0.87, 'microcrystalline wax': 0.92,
+  'white petroleum jelly': 0.87, 'microcrystalline wax': 0.92,
   'lanolin': 0.94, 'lanolin fatty derivative / wool grease': 0.94,
   'span 80 (sorbitan monooleate)': 0.99,
 }

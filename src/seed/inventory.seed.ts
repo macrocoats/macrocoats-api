@@ -188,7 +188,7 @@ export const DEFAULT_INVENTORY = [
   { material: 'BHT (Butylated Hydroxytoluene)',     unit: 'Kg' as const, price: '600', sortOrder: 65 },
 
   // ── Rust Preventive Additives (CORRUCUT 500) ─────────────────────────────────
-  { material: 'Vaseline',                           unit: 'Kg' as const, price: '237', sortOrder: 66 },
+  { material: 'White petroleum jelly',              unit: 'Kg' as const, price: '237', sortOrder: 66 },
 
   // ── Metalworking Fluid Additives (UNICUT-AL) ─────────────────────────────────
   { material: 'Light Paraffinic Mineral Oil',       unit: 'L'  as const, price: '172', sortOrder: 67 },

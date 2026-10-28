@@ -669,7 +669,7 @@ const CORRUCUT_500_WDRPO_COMPONENTS = [
   { materialName: 'Exxol D60',                    percentage: 20.0, unit: 'L'  as const },  //  80 L — Exxsol D60
   { materialName: 'Exxol 32D',                    percentage: 6.0,  unit: 'L'  as const },  //  24 L — Exxsol 32D
   { materialName: 'Calcium Petroleum Sulfonate',  percentage: 13.0, unit: 'Kg' as const },  //  52 kg
-  { materialName: 'Vaseline',                     percentage: 6.0,  unit: 'Kg' as const },  //  24 kg — white petroleum jelly
+  { materialName: 'White petroleum jelly',        percentage: 6.0,  unit: 'Kg' as const },  //  24 kg
 ]
 
 /**
@@ -680,7 +680,7 @@ const CORRUCUT_500_MTO_BASED_COMPONENTS = [
   { materialName: 'Mineral Turpentine Oil (MTO)', percentage: 55.0, unit: 'L'  as const },
   { materialName: 'Light Paraffinic Mineral Oil', percentage: 26.0, unit: 'L'  as const },
   { materialName: 'Calcium Petroleum Sulfonate',  percentage: 13.0, unit: 'Kg' as const },
-  { materialName: 'Vaseline',                     percentage: 6.0,  unit: 'Kg' as const },
+  { materialName: 'White petroleum jelly',        percentage: 6.0,  unit: 'Kg' as const },
 ]
 
 /**
@@ -688,7 +688,7 @@ const CORRUCUT_500_MTO_BASED_COMPONENTS = [
  * Sulfonate is replaced entirely by Barium Petroleum Sulfonate at an 80:20
  * Na:Ba sulfonate ratio. Supplied sheet (nominal 75 L batch) by weight:
  * MTO 37.920 kg, 32D Oil 9.350 kg, Exxsol D145 1.418 kg, Sodium Petroleum
- * Sulfonate 7.800 kg, Barium Petroleum Sulfonate 1.950 kg, Vaseline 4.500 kg —
+ * Sulfonate 7.800 kg, Barium Petroleum Sulfonate 1.950 kg, White petroleum jelly 4.500 kg —
  * 62.938 kg total. Converted to litres with typical densities (g/mL @ 25 °C,
  * not measured): 76.096 L calculated volume, so calculated SG ≈ 0.827.
  * Percentages are % v/v of that volume (the FormulaPage convention — SG is
@@ -701,20 +701,20 @@ const CORRUCUT_500_NA_BA_SULFONATE_COMPONENTS = [
   { materialName: 'Exxol D145',                   percentage: 2.27,  unit: 'L' as const, density: 0.82  },  //  1.418 kg →  1.729 L — Exxsol D145
   { materialName: 'Sodium Petroleum Sulfonate',   percentage: 9.76,  unit: 'L' as const, density: 1.05  },  //  7.800 kg →  7.429 L
   { materialName: 'Barium Petroleum Sulfonate',   percentage: 2.33,  unit: 'L' as const, density: 1.10  },  //  1.950 kg →  1.773 L
-  { materialName: 'Vaseline',                     percentage: 6.80,  unit: 'L' as const, density: 0.87  },  //  4.500 kg →  5.172 L
+  { materialName: 'White petroleum jelly',        percentage: 6.80,  unit: 'L' as const, density: 0.87  },  //  4.500 kg →  5.172 L
 ]
 
 /**
  * CORRUCUT 500 — MTO-only formulation for 30-day temporary rust protection.
  * Supplied costing sheet (50 kg batch) by weight: MTO 85% (42.5 kg = 54.14 L),
- * Calcium Petroleum Sulfonate 12% (6.00 kg), Vaseline 3% (1.50 kg). Converted
+ * Calcium Petroleum Sulfonate 12% (6.00 kg), White petroleum jelly 3% (1.50 kg). Converted
  * to % v/v with the same typical densities as the Mixed Sulfonate Grade:
  * 61.578 L calculated volume, so calculated SG ≈ 0.812.
  */
 const CORRUCUT_500_MTO_ONLY_COMPONENTS = [
   { materialName: 'Mineral Turpentine Oil (MTO)', percentage: 87.92, unit: 'L' as const, density: 0.785 },  // 42.500 kg → 54.140 L
   { materialName: 'Calcium Petroleum Sulfonate',  percentage: 9.28,  unit: 'L' as const, density: 1.05  },  //  6.000 kg →  5.714 L
-  { materialName: 'Vaseline',                     percentage: 2.80,  unit: 'L' as const, density: 0.87  },  //  1.500 kg →  1.724 L
+  { materialName: 'White petroleum jelly',        percentage: 2.80,  unit: 'L' as const, density: 0.87  },  //  1.500 kg →  1.724 L
 ]
 
 export async function seedFormulationVariants() {
