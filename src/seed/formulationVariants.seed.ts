@@ -704,6 +704,19 @@ const CORRUCUT_500_NA_BA_SULFONATE_COMPONENTS = [
   { materialName: 'Vaseline',                     percentage: 6.80,  unit: 'L' as const, density: 0.87  },  //  4.500 kg →  5.172 L
 ]
 
+/**
+ * CORRUCUT 500 — MTO-only formulation for 30-day temporary rust protection.
+ * Supplied costing sheet (50 kg batch) by weight: MTO 85% (42.5 kg = 54.14 L),
+ * Calcium Petroleum Sulfonate 12% (6.00 kg), Vaseline 3% (1.50 kg). Converted
+ * to % v/v with the same typical densities as the Mixed Sulfonate Grade:
+ * 61.578 L calculated volume, so calculated SG ≈ 0.812.
+ */
+const CORRUCUT_500_MTO_ONLY_COMPONENTS = [
+  { materialName: 'Mineral Turpentine Oil (MTO)', percentage: 87.92, unit: 'L' as const, density: 0.785 },  // 42.500 kg → 54.140 L
+  { materialName: 'Calcium Petroleum Sulfonate',  percentage: 9.28,  unit: 'L' as const, density: 1.05  },  //  6.000 kg →  5.714 L
+  { materialName: 'Vaseline',                     percentage: 2.80,  unit: 'L' as const, density: 0.87  },  //  1.500 kg →  1.724 L
+]
+
 export async function seedFormulationVariants() {
   console.log('🌱 Seeding formulation variants...')
 
@@ -1409,6 +1422,45 @@ export async function seedFormulationVariants() {
       )
 
       console.log(`   ✅ Created Mixed Sulfonate Grade variant for CORRUCUT 500 (id: ${corrucut500NaBaVariant.id})`)
+    }
+
+    // No TDS/MSDS overrides yet — 30-day protection claims are unverified.
+    const CORRUCUT_500_MTO_ONLY_NAME = 'MTO Only Grade'
+    const [existingCorrucut500MtoOnly] = await db
+      .select()
+      .from(productFormulationVariants)
+      .where(
+        and(
+          eq(productFormulationVariants.productKey, 'corrucut-500'),
+          variantNameIs(CORRUCUT_500_MTO_ONLY_NAME),
+        ),
+      )
+
+    if (existingCorrucut500MtoOnly) {
+      console.log(`   ↩️  MTO Only Grade variant for CORRUCUT 500 already exists (id: ${existingCorrucut500MtoOnly.id})`)
+    } else {
+      const [corrucut500MtoOnlyVariant] = await db
+        .insert(productFormulationVariants)
+        .values({
+          productKey:  'corrucut-500',
+          companyId:   null,
+          variantName: CORRUCUT_500_MTO_ONLY_NAME,
+          isDefault:   false,
+        })
+        .returning()
+
+      await db.insert(formulationVariantComponents).values(
+        CORRUCUT_500_MTO_ONLY_COMPONENTS.map((c, i) => ({
+          variantId:    corrucut500MtoOnlyVariant.id,
+          materialName: c.materialName,
+          percentage:   String(c.percentage),
+          unit:         c.unit,
+          density:      String(c.density),
+          sortOrder:    i,
+        })),
+      )
+
+      console.log(`   ✅ Created MTO Only Grade variant for CORRUCUT 500 (id: ${corrucut500MtoOnlyVariant.id})`)
     }
   }
 }
