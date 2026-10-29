@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm'
+import { sql, type SQL } from 'drizzle-orm'
 import { db } from '../../db/index.js'
 import { getProfitability } from '../cost-intelligence/cost-intelligence.service.js'
 import type { DashboardFilter, ProjectionsQuery } from './investor-dashboard.schema.js'
@@ -72,9 +72,54 @@ export async function getExecutiveKpis(filter: DashboardFilter) {
     WHERE deleted_at IS NULL AND status != 'cancelled'
   `)
 
-  // Filter-scoped figures — respect range/customerId/productKey.
-  const [filteredRow] = await db.execute<{ [k: string]: unknown; ordersReceived: string; ordersCompleted: string; activeCustomers: string; averageOrderValue: string }>(sql`
+  // Filter-scoped figures — respect range/customerId/productKey. Computed for
+  // both the selected window and the prior equal-length window so the
+  // dashboard can show side-by-side comparatives, not just a growth %.
+  const windowDays = daysBetween(new Date(from), new Date(to)) + 1
+  const priorTo = iso(addDays(new Date(from), -1))
+  const priorFrom = iso(addDays(new Date(priorTo), -(windowDays - 1)))
+  const [current, prior] = await Promise.all([
+    getWindowFigures(from, to, customerCond, productJoinCond),
+    getWindowFigures(priorFrom, priorTo, customerCond, productJoinCond),
+  ])
+
+  // Customer growth: customers whose FIRST-EVER order date falls in this window vs the prior equal-length window.
+  const [growthRow] = await db.execute<{ [k: string]: unknown; newInWindow: string; newInPriorWindow: string }>(sql`
+    WITH first_orders AS (
+      SELECT customer_id, MIN(customer_po_date) AS first_date
+      FROM customer_purchase_orders
+      WHERE deleted_at IS NULL AND status != 'cancelled'
+      GROUP BY customer_id
+    )
     SELECT
+      COUNT(*) FILTER (WHERE first_date BETWEEN ${from} AND ${to}) AS "newInWindow",
+      COUNT(*) FILTER (WHERE first_date BETWEEN ${priorFrom} AND ${priorTo}) AS "newInPriorWindow"
+    FROM first_orders
+  `)
+  const newInWindow = Number(growthRow?.newInWindow ?? 0)
+  const newInPriorWindow = Number(growthRow?.newInPriorWindow ?? 0)
+  const customerGrowthPct = newInPriorWindow > 0
+    ? round2(((newInWindow - newInPriorWindow) / newInPriorWindow) * 100)
+    : (newInWindow > 0 ? 100 : 0)
+
+  return {
+    range: filter.range, from, to,
+    currentMonthSales:  Number(fixedRow?.currentMonthSales ?? 0),
+    quarterlySales:     Number(fixedRow?.quarterlySales ?? 0),
+    ytdSales:           Number(fixedRow?.ytdSales ?? 0),
+    pendingOrderValue:  Number(fixedRow?.pendingOrderValue ?? 0),
+    ...current,
+    customerGrowthPct,
+    newCustomersInWindow: newInWindow,
+    prior: { from: priorFrom, to: priorTo, ...prior, newCustomersInWindow: newInPriorWindow },
+  }
+}
+
+/** Range/customer/product-scoped order figures for one [from, to] window. */
+async function getWindowFigures(from: string, to: string, customerCond: SQL, productJoinCond: SQL) {
+  const [filteredRow] = await db.execute<{ [k: string]: unknown; orderValue: string; ordersReceived: string; ordersCompleted: string; activeCustomers: string; averageOrderValue: string }>(sql`
+    SELECT
+      COALESCE(SUM(o.total_value), 0) AS "orderValue",
       COUNT(DISTINCT o.id) AS "ordersReceived",
       COUNT(DISTINCT o.id) FILTER (WHERE o.status = 'completed') AS "ordersCompleted",
       COUNT(DISTINCT o.customer_id) AS "activeCustomers",
@@ -100,46 +145,20 @@ export async function getExecutiveKpis(filter: DashboardFilter) {
     WHERE production_date BETWEEN ${from} AND ${to}
   `)
 
-  // Customer growth: customers whose FIRST-EVER order date falls in this window vs the prior equal-length window.
-  const windowDays = daysBetween(new Date(from), new Date(to)) + 1
-  const priorTo = iso(addDays(new Date(from), -1))
-  const priorFrom = iso(addDays(new Date(priorTo), -(windowDays - 1)))
-  const [growthRow] = await db.execute<{ [k: string]: unknown; newInWindow: string; newInPriorWindow: string }>(sql`
-    WITH first_orders AS (
-      SELECT customer_id, MIN(customer_po_date) AS first_date
-      FROM customer_purchase_orders
-      WHERE deleted_at IS NULL AND status != 'cancelled'
-      GROUP BY customer_id
-    )
-    SELECT
-      COUNT(*) FILTER (WHERE first_date BETWEEN ${from} AND ${to}) AS "newInWindow",
-      COUNT(*) FILTER (WHERE first_date BETWEEN ${priorFrom} AND ${priorTo}) AS "newInPriorWindow"
-    FROM first_orders
-  `)
-  const newInWindow = Number(growthRow?.newInWindow ?? 0)
-  const newInPriorWindow = Number(growthRow?.newInPriorWindow ?? 0)
-  const customerGrowthPct = newInPriorWindow > 0
-    ? round2(((newInWindow - newInPriorWindow) / newInPriorWindow) * 100)
-    : (newInWindow > 0 ? 100 : 0)
-
   return {
-    range: filter.range, from, to,
-    currentMonthSales:  Number(fixedRow?.currentMonthSales ?? 0),
-    quarterlySales:     Number(fixedRow?.quarterlySales ?? 0),
-    ytdSales:           Number(fixedRow?.ytdSales ?? 0),
-    pendingOrderValue:  Number(fixedRow?.pendingOrderValue ?? 0),
-    ordersReceived:     Number(filteredRow?.ordersReceived ?? 0),
-    ordersCompleted:    Number(filteredRow?.ordersCompleted ?? 0),
-    activeCustomers:    Number(filteredRow?.activeCustomers ?? 0),
-    averageOrderValue:  round2(Number(filteredRow?.averageOrderValue ?? 0)),
-    productsSold:       Number(productsRow?.productsSold ?? 0),
-    productionVolume:   Number(productionRow?.productionVolume ?? 0),
-    customerGrowthPct,
-    newCustomersInWindow: newInWindow,
+    orderValue:        Number(filteredRow?.orderValue ?? 0),
+    ordersReceived:    Number(filteredRow?.ordersReceived ?? 0),
+    ordersCompleted:   Number(filteredRow?.ordersCompleted ?? 0),
+    activeCustomers:   Number(filteredRow?.activeCustomers ?? 0),
+    averageOrderValue: round2(Number(filteredRow?.averageOrderValue ?? 0)),
+    productsSold:      Number(productsRow?.productsSold ?? 0),
+    productionVolume:  Number(productionRow?.productionVolume ?? 0),
   }
 }
 
 // ── Sales Analytics ───────────────────────────────────────────────────────────
+
+type TrendRow = { [k: string]: unknown; period: string; orderCount: string; totalValue: string; priorTotalValue: string }
 
 export async function getSalesAnalytics(filter: DashboardFilter) {
   const customerCond = filter.customerId ? sql`AND o.customer_id = ${filter.customerId}` : sql``
@@ -149,28 +168,39 @@ export async function getSalesAnalytics(filter: DashboardFilter) {
   // so they stay untouched here.
   const { from, to } = resolveWindow(filter)
   const windowCond = sql`AND o.customer_po_date BETWEEN ${from} AND ${to}`
+  // Same-period-a-year-earlier order value for each trend bucket (the trend
+  // chart's "prior year" overlay) — correlated on the grouped gs.period.
+  const priorCustomerCond = filter.customerId ? sql`AND p.customer_id = ${filter.customerId}` : sql``
+  const priorYearValue = (unit: 'month' | 'quarter' | 'year') => sql`(
+      SELECT COALESCE(SUM(p.total_value), 0) FROM customer_purchase_orders p
+      WHERE date_trunc(${sql.raw(`'${unit}'`)}, p.customer_po_date) = gs.period - INTERVAL '1 year'
+        AND p.deleted_at IS NULL AND p.status != 'cancelled' ${priorCustomerCond}
+    )`
 
-  const monthlyRows = await db.execute<{ [k: string]: unknown; period: string; orderCount: string; totalValue: string }>(sql`
+  const monthlyRows = await db.execute<TrendRow>(sql`
     SELECT to_char(gs.period, 'YYYY-MM') AS period,
-      COUNT(o.id) AS "orderCount", COALESCE(SUM(o.total_value), 0) AS "totalValue"
+      COUNT(o.id) AS "orderCount", COALESCE(SUM(o.total_value), 0) AS "totalValue",
+      ${priorYearValue('month')} AS "priorTotalValue"
     FROM generate_series(date_trunc('month', CURRENT_DATE - INTERVAL '11 months'), date_trunc('month', CURRENT_DATE), INTERVAL '1 month') AS gs(period)
     LEFT JOIN customer_purchase_orders o
       ON date_trunc('month', o.customer_po_date) = gs.period AND o.deleted_at IS NULL AND o.status != 'cancelled' ${customerCond}
     GROUP BY gs.period ORDER BY gs.period
   `)
 
-  const quarterlyRows = await db.execute<{ [k: string]: unknown; period: string; orderCount: string; totalValue: string }>(sql`
+  const quarterlyRows = await db.execute<TrendRow>(sql`
     SELECT to_char(gs.period, 'YYYY-"Q"Q') AS period,
-      COUNT(o.id) AS "orderCount", COALESCE(SUM(o.total_value), 0) AS "totalValue"
+      COUNT(o.id) AS "orderCount", COALESCE(SUM(o.total_value), 0) AS "totalValue",
+      ${priorYearValue('quarter')} AS "priorTotalValue"
     FROM generate_series(date_trunc('quarter', CURRENT_DATE - INTERVAL '21 months'), date_trunc('quarter', CURRENT_DATE), INTERVAL '3 months') AS gs(period)
     LEFT JOIN customer_purchase_orders o
       ON date_trunc('quarter', o.customer_po_date) = gs.period AND o.deleted_at IS NULL AND o.status != 'cancelled' ${customerCond}
     GROUP BY gs.period ORDER BY gs.period
   `)
 
-  const yearlyRows = await db.execute<{ [k: string]: unknown; period: string; orderCount: string; totalValue: string }>(sql`
+  const yearlyRows = await db.execute<TrendRow>(sql`
     SELECT to_char(gs.period, 'YYYY') AS period,
-      COUNT(o.id) AS "orderCount", COALESCE(SUM(o.total_value), 0) AS "totalValue"
+      COUNT(o.id) AS "orderCount", COALESCE(SUM(o.total_value), 0) AS "totalValue",
+      ${priorYearValue('year')} AS "priorTotalValue"
     FROM generate_series(date_trunc('year', CURRENT_DATE - INTERVAL '4 years'), date_trunc('year', CURRENT_DATE), INTERVAL '1 year') AS gs(period)
     LEFT JOIN customer_purchase_orders o
       ON date_trunc('year', o.customer_po_date) = gs.period AND o.deleted_at IS NULL AND o.status != 'cancelled' ${customerCond}
@@ -204,7 +234,7 @@ export async function getSalesAnalytics(filter: DashboardFilter) {
   `)
 
   const mapTrend = (rows: typeof monthlyRows) => rows.map((r) => ({
-    period: r.period, orderCount: Number(r.orderCount), totalValue: Number(r.totalValue),
+    period: r.period, orderCount: Number(r.orderCount), totalValue: Number(r.totalValue), priorTotalValue: Number(r.priorTotalValue),
   }))
 
   return {
@@ -455,6 +485,7 @@ export async function getExecutiveInsights(filter: DashboardFilter) {
       : null,
     topRegion: topRegion ? { label: topRegion.region, value: topRegion.totalValue } : null,
     revenueGrowthPct,
+    windowRevenue, priorWindowRevenue,
     averageRevenuePerCustomer: kpis.activeCustomers > 0 ? round2(windowRevenue / kpis.activeCustomers) : 0,
     productionTrendPct,
     pendingOrderRisk: {
