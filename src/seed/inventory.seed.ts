@@ -187,7 +187,7 @@ export const DEFAULT_INVENTORY = [
   { material: 'Lanolin',                            unit: 'Kg' as const, price: '310', sortOrder: 64 },
   { material: 'BHT (Butylated Hydroxytoluene)',     unit: 'Kg' as const, price: '600', sortOrder: 65 },
 
-  // ── Rust Preventive Additives (CORRUCUT 500) ─────────────────────────────────
+  // ── Rust Preventive Additives (CORROCUT 500) ─────────────────────────────────
   { material: 'White petroleum jelly',              unit: 'Kg' as const, price: '237', sortOrder: 66 },
 
   // ── Metalworking Fluid Additives (UNICUT-AL) ─────────────────────────────────

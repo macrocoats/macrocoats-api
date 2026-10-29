@@ -1,12 +1,12 @@
 /**
- * CORRUCUT 500 variant TDS/MSDS override content. Kept free of DB imports so
+ * CORROCUT 500 variant TDS/MSDS override content. Kept free of DB imports so
  * scripts/replay-2026-10-variant-docs.ts can load it without a database.
  */
 
-/* ── TDS overrides — CORRUCUT 500 Water-Displacing RPO ─────────────────────── */
+/* ── TDS overrides — CORROCUT 500 Exxsol Blend Grade ───────────────────────── */
 
 /*
- * CORRUCUT 500 MTO-carrier variants — values are calculated from the variant
+ * CORROCUT 500 MTO-carrier variants — values are calculated from the variant
  * composition, not measured (flash point: Le Chatelier/Raoult estimate;
  * viscosity: Refutas blend; density: volume-additive). Hazards: GHS mixture
  * rules over typical ingredient classifications (MTO taken as C9–C12
@@ -55,7 +55,7 @@ const CORRUCUT_500_PERFORMANCE = [
 ]
 
 export const TDS_OVERRIDES_CORRUCUT_500_WDRPO = {
-  description: 'CORRUCUT 500 – Water-Displacing RPO is a solvent-based rust preventive built on a hydrocarbon solvent carrier with a dearomatized co-solvent. The fast-evaporating carrier penetrates and displaces moisture from wet or freshly washed components, leaving a thin, lightly oily film of mineral base oil, corrosion inhibitor and film-forming barrier agent. Suited for inter-operational protection, transit, and indoor or covered storage.',
+  description: 'CORROCUT 500 – Exxsol Blend Grade is a solvent-based rust preventive built on a hydrocarbon solvent carrier with a dearomatized co-solvent. The fast-evaporating carrier penetrates and displaces moisture from wet or freshly washed components, leaving a thin, lightly oily film of mineral base oil, corrosion inhibitor and film-forming barrier agent. Suited for inter-operational protection, transit, and indoor or covered storage.',
   features: [
     { head: 'Water-Displacing Action',        body: 'Low-surface-tension solvent carrier gets under water films and lifts moisture off wet or freshly washed parts.' },
     { head: 'Inhibited Oil Film',             body: 'A polar corrosion inhibitor adsorbs on the metal surface while the mineral base oil carries it as a continuous protective film.' },
@@ -81,11 +81,11 @@ export const TDS_OVERRIDES_CORRUCUT_500_WDRPO = {
     { name: 'Film-forming barrier agent',      function: 'Protective film former',                       percent: '< 10%',    compat: 'Ferrous and non-ferrous metals' },
   ],
   performance: CORRUCUT_500_PERFORMANCE,
-  safetyNote: 'Flammable liquid (flash point ≈ 43 °C, calculated) — keep away from heat and ignition sources. Contains hydrocarbon solvents: use only with adequate ventilation, as vapours may cause drowsiness. Refer to the CORRUCUT 500 – Water-Displacing RPO Safety Data Sheet before use.',
+  safetyNote: 'Flammable liquid (flash point ≈ 43 °C, calculated) — keep away from heat and ignition sources. Contains hydrocarbon solvents: use only with adequate ventilation, as vapours may cause drowsiness. Refer to the CORROCUT 500 – Exxsol Blend Grade Safety Data Sheet before use.',
 }
 
 export const TDS_OVERRIDES_CORRUCUT_500_MTO_BASED = {
-  description: 'This CORRUCUT 500 grade is a solvent-based rust preventive built on a hydrocarbon solvent carrier. The carrier penetrates and evaporates quickly, leaving a lightly oily film of mineral base oil, corrosion inhibitor and film-forming barrier agent — slightly heavier than the standard grade owing to its higher non-volatile oil content. Suited for inter-operational protection, transit, and indoor or covered storage.',
+  description: 'This CORROCUT 500 grade is a solvent-based rust preventive built on a hydrocarbon solvent carrier. The carrier penetrates and evaporates quickly, leaving a lightly oily film of mineral base oil, corrosion inhibitor and film-forming barrier agent — slightly heavier than the standard grade owing to its higher non-volatile oil content. Suited for inter-operational protection, transit, and indoor or covered storage.',
   features: [
     { head: 'Fast-Penetrating Solvent Carrier', body: 'The hydrocarbon solvent carrier wets and penetrates recesses quickly, then evaporates to leave the protective film.' },
     { head: 'Heavier Protective Film',         body: 'Higher mineral base oil content gives a slightly heavier, more persistent film than the standard grade.' },
@@ -109,7 +109,7 @@ export const TDS_OVERRIDES_CORRUCUT_500_MTO_BASED = {
     { name: 'Film-forming barrier agent',      function: 'Protective film former',                  percent: '< 10%',    compat: 'Ferrous and non-ferrous metals' },
   ],
   performance: CORRUCUT_500_PERFORMANCE,
-  safetyNote: 'Flammable liquid (flash point ≈ 39 °C, calculated) — keep away from heat and ignition sources. Contains hydrocarbon solvents: use only with adequate ventilation, as vapours may cause drowsiness. Refer to the CORRUCUT 500 Safety Data Sheet for this grade before use.',
+  safetyNote: 'Flammable liquid (flash point ≈ 39 °C, calculated) — keep away from heat and ignition sources. Contains hydrocarbon solvents: use only with adequate ventilation, as vapours may cause drowsiness. Refer to the CORROCUT 500 Safety Data Sheet for this grade before use.',
 }
 
 export const MSDS_OVERRIDES_CORRUCUT_500_WDRPO = {

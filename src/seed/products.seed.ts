@@ -14,7 +14,7 @@ export const PRODUCTS = [
   { key: 'uniktonner',    displayName: 'UNIKTONNER',    code: 'TN',  category: 'Tonnage Additive / Accelerator',   subtitle: 'Nitrite-Based Phosphating Accelerator Solution',                 accentColor: '#8b2500' },
   { key: 'corroklean',   displayName: 'CORROKLEAN',   code: 'CK',  category: 'Alkaline Cleaner',                 subtitle: 'Heavy-Duty Alkaline Metal Cleaner & Degreaser',                   accentColor: '#2a5c7a' },
   { key: 'corrcut-100',  displayName: 'CORRCUT 100',  code: 'CR',  category: 'Rust Preventive Oil',              subtitle: 'Light-Bodied Mineral Oil Based Rust Preventive',                  accentColor: '#4a2d5c' },
-  { key: 'corrucut-500', displayName: 'CORRUCUT 500', code: 'CC',  category: 'Corrosion Preventive Fluid',       subtitle: 'Fast-Drying Dearomatized Hydrocarbon Rust Preventive',            accentColor: '#3d5a6e' },
+  { key: 'corrucut-500', displayName: 'CORROCUT 500', code: 'CC',  category: 'Corrosion Preventive Fluid',       subtitle: 'Fast-Drying Dearomatized Hydrocarbon Rust Preventive',            accentColor: '#3d5a6e' },
   { key: 'uniklean-sf',  displayName: 'UNIKLEAN-SF',  code: 'SF',  category: 'Industrial Cleaner',               subtitle: 'Low-Foam Heavy Duty Alkaline Cleaner Concentrate',                accentColor: '#1c7a6e' },
   { key: 'corrcut-200',  displayName: 'CORRCUT 200',  code: 'C2',  category: 'Rust Preventive Oils',             subtitle: 'Ordinary Solvent-Based Rust Preventive Oil',                      accentColor: '#8a4a2d' },
   { key: 'unicut-al',    displayName: 'UNICUT-AL',    code: 'CA',  category: 'Metal Working Fluid',              subtitle: 'Semi-Synthetic Cutting & Grinding Coolant — Water Dilutable Metalworking Fluid', accentColor: '#2f6f91' },
@@ -3182,7 +3182,7 @@ export const DOCS: Array<{
   },
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // CORRUCUT 500
+  // CORROCUT 500
   // ─────────────────────────────────────────────────────────────────────────────
   {
     productKey: 'corrucut-500',
@@ -3196,7 +3196,7 @@ export const DOCS: Array<{
     },
     body: {
       grade:       'Industrial Grade',
-      description: 'CORRUCUT 500 is a dearomatized hydrocarbon-based corrosion preventive fluid built on a three-grade dearomatized hydrocarbon solvent carrier (primary, secondary, and light fractions) for controlled evaporation and good surface penetration. A polar corrosion inhibitor provides the primary corrosion-inhibiting film, and a film-forming barrier agent reinforces film cohesion and water resistance, leaving a thin, lightly oily protective film over components. Suited for inter-operational handling, transit, and indoor or covered storage.',
+      description: 'CORROCUT 500 is a dearomatized hydrocarbon-based corrosion preventive fluid built on a three-grade dearomatized hydrocarbon solvent carrier (primary, secondary, and light fractions) for controlled evaporation and good surface penetration. A polar corrosion inhibitor provides the primary corrosion-inhibiting film, and a film-forming barrier agent reinforces film cohesion and water resistance, leaving a thin, lightly oily protective film over components. Suited for inter-operational handling, transit, and indoor or covered storage.',
       sections: {
         features: [
           { head: 'Multi-Grade Hydrocarbon Carrier',  body: 'Blended primary, secondary, and light-grade fractions balance fast wetting with a controlled, staged evaporation profile.' },
@@ -3225,7 +3225,7 @@ export const DOCS: Array<{
         ],
         application: [
           { step: '1', name: 'Pre-clean surface',   param: 'Dry, rust-free, grease-free substrate', value: 'Essential for maximum protection life' },
-          { step: '2', name: 'Apply CORRUCUT 500',  param: 'Dip, spray, or brush',                 value: 'Ensure uniform coverage; 15–30 s dip time' },
+          { step: '2', name: 'Apply CORROCUT 500',  param: 'Dip, spray, or brush',                 value: 'Ensure uniform coverage; 15–30 s dip time' },
           { step: '3', name: 'Drain',                param: 'Vertical draining',                    value: '15–30 min' },
           { step: '4', name: 'Allow film to set',    param: 'Air dry at ambient temperature',       value: '20–30 min; film remains lightly oily, not fully dry' },
           { step: '5', name: 'Remove before use',    param: 'Alkaline degreaser or mineral spirits', value: 'Wash off prior to further processing' },
@@ -3240,7 +3240,7 @@ export const DOCS: Array<{
           { label: 'Outdoor Covered',         val: '1–3 Months' },
           { label: 'Water displacement',      val: 'Passes (IS 1154)' },
         ],
-        safetyNote: 'Flammable liquid — keep away from ignition sources and heat. Ensure adequate ventilation during application. Refer explicitly to the official CORRUCUT 500 Safety Data Sheet for detailed protective equipment guidelines before deployment.',
+        safetyNote: 'Flammable liquid — keep away from ignition sources and heat. Ensure adequate ventilation during application. Refer explicitly to the official CORROCUT 500 Safety Data Sheet for detailed protective equipment guidelines before deployment.',
       },
     },
   },
@@ -3357,7 +3357,7 @@ export const DOCS: Array<{
       referenceBatchSize: 25,
       batchUnit:          'L',
       totalActivePercent: 100,
-      overview: 'CORRUCUT 500 (Rev 02) is a dearomatized hydrocarbon solvent-based corrosion preventive fluid built on a three-grade Exxsol carrier blend (D60, D145, and the lighter 32D fraction) for controlled evaporation and good surface penetration. Calcium petroleum sulfonate provides the primary corrosion-inhibiting film, and white petroleum jelly reinforces film cohesion and water resistance, producing a thin, lightly oily protective film rather than a fully dry one.',
+      overview: 'CORROCUT 500 (Rev 02) is a dearomatized hydrocarbon solvent-based corrosion preventive fluid built on a three-grade Exxsol carrier blend (D60, D145, and the lighter 32D fraction) for controlled evaporation and good surface penetration. Calcium petroleum sulfonate provides the primary corrosion-inhibiting film, and white petroleum jelly reinforces film cohesion and water resistance, producing a thin, lightly oily protective film rather than a fully dry one.',
       composition: [
         { srNo: 1, name: 'Exxsol D60',                  casNo: '64742-47-8', baseQty: 14.25, unit: 'L',  percentWV: 57.0, function: 'Primary carrier solvent — dearomatized aliphatic hydrocarbon, principal film-forming vehicle', density: 0.79,  unitPrice: 120 },
         { srNo: 2, name: 'Exxsol D145',                 casNo: 'Mixture',    baseQty: 5.00,  unit: 'L',  percentWV: 20.0, function: 'Secondary carrier — higher flash point fraction, extends evaporation profile',                 density: 0.795, unitPrice: 140 },
@@ -3424,7 +3424,7 @@ export const DOCS: Array<{
         'Remove with alkaline degreaser before further processing',
       ],
       storage:  ['Store at 5°C – 40°C', 'Keep away from heat and ignition sources', 'Keep container tightly closed', 'Dispose per CPCB regulations'],
-      products: ['CORRUCUT 500', 'CORRUCUT 500 PLUS', 'CORRUCUT 500 CLEAR'],
+      products: ['CORROCUT 500', 'CORROCUT 500 PLUS', 'CORROCUT 500 CLEAR'],
     },
   },
 
@@ -3454,7 +3454,7 @@ export const DOCS: Array<{
         { parameter: 'Water Displacement',               method: 'Internal IM-002',     specification: '≥ 99 %',                              result: '99.4 %',                         status: 'Pass' },
         { parameter: 'Salt Spray Resistance (96 h)',      method: 'ASTM B117',           specification: 'No rust formation in 96 h',           result: 'No rust observed at 96 h',       status: 'Pass' },
       ],
-      statement: 'We hereby certify that the above batch of CORRUCUT 500 has been manufactured, tested, and inspected in accordance with our internal quality specifications. All parameters conform to the product specification and the product is approved for release.',
+      statement: 'We hereby certify that the above batch of CORROCUT 500 has been manufactured, tested, and inspected in accordance with our internal quality specifications. All parameters conform to the product specification and the product is approved for release.',
       approvals: {
         preparedBy: 'Quality Analyst — Macro Coats',
         reviewedBy: 'QC Manager — Macro Coats',

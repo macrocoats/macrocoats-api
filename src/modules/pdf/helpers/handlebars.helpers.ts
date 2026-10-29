@@ -46,7 +46,7 @@ export function registerHelpers(): void {
   });
 
   // TDS "Product Description" lead-in: every product's stored description
-  // already opens with its own name (e.g. "CORRUCUT 500 is a..."), so
+  // already opens with its own name (e.g. "CORROCUT 500 is a..."), so
   // bolding a second, separately-prepended copy of productName printed the
   // name twice. This bolds the name where it already occurs instead of
   // prepending a duplicate; falls back to the old prepend behavior for the

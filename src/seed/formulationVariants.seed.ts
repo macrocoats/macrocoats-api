@@ -17,7 +17,10 @@ import {
  * must match either one — an exact-name check misses it and inserts a duplicate.
  */
 const LEGACY_VARIANT_NAMES: Record<string, string[]> = {
-  'Solvent Carrier Grade':                       ['MTO Based'],
+  'MTO-LLP High-Oil Grade':                      ['Solvent Carrier Grade', 'MTO Based'],
+  'Exxsol Blend Grade':                          ['CORRUCUT 500 - Water-Displacing RPO'],
+  'Na-Ba Sulfonate Grade':                       ['Mixed Sulfonate Grade'],
+  'MTO-LLP Low-Oil Grade':                       ['MTO-LLP Based'],
   'Fast-Dry Variant':                            ['High IPA Variant'],
   'Low-Evaporation Variant':                     ['PEG Glycol Variant'],
   'UNICool AL – High Lubricity Variant':         ['UNICool AL – PG High Lubricity Variant'],
@@ -655,7 +658,7 @@ const UNIKBRIGHTNER_BASE_COMPONENTS = [
 ]
 
 /**
- * CORRUCUT 500 — Water-Displacing Rust Preventive Oil variant, from the supplied
+ * CORROCUT 500 — Water-Displacing Rust Preventive Oil variant, from the supplied
  * costing sheet (400 L reference batch): MTO 140 L, LLP 80 L, Exxsol D60 80 L,
  * Exxsol 32D 24 L, Calcium Petroleum Sulfonate 52 kg, White Petroleum Jelly 24 kg.
  * Percentages are the sheet's nominal recipe shares (mixed L/kg units, sum 100%).
@@ -673,7 +676,7 @@ const CORRUCUT_500_WDRPO_COMPONENTS = [
 ]
 
 /**
- * CORRUCUT 500 — MTO Based alternate formulation supplied from the formulation
+ * CORROCUT 500 — MTO Based alternate formulation supplied from the formulation
  * editor. Zero-percent Exxol D60 and Exxol 32D rows are intentionally omitted.
  */
 const CORRUCUT_500_MTO_BASED_COMPONENTS = [
@@ -684,7 +687,7 @@ const CORRUCUT_500_MTO_BASED_COMPONENTS = [
 ]
 
 /**
- * CORRUCUT 500 — Sodium + Barium Sulfonate formulation. Calcium Petroleum
+ * CORROCUT 500 — Sodium + Barium Sulfonate formulation. Calcium Petroleum
  * Sulfonate is replaced entirely by Barium Petroleum Sulfonate at an 80:20
  * Na:Ba sulfonate ratio. Supplied sheet (nominal 75 L batch) by weight:
  * MTO 37.920 kg, 32D Oil 9.350 kg, Exxsol D145 1.418 kg, Sodium Petroleum
@@ -705,16 +708,31 @@ const CORRUCUT_500_NA_BA_SULFONATE_COMPONENTS = [
 ]
 
 /**
- * CORRUCUT 500 — MTO-only formulation for 30-day temporary rust protection.
+ * CORROCUT 500 — MTO-only formulation for 30-day temporary rust protection.
  * Supplied costing sheet (50 kg batch) by weight: MTO 85% (42.5 kg = 54.14 L),
  * Calcium Petroleum Sulfonate 12% (6.00 kg), White petroleum jelly 3% (1.50 kg). Converted
- * to % v/v with the same typical densities as the Mixed Sulfonate Grade:
+ * to % v/v with the same typical densities as the Na-Ba Sulfonate Grade:
  * 61.578 L calculated volume, so calculated SG ≈ 0.812.
  */
 const CORRUCUT_500_MTO_ONLY_COMPONENTS = [
   { materialName: 'Mineral Turpentine Oil (MTO)', percentage: 87.92, unit: 'L' as const, density: 0.785 },  // 42.500 kg → 54.140 L
   { materialName: 'Calcium Petroleum Sulfonate',  percentage: 9.28,  unit: 'L' as const, density: 1.05  },  //  6.000 kg →  5.714 L
   { materialName: 'White petroleum jelly',        percentage: 2.80,  unit: 'L' as const, density: 0.87  },  //  1.500 kg →  1.724 L
+]
+
+/**
+ * CORROCUT 500 — MTO-LLP based formulation. Supplied costing sheet (50 kg batch)
+ * by weight: MTO 80% (40.00 kg), Light Liquid Paraffin 5% (2.50 kg), Calcium
+ * Petroleum Sulfonate 12% (6.00 kg), White petroleum jelly 3% (1.50 kg). Converted
+ * to % v/v with the same typical densities as the MTO Only Grade (LLP 0.86 per
+ * variantDensities.seed.ts): 61.301 L calculated volume, so calculated SG ≈ 0.816.
+ * LLP uses the inventory's 'Light Paraffinic Mineral Oil' name.
+ */
+const CORRUCUT_500_MTO_LLP_COMPONENTS = [
+  { materialName: 'Mineral Turpentine Oil (MTO)', percentage: 83.13, unit: 'L' as const, density: 0.785 },  // 40.000 kg → 50.955 L
+  { materialName: 'Light Paraffinic Mineral Oil', percentage: 4.74,  unit: 'L' as const, density: 0.86  },  //  2.500 kg →  2.907 L — LLP
+  { materialName: 'Calcium Petroleum Sulfonate',  percentage: 9.32,  unit: 'L' as const, density: 1.05  },  //  6.000 kg →  5.714 L
+  { materialName: 'White petroleum jelly',        percentage: 2.81,  unit: 'L' as const, density: 0.87  },  //  1.500 kg →  1.724 L
 ]
 
 export async function seedFormulationVariants() {
@@ -1295,16 +1313,16 @@ export async function seedFormulationVariants() {
     }
   }
 
-  // ── CORRUCUT 500 — Water-Displacing RPO ───────────────────────────────────
+  // ── CORROCUT 500 — Exxsol Blend Grade ─────────────────────────────────────
   const [corrucut500Product] = await db
     .select()
     .from(products)
     .where(eq(products.key, 'corrucut-500'))
 
   if (!corrucut500Product) {
-    console.warn('   ⚠️  Product corrucut-500 not found — skipping Water-Displacing RPO variant seed')
+    console.warn('   ⚠️  Product corrucut-500 not found — skipping Exxsol Blend Grade variant seed')
   } else {
-    const CORRUCUT_500_WDRPO_NAME = 'CORRUCUT 500 - Water-Displacing RPO'
+    const CORRUCUT_500_WDRPO_NAME = 'Exxsol Blend Grade'
     const [existingCorrucut500Wdrpo] = await db
       .select()
       .from(productFormulationVariants)
@@ -1316,7 +1334,7 @@ export async function seedFormulationVariants() {
       )
 
     if (existingCorrucut500Wdrpo) {
-      console.log(`   ↩️  Water-Displacing RPO variant for CORRUCUT 500 already exists (id: ${existingCorrucut500Wdrpo.id})`)
+      console.log(`   ↩️  Exxsol Blend Grade variant for CORROCUT 500 already exists (id: ${existingCorrucut500Wdrpo.id})`)
     } else {
       // Non-default: the existing default 'Base Formula' variant stays the one
       // resolveActiveVariant auto-picks, so TDS/MSDS content doesn't change.
@@ -1342,11 +1360,11 @@ export async function seedFormulationVariants() {
         })),
       )
 
-      console.log(`   ✅ Created Water-Displacing RPO variant for CORRUCUT 500 (id: ${corrucut500WdrpoVariant.id})`)
+      console.log(`   ✅ Created Exxsol Blend Grade variant for CORROCUT 500 (id: ${corrucut500WdrpoVariant.id})`)
     }
 
     // Customer-visible name deliberately avoids naming the carrier material.
-    const CORRUCUT_500_MTO_BASED_NAME = 'Solvent Carrier Grade'
+    const CORRUCUT_500_MTO_BASED_NAME = 'MTO-LLP High-Oil Grade'
     const [existingCorrucut500MtoBased] = await db
       .select()
       .from(productFormulationVariants)
@@ -1358,7 +1376,7 @@ export async function seedFormulationVariants() {
       )
 
     if (existingCorrucut500MtoBased) {
-      console.log(`   ↩️  Solvent Carrier Grade variant for CORRUCUT 500 already exists (id: ${existingCorrucut500MtoBased.id})`)
+      console.log(`   ↩️  MTO-LLP High-Oil Grade variant for CORROCUT 500 already exists (id: ${existingCorrucut500MtoBased.id})`)
     } else {
       const [corrucut500MtoBasedVariant] = await db
         .insert(productFormulationVariants)
@@ -1382,11 +1400,11 @@ export async function seedFormulationVariants() {
         })),
       )
 
-      console.log(`   ✅ Created Solvent Carrier Grade variant for CORRUCUT 500 (id: ${corrucut500MtoBasedVariant.id})`)
+      console.log(`   ✅ Created MTO-LLP High-Oil Grade variant for CORROCUT 500 (id: ${corrucut500MtoBasedVariant.id})`)
     }
 
     // No TDS/MSDS overrides yet — barium sulfonate hazard data is pending.
-    const CORRUCUT_500_NA_BA_SULFONATE_NAME = 'Mixed Sulfonate Grade'
+    const CORRUCUT_500_NA_BA_SULFONATE_NAME = 'Na-Ba Sulfonate Grade'
     const [existingCorrucut500NaBa] = await db
       .select()
       .from(productFormulationVariants)
@@ -1398,7 +1416,7 @@ export async function seedFormulationVariants() {
       )
 
     if (existingCorrucut500NaBa) {
-      console.log(`   ↩️  Mixed Sulfonate Grade variant for CORRUCUT 500 already exists (id: ${existingCorrucut500NaBa.id})`)
+      console.log(`   ↩️  Na-Ba Sulfonate Grade variant for CORROCUT 500 already exists (id: ${existingCorrucut500NaBa.id})`)
     } else {
       const [corrucut500NaBaVariant] = await db
         .insert(productFormulationVariants)
@@ -1421,7 +1439,7 @@ export async function seedFormulationVariants() {
         })),
       )
 
-      console.log(`   ✅ Created Mixed Sulfonate Grade variant for CORRUCUT 500 (id: ${corrucut500NaBaVariant.id})`)
+      console.log(`   ✅ Created Na-Ba Sulfonate Grade variant for CORROCUT 500 (id: ${corrucut500NaBaVariant.id})`)
     }
 
     // No TDS/MSDS overrides yet — 30-day protection claims are unverified.
@@ -1437,7 +1455,7 @@ export async function seedFormulationVariants() {
       )
 
     if (existingCorrucut500MtoOnly) {
-      console.log(`   ↩️  MTO Only Grade variant for CORRUCUT 500 already exists (id: ${existingCorrucut500MtoOnly.id})`)
+      console.log(`   ↩️  MTO Only Grade variant for CORROCUT 500 already exists (id: ${existingCorrucut500MtoOnly.id})`)
     } else {
       const [corrucut500MtoOnlyVariant] = await db
         .insert(productFormulationVariants)
@@ -1460,7 +1478,46 @@ export async function seedFormulationVariants() {
         })),
       )
 
-      console.log(`   ✅ Created MTO Only Grade variant for CORRUCUT 500 (id: ${corrucut500MtoOnlyVariant.id})`)
+      console.log(`   ✅ Created MTO Only Grade variant for CORROCUT 500 (id: ${corrucut500MtoOnlyVariant.id})`)
+    }
+
+    // No TDS/MSDS overrides yet.
+    const CORRUCUT_500_MTO_LLP_NAME = 'MTO-LLP Low-Oil Grade'
+    const [existingCorrucut500MtoLlp] = await db
+      .select()
+      .from(productFormulationVariants)
+      .where(
+        and(
+          eq(productFormulationVariants.productKey, 'corrucut-500'),
+          variantNameIs(CORRUCUT_500_MTO_LLP_NAME),
+        ),
+      )
+
+    if (existingCorrucut500MtoLlp) {
+      console.log(`   ↩️  MTO-LLP Low-Oil Grade variant for CORROCUT 500 already exists (id: ${existingCorrucut500MtoLlp.id})`)
+    } else {
+      const [corrucut500MtoLlpVariant] = await db
+        .insert(productFormulationVariants)
+        .values({
+          productKey:  'corrucut-500',
+          companyId:   null,
+          variantName: CORRUCUT_500_MTO_LLP_NAME,
+          isDefault:   false,
+        })
+        .returning()
+
+      await db.insert(formulationVariantComponents).values(
+        CORRUCUT_500_MTO_LLP_COMPONENTS.map((c, i) => ({
+          variantId:    corrucut500MtoLlpVariant.id,
+          materialName: c.materialName,
+          percentage:   String(c.percentage),
+          unit:         c.unit,
+          density:      String(c.density),
+          sortOrder:    i,
+        })),
+      )
+
+      console.log(`   ✅ Created MTO-LLP Low-Oil Grade variant for CORROCUT 500 (id: ${corrucut500MtoLlpVariant.id})`)
     }
   }
 }

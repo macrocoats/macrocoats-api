@@ -31,6 +31,8 @@ const DRAFT_FUNCTIONS: Record<string, Record<string, string>> = {
     // Formula document text for 'Exxsol D60' (57% in the base formula)
     'exxol d60': 'Primary carrier solvent — dearomatized aliphatic hydrocarbon, principal film-forming vehicle',
     // At 20% next to 35% MTO it is not the primary carrier — wording from the variant's TDS
+    'exxol d60 @ exxsol blend grade': 'Dearomatized co-solvent — controlled-evaporation carrier alongside the MTO',
+    // Same, for environments still carrying the pre-rename variant name
     'exxol d60 @ corrucut 500 - water-displacing rpo': 'Dearomatized co-solvent — controlled-evaporation carrier alongside the MTO',
     'mineral turpentine oil (mto)': 'Primary carrier solvent — dissolves the inhibitor and film formers, penetrates and displaces moisture, then evaporates to leave the protective film',
     'light paraffinic mineral oil': 'Mineral base oil — non-volatile film oil that carries the corrosion inhibitor as a continuous, lightly oily protective film',
