@@ -1,6 +1,6 @@
-import { and, eq, inArray, isNull } from 'drizzle-orm'
+import { and, eq, inArray, isNull, sql } from 'drizzle-orm'
 import { db } from '../../db/index.js'
-import { companies, companyFormulaAssignments, companyProductAccess, refreshTokens, users } from '../../db/schema/index.js'
+import { companies, companyFormulaAssignments, companyProductAccess, customerPurchaseOrders, refreshTokens, users } from '../../db/schema/index.js'
 import { generateToken, hashPassword } from '../../utils/crypto.js'
 import type { CreateCompanyBody, UpdateCompanyBody } from './companies.schema.js'
 
@@ -72,11 +72,33 @@ export async function listCompanies() {
     formulaMap.set(row.companyId, summary)
   }
 
+  // Last PO ignores drafts/cancellations; open value is everything confirmed but
+  // not yet completed (draft, completed, cancelled excluded).
+  const poRows = await db
+    .select({
+      companyId:   customerPurchaseOrders.customerId,
+      lastPoDate:  sql<string | null>`max(${customerPurchaseOrders.customerPoDate}) filter (where ${customerPurchaseOrders.status} not in ('draft', 'cancelled'))::text`,
+      openPoValue: sql<string>`coalesce(sum(${customerPurchaseOrders.totalValue}) filter (where ${customerPurchaseOrders.status} not in ('draft', 'completed', 'cancelled')), 0)`,
+    })
+    .from(customerPurchaseOrders)
+    .where(and(
+      inArray(customerPurchaseOrders.customerId, rows.map((r) => r.id)),
+      isNull(customerPurchaseOrders.deletedAt),
+    ))
+    .groupBy(customerPurchaseOrders.customerId)
+
+  const poMap = new Map(poRows.map((r) => [r.companyId, r]))
+
   return rows.map((c) => {
     const formulaSummary = formulaMap.get(c.id)
-    return toResponse(c, accessMap.get(c.id) ?? [], formulaSummary
-      ? { formulaCount: formulaSummary.formulaIds.size, formulaProductKeys: Array.from(formulaSummary.productKeys) }
-      : undefined)
+    const po = poMap.get(c.id)
+    return {
+      ...toResponse(c, accessMap.get(c.id) ?? [], formulaSummary
+        ? { formulaCount: formulaSummary.formulaIds.size, formulaProductKeys: Array.from(formulaSummary.productKeys) }
+        : undefined),
+      lastPoDate:  po?.lastPoDate ?? null,
+      openPoValue: Number(po?.openPoValue ?? 0),
+    }
   })
 }
 
