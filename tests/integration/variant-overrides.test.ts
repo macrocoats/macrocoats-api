@@ -50,6 +50,33 @@ afterAll(async () => {
 })
 
 describe('formulation-variant TDS/MSDS overrides', () => {
+  it('persists and returns an internal formula preparation override', async () => {
+    const formulaOverrides = {
+      preparationStatus: 'draft_review_required',
+      preparation: [{
+        step: 1,
+        title: 'Charge carrier',
+        detail: 'Charge under controlled agitation.',
+        materialNames: ['Water'],
+      }],
+    }
+
+    const updated = await req()
+      .put(`/v1/formulation-variants/${variantId}`)
+      .set('Cookie', adminCookies)
+      .send({ formulaOverrides })
+      .expect(200)
+
+    expect(updated.body.data.formulaOverrides).toEqual(formulaOverrides)
+
+    const fetched = await req()
+      .get(`/v1/formulation-variants/${variantId}`)
+      .set('Cookie', adminCookies)
+      .expect(200)
+
+    expect(fetched.body.data.formulaOverrides).toEqual(formulaOverrides)
+  })
+
   it('rejects an unknown override key', async () => {
     await req()
       .put(`/v1/formulation-variants/${variantId}`)

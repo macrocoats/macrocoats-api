@@ -246,6 +246,13 @@
       "when": 1793257201229,
       "tag": "0034_corrocut_500_display_name",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1793260800000,
+      "tag": "0035_corrocut_500_formula_overrides",
+      "breakpoints": true
     }
   ]
 }

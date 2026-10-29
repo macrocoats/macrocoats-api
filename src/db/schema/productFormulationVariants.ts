@@ -21,6 +21,8 @@ export const productFormulationVariants = pgTable('product_formulation_variants'
   coaTests:    jsonb('coa_tests'),
   tdsOverrides: jsonb('tds_overrides'),
   msdsOverrides: jsonb('msds_overrides'),
+  /** Internal formula-workspace content such as variant-specific preparation methods. */
+  formulaOverrides: jsonb('formula_overrides'),
   createdAt:   timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt:   timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [

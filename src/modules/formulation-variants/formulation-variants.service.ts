@@ -35,7 +35,7 @@ function toComponentResponse(row: typeof formulationVariantComponents.$inferSele
 
 /**
  * `includeInternal=true` returns the full row (components, optimizationMeta, coaTests,
- * tdsOverrides, msdsOverrides, sourceVariantId) — real formulation data.
+ * tdsOverrides, msdsOverrides, formulaOverrides, sourceVariantId) — real formulation data.
  * `includeInternal=false` returns only the fields the frontend's VariantSelector
  * needs to render a dropdown (id/name/status/isDefault/companyDisplayName) — this
  * is what non-superadmin GET responses use, per the leak #2 fix (§7 of the plan).
@@ -70,6 +70,7 @@ function toVariantResponse(
     coaTests:     (row.coaTests     as Record<string, unknown>[] | null) ?? null,
     tdsOverrides:  (row.tdsOverrides  as Record<string, unknown>   | null) ?? null,
     msdsOverrides: (row.msdsOverrides as Record<string, unknown>   | null) ?? null,
+    formulaOverrides: (row.formulaOverrides as Record<string, unknown> | null) ?? null,
     components,
   }
 }
@@ -351,6 +352,7 @@ export async function updateVariant(variantId: string, data: UpdateVariantBody) 
   if (data.coaTests     !== undefined) patch.coaTests     = data.coaTests
   if (data.tdsOverrides  !== undefined) patch.tdsOverrides  = data.tdsOverrides
   if (data.msdsOverrides !== undefined) patch.msdsOverrides = data.msdsOverrides
+  if (data.formulaOverrides !== undefined) patch.formulaOverrides = data.formulaOverrides
 
   if (!Object.keys(patch).length) return getVariantById(variantId, true)
 

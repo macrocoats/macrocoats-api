@@ -10,6 +10,7 @@ import {
   TDS_OVERRIDES_CORRUCUT_500_WDRPO, MSDS_OVERRIDES_CORRUCUT_500_WDRPO,
   TDS_OVERRIDES_CORRUCUT_500_MTO_BASED, MSDS_OVERRIDES_CORRUCUT_500_MTO_BASED,
 } from './corrucut500Overrides.data.js'
+import { CORRUCUT_500_FORMULA_OVERRIDES } from './corrucut500FormulaOverrides.data.js'
 
 /**
  * Earlier names of seeded variants (renamed in 502bfd3). An environment where the
@@ -1334,6 +1335,9 @@ export async function seedFormulationVariants() {
       )
 
     if (existingCorrucut500Wdrpo) {
+      await db.update(productFormulationVariants)
+        .set({ formulaOverrides: CORRUCUT_500_FORMULA_OVERRIDES[CORRUCUT_500_WDRPO_NAME] })
+        .where(eq(productFormulationVariants.id, existingCorrucut500Wdrpo.id))
       console.log(`   ↩️  Exxsol Blend Grade variant for CORROCUT 500 already exists (id: ${existingCorrucut500Wdrpo.id})`)
     } else {
       // Non-default: the existing default 'Base Formula' variant stays the one
@@ -1347,6 +1351,7 @@ export async function seedFormulationVariants() {
           isDefault:   false,
           tdsOverrides:  TDS_OVERRIDES_CORRUCUT_500_WDRPO,
           msdsOverrides: MSDS_OVERRIDES_CORRUCUT_500_WDRPO,
+          formulaOverrides: CORRUCUT_500_FORMULA_OVERRIDES[CORRUCUT_500_WDRPO_NAME],
         })
         .returning()
 
@@ -1376,6 +1381,9 @@ export async function seedFormulationVariants() {
       )
 
     if (existingCorrucut500MtoBased) {
+      await db.update(productFormulationVariants)
+        .set({ formulaOverrides: CORRUCUT_500_FORMULA_OVERRIDES[CORRUCUT_500_MTO_BASED_NAME] })
+        .where(eq(productFormulationVariants.id, existingCorrucut500MtoBased.id))
       console.log(`   ↩️  MTO-LLP High-Oil Grade variant for CORROCUT 500 already exists (id: ${existingCorrucut500MtoBased.id})`)
     } else {
       const [corrucut500MtoBasedVariant] = await db
@@ -1387,6 +1395,7 @@ export async function seedFormulationVariants() {
           isDefault:   false,
           tdsOverrides:  TDS_OVERRIDES_CORRUCUT_500_MTO_BASED,
           msdsOverrides: MSDS_OVERRIDES_CORRUCUT_500_MTO_BASED,
+          formulaOverrides: CORRUCUT_500_FORMULA_OVERRIDES[CORRUCUT_500_MTO_BASED_NAME],
         })
         .returning()
 
@@ -1416,6 +1425,9 @@ export async function seedFormulationVariants() {
       )
 
     if (existingCorrucut500NaBa) {
+      await db.update(productFormulationVariants)
+        .set({ formulaOverrides: CORRUCUT_500_FORMULA_OVERRIDES[CORRUCUT_500_NA_BA_SULFONATE_NAME] })
+        .where(eq(productFormulationVariants.id, existingCorrucut500NaBa.id))
       console.log(`   ↩️  Na-Ba Sulfonate Grade variant for CORROCUT 500 already exists (id: ${existingCorrucut500NaBa.id})`)
     } else {
       const [corrucut500NaBaVariant] = await db
@@ -1425,6 +1437,7 @@ export async function seedFormulationVariants() {
           companyId:   null,
           variantName: CORRUCUT_500_NA_BA_SULFONATE_NAME,
           isDefault:   false,
+          formulaOverrides: CORRUCUT_500_FORMULA_OVERRIDES[CORRUCUT_500_NA_BA_SULFONATE_NAME],
         })
         .returning()
 
@@ -1455,6 +1468,9 @@ export async function seedFormulationVariants() {
       )
 
     if (existingCorrucut500MtoOnly) {
+      await db.update(productFormulationVariants)
+        .set({ formulaOverrides: CORRUCUT_500_FORMULA_OVERRIDES[CORRUCUT_500_MTO_ONLY_NAME] })
+        .where(eq(productFormulationVariants.id, existingCorrucut500MtoOnly.id))
       console.log(`   ↩️  MTO Only Grade variant for CORROCUT 500 already exists (id: ${existingCorrucut500MtoOnly.id})`)
     } else {
       const [corrucut500MtoOnlyVariant] = await db
@@ -1464,6 +1480,7 @@ export async function seedFormulationVariants() {
           companyId:   null,
           variantName: CORRUCUT_500_MTO_ONLY_NAME,
           isDefault:   false,
+          formulaOverrides: CORRUCUT_500_FORMULA_OVERRIDES[CORRUCUT_500_MTO_ONLY_NAME],
         })
         .returning()
 
@@ -1494,6 +1511,9 @@ export async function seedFormulationVariants() {
       )
 
     if (existingCorrucut500MtoLlp) {
+      await db.update(productFormulationVariants)
+        .set({ formulaOverrides: CORRUCUT_500_FORMULA_OVERRIDES[CORRUCUT_500_MTO_LLP_NAME] })
+        .where(eq(productFormulationVariants.id, existingCorrucut500MtoLlp.id))
       console.log(`   ↩️  MTO-LLP Low-Oil Grade variant for CORROCUT 500 already exists (id: ${existingCorrucut500MtoLlp.id})`)
     } else {
       const [corrucut500MtoLlpVariant] = await db
@@ -1503,6 +1523,7 @@ export async function seedFormulationVariants() {
           companyId:   null,
           variantName: CORRUCUT_500_MTO_LLP_NAME,
           isDefault:   false,
+          formulaOverrides: CORRUCUT_500_FORMULA_OVERRIDES[CORRUCUT_500_MTO_LLP_NAME],
         })
         .returning()
 

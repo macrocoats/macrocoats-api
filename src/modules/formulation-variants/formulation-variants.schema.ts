@@ -2,6 +2,16 @@ import { z } from 'zod'
 import { PRODUCT_KEYS, VARIANT_STATUSES, CREATABLE_VARIANT_STATUSES } from '../../types/index.js'
 import { tdsOverridesSchema, msdsOverridesSchema } from '../products/products.body-schemas.js'
 
+export const formulaOverridesSchema = z.object({
+  preparationStatus: z.enum(['draft_review_required', 'approved']),
+  preparation: z.array(z.object({
+    step:          z.number().int().positive(),
+    title:         z.string().trim().min(1).max(200),
+    detail:        z.string().trim().min(1).max(2000),
+    materialNames: z.array(z.string().trim().min(1).max(200)).optional(),
+  }).strict()).min(1),
+}).strict()
+
 export const componentBodySchema = z.object({
   materialName: z.string().min(1),
   percentage:   z.number().min(0).max(100).nullable(),
@@ -46,6 +56,7 @@ export const updateVariantSchema = z.object({
   })).nullable().optional(),
   tdsOverrides:  tdsOverridesSchema.nullable().optional(),
   msdsOverrides: msdsOverridesSchema.nullable().optional(),
+  formulaOverrides: formulaOverridesSchema.nullable().optional(),
 })
 
 export const replaceComponentsSchema = z.object({
