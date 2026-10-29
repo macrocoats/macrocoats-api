@@ -25,9 +25,10 @@ const round2 = (n: number) => Math.round(n * 100) / 100
 
 function firstOfMonth(d: Date) { return new Date(d.getFullYear(), d.getMonth(), 1) }
 function firstOfQuarter(d: Date) { return new Date(d.getFullYear(), Math.floor(d.getMonth() / 3) * 3, 1) }
-function firstOfYear(d: Date) { return new Date(d.getFullYear(), 0, 1) }
+// Indian financial year (1 April – 31 March) — "year to date", the "This Year"
+// range and the annual run-rate all report against the FY, not the calendar year.
+function firstOfFinancialYear(d: Date) { return new Date(d.getMonth() >= 3 ? d.getFullYear() : d.getFullYear() - 1, 3, 1) }
 function daysInMonth(d: Date) { return new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate() }
-function isLeapYear(y: number) { return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0 }
 function daysBetween(a: Date, b: Date) { return Math.round((b.getTime() - a.getTime()) / 86400000) }
 function addDays(d: Date, n: number) { const c = new Date(d); c.setDate(c.getDate() + n); return c }
 
@@ -42,7 +43,7 @@ function resolveWindow(filter: DashboardFilter): { from: string; to: string } {
     }
     case 'month':   return { from: iso(firstOfMonth(today)), to: iso(today) }
     case 'quarter': return { from: iso(firstOfQuarter(today)), to: iso(today) }
-    case 'year':    return { from: iso(firstOfYear(today)), to: iso(today) }
+    case 'year':    return { from: iso(firstOfFinancialYear(today)), to: iso(today) }
     case 'custom':  return { from: filter.from!, to: filter.to! }
   }
 }
@@ -54,14 +55,14 @@ export async function getExecutiveKpis(filter: DashboardFilter) {
   const today = new Date()
   const monthStart = iso(firstOfMonth(today))
   const quarterStart = iso(firstOfQuarter(today))
-  const yearStart = iso(firstOfYear(today))
+  const yearStart = iso(firstOfFinancialYear(today))
 
   const customerCond = filter.customerId ? sql`AND o.customer_id = ${filter.customerId}` : sql``
   const productJoinCond = filter.productKey
     ? sql`AND EXISTS (SELECT 1 FROM customer_purchase_order_items pi WHERE pi.order_id = o.id AND pi.product_key = ${filter.productKey})`
     : sql``
 
-  // Fixed-period figures — always "this calendar month/quarter/year", independent of the range filter.
+  // Fixed-period figures — always "this calendar month/quarter, this financial year", independent of the range filter.
   const [fixedRow] = await db.execute<{ [k: string]: unknown; currentMonthSales: string; quarterlySales: string; ytdSales: string; pendingOrderValue: string }>(sql`
     SELECT
       COALESCE(SUM(total_value) FILTER (WHERE customer_po_date >= ${monthStart}), 0)   AS "currentMonthSales",
@@ -260,14 +261,14 @@ export async function getProjections(query: ProjectionsQuery) {
   const today = new Date()
   const monthStart = firstOfMonth(today)
   const quarterStart = firstOfQuarter(today)
-  const yearStart = firstOfYear(today)
+  const yearStart = firstOfFinancialYear(today)
 
   const dayOfMonth = daysBetween(monthStart, today) + 1
   const totalDaysInMonth = daysInMonth(today)
   const dayOfQuarter = daysBetween(quarterStart, today) + 1
   const totalDaysInQuarter = daysBetween(quarterStart, firstOfQuarter(addDays(quarterStart, 92))) || 92
   const dayOfYear = daysBetween(yearStart, today) + 1
-  const totalDaysInYear = isLeapYear(today.getFullYear()) ? 366 : 365
+  const totalDaysInYear = daysBetween(yearStart, new Date(yearStart.getFullYear() + 1, 3, 1))
 
   const [toDateRow] = await db.execute<{ [k: string]: unknown; monthToDate: string; quarterToDate: string; yearToDate: string }>(sql`
     SELECT
