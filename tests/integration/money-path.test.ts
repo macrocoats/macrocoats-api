@@ -186,6 +186,23 @@ describe('money path: batch → finished goods → customer PO → dispatch', ()
     await dispatch(1).expect(409)
   })
 
+  it('payment terms start only when an invoice is mapped to a dispatch of the batch', async () => {
+    const getBatch = async () => (await req().get(`/v1/batches/${batchNumber}`).set('Cookie', adminCookies).expect(200)).body
+    // GET /batches/:batchNumber returns the bare batch (operator-reachable read, see CLAUDE.md)
+    expect((await getBatch()).paymentDueDate).toBeNull()
+
+    const invoiceNumber = `INV-TEST-${Date.now()}`
+    await req().patch(`/v1/dispatches/${secondDispatchId}`).set('Cookie', adminCookies).send({ invoiceNumber }).expect(200)
+
+    const batch = await getBatch()
+    const today = new Date().toISOString().slice(0, 10)
+    const due = new Date(`${today}T00:00:00Z`)
+    due.setUTCDate(due.getUTCDate() + batch.paymentTermDays)
+    expect(batch.invoiceNumber).toBe(invoiceNumber)
+    expect(batch.paymentStartDate).toBe(today)
+    expect(batch.paymentDueDate).toBe(due.toISOString().slice(0, 10))
+  })
+
   it('voiding a dispatch restores stock and recomputes the order status', async () => {
     await req()
       .patch(`/v1/dispatches/${secondDispatchId}/void`)
@@ -197,6 +214,10 @@ describe('money path: batch → finished goods → customer PO → dispatch', ()
     expect(Number(fg.dispatchedQuantity)).toBe(40)
     expect(fg.status).toBe('Partially Dispatched')
     expect(await getOrderStatus()).toBe('partially_dispatched')
+
+    // The voided dispatch carried the only invoice, so the payment term is no longer running
+    const batch = (await req().get(`/v1/batches/${batchNumber}`).set('Cookie', adminCookies).expect(200)).body
+    expect(batch.paymentDueDate).toBeNull()
 
     // Voiding twice is rejected
     const again = await req()
@@ -212,5 +233,56 @@ describe('money path RBAC', () => {
     await req().post('/v1/batches').set('Cookie', raneCookies).send({}).expect(403)
     await req().post('/v1/dispatches').set('Cookie', raneCookies).send({}).expect(403)
     await req().post('/v1/customer-purchase-orders').set('Cookie', raneCookies).send({}).expect(403)
+  })
+})
+
+describe('batch inventory gate', () => {
+  const body = (batchType: 'Production' | 'Trial') => ({
+    productCode:         'uniklean-sp',
+    companyName,
+    batchSize:           10,
+    batchType,
+    formulationSnapshot: { components: [{
+      name: 'Not An Inventory Material', percentage: 100, quantityUsed: 10, unit: 'L', materialRate: 0, costContribution: 0,
+    }] },
+    labelSnapshot: {
+      productName: 'UNIKLEAN SP', manufactureDate: '2026-01-01', expiryDate: '2099-01-01',
+      netWeight: '10 L', hazardPictograms: [], signalWord: 'Warning',
+    },
+    costSummary: {
+      rawMaterialCostPerL: 10, lossAdjustmentPerL: 0, transportCostPerL: 0, handlingBufferPerL: 0,
+      productionCostPerL: 10, sellingPricePerL: 20, profitPerL: 10, profitMargin: 50,
+    },
+  })
+
+  it('blocks a Production batch whose material has no inventory balance', async () => {
+    const res = await req().post('/v1/batches').set('Cookie', adminCookies).send(body('Production')).expect(409)
+    expect(res.body.error).toBe('MATERIAL_NOT_FOUND')
+  })
+
+  it('creates a Trial batch without checking or deducting inventory', async () => {
+    const res = await req().post('/v1/batches').set('Cookie', adminCookies).send(body('Trial')).expect(201)
+    expect(res.body.data.batchType).toBe('Trial')
+  })
+
+  it('matches formula names to Inventory like the Formula page, and skips water', async () => {
+    const stamp = Date.now()
+    const item = await req().post('/v1/inventory').set('Cookie', adminCookies)
+      .send({ material: `Exxol Gate${stamp}`, unit: 'L', price: 1, stockQty: 50 }).expect(201)
+    const itemId = item.body.data.id
+    try {
+      const components = [
+        { name: `Exxsol Gate${stamp}`, percentage: 40, quantityUsed: 4, unit: 'L', materialRate: 1, costContribution: 4 },
+        { name: 'Water (DI/RO)', percentage: 60, quantityUsed: 6, unit: 'L', materialRate: 0, costContribution: 0 },
+      ]
+      await req().post('/v1/batches').set('Cookie', adminCookies)
+        .send({ ...body('Production'), formulationSnapshot: { components } }).expect(201)
+
+      const list = await req().get('/v1/inventory').set('Cookie', adminCookies).expect(200)
+      const after = list.body.data.find((i: { id: string }) => i.id === itemId)
+      expect(after.stockQty).toBe(46)
+    } finally {
+      await req().delete(`/v1/inventory/${itemId}`).set('Cookie', adminCookies)
+    }
   })
 })

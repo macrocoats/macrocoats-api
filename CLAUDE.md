@@ -294,9 +294,9 @@ Integration tests use a real PostgreSQL database (the same one in `.env.local`).
 - `formulationSnapshot` — full formulation at time of batch creation
 - `labelSnapshot` — label data including the assigned batchNumber
 - `costSummary` — cost breakdown (per-litre component/loss/transport/handling costs, optional `packagingCostPerL`, selling price, profit)
-- `paymentDueDate`, `paymentTermDays` (default 45) — payment tracking
+- `paymentTermDays` (default 45; the web modal defaults to 60) — the term length, set at creation. **Payment terms start only when an invoice is mapped to the batch**: `paymentDueDate` is derived on every read by `loadBatchInvoices()` in `batches.service.ts` as (earliest non-voided dispatch with an `invoiceNumber` → its Zoho `invoice_date` if synced, else its `dispatch_date`) + `paymentTermDays`, returned with `invoiceNumber`/`paymentStartDate`; all null until then. The `batches.payment_due_date` column is legacy — no longer written or read
 - `paidAt` — nullable timestamp; `NULL` = unpaid, set to `now()` when payment is marked done via `PATCH /batches/:batchNumber/payment` (`{ paid: boolean }`, toggleable). `listBatches` accepts a `paid=true|false` query filter (`isNotNull`/`isNull` on `paidAt`)
-- `batchType` — `'Production'` (default) or `'Trial'`; filterable via `listBatches` query param
+- `batchType` — `'Production'` (default) or `'Trial'`; filterable via `listBatches` query param. `createBatch` resolves every formula material to an `inventory_items` row with `findMaterialMatch` (`src/utils/materialMatch.ts` — a port of the frontend's `utils/formulationCalc.js` matcher, so "Exxsol D60" → "Exxol D60"; keep the two in sync), requires non-NULL `stock_qty` and enough stock (else 409 `MATERIAL_NOT_FOUND`/`INSUFFICIENT_MATERIAL`), and deducts by item id. Water rows (`isWaterMaterial`) are skipped; **Trial batches skip this gate and the deduction entirely**
 
 ### Zoho Invoice sync (zoho-invoice)
 

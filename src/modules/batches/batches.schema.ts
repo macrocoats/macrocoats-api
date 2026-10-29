@@ -50,7 +50,8 @@ export const createBatchSchema = z.object({
                           (d) => d <= new Date().toISOString().slice(0, 10),
                           { message: 'productionDate cannot be in the future' },
                         ).optional(),
-  paymentDueDate:      z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  // Payment terms start when an invoice is mapped to the batch (see
+  // loadBatchInvoices in batches.service.ts) — only the term length is set here.
   paymentTermDays:     z.number().int().positive().optional().default(45),
   variantId:           z.string().uuid().nullable().optional(),
   variantName:         z.string().nullable().optional(),
