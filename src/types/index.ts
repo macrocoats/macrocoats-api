@@ -57,6 +57,9 @@ export const VARIANT_STATUSES = [
 
 export type VariantStatus = (typeof VARIANT_STATUSES)[number]
 
+/** Statuses a new variant may be created with — 'ai_suggested' is legacy-only. */
+export const CREATABLE_VARIANT_STATUSES = VARIANT_STATUSES.filter((s) => s !== 'ai_suggested')
+
 /** Statuses that permit batch generation, inventory deduction, labels, CoA, TDS, MSDS. */
 export const USABLE_VARIANT_STATUSES: VariantStatus[] = ['approved', 'production']
 

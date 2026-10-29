@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { PRODUCT_KEYS, VARIANT_STATUSES } from '../../types/index.js'
+import { PRODUCT_KEYS, VARIANT_STATUSES, CREATABLE_VARIANT_STATUSES } from '../../types/index.js'
 import { tdsOverridesSchema, msdsOverridesSchema } from '../products/products.body-schemas.js'
 
 export const componentBodySchema = z.object({
@@ -16,7 +16,7 @@ export const createVariantSchema = z.object({
   companyId:   z.string().uuid().nullable().optional(),
   variantName: z.string().min(1).max(200),
   isDefault:   z.boolean().default(false),
-  status:            z.enum(VARIANT_STATUSES as unknown as [string, ...string[]]).default('approved'),
+  status:            z.enum(CREATABLE_VARIANT_STATUSES as unknown as [string, ...string[]]).default('approved'),
   sourceVariantId:   z.string().uuid().nullable().optional(),
   optimizationMeta:  z.record(z.unknown()).nullable().optional(),
   assignedCompanyIds: z.array(z.string().uuid()).optional(),
