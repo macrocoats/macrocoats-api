@@ -5,6 +5,7 @@ import {
 import { relations } from 'drizzle-orm'
 import { users } from './users.js'
 import { productFormulationVariants } from './productFormulationVariants.js'
+import { productionWorkOrders } from './productionWorkOrders.js'
 
 // ── Batches ───────────────────────────────────────────────────────────────────
 export const batches = pgTable('batches', {
@@ -34,6 +35,11 @@ export const batches = pgTable('batches', {
   version:             integer('version').notNull().default(1),
   coaSnapshot:         jsonb('coa_snapshot'),
   notes:               text('notes'),
+  // Set when the batch is produced against a production work order (null for
+  // legacy/formula-page batches). One work order may own several batches.
+  workOrderId:         uuid('work_order_id').references(() => productionWorkOrders.id, { onDelete: 'set null' }),
+  // Client-supplied Idempotency-Key — a retried create returns the existing batch.
+  clientRequestId:     text('client_request_id').unique(),
   createdBy:           uuid('created_by').references(() => users.id),
   createdAt:           timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [
@@ -45,6 +51,7 @@ export const batches = pgTable('batches', {
   index('batches_variant_id_idx').on(t.variantId),
   index('batches_lifecycle_status_idx').on(t.lifecycleStatus),
   index('batches_created_at_idx').on(t.createdAt),
+  index('batches_work_order_id_idx').on(t.workOrderId),
 ])
 
 export const batchesRelations = relations(batches, ({ one }) => ({

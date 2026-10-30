@@ -1,6 +1,8 @@
 import { eq, ilike, and, gte, lte, desc, count, sql, isNull, isNotNull } from 'drizzle-orm'
 import { db } from '../../db/index.js'
-import { batches, productFormulationVariants, finishedGoods } from '../../db/schema/index.js'
+import { batches, productFormulationVariants, finishedGoods, productionWorkOrderDemands, productionEvents } from '../../db/schema/index.js'
+import { allocateReleasedBatch } from '../customer-purchase-orders/customer-purchase-orders.service.js'
+import { syncWorkOrderProgress } from '../../utils/workOrderProgress.js'
 import { nextBatchNumber } from '../../utils/batchNumber.js'
 import { findMaterialMatch, isWaterMaterial } from '../../utils/materialMatch.js'
 import { createFinishedGoodsRecord } from '../finished-goods/finished-goods.service.js'
@@ -17,7 +19,7 @@ interface BatchInvoice { invoiceNumber: string; startDate: string }
  * read, so voiding or editing the dispatch moves the due date with it;
  * `batches.payment_due_date` is legacy and no longer read or written.
  */
-async function loadBatchInvoices(batchIds: string[]): Promise<Map<string, BatchInvoice>> {
+export async function loadBatchInvoices(batchIds: string[]): Promise<Map<string, BatchInvoice>> {
   if (batchIds.length === 0) return new Map()
   const rows = await db.execute<{ batchId: string; invoiceNumber: string; startDate: string }>(sql`
     SELECT d.batch_id AS "batchId",
@@ -33,7 +35,7 @@ async function loadBatchInvoices(batchIds: string[]): Promise<Map<string, BatchI
   return new Map(rows.map((r) => [r.batchId, { invoiceNumber: r.invoiceNumber, startDate: r.startDate }]))
 }
 
-function addDays(isoDate: string, days: number): string {
+export function addDays(isoDate: string, days: number): string {
   const d = new Date(`${isoDate}T00:00:00Z`)
   d.setUTCDate(d.getUTCDate() + days)
   return d.toISOString().slice(0, 10)
@@ -79,6 +81,7 @@ function toBatchResponse(row: typeof batches.$inferSelect, invoice: BatchInvoice
     },
     coaSnapshot:         row.coaSnapshot ?? null,
     notes:               row.notes ?? null,
+    workOrderId:         row.workOrderId ?? null,
     createdAt:           row.createdAt.toISOString(),
   }
 }
@@ -122,7 +125,28 @@ export type CreateBatchResult =
   | { code: 'MATERIAL_NOT_FOUND'; materialName: string }
   | { code: 'INSUFFICIENT_MATERIAL'; materialName: string; available: number; required: number }
 
-export async function createBatch(data: CreateBatchBody, createdBy: string | null): Promise<CreateBatchResult> {
+type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0]
+
+/**
+ * Work-order hook for createBatch: links the new batch to a production work
+ * order and runs `onCreated` inside the same transaction (the work-order
+ * service uses it to auto-advance the order and write audit events), so a
+ * failed advance rolls the batch back too.
+ */
+export interface CreateBatchOptions {
+  workOrderId?: string
+  clientRequestId?: string
+  onCreated?: (tx: Tx, row: typeof batches.$inferSelect) => Promise<void>
+}
+
+export async function findBatchByClientRequestId(clientRequestId: string) {
+  const [row] = await db.select().from(batches).where(eq(batches.clientRequestId, clientRequestId))
+  return row ?? null
+}
+
+export { toOperatorBatchResponse }
+
+export async function createBatch(data: CreateBatchBody, createdBy: string | null, options: CreateBatchOptions = {}): Promise<CreateBatchResult> {
   // ── Variant approval gate ────────────────────────────────────────────────
   // AI-suggested / draft / reviewed variants must never reach production —
   // only 'approved' and 'production' variants may back a batch.
@@ -214,11 +238,14 @@ export async function createBatch(data: CreateBatchBody, createdBy: string | nul
         lifecycleStatus:     'awaiting_qc',
         expiryDate:          data.labelSnapshot.expiryDate,
         notes:               data.notes ?? null,
+        workOrderId:         options.workOrderId ?? null,
+        clientRequestId:     options.clientRequestId ?? null,
         createdBy:           createdBy ?? undefined,
       })
       .returning()
 
     await createFinishedGoodsRecord(tx as unknown as typeof db, row)
+    if (options.onCreated) await options.onCreated(tx, row)
 
     return toBatchResponse(row)
   })
@@ -269,16 +296,35 @@ export async function getBatchByNumber(batchNumber: string, role: 'superadmin' |
   return role === 'operator' ? toOperatorBatchResponse(row, invoice) : toBatchResponse(row, invoice)
 }
 
-export async function saveCoaSnapshot(batchNumber: string, snapshot: SaveCoaSnapshotBody) {
-  const [existing] = await db.select().from(batches).where(eq(batches.batchNumber, batchNumber))
-  if (!existing) return null
-  if (['released', 'closed'].includes(existing.lifecycleStatus)) return { code: 'BATCH_IMMUTABLE' as const }
-  const [row] = await db
-    .update(batches)
-    .set({ coaSnapshot: snapshot })
-    .where(eq(batches.batchNumber, batchNumber))
-    .returning()
-  return row ? withInvoice(row) : null
+export async function saveCoaSnapshot(
+  batchNumber: string,
+  snapshot: SaveCoaSnapshotBody,
+  actor: { id: string | null; role: 'superadmin' | 'operator' } = { id: null, role: 'superadmin' },
+) {
+  // Lock + guarded UPDATE so a concurrent release can't be followed by a CoA overwrite.
+  const outcome = await db.transaction(async (tx) => {
+    const [existing] = await tx.select().from(batches).where(eq(batches.batchNumber, batchNumber)).for('update')
+    if (!existing) return null
+    if (['released', 'closed'].includes(existing.lifecycleStatus)) return { code: 'BATCH_IMMUTABLE' as const }
+    const [updated] = await tx.update(batches)
+      .set({ coaSnapshot: snapshot, version: existing.version + 1 })
+      .where(and(eq(batches.id, existing.id), sql`${batches.lifecycleStatus} NOT IN ('released', 'closed')`))
+      .returning()
+    if (!updated) return { code: 'BATCH_IMMUTABLE' as const }
+    if (updated.workOrderId) {
+      const tests = snapshot.tests
+      await tx.insert(productionEvents).values({
+        workOrderId: updated.workOrderId, batchId: updated.id, action: 'qc_recorded', actorId: actor.id,
+        payload: { batchNumber, testCount: tests.length, passed: tests.every((t) => t.status === 'Pass'), savedBy: snapshot.savedBy ?? null },
+      })
+    }
+    return updated
+  })
+  if (!outcome || 'code' in outcome) return outcome
+  const row = outcome
+  // Operators may record QC results; the response never carries formula/cost.
+  const invoice = (await loadBatchInvoices([row.id])).get(row.id) ?? null
+  return actor.role === 'operator' ? toOperatorBatchResponse(row, invoice) : toBatchResponse(row, invoice)
 }
 
 export async function setPaymentStatus(batchNumber: string, paid: boolean) {
@@ -320,8 +366,34 @@ export async function releaseBatch(batchNumber: string, releasedBy: string, note
     if (!updated) return { code: 'VERSION_CONFLICT' as const }
     await tx.update(finishedGoods).set({ status: 'Available', updatedAt: new Date() })
       .where(and(eq(finishedGoods.batchId, row.id), eq(finishedGoods.status, 'Quarantined')))
+    if (updated.workOrderId) {
+      // Work-order batches allocate to the order lines they were planned for.
+      const lines = await tx.select({ orderId: productionWorkOrderDemands.orderId, orderItemId: productionWorkOrderDemands.orderItemId })
+        .from(productionWorkOrderDemands).where(eq(productionWorkOrderDemands.workOrderId, updated.workOrderId))
+        .orderBy(productionWorkOrderDemands.createdAt)
+      const allocations = await allocateReleasedBatch(tx as unknown as typeof db, updated, lines, releasedBy)
+      await tx.insert(productionEvents).values({
+        workOrderId: updated.workOrderId, batchId: updated.id, action: 'batch_released', actorId: releasedBy,
+        payload: { batchNumber: updated.batchNumber, allocations },
+      })
+      // Released output is what completes a work order.
+      await syncWorkOrderProgress(tx, updated.workOrderId, releasedBy, { batchId: updated.id })
+    }
     return withInvoice(updated)
   })
+}
+
+export async function releaseBatches(batchNumbers: string[], releasedBy: string, notes?: string) {
+  // Each batch releases in its own transaction so one blocked batch never
+  // fails the rest; the server re-checks every gate per batch.
+  const results = []
+  for (const batchNumber of batchNumbers) {
+    const result = await releaseBatch(batchNumber, releasedBy, notes)
+    results.push('code' in result
+      ? { batchNumber, released: false, error: result.code, blockingReasons: result.blockingReasons ?? [] }
+      : { batchNumber, released: true, lifecycleStatus: result.lifecycleStatus })
+  }
+  return results
 }
 
 export async function setBatchLifecycle(batchNumber: string, status: 'on_hold' | 'rejected' | 'cancelled', reason: string, version?: number): Promise<ReleaseBatchResult> {
@@ -335,6 +407,13 @@ export async function setBatchLifecycle(batchNumber: string, status: 'on_hold' |
     .where(and(eq(batches.id, existing.id), eq(batches.version, existing.version))).returning()
   if (!updated) return { code: 'VERSION_CONFLICT' }
   await db.update(finishedGoods).set({ status: 'Quarantined', updatedAt: new Date() }).where(eq(finishedGoods.batchId, existing.id))
+  if (updated.workOrderId) {
+    // A held/rejected batch stops counting as output; the hub then offers the next batch.
+    await db.insert(productionEvents).values({
+      workOrderId: updated.workOrderId, batchId: updated.id, action: `batch_${status}`, fromStatus: existing.lifecycleStatus, toStatus: status,
+      payload: { batchNumber, reason },
+    })
+  }
   return withInvoice(updated)
 }
 

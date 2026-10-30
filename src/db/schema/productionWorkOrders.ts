@@ -23,6 +23,8 @@ export const productionWorkOrders = pgTable('production_work_orders', {
   materialReadinessSnapshot: jsonb('material_readiness_snapshot'),
   reason: text('reason'),
   notes: text('notes'),
+  // Required when a work order is completed with output outside the ±5% tolerance.
+  completionReason: text('completion_reason'),
   version: integer('version').notNull().default(1),
   createdBy: uuid('created_by').references(() => users.id, { onDelete: 'set null' }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -68,3 +70,23 @@ export const productionWorkOrderDemandsRelations = relations(productionWorkOrder
 
 export type ProductionWorkOrder = typeof productionWorkOrders.$inferSelect
 export type NewProductionWorkOrder = typeof productionWorkOrders.$inferInsert
+
+// Append-only audit trail for production control — every work-order
+// transition (manual or automatic) and every batch command run from the
+// work-order hub writes one row. Never updated or deleted.
+export const productionEvents = pgTable('production_events', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  workOrderId: uuid('work_order_id').references(() => productionWorkOrders.id, { onDelete: 'cascade' }),
+  batchId: uuid('batch_id'),
+  action: text('action').notNull(),
+  fromStatus: text('from_status'),
+  toStatus: text('to_status'),
+  payload: jsonb('payload'),
+  actorId: uuid('actor_id').references(() => users.id, { onDelete: 'set null' }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  index('production_events_work_order_idx').on(t.workOrderId, t.createdAt),
+  index('production_events_batch_idx').on(t.batchId),
+])
+
+export type ProductionEvent = typeof productionEvents.$inferSelect

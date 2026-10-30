@@ -21,6 +21,8 @@ export const createWorkOrderSchema = z.object({
   reason: z.string().max(500).nullable().optional(),
   notes: z.string().max(2000).nullable().optional(),
   demand: demandSchema.optional(),
+  // Skip the separate "release to production" click when materials are ready.
+  releaseNow: z.boolean().optional(),
 }).superRefine((data, ctx) => {
   if (data.demandType === 'customer_order' && !data.demand) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['demand'], message: 'Customer-order work requires an order line.' })
@@ -33,8 +35,11 @@ export const createWorkOrderSchema = z.object({
   }
 })
 
+export const WORK_ORDER_VIEWS = ['active', 'awaiting_qc', 'ready_to_ship', 'exceptions', 'done'] as const
+
 export const listWorkOrdersQuerySchema = z.object({
   status: z.enum(WORK_ORDER_STATUSES).optional(),
+  view: z.enum(WORK_ORDER_VIEWS).optional(),
   productKey: z.string().optional(),
   scheduledFrom: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   scheduledTo: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
@@ -45,8 +50,28 @@ export const listWorkOrdersQuerySchema = z.object({
 export const transitionWorkOrderSchema = z.object({
   status: z.enum(WORK_ORDER_STATUSES),
   version: z.number().int().positive(),
+  // Required for cancel, and for completing with output outside tolerance.
+  reason: z.string().trim().min(1).max(500).optional(),
 })
 
+const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
+
+export const createWorkOrderBatchSchema = z.object({
+  batchSize: z.number().positive(),
+  productionDate: isoDate.refine((d) => d <= new Date().toISOString().slice(0, 10), { message: 'productionDate cannot be in the future' }).optional(),
+  expiryDate: isoDate,
+  notes: z.string().max(2000).optional(),
+  version: z.number().int().positive().optional(),
+}).superRefine((data, ctx) => {
+  const produced = data.productionDate ?? new Date().toISOString().slice(0, 10)
+  if (data.expiryDate <= produced) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['expiryDate'], message: 'Expiry must be after the production date.' })
+  }
+})
+
+export const idempotencyKeySchema = z.string().trim().min(8).max(100).optional()
+
 export type CreateWorkOrderBody = z.infer<typeof createWorkOrderSchema>
+export type CreateWorkOrderBatchBody = z.infer<typeof createWorkOrderBatchSchema>
 export type ListWorkOrdersQuery = z.infer<typeof listWorkOrdersQuerySchema>
 export type TransitionWorkOrderBody = z.infer<typeof transitionWorkOrderSchema>

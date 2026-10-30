@@ -3,12 +3,13 @@ import { authenticate, requireAuth } from '../../middleware/authenticate.js'
 import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js'
 import { requireRole } from '../../middleware/requireRole.js'
 import { AppErrors } from '../../types/errors.js'
-import { createBatchSchema, listBatchesQuerySchema, saveCoaSnapshotSchema, setPaymentStatusSchema, releaseBatchSchema, setBatchLifecycleSchema } from './batches.schema.js'
-import { createBatch, listBatches, getBatchByNumber, deleteBatch, saveCoaSnapshot, clearCoaSnapshot, setPaymentStatus, releaseBatch, setBatchLifecycle } from './batches.service.js'
+import { createBatchSchema, listBatchesQuerySchema, saveCoaSnapshotSchema, setPaymentStatusSchema, releaseBatchSchema, releaseBatchesSchema, setBatchLifecycleSchema } from './batches.schema.js'
+import { createBatch, listBatches, getBatchByNumber, deleteBatch, saveCoaSnapshot, clearCoaSnapshot, setPaymentStatus, releaseBatch, releaseBatches, setBatchLifecycle } from './batches.service.js'
 
 const preHandler = [authenticate, requireAuth, requireSuperAdmin]
 // Operators may VIEW batches (with formula/cost stripped — see toOperatorBatchResponse
-// in batches.service.ts) but never create/edit/delete one — see root CLAUDE.md's RBAC notes.
+// in batches.service.ts) and record CoA results; create from a work order lives in
+// production-work-orders. Release, payment, delete stay superadmin — see RBAC notes.
 const viewPreHandler = [authenticate, requireAuth, requireRole('superadmin', 'operator')]
 
 export async function batchRoutes(app: FastifyInstance) {
@@ -61,16 +62,26 @@ export async function batchRoutes(app: FastifyInstance) {
   })
 
   // ── PATCH /batches/:batchNumber/coa ──────────────────────────────────────
-  app.patch<{ Params: { batchNumber: string } }>('/:batchNumber/coa', { preHandler }, async (request, reply) => {
+  // Operators record QC results from the production hub; release stays superadmin.
+  app.patch<{ Params: { batchNumber: string } }>('/:batchNumber/coa', { preHandler: viewPreHandler }, async (request, reply) => {
     const body = saveCoaSnapshotSchema.safeParse(request.body)
     if (!body.success) {
       return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
     }
 
-    const batch = await saveCoaSnapshot(request.params.batchNumber, body.data)
+    const role = request.authUser!.role === 'operator' ? 'operator' : 'superadmin'
+    const batch = await saveCoaSnapshot(request.params.batchNumber, body.data, { id: request.authUser!.id, role })
     if (!batch) return reply.code(404).send({ error: AppErrors.BATCH_NOT_FOUND })
     if ('code' in batch) return reply.code(409).send({ error: batch.code, message: 'Released batch QC evidence is immutable.' })
     return reply.send({ data: batch })
+  })
+
+  // ── POST /batches/release — bulk QC release, per-batch results ───────────
+  app.post('/release', { preHandler }, async (request, reply) => {
+    const body = releaseBatchesSchema.safeParse(request.body)
+    if (!body.success) return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
+    const results = await releaseBatches(body.data.batchNumbers, request.authUser!.id, body.data.notes)
+    return reply.send({ data: { results } })
   })
 
   app.post<{ Params: { batchNumber: string } }>('/:batchNumber/release', { preHandler }, async (request, reply) => {

@@ -702,6 +702,61 @@ export async function linkBatch(orderId: string, data: LinkBatchBody, userId: st
   })
 }
 
+/**
+ * Auto-allocation on QC release: links a just-released, work-order-produced
+ * batch to the order lines that work order was planned against, in the given
+ * order, up to each line's unlinked remainder and the batch's unlinked yield.
+ * Excess stays as free stock. Runs inside the release transaction and fires
+ * the same timeline events and status recompute as a manual linkBatch().
+ * Lines on closed/cancelled orders or with a mismatched product are skipped.
+ */
+export async function allocateReleasedBatch(
+  tx: DB,
+  batch: typeof batches.$inferSelect,
+  lines: Array<{ orderId: string; orderItemId: string }>,
+  userId: string,
+): Promise<Array<{ orderId: string; orderItemId: string; linkedQuantity: number }>> {
+  const allocations: Array<{ orderId: string; orderItemId: string; linkedQuantity: number }> = []
+  const [{ batchLinked }] = await tx.execute<{ batchLinked: string }>(sql`
+    SELECT COALESCE(SUM(linked_quantity), 0) AS "batchLinked" FROM customer_purchase_order_batches WHERE batch_id = ${batch.id}
+  `)
+  let capacity = Number(batch.actualYield ?? batch.batchSize) - Number(batchLinked)
+  for (const line of lines) {
+    if (capacity <= 0) break
+    const [order] = await tx.select().from(customerPurchaseOrders)
+      .where(and(eq(customerPurchaseOrders.id, line.orderId), isNull(customerPurchaseOrders.deletedAt))).for('update')
+    if (!order || ['draft', 'cancelled', 'completed'].includes(order.status)) continue
+    const [item] = await tx.select().from(customerPurchaseOrderItems)
+      .where(and(eq(customerPurchaseOrderItems.id, line.orderItemId), eq(customerPurchaseOrderItems.orderId, line.orderId))).for('update')
+    // Same matching rules as a manual linkBatch(): product, variant and customer.
+    if (!item || item.productKey !== batch.productCode) continue
+    if (item.variantId && batch.variantId && item.variantId !== batch.variantId) continue
+    const [customer] = await tx.select({ displayName: companies.displayName }).from(companies).where(eq(companies.id, order.customerId))
+    if (customer && customer.displayName.toLowerCase() !== batch.companyName.toLowerCase()) continue
+    const [{ itemLinked }] = await tx.execute<{ itemLinked: string }>(sql`
+      SELECT COALESCE(SUM(linked_quantity), 0) AS "itemLinked" FROM customer_purchase_order_batches WHERE order_item_id = ${item.id}
+    `)
+    const quantity = Math.round(Math.min(Number(item.quantityOrdered) - Number(itemLinked), capacity) * 1000) / 1000
+    if (quantity <= 0) continue
+    const [link] = await tx.insert(customerPurchaseOrderBatches).values({
+      orderId: line.orderId, orderItemId: item.id, batchId: batch.id,
+      linkedQuantity: String(quantity), remarks: 'Auto-allocated on QC release', linkedBy: userId,
+    }).onConflictDoNothing().returning({ id: customerPurchaseOrderBatches.id })
+    if (!link) continue
+    await insertTimelineEvent(tx, line.orderId, 'batch_linked', userId,
+      `Batch ${batch.batchNumber} auto-allocated on release (${quantity} ${item.unit}).`, { batchId: batch.id, automatic: true })
+    await insertTimelineEvent(tx, line.orderId, 'label_generated', null, null, { batchId: batch.id })
+    if (batch.coaSnapshot) {
+      await insertTimelineEvent(tx, line.orderId, 'qc_completed', null, null, { batchId: batch.id })
+      await insertTimelineEvent(tx, line.orderId, 'coa_generated', null, null, { batchId: batch.id })
+    }
+    await recomputeStatus(tx, line.orderId)
+    capacity -= quantity
+    allocations.push({ orderId: line.orderId, orderItemId: item.id, linkedQuantity: quantity })
+  }
+  return allocations
+}
+
 export async function unlinkBatch(orderId: string, linkId: string): Promise<'deleted' | null> {
   return db.transaction(async (tx) => {
     const [existing] = await tx.select().from(customerPurchaseOrderBatches)

@@ -73,6 +73,7 @@ export const saveCoaSnapshotSchema = z.object({
   poNumber:     z.string().optional(),
   prodDate:     z.string().optional(),
   savedAt:      z.string().optional(),
+  savedBy:      z.string().max(200).optional(),
 })
 
 export type SaveCoaSnapshotBody = z.infer<typeof saveCoaSnapshotSchema>
@@ -84,6 +85,11 @@ export const setPaymentStatusSchema = z.object({
 export const releaseBatchSchema = z.object({
   notes: z.string().max(2000).optional(),
   version: z.number().int().positive().optional(),
+})
+
+export const releaseBatchesSchema = z.object({
+  batchNumbers: z.array(z.string().min(1)).min(1).max(50),
+  notes: z.string().max(2000).optional(),
 })
 
 export const setBatchLifecycleSchema = z.object({
