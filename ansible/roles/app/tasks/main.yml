@@ -186,10 +186,50 @@
     - reload systemd
     - restart macrocoats-api
 
+# Ask the database rather than diffing git: a retry after a failed migration has
+# no git diff but still has work pending. Same test as drizzle's own migrator — a
+# migration applies only if its journal `when` is newer than the latest created_at.
+- name: Read the migration journal
+  ansible.builtin.slurp:
+    src: "{{ app_dir }}/src/db/migrations/meta/_journal.json"
+  register: migration_journal
+  when: deploy_required
+
+- name: Read the latest migration applied to the database
+  ansible.builtin.command:
+    cmd: >-
+      psql "$DATABASE_URL" -tAc
+      "SELECT created_at FROM drizzle.__drizzle_migrations ORDER BY created_at DESC LIMIT 1"
+  environment:
+    DATABASE_URL: "{{ app_database_url }}"
+  become: true
+  become_user: "{{ app_user }}"
+  register: latest_applied_migration
+  when: deploy_required
+  changed_when: false
+  failed_when: false
+  no_log: true
+
+- name: Decide whether migrations are pending
+  # Any failed or empty lookup (e.g. a brand-new database) counts as pending, so
+  # db:migrate still runs and reports a real problem itself.
+  ansible.builtin.set_fact:
+    migrations_pending: >-
+      {{
+        latest_applied_migration.rc != 0
+        or (latest_applied_migration.stdout | trim | length == 0)
+        or ((migration_journal.content | b64decode | from_json).entries
+            | map(attribute='when') | map('int') | max)
+           > (latest_applied_migration.stdout | trim | int)
+      }}
+  when: deploy_required
+
 - name: Create a pre-migration database backup
   ansible.builtin.command:
     cmd: /usr/local/bin/backup-macrocoats-db.sh
-  when: deploy_required
+  when:
+    - deploy_required
+    - migrations_pending
   changed_when: true
 
 - name: Run database migrations
@@ -200,7 +240,9 @@
     DATABASE_URL: "{{ app_database_url }}"
   become: true
   become_user: "{{ app_user }}"
-  when: deploy_required
+  when:
+    - deploy_required
+    - migrations_pending
   no_log: true
 
 - name: Keep the Supabase Data API closed over the portal's tables (incl. ones just migrated)

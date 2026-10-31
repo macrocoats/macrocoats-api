@@ -4,9 +4,65 @@
 - name: Deploy macrocoats-api
   hosts: api
   become: true
+  gather_subset: min
   vars_files:
     - group_vars/vault.yml
+  pre_tasks:
+    # The backup and replica setup rarely changes, so it only runs when its inputs do.
+    # A fingerprint rather than a git diff: the vault URL isn't in git, and a cutover
+    # flips database_mode from a local edit. -e force_infra_setup=true runs it anyway.
+    - name: Fingerprint the backup and replica setup
+      ansible.builtin.set_fact:
+        infra_fingerprint: >-
+          {{
+            [
+              database_mode,
+              vault_supabase_database_url | default(''),
+              lookup('ansible.builtin.file', playbook_dir ~ '/group_vars/all.yml'),
+              lookup('ansible.builtin.file', *(query('ansible.builtin.fileglob',
+                playbook_dir ~ '/roles/db-backup/tasks/*',
+                playbook_dir ~ '/roles/db-backup/templates/*',
+                playbook_dir ~ '/roles/supabase-replica/tasks/*',
+                playbook_dir ~ '/roles/supabase-replica/templates/*') | sort))
+            ] | join('|') | hash('sha256')
+          }}
+      no_log: true
+
+    - name: Read the fingerprint of the last completed setup
+      ansible.builtin.slurp:
+        src: /var/lib/macrocoats/deploy-infra.sha256
+      register: infra_stamp
+      failed_when: false
+
+    - name: Decide whether the backup and replica setup must run
+      ansible.builtin.set_fact:
+        infra_setup_required: >-
+          {{
+            (force_infra_setup | default(false) | bool)
+            or (infra_stamp.content | default('') | b64decode | trim) != infra_fingerprint
+          }}
   roles:
-    - db-backup
+    - role: db-backup
+      when: infra_setup_required
     - app
-    - supabase-replica
+    - role: supabase-replica
+      when: infra_setup_required
+  post_tasks:
+    - name: Ensure the deploy state directory exists
+      ansible.builtin.file:
+        path: /var/lib/macrocoats
+        state: directory
+        owner: root
+        group: root
+        mode: "0700"
+      when: infra_setup_required
+
+    # Written last, so a deploy that fails partway runs the setup again on retry.
+    - name: Record the fingerprint of the completed setup
+      ansible.builtin.copy:
+        dest: /var/lib/macrocoats/deploy-infra.sha256
+        content: "{{ infra_fingerprint }}\n"
+        owner: root
+        group: root
+        mode: "0600"
+      when: infra_setup_required

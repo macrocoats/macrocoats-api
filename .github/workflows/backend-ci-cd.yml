@@ -1,9 +1,13 @@
 name: Backend CI/CD
 
 on:
+  # No path filter here: "Backend verification" is a required check, and a filtered
+  # pull request would wait for it forever.
   pull_request:
   push:
     branches: [main]
+    paths-ignore:
+      - '**.md'
   workflow_dispatch:
 
 permissions:
@@ -160,6 +164,8 @@ jobs:
     steps:
       - name: Check out tested commit
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -211,7 +217,28 @@ jobs:
           fi
           printf 'previous_sha=%s\n' "$previous_sha" >> "$GITHUB_OUTPUT"
 
+      - name: Decide whether this release changes production
+        id: scope
+        shell: bash
+        env:
+          PREVIOUS_SHA: ${{ steps.checkpoint.outputs.previous_sha }}
+        run: |
+          set -euo pipefail
+          # Compare with what production runs, not the previous commit, so nothing
+          # skipped earlier gets lost. An empty or unreadable diff (a retry, an unknown
+          # SHA) deploys. supabase-lockdown.sql is the one script the live setup runs.
+          # --no-renames: moving src/x.ts to scripts/x.ts must count as a src change.
+          deploy=true
+          if changed="$(git diff --no-renames --name-only "$PREVIOUS_SHA" "$GITHUB_SHA" 2>/dev/null)" \
+            && [[ -n "$changed" ]] \
+            && ! grep -qvE '^(tests/|\.github/|scripts/)|\.md$' <<< "$changed" \
+            && ! grep -qx 'scripts/supabase-lockdown\.sql' <<< "$changed"; then
+            deploy=false
+          fi
+          printf 'deploy=%s\n' "$deploy" >> "$GITHUB_OUTPUT"
+
       - name: Deploy exact tested commit
+        if: steps.scope.outputs.deploy == 'true'
         working-directory: ansible
         run: >-
           ansible-playbook deploy.yml
@@ -221,6 +248,7 @@ jobs:
           -e "release_artifact_sha=${GITHUB_SHA}"
 
       - name: Verify production service and commit
+        if: steps.scope.outputs.deploy == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -242,11 +270,15 @@ jobs:
         env:
           PREVIOUS_SHA: ${{ steps.checkpoint.outputs.previous_sha }}
           DEPLOY_STATUS: ${{ job.status }}
+          DEPLOY_NEEDED: ${{ steps.scope.outputs.deploy }}
         run: |
           {
             echo "## macrocoats-api production deployment"
             echo
             echo "- Status: ${DEPLOY_STATUS}"
+            if [[ "$DEPLOY_NEEDED" == "false" ]]; then
+              echo "- Production unchanged: only tests, CI files, scripts or docs differ from the running commit."
+            fi
             echo "- Requested SHA: \`${GITHUB_SHA}\`"
             echo "- Previous SHA: \`${PREVIOUS_SHA:-not captured}\`"
             echo "- Health URL: https://api.macrocoats.in/health"
