@@ -2,6 +2,11 @@ import { sql } from 'drizzle-orm'
 import type { DB } from '../db/index.js'
 import { batchSequences } from '../db/schema/index.js'
 
+/** First two letters or digits of the company name, skipping anything else: "L&T Valves" → "LT". */
+export function batchCompanyCode(companyName: string): string {
+  return companyName.replace(/[^\p{L}\p{N}]/gu, '').substring(0, 2).toUpperCase() || 'XX'
+}
+
 /**
  * Atomically generates the next batch number for a given company on the given
  * production date (defaults to today when omitted).
@@ -12,7 +17,7 @@ import { batchSequences } from '../db/schema/index.js'
  */
 export async function nextBatchNumber(db: DB, companyName: string, productionDate?: string): Promise<string> {
   const dateKey = (productionDate ?? new Date().toISOString().slice(0, 10)).replace(/-/g, '')  // '20260426'
-  const companyCode = companyName.trim().substring(0, 2).toUpperCase()
+  const companyCode = batchCompanyCode(companyName)
 
   const result = await db
     .insert(batchSequences)

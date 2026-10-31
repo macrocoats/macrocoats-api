@@ -301,7 +301,7 @@ Integration tests use a real PostgreSQL database (the same one in `.env.local`).
 
 ### Batch numbering
 
-`batch_sequences` uses the same lock-free atomic pattern (in `src/utils/batchNumber.ts`). `nextBatchNumber(db, companyName, productionDate?)` produces `XX-YYYYMMDD-NNN` where XX is the first 2 chars of the company name (uppercase), YYYYMMDD is the production date, and NNN is a per-company per-day counter. `POST /batches` accepts an optional `productionDate` (defaults to today when omitted) so historical/backfilled batches can be recorded with their real production date rather than the entry date — both the batch row and its batch number reflect the same date. Each batch also captures JSONB snapshots at creation time:
+`batch_sequences` uses the same lock-free atomic pattern (in `src/utils/batchNumber.ts`). `nextBatchNumber(db, companyName, productionDate?)` produces `XX-YYYYMMDD-NNN` where XX is the first 2 letters or digits of the company name (uppercase, special characters skipped: L&T → `LT`), YYYYMMDD is the production date, and NNN is a per-company per-day counter. `POST /batches` accepts an optional `productionDate` (defaults to today when omitted) so historical/backfilled batches can be recorded with their real production date rather than the entry date — both the batch row and its batch number reflect the same date. Each batch also captures JSONB snapshots at creation time:
 
 - `formulationSnapshot` — full formulation at time of batch creation
 - `labelSnapshot` — label data including the assigned batchNumber, plus the optional `packContainer` (a frozen copy from `batches/packContainers.ts`, so a later tare change never rewrites a batch) and calculated `specificGravity`
