@@ -4,7 +4,7 @@ import { formulaOverridesSchema } from '../../src/modules/formulation-variants/f
 
 describe('formulaOverridesSchema', () => {
   it('accepts every seeded CORROCUT 500 preparation method', () => {
-    expect(Object.keys(CORRUCUT_500_FORMULA_OVERRIDES)).toHaveLength(5)
+    expect(Object.keys(CORRUCUT_500_FORMULA_OVERRIDES)).toHaveLength(6)
     for (const override of Object.values(CORRUCUT_500_FORMULA_OVERRIDES)) {
       expect(formulaOverridesSchema.parse(override)).toEqual(override)
     }
