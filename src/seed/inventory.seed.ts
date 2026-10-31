@@ -192,6 +192,10 @@ export const DEFAULT_INVENTORY = [
 
   // ── Metalworking Fluid Additives (UNICUT-AL) ─────────────────────────────────
   { material: 'Light Paraffinic Mineral Oil',       unit: 'L'  as const, price: '172', sortOrder: 67 },
+
+  // ── Paint Remover Raw Materials (UNIKSTRIP-HD) ───────────────────────────────
+  { material: 'Benzyl Alcohol',                     unit: 'Kg' as const, price: '0',   sortOrder: 68 },
+  { material: 'Formic Acid (85%)',                  unit: 'Kg' as const, price: '0',   sortOrder: 69 },
 ]
 
 export async function seedInventory() {

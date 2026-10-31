@@ -659,6 +659,19 @@ const UNIKBRIGHTNER_BASE_COMPONENTS = [
 ]
 
 /**
+ * UNIKSTRIP-HD — Base Formula variant, mirroring FRM-USH-001 in products.seed.ts
+ * (% w/w, supplied as a 2.857 kg laboratory batch). materialName values match
+ * inventory_items names exactly.
+ */
+const UNIKSTRIP_HD_BASE_COMPONENTS = [
+  { materialName: 'Benzyl Alcohol',    percentage: 70,   unit: 'Kg' as const },
+  { materialName: 'Butyl Glycol',      percentage: 20,   unit: 'Kg' as const },
+  { materialName: 'LAE-7',             percentage: 2,    unit: 'Kg' as const },
+  { materialName: 'DM Water',          percentage: null, unit: 'L'  as const },  // auto-calc 3%
+  { materialName: 'Formic Acid (85%)', percentage: 5,    unit: 'Kg' as const },
+]
+
+/**
  * CORROCUT 500 — Water-Displacing Rust Preventive Oil variant, from the supplied
  * costing sheet (400 L reference batch): MTO 140 L, LLP 80 L, Exxsol D60 80 L,
  * Exxsol 32D 24 L, Calcium Petroleum Sulfonate 52 kg, White Petroleum Jelly 24 kg.
@@ -1331,6 +1344,56 @@ export async function seedFormulationVariants() {
       )
 
       console.log(`   ✅ Created Base Formula variant for UNIKBRIGHTNER (id: ${unikbrightnerBaseVariant.id})`)
+    }
+  }
+
+  // ── UNIKSTRIP-HD — Base Formula ───────────────────────────────────────────
+  const [unikstripHdProduct] = await db
+    .select()
+    .from(products)
+    .where(eq(products.key, 'unikstrip-hd'))
+
+  if (!unikstripHdProduct) {
+    console.warn('   ⚠️  Product unikstrip-hd not found — skipping Base Formula variant seed')
+  } else {
+    const UNIKSTRIP_HD_BASE_NAME = 'UNIKSTRIP-HD Base Formula'
+    const [existingUnikstripHdBase] = await db
+      .select()
+      .from(productFormulationVariants)
+      .where(
+        and(
+          eq(productFormulationVariants.productKey, 'unikstrip-hd'),
+          variantNameIs(UNIKSTRIP_HD_BASE_NAME),
+        ),
+      )
+
+    if (existingUnikstripHdBase) {
+      console.log(`   ↩️  Base Formula variant for UNIKSTRIP-HD already exists (id: ${existingUnikstripHdBase.id})`)
+    } else {
+      const [unikstripHdBaseVariant] = await db
+        .insert(productFormulationVariants)
+        .values({
+          productKey:  'unikstrip-hd',
+          companyId:   null,
+          variantName: UNIKSTRIP_HD_BASE_NAME,
+          isDefault:   false,
+          // 'draft' for the same reason as UNIKBRIGHTNER above, and because this
+          // formulation is for laboratory evaluation only, not production use.
+          status:      'draft',
+        })
+        .returning()
+
+      await db.insert(formulationVariantComponents).values(
+        UNIKSTRIP_HD_BASE_COMPONENTS.map((c, i) => ({
+          variantId:    unikstripHdBaseVariant.id,
+          materialName: c.materialName,
+          percentage:   c.percentage !== null ? String(c.percentage) : null,
+          unit:         c.unit,
+          sortOrder:    i,
+        })),
+      )
+
+      console.log(`   ✅ Created Base Formula variant for UNIKSTRIP-HD (id: ${unikstripHdBaseVariant.id})`)
     }
   }
 

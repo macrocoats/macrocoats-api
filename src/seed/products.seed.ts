@@ -20,6 +20,7 @@ export const PRODUCTS = [
   { key: 'unicut-al',    displayName: 'UNICUT-AL',    code: 'CA',  category: 'Metal Working Fluid',              subtitle: 'Semi-Synthetic Cutting & Grinding Coolant — Water Dilutable Metalworking Fluid', accentColor: '#2f6f91' },
   { key: 'uniklean-cu', displayName: 'UNIKLEAN-CU', code: 'CU', category: 'Alkaline Cleaner', subtitle: 'Industrial Alkaline Cleaning Concentrate', accentColor: '#6b6b6b' },
   { key: 'unikbrightner', displayName: 'UNIKBRIGHTNER', code: 'UB', category: 'Metal Brightening Chemical', subtitle: 'Metal Brightening Concentrate (10× Concentrate)', accentColor: '#c17817' },
+  { key: 'unikstrip-hd', displayName: 'UNIKSTRIP-HD', code: 'SH', category: 'Paint Remover', subtitle: 'Benzyl Alcohol Paint Remover — Heavy-Duty Paint Stripping from Mild Steel', accentColor: '#7a2f4f' },
 ]
 
 // ── Document data ──────────────────────────────────────────────────────────────
@@ -4883,6 +4884,285 @@ export const DOCS: Array<{
         { parameter: 'TBD', method: 'TBD', specification: 'TBD', result: 'TBD', status: 'Pending' },
       ],
       statement: 'Placeholder Certificate of Analysis for UNIKBRIGHTNER. No batch has been tested yet; this record will be populated once batch data is available.',
+      approvals: {
+        preparedBy: 'TBD',
+        reviewedBy: 'TBD',
+        approvedBy: 'TBD',
+      },
+    },
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // UNIKSTRIP-HD — supplied laboratory preparation method (2.857 kg trial batch).
+  // Contains no corrosion inhibitor and is for controlled laboratory evaluation
+  // only, so every document stays 'draft'. Hazard classification is calculated
+  // from typical raw-material data (formic acid 5% × 85% = 4.25% active) and
+  // specific gravity from component densities; neither is lab-measured.
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    productKey: 'unikstrip-hd',
+    docType:    'tds',
+    docNumber:  'TDS-USH-001',
+    revision:   'Rev 01 — Oct 2026',
+    status:     'draft',
+    footer: {
+      left:   'TDS-USH-001 Rev 01 · Oct 2026',
+      center: 'This Technical Data Sheet is for guidance only. Laboratory evaluation formulation — not released for production use. © Macro Coats Pvt Ltd',
+      right:  'Macro Coats Pvt Ltd · Chennai · India\nPage 1 of 1',
+    },
+    body: {
+      grade:       'Laboratory Evaluation Grade — Heavy-Duty Paint Remover',
+      description: 'UNIKSTRIP-HD is a solvent-based, benzyl alcohol paint remover for heavy-duty paint stripping from mild steel, activated with an organic acid and supported by a glycol ether co-solvent and a non-ionic surfactant. It is used as supplied by immersion at ambient temperature. This formulation contains no corrosion inhibitor and is intended only for controlled laboratory evaluation, not production use.',
+      sections: {
+        features: [
+          { head: 'Benzyl Alcohol Solvent System', body: 'Aromatic alcohol solvent with a glycol ether co-solvent to soften and lift coatings.' },
+          { head: 'Acid Activated',                body: 'An organic acid activator is included to assist coating penetration.' },
+          { head: 'Ambient Temperature Use',       body: 'Used at 25–30 °C without external heating.' },
+        ],
+        physicalProperties: [
+          { property: 'Appearance',             value: 'Homogeneous liquid',  unit: '—',    method: 'Preliminary requirement — visual; pending lab confirmation' },
+          { property: 'Specific Gravity @ 25 °C', value: '1.01 – 1.02',       unit: '—',    method: 'Calculated — from component densities; not lab-measured' },
+          { property: 'Phase Separation',       value: 'None after 24 hours', unit: '—',    method: 'Preliminary requirement — visual after 24 h standing; pending lab confirmation' },
+          { property: 'Working Concentration',  value: 'As supplied',         unit: '—',    method: 'Used neat by immersion' },
+          { property: 'Reference Batch Size',   value: '2.857',               unit: 'kg',   method: 'As supplied — laboratory batch, approximately 2.8 L' },
+        ],
+        composition: [
+          { name: 'Aromatic Alcohol Solvent',    function: 'Primary paint-stripping solvent', percent: '60–80% w/w', compat: 'Mild steel' },
+          { name: 'Glycol Ether Co-Solvent',     function: 'Co-solvent / coupling agent',     percent: '10–30% w/w', compat: 'Mild steel' },
+          { name: 'Organic Acid (aqueous)',      function: 'Stripping activator',             percent: '1–10% w/w',  compat: 'Not for aluminium or galvanised steel' },
+          { name: 'Non-Ionic Surfactant',        function: 'Wetting agent',                   percent: '1–5% w/w',   compat: 'Mild steel' },
+          { name: 'DM Water',                    function: 'Carrier',                         percent: '1–5% w/w',   compat: '—' },
+        ],
+        application: [
+          { step: '1', name: 'Sample Preparation', param: 'Cut a small sample from the coated steel component', value: 'Evaluate on a sample before committing a full component.' },
+          { step: '2', name: 'Immersion',          param: 'Immerse the sample in the stripper at 25–30 °C',     value: 'Do not apply external heat.' },
+          { step: '3', name: 'Inspection',         param: 'Inspect at 30 minutes; continue to 60 and 120 minutes if necessary', value: 'Check whether the coating has softened or lifted.' },
+          { step: '4', name: 'Paint Removal',      param: 'Remove the sample and mechanically remove loosened paint', value: 'Inspect the steel surface for etching.' },
+        ],
+        packaging: [],
+        performance: [
+          { label: 'Stripping Efficiency', val: 'Not yet characterized — evaluate at 30, 60 and 120 minutes' },
+          { label: 'Steel Corrosion',      val: 'Not yet characterized — no unacceptable etching required on test coupon' },
+        ],
+        safetyNote: 'WARNING — harmful if swallowed or inhaled; causes skin and serious eye irritation. Contains no corrosion inhibitor. Do not use on aluminium or galvanised steel. Refer to SDS-USH-001 before handling.',
+      },
+    },
+  },
+
+  {
+    productKey: 'unikstrip-hd',
+    docType:    'msds',
+    docNumber:  'SDS-USH-001',
+    revision:   'Rev 01 — Oct 2026',
+    status:     'draft',
+    footer: {
+      left:   'SDS-USH-001 Rev 01 · Oct 2026',
+      center: 'This Safety Data Sheet is provided in good faith based on current knowledge. © Macro Coats Pvt Ltd',
+      right:  'Macro Coats Pvt Ltd · Chennai · India\nGHS Rev 9 Compliant · Page 1 of 1',
+    },
+    body: {
+      signalWord: 'WARNING',
+      sections: {
+        identification: {
+          productType:  'Solvent-based benzyl alcohol paint remover with organic acid activator',
+          intendedUse:  'Controlled laboratory evaluation of heavy-duty paint stripping from mild steel. Not for production use.',
+          manufacturer: 'Macro Coats Pvt Ltd, Chennai, Tamil Nadu, India',
+          emergency:    'AIIMS Poison Control: 1800-11-6117 (Toll-Free)',
+        },
+        hazards: {
+          pictograms:      ['irritant'],
+          classifications: [
+            { class: 'Acute Toxicity (Oral)',      category: 'Cat 4', tagType: 'warn' },
+            { class: 'Acute Toxicity (Inhalation)', category: 'Cat 4', tagType: 'warn' },
+            { class: 'Skin Irritation',            category: 'Cat 2', tagType: 'warn' },
+            { class: 'Serious Eye Irritation',     category: 'Cat 2', tagType: 'warn' },
+            { class: 'STOT — Single Exposure',     category: 'Cat 3', tagType: 'warn' },
+          ],
+          hStatements: 'H302 + H332 — Harmful if swallowed or if inhaled. H315 — Causes skin irritation. H319 — Causes serious eye irritation. H335 — May cause respiratory irritation. Calculated from typical raw-material classifications; a formal GHS classification against supplier SDS and measured data has not yet been performed.',
+          pStatements: 'P261 · P264 · P270 · P271 · P280 · P301+P312 · P302+P352 · P304+P340 · P305+P351+P338 · P332+P313 · P337+P313 · P403+P233 · P501',
+        },
+        composition: {
+          ingredients: [
+            { name: 'Aromatic Alcohol Solvent', description: 'Primary paint-stripping solvent', ghsClass: 'Acute Tox. 4 / Eye Irritation Cat 2',                  tagType: 'warn' },
+            { name: 'Glycol Ether Co-Solvent',  description: 'Co-solvent / coupling agent',     ghsClass: 'Acute Tox. 4 / Skin & Eye Irritation Cat 2',           tagType: 'warn' },
+            { name: 'Organic Acid (85% aqueous)', description: 'Stripping activator',           ghsClass: 'Skin Corrosion Cat 1B / Acute Tox. 3 (raw material)',  tagType: 'danger' },
+            { name: 'Non-Ionic Surfactant',     description: 'Wetting agent',                   ghsClass: 'Serious Eye Damage Cat 1 (raw material)',              tagType: 'danger' },
+            { name: 'DM Water',                 description: 'Carrier',                         ghsClass: '—',                                                    tagType: 'safe' },
+          ],
+          note: 'Exact formulation ratios are proprietary. Functional ingredient descriptions and standard raw-material hazard classes are provided for safety and emergency purposes only.',
+        },
+        firstAid: {
+          skin:       'Remove contaminated clothing. Wash affected area with plenty of soap and water. Seek medical attention if irritation persists.',
+          eyes:       'Rinse cautiously with water for at least 15 minutes. Remove contact lenses if present and easy to do. Continue rinsing. Seek medical attention if irritation persists.',
+          ingestion:  'Rinse mouth with water. Do not induce vomiting. Call a poison center or doctor if you feel unwell.',
+          inhalation: 'Remove to fresh air and keep at rest in a position comfortable for breathing. Call a poison center or doctor if you feel unwell.',
+        },
+        fireFighting: {
+          flammability:       'Flash point not yet measured. Treat as a combustible liquid until tested.',
+          extinguishingMedia: 'Water spray/fog, alcohol-resistant foam, dry chemical or CO₂.',
+          fireHazard:         'May release irritating vapours and carbon oxides on heating or combustion.',
+          ppe:                'Self-contained breathing apparatus (SCBA) and full protective clothing for firefighters.',
+        },
+        accidentalRelease: [
+          'Evacuate non-essential personnel and ventilate the area',
+          'Remove ignition sources',
+          'Wear appropriate PPE (chemical-resistant gloves, goggles/face shield, apron) before attempting cleanup',
+          'Contain spill to prevent entry into drains, waterways or soil',
+          'Absorb with inert absorbent material and collect into suitable containers',
+          'Dispose of collected material per CPCB/SPCB guidelines',
+        ],
+        handling: {
+          handling:    'Use a compatible, ventilated mixing system with chemical splash protection. Avoid contact with skin and eyes and avoid breathing vapours. Do not apply external heat. Consult raw-material SDS before manufacturing.',
+          storageTemp: 'Ambient; cool, well-ventilated area, protected from direct sunlight and heat sources. Not lab-verified for this formulation.',
+          containers:  'Chemically compatible, tightly closed containers. Do not use aluminium, galvanised steel or incompatible seals. Container material pending compatibility confirmation.',
+          segregation: 'Store away from oxidisers, strong bases, reactive metals and ignition sources',
+          shelfLife:   'TBD — pending QA stability data',
+        },
+        exposure: {
+          ppeItems:    ['Safety Goggles / Face Shield', 'Chemical-Resistant Gloves', 'Protective Apron', 'Respirator if ventilation is inadequate'],
+          engineering: 'Use with local exhaust ventilation. Eyewash station and safety shower should be available within the work area.',
+        },
+        physical: [
+          { key: 'Appearance',               val: 'Homogeneous liquid — preliminary requirement; pending lab confirmation' },
+          { key: 'Specific Gravity @ 25 °C', val: '1.01 – 1.02 (calculated; not lab-measured)' },
+          { key: 'Flash Point',              val: 'Not yet measured' },
+          { key: 'pH',                       val: 'Not yet measured' },
+        ],
+        stability: {
+          stability:      'Long-term stability not yet tested. Observe for cloudiness or phase separation.',
+          avoid:          'Heat, ignition sources, aluminium, galvanised steel, incompatible seals, oxidisers, strong bases',
+          decomposition:  'Carbon oxides and irritating vapours on heating or combustion.',
+          polymerisation: 'Will not occur',
+        },
+        sections11to16: {
+          'Skin / Eye': 'Causes skin and serious eye irritation — flush with water if contact occurs, per First Aid section. Harmful if swallowed or inhaled; may cause respiratory irritation.',
+          Aquatic:      'Not yet assessed for aquatic toxicity — treat as potentially harmful and avoid discharge to drains or watercourses.',
+          Disposal:     'Do not discharge to drains. Dispose of via licensed waste contractor per CPCB/SPCB norms (E.P. Act 1986).',
+          Transport:    'UN number and transport classification not yet determined — pending flash point and corrosivity testing.',
+          Regulatory:   'MSIHC Rules 1989 · Factories Act 1948 · Hazardous Waste Rules 2016 · GHS Rev 9',
+          'Other Info': 'SDS Rev 01 issued Oct 2026 — draft for laboratory evaluation, based on typical raw-material hazard data. Next review: upon formal finished-product GHS classification.',
+        },
+      },
+    },
+  },
+
+  {
+    productKey: 'unikstrip-hd',
+    docType:    'formula',
+    docNumber:  'FRM-USH-001',
+    revision:   'Rev 01 — Oct 2026',
+    status:     'draft',
+    footer: {
+      left:   'FRM-USH-001 Rev 01 · Oct 2026',
+      center: 'CONFIDENTIAL — This formulation sheet is the proprietary information of Macro Coats Pvt Ltd. Unauthorised reproduction or disclosure is prohibited.',
+      right:  'Macro Coats Pvt Ltd · Chennai · India\nPage 1 of 1',
+    },
+    body: {
+      classification:     'CONFIDENTIAL — Internal Use Only',
+      batchSize:          '100 kg (reference) · laboratory batch 2.857 kg',
+      formulaType:        'liquid',
+      referenceBatchSize: 100,
+      batchUnit:          'kg',
+      totalActivePercent: 97,
+      overview: 'UNIKSTRIP-HD is a benzyl alcohol paint remover for heavy-duty paint stripping from mild steel, with butyl glycol as co-solvent, formic acid (85%) as activator, LAE-7 as wetting agent and DM water, on a % w/w basis. This formulation contains 5% formic acid and no corrosion inhibitor; it is intended only for controlled laboratory evaluation, not production use. Test a lower-acid variant before committing the entire batch. Mixing times are preliminary laboratory guidelines, not validated process specifications.',
+      composition: [
+        { srNo: 1, name: 'Benzyl Alcohol',    casNo: '100-51-6',  baseQty: 70, unit: 'kg', percentWV: 70, function: 'Primary paint-stripping solvent',    density: 1.045, unitPrice: 0   },
+        { srNo: 2, name: 'Butyl Glycol',      casNo: '111-76-2',  baseQty: 20, unit: 'kg', percentWV: 20, function: 'Co-solvent / coupling agent (EGBE)', density: 0.902, unitPrice: 240 },
+        { srNo: 3, name: 'LAE-7',             casNo: '9002-92-0', baseQty: 2,  unit: 'kg', percentWV: 2,  function: 'Non-ionic surfactant — wetting agent', density: 0.95,  unitPrice: 0   },
+        { srNo: 4, name: 'DM Water',          casNo: '7732-18-5', baseQty: 3,  unit: 'kg', percentWV: 3,  function: 'Carrier',                            density: 1.0,   unitPrice: 0   },
+        { srNo: 5, name: 'Formic Acid (85%)', casNo: '64-18-6',   baseQty: 5,  unit: 'kg', percentWV: 5,  function: 'Stripping activator — 85% aqueous grade', density: 1.195, unitPrice: 0 },
+      ],
+      preparation: [
+        { step: 1, title: 'Charge Benzyl Alcohol', detail: 'Charge benzyl alcohol (2,000 g per 2.857 kg batch) into a clean, dry, chemically compatible vessel. Mix 3 min at 200–400 RPM, adjusted to avoid splashing.' },
+        { step: 2, title: 'Add Butyl Glycol',      detail: 'Add butyl glycol (571 g) gradually while stirring. Mix 5 min.' },
+        { step: 3, title: 'Add LAE-7',             detail: 'Add LAE-7 (57 g) slowly and mix until uniformly dispersed. Mix 5 min.' },
+        { step: 4, title: 'Add DM Water',          detail: 'Add DM water (86 g) gradually; observe for cloudiness or separation. Mix 5 min.' },
+        { step: 5, title: 'Add Formic Acid (85%)', detail: 'Add formic acid 85% (143 g) slowly under controlled agitation and temperature monitoring. Mix 5–10 min. Stop addition if excessive heating, unexpected fumes or phase separation occurs.' },
+        { step: 6, title: 'Final Mixing',          detail: 'Mix until homogeneous; check appearance and temperature. Mix 15 min.' },
+      ],
+      operatingConditions: [
+        { param: 'Preparation Temperature', value: '25–30 °C — no external heat' },
+        { param: 'Mixing',                  value: 'Mechanical stirrer, approximately 200–400 RPM, adjusted to avoid splashing' },
+        { param: 'Vessel & Seals',          value: 'No aluminium, galvanised steel or incompatible seals in contact with the mixture' },
+        { param: 'Ventilation',             value: 'Compatible, ventilated mixing system with chemical splash protection' },
+      ],
+      applications: {
+        removes:    ['Paint coatings'],
+        usedBefore: [],
+      },
+    },
+  },
+
+  {
+    productKey: 'unikstrip-hd',
+    docType:    'label',
+    docNumber:  'LBL-USH-001',
+    revision:   'Rev 01 — Oct 2026',
+    status:     'draft',
+    footer: { left: '', center: '', right: '' },
+    body: {
+      signalWord: 'WARNING',
+      unNo: 'TBD',
+      hCodes: [
+        { code: 'H302', text: 'Harmful if swallowed' },
+        { code: 'H332', text: 'Harmful if inhaled' },
+        { code: 'H315', text: 'Causes skin irritation' },
+        { code: 'H319', text: 'Causes serious eye irritation' },
+        { code: 'H335', text: 'May cause respiratory irritation' },
+      ],
+      pCodes: [
+        { code: 'P261',            text: 'Avoid breathing vapours.' },
+        { code: 'P271',            text: 'Use only outdoors or in a well-ventilated area.' },
+        { code: 'P280',            text: 'Wear protective gloves/protective clothing/eye protection/face protection.' },
+        { code: 'P301+P312',       text: 'IF SWALLOWED: Call a POISON CENTER/doctor if you feel unwell.' },
+        { code: 'P302+P352',       text: 'IF ON SKIN: Wash with plenty of water.' },
+        { code: 'P305+P351+P338', text: 'IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.' },
+      ],
+      firstAid: {
+        skin:       'Remove contaminated clothing. Wash affected area with plenty of soap and water. Seek medical attention if irritation persists.',
+        eyes:       'Rinse cautiously with water for at least 15 minutes. Remove contact lenses if present and easy to do. Continue rinsing. Seek medical attention if irritation persists.',
+        ingestion:  'Rinse mouth with water. Do not induce vomiting. Call a poison center or doctor if you feel unwell.',
+        inhalation: 'Remove to fresh air and keep at rest in a position comfortable for breathing. Call a poison center or doctor if you feel unwell.',
+      },
+      directions: [
+        'For controlled laboratory evaluation only — not for production use.',
+        'Use as supplied by immersion at 25–30 °C. Do not apply external heat.',
+        'Inspect at 30 minutes; continue to 60 and 120 minutes if necessary.',
+        'Mechanically remove loosened paint and inspect the steel surface.',
+        'Do not use on aluminium or galvanised steel.',
+      ],
+      storage:  ['Store in a cool, well-ventilated location away from direct sunlight and heat sources.', 'Keep container tightly closed.', 'Do not store in aluminium or galvanised steel containers.'],
+      products: ['UNIKSTRIP-HD'],
+    },
+  },
+
+  {
+    productKey: 'unikstrip-hd',
+    docType:    'coa',
+    docNumber:  'COA-USH-001',
+    revision:   'Draft — pending batch data',
+    status:     'draft',
+    footer: {
+      left:   'COA-USH-001 Draft',
+      center: 'CONFIDENTIAL — Placeholder Certificate of Analysis · Macro Coats Pvt Ltd',
+      right:  'Macro Coats Pvt Ltd · Chennai · India',
+    },
+    body: {
+      batchNumber:    'TBD',
+      batchSize:      'TBD',
+      productionDate: 'TBD',
+      expiryDate:     'TBD',
+      grade:          'Laboratory Evaluation Grade',
+      appearance:     'TBD',
+      tests: [
+        { parameter: 'Appearance',               method: 'Visual',                                  specification: 'Homogeneous liquid',                result: 'TBD', status: 'Pending' },
+        { parameter: 'Specific Gravity @ 25 °C', method: 'TBD',                                     specification: 'Approximately 1.01–1.02 (calculated)', result: 'TBD', status: 'Pending' },
+        { parameter: 'Phase Separation',         method: 'Visual after 24 hours',                   specification: 'None after 24 hours',               result: 'TBD', status: 'Pending' },
+        { parameter: 'Temperature After Mixing', method: 'Temperature check',                       specification: 'Return to ambient',                 result: 'TBD', status: 'Pending' },
+        { parameter: 'Steel Corrosion',          method: 'Test coupon',                             specification: 'No unacceptable etching',           result: 'TBD', status: 'Pending' },
+        { parameter: 'Stripping Efficiency',     method: 'Immersion trial at 30, 60 and 120 minutes', specification: 'Report result',                   result: 'TBD', status: 'Pending' },
+      ],
+      statement: 'Placeholder Certificate of Analysis for UNIKSTRIP-HD. Requirements are preliminary. No batch has been tested yet; this record will be populated once batch data is available.',
       approvals: {
         preparedBy: 'TBD',
         reviewedBy: 'TBD',

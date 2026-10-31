@@ -339,7 +339,7 @@ See `DATABASE.md` for the full 31-table schema reference, the canonical migratio
 `src/seed/` contains idempotent seed scripts (run via `npm run seed`):
 
 - `index.ts` — entry point; runs all seeds in order
-- `products.seed.ts` — 17 product lines (uniklean-sp, uniklean-fe, uniprotect-oil, uniflow-ecm, unicool-al, unikoat-lt-700, unisolve-h3, unipass, uniktonner, corroklean, corrcut-100, corrucut-500, uniklean-sf, corrcut-200, unicut-al, uniklean-cu, unikbrightner)
+- `products.seed.ts` — 18 product lines (uniklean-sp, uniklean-fe, uniprotect-oil, uniflow-ecm, unicool-al, unikoat-lt-700, unisolve-h3, unipass, uniktonner, corroklean, corrcut-100, corrucut-500, uniklean-sf, corrcut-200, unicut-al, uniklean-cu, unikbrightner, unikstrip-hd)
 - `companies.seed.ts` — test companies (`SEED_COMPANIES`, tokens in source) with product access mappings and their users, plus the `admin`/`operator` users (passwords from `SEED_ADMIN_PASSWORD`/`SEED_OPERATOR_PASSWORD`, never in source). Test companies are **skipped when `NODE_ENV=production`** (production `.env` sets it) — real companies are managed in the admin UI; `admin`/`operator` are still created if missing
 - `formulationVariants.seed.ts` — formulation variant headers and components
 - `variantDensities.seed.ts` — fills NULL `formulation_variant_components.density` (product's formula-doc density first, then a typical-value table; dissolved powders stay NULL = kg only). Never overwrites a set value. Dry run: `npx tsx --env-file=.env.local scripts/backfill-variant-densities.ts` (`--apply` to write)
