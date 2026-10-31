@@ -61,7 +61,7 @@ async function loadDataUri(cache: string | null, filename: string): Promise<stri
 }
 
 const BROCHURE_HERO_FAMILY: Record<string, string> = {
-  'uniklean-sp': 'cleaning', 'corroklean': 'cleaning', 'uniklean-sf': 'cleaning', 'uniklean-cu': 'cleaning',
+  'uniklean-sp': 'cleaning', 'corroklean': 'cleaning', 'uniklean-sf': 'cleaning', 'uniklean-cu': 'cleaning', 'unikstrip-hd': 'cleaning',
   'uniklean-fe': 'conversion', 'unikoat-lt-700': 'conversion', 'unipass': 'conversion', 'uniktonner': 'conversion',
   'uniprotect-oil': 'protection', 'uniflow-ecm': 'protection', 'corrcut-100': 'protection', 'corrucut-500': 'protection', 'corrcut-200': 'protection',
   'unicool-al': 'coolant', 'unicut-al': 'coolant',
