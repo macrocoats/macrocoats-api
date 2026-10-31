@@ -40,6 +40,9 @@ const DRAFT_FUNCTIONS: Record<string, Record<string, string>> = {
     'exxol d145': 'Higher-flash-point hydrocarbon fraction — slows evaporation and helps the film level out',
     'sodium petroleum sulfonate': 'Primary corrosion inhibitor (80% of the sulfonate) — polar sulfonate adsorbs on the metal to form the rust-preventive film and aids water displacement',
     'barium petroleum sulfonate': 'Secondary corrosion inhibitor (20% of the sulfonate, replacing calcium sulfonate) — reinforces the inhibitor film and its resistance to water and humidity',
+    // Shares by commercial-product mass in this development-trial variant
+    'sodium petroleum sulfonate @ high-barium mto-llp grade': 'Co-inhibitor (about 40% of the sulfonate) — polar sulfonate adsorbs on the metal to form the rust-preventive film and aids water displacement',
+    'barium petroleum sulfonate @ high-barium mto-llp grade': 'Principal corrosion inhibitor (about 48% of the sulfonate) — intended to reinforce the inhibitor film and its resistance to water and humidity; development trial, not yet validated',
   },
   'unicool-al': {
     'ammonium  hydroxide': 'pH regulator — mild alkalinity for enhanced cleaning and degreasing performance',

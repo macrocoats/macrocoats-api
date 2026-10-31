@@ -123,6 +123,38 @@ export const CORRUCUT_500_FORMULA_OVERRIDES: Record<string, FormulaOverrides> = 
       ...finishSteps(5),
     ],
   },
+  'High-Barium MTO-LLP Grade': {
+    preparationStatus: 'draft_review_required',
+    preparation: [
+      safetyStep,
+      {
+        step: 2,
+        title: 'Charge the carrier oils',
+        detail: 'Start low-shear agitation, charge Mineral Turpentine Oil, then add Light Paraffinic Mineral Oil. Confirm the carrier blend is uniform before continuing.',
+        materialNames: ['Mineral Turpentine Oil (MTO)', 'Light Paraffinic Mineral Oil'],
+      },
+      jellyStep(3),
+      {
+        step: 4,
+        title: 'Add sodium sulfonate',
+        detail: 'Add Sodium Petroleum Sulfonate slowly under continuous agitation. Mix until uniformly dispersed before introducing the next inhibitor.',
+        materialNames: ['Sodium Petroleum Sulfonate'],
+      },
+      {
+        step: 5,
+        title: 'Add barium sulfonate',
+        detail: 'Add Barium Petroleum Sulfonate slowly under continuous agitation. Avoid local over-concentration and confirm uniformity before final homogenisation.',
+        materialNames: ['Barium Petroleum Sulfonate'],
+      },
+      {
+        step: 6,
+        title: 'Add calcium sulfonate',
+        detail: 'Add Calcium Petroleum Sulfonate slowly under continuous agitation. Avoid local over-concentration and confirm uniformity before final homogenisation.',
+        materialNames: ['Calcium Petroleum Sulfonate'],
+      },
+      ...finishSteps(7),
+    ],
+  },
   'MTO-LLP Low-Oil Grade': {
     preparationStatus: 'draft_review_required',
     preparation: [

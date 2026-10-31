@@ -736,6 +736,26 @@ const CORRUCUT_500_MTO_LLP_COMPONENTS = [
   { materialName: 'White petroleum jelly',        percentage: 2.81,  unit: 'L' as const, density: 0.87  },  //  1.500 kg →  1.724 L
 ]
 
+/**
+ * CORROCUT 500 — High-Barium MTO-LLP formulation. Development trial for improved
+ * water resistance and corrosion protection, not a validated performance
+ * improvement. Supplied sheet by weight: MTO 274.080 kg, Light Paraffinic Mineral
+ * Oil 17.121 kg, Sodium Petroleum Sulfonate 14.000 kg, Barium Petroleum Sulfonate
+ * 17.000 kg, Calcium Petroleum Sulfonate 4.200 kg, White petroleum jelly
+ * 10.268 kg — 336.669 kg total. Converted to % v/v with the same typical
+ * densities as the Na-Ba Sulfonate Grade: 413.645 L calculated volume, so
+ * calculated SG ≈ 0.814.
+ */
+const CORRUCUT_500_HIGH_BARIUM_MTO_LLP_COMPONENTS = [
+  { materialName: 'Mineral Turpentine Oil (MTO)', percentage: 84.41, unit: 'L' as const, density: 0.785 },  // 274.080 kg → 349.146 L
+  { materialName: 'Light Paraffinic Mineral Oil', percentage: 4.81,  unit: 'L' as const, density: 0.86  },  //  17.121 kg →  19.908 L — LLP
+  { materialName: 'Sodium Petroleum Sulfonate',   percentage: 3.22,  unit: 'L' as const, density: 1.05  },  //  14.000 kg →  13.333 L
+  { materialName: 'Barium Petroleum Sulfonate',   percentage: 3.74,  unit: 'L' as const, density: 1.10  },  //  17.000 kg →  15.455 L
+  // Set here because the formula document's "Primary" wording would otherwise win over DRAFT_FUNCTIONS
+  { materialName: 'Calcium Petroleum Sulfonate',  percentage: 0.97,  unit: 'L' as const, density: 1.05, materialFunction: 'Supplementary corrosion inhibitor (about 12% of the sulfonate) — adds to the rust-preventive film; development trial, not yet validated' },  //   4.200 kg →   4.000 L
+  { materialName: 'White petroleum jelly',        percentage: 2.85,  unit: 'L' as const, density: 0.87  },  //  10.268 kg →  11.802 L
+]
+
 export async function seedFormulationVariants() {
   console.log('🌱 Seeding formulation variants...')
 
@@ -1539,6 +1559,50 @@ export async function seedFormulationVariants() {
       )
 
       console.log(`   ✅ Created MTO-LLP Low-Oil Grade variant for CORROCUT 500 (id: ${corrucut500MtoLlpVariant.id})`)
+    }
+
+    // No TDS/MSDS overrides yet — development trial, performance not validated.
+    const CORRUCUT_500_HIGH_BARIUM_MTO_LLP_NAME = 'High-Barium MTO-LLP Grade'
+    const [existingCorrucut500HighBarium] = await db
+      .select()
+      .from(productFormulationVariants)
+      .where(
+        and(
+          eq(productFormulationVariants.productKey, 'corrucut-500'),
+          variantNameIs(CORRUCUT_500_HIGH_BARIUM_MTO_LLP_NAME),
+        ),
+      )
+
+    if (existingCorrucut500HighBarium) {
+      await db.update(productFormulationVariants)
+        .set({ formulaOverrides: CORRUCUT_500_FORMULA_OVERRIDES[CORRUCUT_500_HIGH_BARIUM_MTO_LLP_NAME] })
+        .where(eq(productFormulationVariants.id, existingCorrucut500HighBarium.id))
+      console.log(`   ↩️  High-Barium MTO-LLP Grade variant for CORROCUT 500 already exists (id: ${existingCorrucut500HighBarium.id})`)
+    } else {
+      const [corrucut500HighBariumVariant] = await db
+        .insert(productFormulationVariants)
+        .values({
+          productKey:  'corrucut-500',
+          companyId:   null,
+          variantName: CORRUCUT_500_HIGH_BARIUM_MTO_LLP_NAME,
+          isDefault:   false,
+          formulaOverrides: CORRUCUT_500_FORMULA_OVERRIDES[CORRUCUT_500_HIGH_BARIUM_MTO_LLP_NAME],
+        })
+        .returning()
+
+      await db.insert(formulationVariantComponents).values(
+        CORRUCUT_500_HIGH_BARIUM_MTO_LLP_COMPONENTS.map((c, i) => ({
+          variantId:    corrucut500HighBariumVariant.id,
+          materialName: c.materialName,
+          percentage:   String(c.percentage),
+          unit:         c.unit,
+          density:      String(c.density),
+          materialFunction: c.materialFunction ?? null,
+          sortOrder:    i,
+        })),
+      )
+
+      console.log(`   ✅ Created High-Barium MTO-LLP Grade variant for CORROCUT 500 (id: ${corrucut500HighBariumVariant.id})`)
     }
   }
 }
