@@ -8,6 +8,7 @@ import { findMaterialMatch, isWaterMaterial } from '../../utils/materialMatch.js
 import { createFinishedGoodsRecord } from '../finished-goods/finished-goods.service.js'
 import { USABLE_VARIANT_STATUSES, type VariantStatus } from '../../types/index.js'
 import type { CreateBatchBody, ListBatchesQuery, SaveCoaSnapshotBody } from './batches.schema.js'
+import { findPackContainer } from './packContainers.js'
 
 /** The batch's first invoice — the earliest non-voided dispatch carrying an invoice number. */
 interface BatchInvoice { invoiceNumber: string; startDate: string }
@@ -215,8 +216,11 @@ export async function createBatch(data: CreateBatchBody, createdBy: string | nul
       `)
     }
 
+    const { packContainerId, ...labelSnapshot } = data.labelSnapshot
+    const packContainer = findPackContainer(packContainerId)
     const labelSnapshotWithBatch = {
-      ...data.labelSnapshot,
+      ...labelSnapshot,
+      ...(packContainer ? { packContainer } : {}),
       batchNumber,
     }
 

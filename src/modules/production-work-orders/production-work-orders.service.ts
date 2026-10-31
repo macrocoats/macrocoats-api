@@ -8,6 +8,7 @@ import {
 } from '../../db/schema/index.js'
 import { USABLE_VARIANT_STATUSES, type VariantStatus } from '../../types/index.js'
 import { findMaterialMatch } from '../../utils/materialMatch.js'
+import { findPackContainer } from '../batches/packContainers.js'
 import { OPEN_FOR_BATCH, OUTPUT_TOLERANCE, WorkOrderStateError, syncWorkOrderProgress } from '../../utils/workOrderProgress.js'
 import {
   addDays, createBatch, findBatchByClientRequestId, getBatchByNumber, loadBatchInvoices,
@@ -495,7 +496,17 @@ async function applyTransition(id: string, data: TransitionWorkOrderBody, actorI
 
 // ── Batch execution from the work order ────────────────────────────────────
 
-interface FormulaRow { name: string; percentage: number | null }
+interface FormulaRow { name: string; percentage: number | null; unit: string; density: number | null }
+
+/** Same basis as the Formula page: a kg row's % is kg per 100 L, an L row adds L × density. */
+function calculatedSpecificGravity(rows: FormulaRow[]) {
+  const known = rows.reduce((sum, row) => sum + (row.percentage ?? 0), 0)
+  const sg = rows.reduce((sum, row) => {
+    const percentage = row.percentage ?? Math.max(0, 100 - known)
+    return sum + (percentage / 100) * (row.unit.trim().toLowerCase() === 'kg' ? 1 : (row.density ?? 1))
+  }, 0)
+  return sg > 0 ? Number(sg.toFixed(3)) : undefined
+}
 
 /** Variant components or base-formula composition → name/percentage rows (null = water balance). */
 function formulaRows(snapshot: Record<string, unknown>): FormulaRow[] {
@@ -507,7 +518,13 @@ function formulaRows(snapshot: Record<string, unknown>): FormulaRow[] {
     if (!name) return []
     const raw = component.percentage ?? component.percentWV
     const percentage = raw === null || raw === undefined || raw === '' ? null : Number(raw)
-    return [{ name, percentage: percentage !== null && Number.isFinite(percentage) ? percentage : null }]
+    const density = Number(component.density)
+    return [{
+      name,
+      percentage: percentage !== null && Number.isFinite(percentage) ? percentage : null,
+      unit: String(component.unit ?? ''),
+      density: component.density !== null && Number.isFinite(density) && density > 0 ? density : null,
+    }]
   })
 }
 
@@ -572,6 +589,7 @@ export async function createWorkOrderBatch(
   const companyName = demand?.customerName ?? HOUSE_COMPANY_NAME
   const productionDate = data.productionDate ?? todayIso()
   const signalWord = (formulaDoc?.body as { signalWord?: string } | undefined)?.signalWord ?? 'WARNING'
+  const packContainer = findPackContainer(data.packContainerId)
 
   let result: CreateBatchResult
   try {
@@ -586,9 +604,12 @@ export async function createWorkOrderBatch(
       companyName,
       manufactureDate: productionDate,
       expiryDate: data.expiryDate,
-      netWeight: `${data.batchSize} ${wo.unit}`,
+      // One label goes on each container, so net is what one holds (less if the batch is smaller).
+      netWeight: `${packContainer ? Math.min(packContainer.capacityL, data.batchSize) : data.batchSize} ${wo.unit}`,
       hazardPictograms: [],
       signalWord,
+      packContainerId: data.packContainerId,
+      specificGravity: calculatedSpecificGravity(rows),
     },
     costSummary: {
       rawMaterialCostPerL: round3(rawMaterialCostPerL),

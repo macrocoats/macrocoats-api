@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { PACK_CONTAINER_IDS } from '../batches/packContainers.js'
 
 export const WORK_ORDER_STATUSES = ['draft', 'planned', 'released_to_production', 'in_progress', 'completed', 'cancelled'] as const
 
@@ -58,6 +59,7 @@ const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
 
 export const createWorkOrderBatchSchema = z.object({
   batchSize: z.number().positive(),
+  packContainerId: z.enum(PACK_CONTAINER_IDS).optional(),
   productionDate: isoDate.refine((d) => d <= new Date().toISOString().slice(0, 10), { message: 'productionDate cannot be in the future' }).optional(),
   expiryDate: isoDate,
   notes: z.string().max(2000).optional(),

@@ -89,6 +89,64 @@ describe('create work order', () => {
   })
 })
 
+describe('pack containers', () => {
+  it('operators can read the container list', async () => {
+    const res = await req().get('/v1/batches/pack-containers').set('Cookie', operatorCookies).expect(200)
+    expect(res.body.data.map((c: { tareKg: number }) => c.tareKg)).toEqual([1.8, 2, 2.5, 18.25, 8])
+  })
+
+  it('a work-order batch saves its container and SG, and net is what one container holds', async () => {
+    const wo = await createWo({ plannedQuantity: 1000 })
+    const res = await postBatch(wo.id, { batchSize: 300, packContainerId: 'drum-210-steel' })
+    expect(res.status, JSON.stringify(res.body)).toBe(201)
+    const snapshot = res.body.data.batch.labelSnapshot
+    expect(snapshot.netWeight).toBe('210 L')
+    expect(snapshot.packContainer).toEqual({ id: 'drum-210-steel', name: '210 L steel drum', capacityL: 210, tareKg: 18.25 })
+    expect(snapshot.packContainerId).toBeUndefined()
+    expect(snapshot.specificGravity).toBeGreaterThan(0)
+  })
+
+  it('a batch smaller than its container only part-fills it', async () => {
+    const wo = await createWo({ plannedQuantity: 1000 })
+    const res = await postBatch(wo.id, { batchSize: 20, packContainerId: 'can-30-grey' })
+    expect(res.status, JSON.stringify(res.body)).toBe(201)
+    expect(res.body.data.batch.labelSnapshot.netWeight).toBe('20 L')
+  })
+
+  it('without a container the batch still works and keeps the old net quantity', async () => {
+    const wo = await createWo({ plannedQuantity: 1000 })
+    const res = await postBatch(wo.id, { batchSize: 25 })
+    expect(res.status, JSON.stringify(res.body)).toBe(201)
+    expect(res.body.data.batch.labelSnapshot.netWeight).toBe('25 L')
+    expect(res.body.data.batch.labelSnapshot.packContainer).toBeUndefined()
+  })
+
+  it('rejects an unknown container with 400', async () => {
+    const wo = await createWo({ plannedQuantity: 1000 })
+    const res = await postBatch(wo.id, { batchSize: 10, packContainerId: 'bucket' })
+    expect(res.status).toBe(400)
+  })
+
+  it('POST /batches keeps the container and SG sent by the Formula page', async () => {
+    const res = await req().post('/v1/batches').set('Cookie', adminCookies).send({
+      productCode: 'uniklean-sp',
+      companyName: 'Hub integration test',
+      batchSize: 30,
+      batchType: 'Trial',
+      formulationSnapshot: { components: [] },
+      labelSnapshot: {
+        productName: 'UNIKLEAN-SP', manufactureDate: today(), expiryDate: plusYear(), netWeight: '30 L',
+        hazardPictograms: [], signalWord: 'WARNING', packContainerId: 'can-30-blue', specificGravity: 1.05,
+      },
+      costSummary: { rawMaterialCostPerL: 0, lossAdjustmentPerL: 0, transportCostPerL: 0, handlingBufferPerL: 0, productionCostPerL: 0, sellingPricePerL: 0, profitPerL: 0, profitMargin: 0 },
+    })
+    expect(res.status, JSON.stringify(res.body)).toBe(201)
+    expect(res.body.data.labelSnapshot.packContainer.tareKg).toBe(1.8)
+    expect(res.body.data.labelSnapshot.specificGravity).toBe(1.05)
+    await req().delete(`/v1/batches/${res.body.data.id}`).set('Cookie', adminCookies)
+  })
+})
+
 describe('operator batch creation and auto-advance', () => {
   let woId: string
   let version: number

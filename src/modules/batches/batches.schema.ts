@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { PACK_CONTAINER_IDS } from './packContainers.js'
 
 export const BATCH_TYPES = ['Production', 'Trial'] as const
 export type BatchType = typeof BATCH_TYPES[number]
@@ -22,6 +23,10 @@ const labelSnapshotSchema = z.object({
   hazardPictograms: z.array(z.string()),
   signalWord:       z.string(),
   qrCode:           z.string().optional(),
+  packContainerId:  z.enum(PACK_CONTAINER_IDS).optional(),
+  // Calculated from the formula when the batch is made — an estimate until QC
+  // records a measured value on the CoA.
+  specificGravity:  z.number().positive().optional(),
 })
 
 const costSummarySchema = z.object({

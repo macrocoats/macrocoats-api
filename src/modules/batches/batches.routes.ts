@@ -5,6 +5,7 @@ import { requireRole } from '../../middleware/requireRole.js'
 import { AppErrors } from '../../types/errors.js'
 import { createBatchSchema, listBatchesQuerySchema, saveCoaSnapshotSchema, setPaymentStatusSchema, releaseBatchSchema, releaseBatchesSchema, setBatchLifecycleSchema } from './batches.schema.js'
 import { createBatch, listBatches, getBatchByNumber, deleteBatch, saveCoaSnapshot, clearCoaSnapshot, setPaymentStatus, releaseBatch, releaseBatches, setBatchLifecycle } from './batches.service.js'
+import { PACK_CONTAINERS } from './packContainers.js'
 
 const preHandler = [authenticate, requireAuth, requireSuperAdmin]
 // Operators may VIEW batches (with formula/cost stripped — see toOperatorBatchResponse
@@ -51,6 +52,11 @@ export async function batchRoutes(app: FastifyInstance) {
     const role = request.authUser!.role === 'operator' ? 'operator' : 'superadmin'
     const result = await listBatches(query.data, role)
     return reply.send(result)
+  })
+
+  // ── GET /batches/pack-containers ──────────────────────────────────────────
+  app.get('/pack-containers', { preHandler: viewPreHandler }, async (_request, reply) => {
+    return reply.send({ data: PACK_CONTAINERS })
   })
 
   // ── GET /batches/:batchNumber ─────────────────────────────────────────────
