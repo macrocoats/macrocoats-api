@@ -3,24 +3,24 @@ import { products, productDocuments } from '../db/schema/index.js'
 
 // ── Product master data ────────────────────────────────────────────────────────
 export const PRODUCTS = [
-  { key: 'uniklean-sp',    displayName: 'UNIKLEAN-SP',    code: 'SP',  category: 'Alkaline Cleaner - Cast Iron',      subtitle: 'Industrial Surface Cleaner & Metal Conditioner',                  accentColor: '#1e6b5a' },
-  { key: 'uniklean-fe',    displayName: 'UNIKLEAN-FE',    code: 'FE',  category: 'Iron-based Cleaner',                subtitle: 'Iron Phosphating & Metal Conditioning Agent',                     accentColor: '#7a3a1a' },
-  { key: 'uniprotect-oil', displayName: 'UNIPROTECT OIL', code: 'UP',  category: 'Rust Preventive Oil',               subtitle: 'Water Displacing Rust Preventive',                                accentColor: '#1a4971' },
-  { key: 'uniflow-ecm',    displayName: 'UNIFLOW ECM',    code: 'ECM', category: 'Corrosion Preventive Oil',          subtitle: 'Corrosion Preventive Oil — Hydrocarbon + Petroleum Sulfonate',     accentColor: '#1a5c73' },
-  { key: 'unicool-al',      displayName: 'UNICOOL AL',      code: 'AL',  category: 'Alcohol Based Cleaner', subtitle: 'Fast-Drying Alcohol Cleaner — Cooling & Precision Cleaning Fluid', accentColor: '#1590c2' },
-  { key: 'unikoat-lt-700', displayName: 'UNIKOAT LT 700', code: 'LT',  category: 'Zinc Phosphating',      subtitle: 'Zinc Phosphating & Surface Conversion Agent',                     accentColor: '#4a6741' },
-  { key: 'unisolve-h3',    displayName: 'UNISOLVE H3',    code: 'H3',  category: 'Degreasing / Derusting Chemical', subtitle: 'Phosphoric Acid-Based Acidic Cleaner & Rust Remover',         accentColor: '#7a5c1a' },
-  { key: 'unipass',        displayName: 'UNIPASS',        code: 'PS',  category: 'Passivation Chemical',             subtitle: 'Post-treatment / Anti-corrosion Passivation',                   accentColor: '#2d6a6a' },
-  { key: 'uniktonner',    displayName: 'UNIKTONNER',    code: 'TN',  category: 'Tonnage Additive / Accelerator',   subtitle: 'Nitrite-Based Phosphating Accelerator Solution',                 accentColor: '#8b2500' },
-  { key: 'corroklean',   displayName: 'CORROKLEAN',   code: 'CK',  category: 'Alkaline Cleaner',                 subtitle: 'Heavy-Duty Alkaline Metal Cleaner & Degreaser',                   accentColor: '#2a5c7a' },
-  { key: 'corrcut-100',  displayName: 'CORRCUT 100',  code: 'CR',  category: 'Rust Preventive Oil',              subtitle: 'Light-Bodied Mineral Oil Based Rust Preventive',                  accentColor: '#4a2d5c' },
-  { key: 'corrucut-500', displayName: 'CORROCUT 500', code: 'CC',  category: 'Corrosion Preventive Fluid',       subtitle: 'Fast-Drying Dearomatized Hydrocarbon Rust Preventive',            accentColor: '#3d5a6e' },
-  { key: 'uniklean-sf',  displayName: 'UNIKLEAN-SF',  code: 'SF',  category: 'Industrial Cleaner',               subtitle: 'Low-Foam Heavy Duty Alkaline Cleaner Concentrate',                accentColor: '#1c7a6e' },
-  { key: 'corrcut-200',  displayName: 'CORRCUT 200',  code: 'C2',  category: 'Rust Preventive Oils',             subtitle: 'Ordinary Solvent-Based Rust Preventive Oil',                      accentColor: '#8a4a2d' },
-  { key: 'unicut-al',    displayName: 'UNICUT-AL',    code: 'CA',  category: 'Metal Working Fluid',              subtitle: 'Semi-Synthetic Cutting & Grinding Coolant — Water Dilutable Metalworking Fluid', accentColor: '#2f6f91' },
-  { key: 'uniklean-cu', displayName: 'UNIKLEAN-CU', code: 'CU', category: 'Alkaline Cleaner', subtitle: 'Industrial Alkaline Cleaning Concentrate', accentColor: '#6b6b6b' },
-  { key: 'unikbrightner', displayName: 'UNIKBRIGHTNER', code: 'UB', category: 'Metal Brightening Chemical', subtitle: 'Metal Brightening Concentrate (10× Concentrate)', accentColor: '#c17817' },
-  { key: 'unikstrip-hd', displayName: 'UNIKSTRIP-HD', code: 'SH', category: 'Paint Remover', subtitle: 'Benzyl Alcohol Paint Remover — Heavy-Duty Paint Stripping from Mild Steel', accentColor: '#7a2f4f' },
+  { key: 'uniklean-sp', displayName: 'UNIKLEAN-SP', code: 'SP', category: 'Alkaline Cleaner - Cast Iron', subtitle: 'Industrial Surface Cleaner & Metal Conditioner', accentColor: '#1e6b5a', defaultProcessTags: ['cleaning', 'degreasing'] },
+  { key: 'uniklean-fe', displayName: 'UNIKLEAN-FE', code: 'FE', category: 'Iron-based Cleaner', subtitle: 'Iron Phosphating & Metal Conditioning Agent', accentColor: '#7a3a1a', defaultProcessTags: ['cleaning', 'phosphating'] },
+  { key: 'uniprotect-oil', displayName: 'UNIPROTECT OIL', code: 'UP', category: 'Rust Preventive Oil', subtitle: 'Water Displacing Rust Preventive', accentColor: '#1a4971', defaultProcessTags: ['rust_preventive_oil'] },
+  { key: 'uniflow-ecm', displayName: 'UNIFLOW ECM', code: 'ECM', category: 'Corrosion Preventive Oil', subtitle: 'Corrosion Preventive Oil — Hydrocarbon + Petroleum Sulfonate', accentColor: '#1a5c73', defaultProcessTags: ['rust_preventive_oil'] },
+  { key: 'unicool-al', displayName: 'UNICOOL AL', code: 'AL', category: 'Alcohol Based Cleaner', subtitle: 'Fast-Drying Alcohol Cleaner — Cooling & Precision Cleaning Fluid', accentColor: '#1590c2', defaultProcessTags: ['cleaning'] },
+  { key: 'unikoat-lt-700', displayName: 'UNIKOAT LT 700', code: 'LT', category: 'Zinc Phosphating', subtitle: 'Zinc Phosphating & Surface Conversion Agent', accentColor: '#4a6741', defaultProcessTags: ['phosphating'] },
+  { key: 'unisolve-h3', displayName: 'UNISOLVE H3', code: 'H3', category: 'Degreasing / Derusting Chemical', subtitle: 'Phosphoric Acid-Based Acidic Cleaner & Rust Remover', accentColor: '#7a5c1a', defaultProcessTags: ['degreasing', 'derusting'] },
+  { key: 'unipass', displayName: 'UNIPASS', code: 'PS', category: 'Passivation Chemical', subtitle: 'Post-treatment / Anti-corrosion Passivation', accentColor: '#2d6a6a', defaultProcessTags: ['passivation'] },
+  { key: 'uniktonner', displayName: 'UNIKTONNER', code: 'TN', category: 'Tonnage Additive / Accelerator', subtitle: 'Nitrite-Based Phosphating Accelerator Solution', accentColor: '#8b2500', defaultProcessTags: ['phosphating', 'process_additive'] },
+  { key: 'corroklean', displayName: 'CORROKLEAN', code: 'CK', category: 'Alkaline Cleaner', subtitle: 'Heavy-Duty Alkaline Metal Cleaner & Degreaser', accentColor: '#2a5c7a', defaultProcessTags: ['cleaning', 'degreasing'] },
+  { key: 'corrcut-100', displayName: 'CORRCUT 100', code: 'CR', category: 'Rust Preventive Oil', subtitle: 'Light-Bodied Mineral Oil Based Rust Preventive', accentColor: '#4a2d5c', defaultProcessTags: ['rust_preventive_oil'] },
+  { key: 'corrucut-500', displayName: 'CORROCUT 500', code: 'CC', category: 'Corrosion Preventive Fluid', subtitle: 'Fast-Drying Dearomatized Hydrocarbon Rust Preventive', accentColor: '#3d5a6e', defaultProcessTags: ['rust_preventive_oil'] },
+  { key: 'uniklean-sf', displayName: 'UNIKLEAN-SF', code: 'SF', category: 'Industrial Cleaner', subtitle: 'Low-Foam Heavy Duty Alkaline Cleaner Concentrate', accentColor: '#1c7a6e', defaultProcessTags: ['cleaning', 'degreasing'] },
+  { key: 'corrcut-200', displayName: 'CORRCUT 200', code: 'C2', category: 'Rust Preventive Oils', subtitle: 'Ordinary Solvent-Based Rust Preventive Oil', accentColor: '#8a4a2d', defaultProcessTags: ['rust_preventive_oil'] },
+  { key: 'unicut-al', displayName: 'UNICUT-AL', code: 'CA', category: 'Metal Working Fluid', subtitle: 'Semi-Synthetic Cutting & Grinding Coolant — Water Dilutable Metalworking Fluid', accentColor: '#2f6f91', defaultProcessTags: ['metalworking'] },
+  { key: 'uniklean-cu', displayName: 'UNIKLEAN-CU', code: 'CU', category: 'Alkaline Cleaner', subtitle: 'Industrial Alkaline Cleaning Concentrate', accentColor: '#6b6b6b', defaultProcessTags: ['cleaning', 'degreasing'] },
+  { key: 'unikbrightner', displayName: 'UNIKBRIGHTNER', code: 'UB', category: 'Metal Brightening Chemical', subtitle: 'Metal Brightening Concentrate (10× Concentrate)', accentColor: '#c17817', defaultProcessTags: ['metal_brightening'] },
+  { key: 'unikstrip-hd', displayName: 'UNIKSTRIP-HD', code: 'SH', category: 'Paint Remover', subtitle: 'Benzyl Alcohol Paint Remover — Heavy-Duty Paint Stripping from Mild Steel', accentColor: '#7a2f4f', defaultProcessTags: ['paint_stripping'] },
 ]
 
 // ── Document data ──────────────────────────────────────────────────────────────
@@ -5178,17 +5178,17 @@ export const DOCS: Array<{
 export async function seedProducts() {
   console.log('🌱 Seeding products and documents...')
 
-  // Insert products — skip if already exists
-  let productInserted = 0
+  // Synchronize product master classification while preserving all other fields.
+  let productSynced = 0
   for (const product of PRODUCTS) {
     const rows = await db
       .insert(products)
       .values(product)
-      .onConflictDoNothing()
+      .onConflictDoUpdate({ target: products.key, set: { defaultProcessTags: product.defaultProcessTags } })
       .returning({ key: products.key })
-    if (rows.length > 0) productInserted++
+    if (rows.length > 0) productSynced++
   }
-  console.log(`   ✅ Inserted ${productInserted} new products (${PRODUCTS.length - productInserted} already existed)`)
+  console.log(`   ✅ Synchronized process classification for ${productSynced} products`)
 
   // Insert documents — skip if already exists
   let docInserted = 0

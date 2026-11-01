@@ -74,6 +74,17 @@ describe('formula-first company assignments', () => {
       .send(createFormulaBody(`Shared Formula ${Date.now()}`))
       .expect(201)
     formulaId = formula.body.data.id
+    expect(formula.body.data.processTags).toEqual(['cleaning', 'degreasing'])
+    expect(formula.body.data.defaultProcessTags).toEqual(['cleaning', 'degreasing'])
+
+    const reclassified = await req()
+      .put(`/v1/formulation-variants/${formulaId}`)
+      .set('Cookie', adminCookies)
+      .send({ processTags: ['cleaning', 'phosphating', 'phosphating'] })
+      .expect(200)
+    expect(reclassified.body.data.processTags).toEqual(['cleaning', 'phosphating'])
+    expect(reclassified.body.data.processTagAdditions).toEqual(['phosphating'])
+    expect(reclassified.body.data.processTagRemovals).toEqual(['degreasing'])
 
     const second = await req()
       .post('/v1/formulation-variants')
@@ -121,6 +132,9 @@ describe('formula-first company assignments', () => {
       .set('Cookie', companyCookies)
       .expect(200)
     expect(companyList.body.data.some((row: { id: string; components?: unknown[] }) => row.id === formulaId && !row.components)).toBe(true)
+    const companyFormula = companyList.body.data.find((row: { id: string }) => row.id === formulaId)
+    expect(companyFormula.processTags).toEqual(['cleaning', 'phosphating'])
+    expect(companyFormula.defaultProcessTags).toBeUndefined()
 
     await req()
       .get(`/v1/formulation-variants/${secondFormulaId}`)

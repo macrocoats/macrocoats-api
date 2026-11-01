@@ -1,5 +1,6 @@
 import { pgTable, text, boolean, timestamp } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
+import { sql } from 'drizzle-orm'
 import { productDocuments } from './productDocuments.js'
 
 export const products = pgTable('products', {
@@ -9,6 +10,7 @@ export const products = pgTable('products', {
   category:    text('category').notNull(),
   subtitle:    text('subtitle').notNull(),
   accentColor: text('accent_color').notNull(),      // '#1e6b5a'
+  defaultProcessTags: text('default_process_tags').array().notNull().default(sql`ARRAY[]::text[]`),
   active:      boolean('active').notNull().default(true),
   createdAt:   timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })

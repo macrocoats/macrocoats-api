@@ -14,10 +14,10 @@ Reference for the PostgreSQL schema and Drizzle migration workflow. See `CLAUDE.
 | `companies` | Client companies; holds `accessToken` + `tokenExpiresAt` for magic-link login |
 | `company_product_access` | Junction: which products each company may view |
 | `company_product_prices` | Per-company special pricing for specific products |
-| `products` | Product line definitions (12 chemical products) |
+| `products` | Product line definitions, including controlled default process tags inherited by formulas |
 | `product_documents` | TDS/MSDS/Formula/Label/COA per product (JSONB body); also carries `status`, `createdAt`, `updatedAt`, `updatedBy` |
 | `document_audit_log` | Per-document history: created/updated/status_changed events, who, when, notes |
-| `product_formulation_variants` | Product variant headers (e.g. customized formulations) |
+| `product_formulation_variants` | Product variant headers, including process-tag additions/removals from product defaults |
 | `formulation_variant_components` | Line items (materials) for formulation variants |
 | `inventory_items` | Raw materials: price, stock, supplier, reorder threshold |
 | `quotations` | Sales quotations with auto-generated UNIK-YYYY-NNN numbers |

@@ -7,6 +7,7 @@ import {
   productFormulationVariants,
   formulationVariantComponents,
   companies,
+  products,
 } from '../../db/schema/index.js'
 import { cacheGet, cacheSet, cacheDel } from '../../plugins/redis.js'
 import { VARIANT_STATUS_TRANSITIONS, type VariantStatus } from '../../types/index.js'
@@ -18,6 +19,34 @@ type AssignmentSummary = {
   companyDisplayName: string
   isDefaultForCompany: boolean
   assignedAt: string
+}
+
+const uniqueTags = (tags: string[] = []) => [...new Set(tags)]
+
+function resolveProcessTags(defaults: string[], additions: string[], removals: string[]) {
+  const removed = new Set(removals)
+  return uniqueTags([...defaults.filter((tag) => !removed.has(tag)), ...additions])
+}
+
+function processTagDelta(defaults: string[], effective: string[]) {
+  const desired = new Set(uniqueTags(effective))
+  const inherited = new Set(defaults)
+  return {
+    additions: [...desired].filter((tag) => !inherited.has(tag)),
+    removals: defaults.filter((tag) => !desired.has(tag)),
+  }
+}
+
+async function getProductTagMap(productKeys: string[]) {
+  const map = new Map<string, string[]>()
+  const keys = [...new Set(productKeys)]
+  if (!keys.length) return map
+  const rows = await db
+    .select({ key: products.key, defaultProcessTags: products.defaultProcessTags })
+    .from(products)
+    .where(inArray(products.key, keys))
+  rows.forEach((row) => map.set(row.key, row.defaultProcessTags))
+  return map
 }
 
 function toComponentResponse(row: typeof formulationVariantComponents.$inferSelect) {
@@ -46,7 +75,9 @@ function toVariantResponse(
   components: ReturnType<typeof toComponentResponse>[],
   includeInternal: boolean,
   assignedCompanies: AssignmentSummary[] = [],
+  defaultProcessTags: string[] = [],
 ) {
+  const processTags = resolveProcessTags(defaultProcessTags, row.processTagAdditions, row.processTagRemovals)
   const base = {
     id:                 row.id,
     productKey:         row.productKey,
@@ -57,6 +88,7 @@ function toVariantResponse(
     variantName:        row.variantName,
     isDefault:          row.isDefault,
     status:             row.status,
+    processTags,
     createdAt:          row.createdAt.toISOString(),
     updatedAt:          row.updatedAt.toISOString(),
   }
@@ -71,6 +103,9 @@ function toVariantResponse(
     tdsOverrides:  (row.tdsOverrides  as Record<string, unknown>   | null) ?? null,
     msdsOverrides: (row.msdsOverrides as Record<string, unknown>   | null) ?? null,
     formulaOverrides: (row.formulaOverrides as Record<string, unknown> | null) ?? null,
+    defaultProcessTags,
+    processTagAdditions: row.processTagAdditions,
+    processTagRemovals: row.processTagRemovals,
     components,
   }
 }
@@ -204,6 +239,7 @@ export async function listFormulaLibrary(
   const assignmentsByVariant = await getAssignmentsByVariantIds(variantIds, isSuperadmin ? query.companyId : scopedCompanyId)
   const companyMap = await getLegacyCompanyDisplayMap(variants)
   const componentsByVariant = isSuperadmin ? await getComponentsByVariantIds(variantIds) : new Map()
+  const productTags = await getProductTagMap(variants.map((variant) => variant.productKey))
 
   const result = variants.map((v) =>
     toVariantResponse(
@@ -212,6 +248,7 @@ export async function listFormulaLibrary(
       componentsByVariant.get(v.id) ?? [],
       isSuperadmin,
       assignmentsByVariant.get(v.id) ?? [],
+      productTags.get(v.productKey) ?? [],
     ),
   )
 
@@ -255,7 +292,8 @@ export async function getVariantById(variantId: string, includeInternal = true) 
     .where(eq(formulationVariantComponents.variantId, variantId))
 
   const assignments = await getAssignmentsByVariantIds([variantId])
-  return toVariantResponse(variant, companyDisplayName, comps.map(toComponentResponse), includeInternal, assignments.get(variantId) ?? [])
+  const productTags = await getProductTagMap([variant.productKey])
+  return toVariantResponse(variant, companyDisplayName, comps.map(toComponentResponse), includeInternal, assignments.get(variantId) ?? [], productTags.get(variant.productKey) ?? [])
 }
 
 export async function createVariant(data: CreateVariantBody) {
@@ -264,6 +302,13 @@ export async function createVariant(data: CreateVariantBody) {
       ...(data.assignedCompanyIds ?? []),
       ...(data.companyId ? [data.companyId] : []),
     ]))
+
+    const [product] = await tx
+      .select({ defaultProcessTags: products.defaultProcessTags })
+      .from(products)
+      .where(eq(products.key, data.productKey))
+    const defaults = product?.defaultProcessTags ?? []
+    const tagDelta = processTagDelta(defaults, data.processTags ?? defaults)
 
     const [variant] = await tx
       .insert(productFormulationVariants)
@@ -275,6 +320,8 @@ export async function createVariant(data: CreateVariantBody) {
         status:            (data.status ?? 'approved') as typeof productFormulationVariants.$inferInsert.status,
         sourceVariantId:   data.sourceVariantId ?? null,
         optimizationMeta:  data.optimizationMeta ?? null,
+        processTagAdditions: tagDelta.additions,
+        processTagRemovals: tagDelta.removals,
       })
       .returning()
 
@@ -341,7 +388,7 @@ export async function createVariant(data: CreateVariantBody) {
       })))
     }
 
-    return toVariantResponse(variant, companyDisplayName, inserted.map(toComponentResponse), true, assignmentSummaries)
+    return toVariantResponse(variant, companyDisplayName, inserted.map(toComponentResponse), true, assignmentSummaries, defaults)
   })
 }
 
@@ -353,6 +400,17 @@ export async function updateVariant(variantId: string, data: UpdateVariantBody) 
   if (data.tdsOverrides  !== undefined) patch.tdsOverrides  = data.tdsOverrides
   if (data.msdsOverrides !== undefined) patch.msdsOverrides = data.msdsOverrides
   if (data.formulaOverrides !== undefined) patch.formulaOverrides = data.formulaOverrides
+  if (data.processTags !== undefined) {
+    const [current] = await db
+      .select({ productKey: productFormulationVariants.productKey, defaultProcessTags: products.defaultProcessTags })
+      .from(productFormulationVariants)
+      .innerJoin(products, eq(products.key, productFormulationVariants.productKey))
+      .where(eq(productFormulationVariants.id, variantId))
+    if (!current) return null
+    const tagDelta = processTagDelta(current.defaultProcessTags, data.processTags)
+    patch.processTagAdditions = tagDelta.additions
+    patch.processTagRemovals = tagDelta.removals
+  }
 
   if (!Object.keys(patch).length) return getVariantById(variantId, true)
 
