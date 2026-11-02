@@ -159,6 +159,43 @@ export async function syncDispatchInvoice(dispatchId: string): Promise<SyncDispa
   }
 }
 
+export type ZohoInvoicePdfResult =
+  | { pdf: Buffer }
+  | { code: 'ZOHO_NOT_CONFIGURED' }
+  | { code: 'ZOHO_INVOICE_NOT_FOUND' }
+  | { code: 'ZOHO_SYNC_FAILED'; message: string }
+
+/**
+ * Live proxy of Zoho's own invoice PDF (`?accept=pdf` on the invoice detail
+ * endpoint, covered by the existing ZohoInvoice.invoices.READ scope). Nothing
+ * is stored, so the file always matches what Zoho shows today.
+ */
+export async function fetchZohoInvoicePdf(invoiceId: string): Promise<ZohoInvoicePdfResult> {
+  if (!isZohoConfigured()) return { code: 'ZOHO_NOT_CONFIGURED' }
+
+  try {
+    const token = await getAccessToken()
+    const url = new URL(`/invoice/v3/invoices/${invoiceId}`, env.ZOHO_API_DOMAIN)
+    url.searchParams.set('organization_id', env.ZOHO_ORG_ID!)
+    url.searchParams.set('accept', 'pdf')
+
+    const res = await fetch(url, {
+      headers: { Authorization: `Zoho-oauthtoken ${token}` },
+      signal:  AbortSignal.timeout(30_000),
+    })
+    if (res.status === 404) return { code: 'ZOHO_INVOICE_NOT_FOUND' }
+    if (!res.ok) throw new Error(`Zoho Invoice API error (${res.status})`)
+    if (!res.headers.get('content-type')?.includes('application/pdf')) {
+      throw new Error('Zoho Invoice API did not return a PDF')
+    }
+
+    return { pdf: Buffer.from(await res.arrayBuffer()) }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown Zoho PDF error'
+    return { code: 'ZOHO_SYNC_FAILED', message }
+  }
+}
+
 export interface ZohoInvoiceListRow {
   invoiceId:      string
   invoiceNumber:  string

@@ -2,8 +2,8 @@ import type { FastifyInstance } from 'fastify'
 import { authenticate, requireAuth } from '../../middleware/authenticate.js'
 import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js'
 import { AppErrors } from '../../types/errors.js'
-import { zohoInvoiceParamsSchema, listZohoInvoicesQuerySchema } from './zoho-invoice.schema.js'
-import { getSyncStatus, syncDispatchInvoice, listZohoInvoices } from './zoho-invoice.service.js'
+import { zohoInvoiceParamsSchema, zohoInvoicePdfParamsSchema, listZohoInvoicesQuerySchema } from './zoho-invoice.schema.js'
+import { getSyncStatus, syncDispatchInvoice, listZohoInvoices, fetchZohoInvoicePdf } from './zoho-invoice.service.js'
 
 const preHandler = [authenticate, requireAuth, requireSuperAdmin]
 
@@ -25,6 +25,33 @@ export async function zohoInvoiceRoutes(app: FastifyInstance) {
     }
 
     return reply.send({ data: result })
+  })
+
+  // ── GET /zoho-invoices/:invoiceId/pdf ──────────────────────────────────────
+  // Live PDF from Zoho, keyed by Zoho's invoice id — stored nowhere.
+  app.get<{ Params: { invoiceId: string } }>('/:invoiceId/pdf', { preHandler }, async (request, reply) => {
+    const params = zohoInvoicePdfParamsSchema.safeParse(request.params)
+    if (!params.success) {
+      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: params.error.flatten() })
+    }
+
+    const result = await fetchZohoInvoicePdf(params.data.invoiceId)
+    if ('code' in result) {
+      switch (result.code) {
+        case 'ZOHO_NOT_CONFIGURED':
+          return reply.code(400).send({ error: AppErrors.ZOHO_NOT_CONFIGURED })
+        case 'ZOHO_INVOICE_NOT_FOUND':
+          return reply.code(404).send({ error: AppErrors.ZOHO_INVOICE_NOT_FOUND })
+        case 'ZOHO_SYNC_FAILED':
+          return reply.code(502).send({ error: AppErrors.ZOHO_SYNC_FAILED, message: result.message })
+      }
+    }
+
+    return reply
+      .type('application/pdf')
+      .header('Content-Disposition', `attachment; filename="invoice-${params.data.invoiceId}.pdf"`)
+      .header('Cache-Control', 'no-store')
+      .send(result.pdf)
   })
 
   // ── GET /zoho-invoices/:dispatchId ─────────────────────────────────────────
