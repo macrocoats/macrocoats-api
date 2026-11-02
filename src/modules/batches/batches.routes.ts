@@ -4,8 +4,7 @@ import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js'
 import { requireRole } from '../../middleware/requireRole.js'
 import { AppErrors } from '../../types/errors.js'
 import { createBatchSchema, listBatchesQuerySchema, saveCoaSnapshotSchema, setPaymentStatusSchema, releaseBatchSchema, releaseBatchesSchema, setBatchLifecycleSchema } from './batches.schema.js'
-import { createBatch, listBatches, getBatchByNumber, deleteBatch, saveCoaSnapshot, clearCoaSnapshot, setPaymentStatus, releaseBatch, releaseBatches, setBatchLifecycle } from './batches.service.js'
-import { PACK_CONTAINERS } from './packContainers.js'
+import { listPackContainersWithStock, createBatch, listBatches, getBatchByNumber, deleteBatch, saveCoaSnapshot, clearCoaSnapshot, setPaymentStatus, releaseBatch, releaseBatches, setBatchLifecycle } from './batches.service.js'
 
 const preHandler = [authenticate, requireAuth, requireSuperAdmin]
 // Operators may VIEW batches (with formula/cost stripped — see toOperatorBatchResponse
@@ -38,6 +37,9 @@ export async function batchRoutes(app: FastifyInstance) {
     if ('code' in result && result.code === 'INSUFFICIENT_MATERIAL') {
       return reply.code(409).send({ error: result.code, message: `Insufficient ${result.materialName}.`, available: result.available, required: result.required, unit: result.unit })
     }
+    if ('code' in result && result.code === 'INSUFFICIENT_CONTAINERS') {
+      return reply.code(409).send({ error: result.code, message: `Only ${result.available} ${result.containerName} in stock, this batch needs ${result.required}.`, available: result.available, required: result.required })
+    }
     if ('code' in result && result.code === 'UNIT_CONVERSION_UNAVAILABLE') {
       return reply.code(409).send({ error: result.code, message: `${result.materialName} is in ${result.fromUnit} here but stocked in ${result.toUnit}. Add its density to the formula so it can be converted.` })
     }
@@ -59,7 +61,7 @@ export async function batchRoutes(app: FastifyInstance) {
 
   // ── GET /batches/pack-containers ──────────────────────────────────────────
   app.get('/pack-containers', { preHandler: viewPreHandler }, async (_request, reply) => {
-    return reply.send({ data: PACK_CONTAINERS })
+    return reply.send({ data: await listPackContainersWithStock() })
   })
 
   // ── GET /batches/:batchNumber ─────────────────────────────────────────────

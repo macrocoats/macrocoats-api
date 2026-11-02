@@ -10,6 +10,10 @@ import { createFinishedGoodsRecord } from '../finished-goods/finished-goods.serv
 import { USABLE_VARIANT_STATUSES, type VariantStatus } from '../../types/index.js'
 import type { CreateBatchBody, ListBatchesQuery, SaveCoaSnapshotBody } from './batches.schema.js'
 import { findPackContainer } from './packContainers.js'
+import {
+  containersNeeded, hasReturnedContainers, issueContainers, listContainers, lockContainerStock, returnBatchContainers,
+  type ReturnedContainer,
+} from '../pack-containers/pack-containers.service.js'
 
 /** The batch's first invoice — the earliest non-voided dispatch carrying an invoice number. */
 interface BatchInvoice { invoiceNumber: string; startDate: string }
@@ -127,6 +131,7 @@ export type CreateBatchResult =
   | { code: 'MATERIAL_NOT_FOUND'; materialName: string }
   | { code: 'INSUFFICIENT_MATERIAL'; materialName: string; available: number; required: number; unit: string }
   | { code: 'UNIT_CONVERSION_UNAVAILABLE'; materialName: string; fromUnit: string; toUnit: string }
+  | { code: 'INSUFFICIENT_CONTAINERS'; containerName: string; available: number; required: number }
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0]
 
@@ -169,6 +174,18 @@ export async function createBatch(data: CreateBatchBody, createdBy: string | nul
   return db.transaction(async (tx) => {
     const productionDate = data.productionDate ?? new Date().toISOString().slice(0, 10)
     const batchNumber    = await nextBatchNumber(tx as unknown as typeof db, data.companyName, productionDate)
+
+    // ── Container check ────────────────────────────────────────────────────
+    // Checked before anything is deducted, because the early returns below
+    // commit this transaction. Trial batches take no stock, same as materials.
+    const stockedContainer = data.batchType === 'Trial' ? undefined : findPackContainer(data.labelSnapshot.packContainerId)
+    const containerCount = stockedContainer ? containersNeeded(data.batchSize, stockedContainer.capacityL) : 0
+    if (stockedContainer) {
+      const available = await lockContainerStock(tx, stockedContainer.id)
+      if (available < containerCount) {
+        return { code: 'INSUFFICIENT_CONTAINERS' as const, containerName: stockedContainer.name, available, required: containerCount }
+      }
+    }
 
     // ── Inventory deduction ────────────────────────────────────────────────
     // Formula materials resolve to Inventory items with the same whole-word
@@ -269,6 +286,10 @@ export async function createBatch(data: CreateBatchBody, createdBy: string | nul
         metadata: { material: d.material, unit: d.unit, batchNumber },
         createdBy: createdBy ?? undefined,
       })))
+    }
+
+    if (stockedContainer) {
+      await issueContainers(tx, { containerId: stockedContainer.id, quantity: containerCount, batchId: row.id, batchNumber, actorId: createdBy })
     }
 
     await createFinishedGoodsRecord(tx as unknown as typeof db, row)
@@ -491,7 +512,8 @@ export async function setBatchLifecycle(
     }
     if (version !== undefined && existing.version !== version) return { code: 'VERSION_CONFLICT' as const }
     // Its materials are back in stock, so this batch can't quietly become live again.
-    if (existing.lifecycleStatus === 'cancelled' && status !== 'cancelled' && (await outstandingIssues(tx, existing.id)).hasReturns) {
+    if (existing.lifecycleStatus === 'cancelled' && status !== 'cancelled'
+      && ((await outstandingIssues(tx, existing.id)).hasReturns || await hasReturnedContainers(tx, existing.id))) {
       return { code: 'BATCH_NOT_RELEASABLE' as const, blockingReasons: ['materials_returned'] }
     }
     const [updated] = await tx.update(batches).set({ lifecycleStatus: status, releaseNotes: reason, version: existing.version + 1 })
@@ -505,22 +527,26 @@ export async function setBatchLifecycle(
         payload: { batchNumber, reason },
       })
     }
-    const materialsReturned = status === 'cancelled' && options.returnMaterials
-      ? await returnBatchMaterials(tx, updated, `Batch cancelled: ${reason}`, options.actorId)
-      : []
-    return { updated, materialsReturned }
+    const shouldReturn = status === 'cancelled' && options.returnMaterials
+    const materialsReturned = shouldReturn ? await returnBatchMaterials(tx, updated, `Batch cancelled: ${reason}`, options.actorId) : []
+    const containersReturned = shouldReturn ? await returnBatchContainers(tx, updated, `Batch cancelled: ${reason}`, options.actorId) : []
+    return { updated, materialsReturned, containersReturned }
   })
   if ('code' in outcome) return outcome
-  return { ...(await withInvoice(outcome.updated)), materialsReturned: outcome.materialsReturned }
+  return { ...(await withInvoice(outcome.updated)), materialsReturned: outcome.materialsReturned, containersReturned: outcome.containersReturned }
 }
 
-/** Deletes a batch and returns its outstanding materials. Null if there's no such batch. */
-export async function deleteBatch(id: string, actorId?: string): Promise<{ materialsReturned: ReturnedMaterial[] } | null> {
+/** The batch container picker's list, with stock. */
+export const listPackContainersWithStock = listContainers
+
+/** Deletes a batch and returns its outstanding materials and containers. Null if there's no such batch. */
+export async function deleteBatch(id: string, actorId?: string): Promise<{ materialsReturned: ReturnedMaterial[]; containersReturned: ReturnedContainer[] } | null> {
   return db.transaction(async (tx) => {
     const [existing] = await tx.select().from(batches).where(eq(batches.id, id)).for('update')
     if (!existing) return null
     const materialsReturned = await returnBatchMaterials(tx, existing, 'Batch deleted', actorId)
+    const containersReturned = await returnBatchContainers(tx, existing, 'Batch deleted', actorId)
     await tx.delete(batches).where(eq(batches.id, id))
-    return { materialsReturned }
+    return { materialsReturned, containersReturned }
   })
 }

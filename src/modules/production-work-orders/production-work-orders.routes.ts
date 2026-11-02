@@ -59,6 +59,7 @@ export async function productionWorkOrderRoutes(app: FastifyInstance) {
       if (result.code === 'NOT_FOUND' || result.code === 'VARIANT_NOT_FOUND') return reply.code(404).send({ error: result.code })
       if (result.code === 'MATERIAL_NOT_FOUND') return reply.code(409).send({ error: result.code, message: `No usable inventory balance exists for ${result.materialName}.` })
       if (result.code === 'INSUFFICIENT_MATERIAL') return reply.code(409).send({ error: result.code, message: `Insufficient ${result.materialName}.`, available: result.available, required: result.required, unit: result.unit })
+      if (result.code === 'INSUFFICIENT_CONTAINERS') return reply.code(409).send({ error: result.code, message: `Only ${result.available} ${result.containerName} in stock, this batch needs ${result.required}.`, available: result.available, required: result.required })
       if (result.code === 'UNIT_CONVERSION_UNAVAILABLE') return reply.code(409).send({ error: result.code, message: `${result.materialName} is in ${result.fromUnit} here but stocked in ${result.toUnit}. Add its density to the formula so it can be converted.` })
       return reply.code(409).send({ error: result.code })
     }

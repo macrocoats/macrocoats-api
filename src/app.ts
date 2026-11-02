@@ -13,6 +13,7 @@ import { authenticate } from './middleware/authenticate.js'
 import { authRoutes } from './modules/auth/auth.routes.js'
 import { productRoutes } from './modules/products/products.routes.js'
 import { inventoryRoutes } from './modules/inventory/inventory.routes.js'
+import { packContainerRoutes } from './modules/pack-containers/pack-containers.routes.js'
 import { quotationRoutes } from './modules/quotations/quotations.routes.js'
 import { companyRoutes } from './modules/companies/companies.routes.js'
 import { analyticsRoutes } from './modules/analytics/analytics.routes.js'
@@ -140,6 +141,7 @@ export async function buildApp() {
   await app.register(authRoutes,      { prefix: `${prefix}/auth` })
   await app.register(productRoutes,   { prefix: `${prefix}/products` })
   await app.register(inventoryRoutes, { prefix: `${prefix}/inventory` })
+  await app.register(packContainerRoutes, { prefix: `${prefix}/pack-containers` })
   await app.register(quotationRoutes, { prefix: `${prefix}/quotations` })
   await app.register(companyRoutes,   { prefix: `${prefix}/companies` })
   await app.register(analyticsRoutes, { prefix: `${prefix}/analytics` })
