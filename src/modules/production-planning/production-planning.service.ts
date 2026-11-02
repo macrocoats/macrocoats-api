@@ -2,6 +2,8 @@ import { sql, eq, and, inArray } from 'drizzle-orm'
 import { db } from '../../db/index.js'
 import { formulationVariantComponents, productDocuments, inventoryItems } from '../../db/schema/index.js'
 import { normalizeMaterialName } from '../cost-intelligence/cost-intelligence.service.js'
+import { findMaterialMatch, isWaterMaterial } from '../../utils/materialMatch.js'
+import { toInventoryQuantity } from '../../utils/materialQuantity.js'
 import type { OverviewQuery } from './production-planning.schema.js'
 
 interface OpenItemRow {
@@ -79,6 +81,7 @@ export async function getProductionPlanningOverview(query: OverviewQuery) {
         materialName: formulationVariantComponents.materialName,
         percentage: formulationVariantComponents.percentage,
         unit: formulationVariantComponents.unit,
+        density: formulationVariantComponents.density,
       }).from(formulationVariantComponents).where(inArray(formulationVariantComponents.variantId, variantIds))
     : []
   const componentsByVariant = new Map<string, typeof variantComponentRows>()
@@ -99,18 +102,30 @@ export async function getProductionPlanningOverview(query: OverviewQuery) {
     : []
   const formulaByProduct = new Map(baseFormulaRows.map((r) => [r.productKey, r.body as { composition?: unknown }]))
 
-  type MaterialTotal = { materialName: string; requiredQty: number; unit: string }
+  // Same matcher and unit conversion as batch deduction, so "enough stock" here
+  // agrees with what a batch will actually do. A material that can't be matched
+  // or converted keeps its formula name and unit, with stock unknown.
+  const inventory = await db.select({
+    id: inventoryItems.id,
+    material: inventoryItems.material,
+    stockQty: inventoryItems.stockQty,
+    unit: inventoryItems.unit,
+  }).from(inventoryItems)
+  const inventoryNames = inventory.map((row) => row.material)
+
+  type MaterialTotal = { materialName: string; requiredQty: number; unit: string; currentStock: number | null }
   const materialTotals = new Map<string, MaterialTotal>()
 
   const itemsOut = items.map((item) => {
     let materialsResolved = true
-    let resolvedComponents: { name: string; pct: number | null; unit: string }[] = []
+    let resolvedComponents: { name: string; pct: number | null; unit: string; density: number | null }[] = []
 
     if (item.variantId) {
       resolvedComponents = (componentsByVariant.get(item.variantId) ?? []).map((c) => ({
         name: c.materialName,
         pct: c.percentage !== null ? Number(c.percentage) : null,
         unit: c.unit,
+        density: c.density !== null ? Number(c.density) : null,
       }))
     } else {
       const body = formulaByProduct.get(item.productKey)
@@ -120,6 +135,7 @@ export async function getProductionPlanningOverview(query: OverviewQuery) {
         name: String(c.name ?? ''),
         pct: c.percentWV !== null && c.percentWV !== undefined ? Number(c.percentWV) : null,
         unit: String(c.unit ?? item.unit),
+        density: Number(c.density) > 0 ? Number(c.density) : null,
       }))
     }
 
@@ -127,12 +143,18 @@ export async function getProductionPlanningOverview(query: OverviewQuery) {
       // A null percentage is the water/balance row (auto-calculated to the
       // remainder) — not a distinct raw material to purchase/track, so it
       // doesn't contribute to the materials-required aggregation.
-      if (c.pct === null) return
-      const key = normalizeMaterialName(c.name)
-      if (!key) return
+      if (c.pct === null || isWaterMaterial(c.name)) return
+      const nameKey = normalizeMaterialName(c.name)
+      if (!nameKey) return
       const requiredQty = (c.pct / 100) * item.remainingQty
-      const existing = materialTotals.get(key) ?? { materialName: c.name, requiredQty: 0, unit: c.unit }
-      existing.requiredQty += requiredQty
+      const matchedName = findMaterialMatch(c.name, inventoryNames)
+      const stockItem = inventory.find((row) => row.material === matchedName)
+      const converted = stockItem ? toInventoryQuantity(requiredQty, c.unit, stockItem.unit, c.density) : null
+      const key = stockItem && converted !== null ? `item:${stockItem.id}` : nameKey
+      const existing = materialTotals.get(key) ?? (stockItem && converted !== null
+        ? { materialName: stockItem.material, requiredQty: 0, unit: stockItem.unit, currentStock: stockItem.stockQty !== null ? Number(stockItem.stockQty) : null }
+        : { materialName: c.name, requiredQty: 0, unit: c.unit, currentStock: null })
+      existing.requiredQty += converted ?? requiredQty
       materialTotals.set(key, existing)
     })
 
@@ -158,18 +180,9 @@ export async function getProductionPlanningOverview(query: OverviewQuery) {
   })
 
   // ── Cross-reference required materials against current inventory stock ────
-  const inventory = await db.select({
-    material: inventoryItems.material,
-    stockQty: inventoryItems.stockQty,
-    unit: inventoryItems.unit,
-  }).from(inventoryItems)
-  const inventoryByNorm = new Map(inventory.map((row) => [normalizeMaterialName(row.material), row]))
-
   const materials = Array.from(materialTotals.values())
     .map((m) => {
-      const key = normalizeMaterialName(m.materialName)
-      const invMatch = inventoryByNorm.get(key)
-      const currentStock = invMatch?.stockQty !== null && invMatch?.stockQty !== undefined ? Number(invMatch.stockQty) : null
+      const { currentStock } = m
       const shortfall = currentStock !== null ? Math.max(0, m.requiredQty - currentStock) : null
       return {
         materialName: m.materialName,

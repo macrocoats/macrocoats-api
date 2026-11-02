@@ -20,6 +20,7 @@ Reference for the PostgreSQL schema and Drizzle migration workflow. See `CLAUDE.
 | `product_formulation_variants` | Product variant headers, including process-tag additions/removals from product defaults |
 | `formulation_variant_components` | Line items (materials) for formulation variants |
 | `inventory_items` | Raw materials: price, stock, supplier, reorder threshold |
+| `inventory_movements` | Stock movement log. Batch deductions (`issue`) and returns (`reversal`) carry `inventory_item_id`; `lot_id` stays null until lots are in use |
 | `quotations` | Sales quotations with auto-generated UNIK-YYYY-NNN numbers |
 | `quotation_line_items` | Line items in a quotation (FK → quotations, cascade delete) |
 | `quotation_sequences` | Per-year atomic counter for quotation numbering |

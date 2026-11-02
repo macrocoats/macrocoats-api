@@ -1,10 +1,11 @@
 import { eq, ilike, and, gte, lte, desc, count, sql, isNull, isNotNull } from 'drizzle-orm'
 import { db } from '../../db/index.js'
-import { batches, productFormulationVariants, finishedGoods, productionWorkOrderDemands, productionEvents } from '../../db/schema/index.js'
+import { batches, productFormulationVariants, finishedGoods, productionWorkOrderDemands, productionEvents, inventoryItems, inventoryMovements } from '../../db/schema/index.js'
 import { allocateReleasedBatch } from '../customer-purchase-orders/customer-purchase-orders.service.js'
 import { syncWorkOrderProgress } from '../../utils/workOrderProgress.js'
 import { nextBatchNumber } from '../../utils/batchNumber.js'
 import { findMaterialMatch, isWaterMaterial } from '../../utils/materialMatch.js'
+import { round3, toInventoryQuantity } from '../../utils/materialQuantity.js'
 import { createFinishedGoodsRecord } from '../finished-goods/finished-goods.service.js'
 import { USABLE_VARIANT_STATUSES, type VariantStatus } from '../../types/index.js'
 import type { CreateBatchBody, ListBatchesQuery, SaveCoaSnapshotBody } from './batches.schema.js'
@@ -124,7 +125,8 @@ export type CreateBatchResult =
   | { code: 'VARIANT_NOT_FOUND' }
   | { code: 'VARIANT_NOT_USABLE'; variantName: string; status: VariantStatus }
   | { code: 'MATERIAL_NOT_FOUND'; materialName: string }
-  | { code: 'INSUFFICIENT_MATERIAL'; materialName: string; available: number; required: number }
+  | { code: 'INSUFFICIENT_MATERIAL'; materialName: string; available: number; required: number; unit: string }
+  | { code: 'UNIT_CONVERSION_UNAVAILABLE'; materialName: string; fromUnit: string; toUnit: string }
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0]
 
@@ -176,40 +178,47 @@ export async function createBatch(data: CreateBatchBody, createdBy: string | nul
     // they are R&D/sample runs, not production consumption.
     // The inventory rows are locked FOR UPDATE and the deduction is a single
     // VALUES-CTE delta update by id, so concurrent batches serialize correctly.
+    // Quantities are converted to the unit the item is stocked in, and each
+    // deduction is recorded in inventory_movements so it can be traced or returned.
     const components = (data.batchType === 'Trial' ? [] : data.formulationSnapshot.components)
       .filter((c) => c.quantityUsed > 0 && !isWaterMaterial(c.name))
 
+    const deductions = new Map<string, { name: string; material: string; unit: string; quantity: number; stockQty: string | null }>()
     if (components.length > 0) {
-      const inventoryRows = await tx.execute<{ id: string; material: string; stockQty: string | null }>(sql`
-        SELECT id, material, stock_qty AS "stockQty"
+      const inventoryRows = await tx.execute<{ id: string; material: string; unit: string; stockQty: string | null }>(sql`
+        SELECT id, material, unit, stock_qty AS "stockQty"
         FROM inventory_items
         FOR UPDATE
       `)
       const materials = inventoryRows.map((row) => row.material)
-      const totals = new Map<string, { name: string; quantity: number; stockQty: string | null }>()
       for (const component of components) {
         const match = findMaterialMatch(component.name, materials)
         const item = match === null ? undefined : inventoryRows.find((row) => row.material === match)
         if (!item || item.stockQty === null) {
           return { code: 'MATERIAL_NOT_FOUND' as const, materialName: component.name }
         }
-        const current = totals.get(item.id) ?? { name: component.name, quantity: 0, stockQty: item.stockQty }
-        current.quantity += component.quantityUsed
-        totals.set(item.id, current)
+        const quantity = toInventoryQuantity(component.quantityUsed, component.unit, item.unit, component.density)
+        if (quantity === null) {
+          return { code: 'UNIT_CONVERSION_UNAVAILABLE' as const, materialName: component.name, fromUnit: component.unit, toUnit: item.unit }
+        }
+        const current = deductions.get(item.id) ?? { name: component.name, material: item.material, unit: item.unit, quantity: 0, stockQty: item.stockQty }
+        current.quantity = round3(current.quantity + quantity)
+        deductions.set(item.id, current)
       }
-      for (const total of totals.values()) {
-        const available = Number(total.stockQty)
-        if (available < total.quantity) {
-          return { code: 'INSUFFICIENT_MATERIAL' as const, materialName: total.name, available, required: total.quantity }
+      for (const deduction of deductions.values()) {
+        const available = Number(deduction.stockQty)
+        if (available < deduction.quantity) {
+          return { code: 'INSUFFICIENT_MATERIAL' as const, materialName: deduction.name, available, required: deduction.quantity, unit: deduction.unit }
         }
       }
       const valuesList = sql.join(
-        [...totals.entries()].map(([id, t]) => sql`(${id}::uuid, ${t.quantity}::numeric)`),
+        [...deductions.entries()].map(([id, d]) => sql`(${id}::uuid, ${d.quantity}::numeric)`),
         sql`, `,
       )
       await tx.execute(sql`
         UPDATE inventory_items AS t
-        SET    stock_qty = t.stock_qty - v.qty
+        SET    stock_qty = t.stock_qty - v.qty,
+               updated_at = now()
         FROM  (VALUES ${valuesList}) AS v(id, qty)
         WHERE  t.id = v.id
           AND  t.stock_qty IS NOT NULL
@@ -247,6 +256,20 @@ export async function createBatch(data: CreateBatchBody, createdBy: string | nul
         createdBy:           createdBy ?? undefined,
       })
       .returning()
+
+    const movements = [...deductions.entries()].filter(([, d]) => d.quantity > 0)
+    if (movements.length > 0) {
+      await tx.insert(inventoryMovements).values(movements.map(([inventoryItemId, d]) => ({
+        inventoryItemId,
+        movementType: 'issue' as const,
+        quantity: String(d.quantity),
+        workOrderId: options.workOrderId ?? null,
+        batchId: row.id,
+        reason: 'Batch created',
+        metadata: { material: d.material, unit: d.unit, batchNumber },
+        createdBy: createdBy ?? undefined,
+      })))
+    }
 
     await createFinishedGoodsRecord(tx as unknown as typeof db, row)
     if (options.onCreated) await options.onCreated(tx, row)
@@ -400,32 +423,104 @@ export async function releaseBatches(batchNumbers: string[], releasedBy: string,
   return results
 }
 
-export async function setBatchLifecycle(batchNumber: string, status: 'on_hold' | 'rejected' | 'cancelled', reason: string, version?: number): Promise<ReleaseBatchResult> {
-  const [existing] = await db.select().from(batches).where(eq(batches.batchNumber, batchNumber))
-  if (!existing) return { code: 'BATCH_NOT_FOUND' }
-  if (existing.lifecycleStatus === 'released' || existing.lifecycleStatus === 'closed') {
-    return { code: 'BATCH_NOT_RELEASABLE', blockingReasons: ['released_batch_immutable'] }
+export interface ReturnedMaterial { material: string; quantity: number; unit: string; returned: boolean }
+
+/** What this batch has taken from each item and not yet given back, from its movement records. */
+async function outstandingIssues(tx: Tx, batchId: string) {
+  const rows = await tx.select().from(inventoryMovements).where(eq(inventoryMovements.batchId, batchId))
+  const byItem = new Map<string, { inventoryItemId: string | null; material: string; unit: string; quantity: number; returned: number }>()
+  for (const row of rows) {
+    const meta = (row.metadata ?? {}) as { material?: string; unit?: string }
+    const key = row.inventoryItemId ?? `deleted:${meta.material ?? row.id}`
+    const entry = byItem.get(key) ?? { inventoryItemId: row.inventoryItemId, material: meta.material ?? '', unit: meta.unit ?? '', quantity: 0, returned: 0 }
+    if (row.movementType === 'issue') entry.quantity += Number(row.quantity)
+    if (row.movementType === 'reversal') entry.returned += Number(row.quantity)
+    byItem.set(key, entry)
   }
-  if (version !== undefined && existing.version !== version) return { code: 'VERSION_CONFLICT' }
-  const [updated] = await db.update(batches).set({ lifecycleStatus: status, releaseNotes: reason, version: existing.version + 1 })
-    .where(and(eq(batches.id, existing.id), eq(batches.version, existing.version))).returning()
-  if (!updated) return { code: 'VERSION_CONFLICT' }
-  await db.update(finishedGoods).set({ status: 'Quarantined', updatedAt: new Date() }).where(eq(finishedGoods.batchId, existing.id))
-  if (updated.workOrderId) {
-    // A held/rejected batch stops counting as output; the hub then offers the next batch.
-    await db.insert(productionEvents).values({
-      workOrderId: updated.workOrderId, batchId: updated.id, action: `batch_${status}`, fromStatus: existing.lifecycleStatus, toStatus: status,
-      payload: { batchNumber, reason },
-    })
-  }
-  return withInvoice(updated)
+  return { hasReturns: rows.some((row) => row.movementType === 'reversal'), items: [...byItem.values()] }
 }
 
-export async function deleteBatch(id: string): Promise<boolean> {
-  const result = await db
-    .delete(batches)
-    .where(eq(batches.id, id))
-    .returning({ id: batches.id })
+/**
+ * Puts a batch's outstanding deductions back into stock. Only recorded movements
+ * are returned, so a second call returns nothing and a batch from before
+ * movements were recorded returns nothing. An item since deleted, or no longer
+ * tracked, can't take the stock back and is reported with `returned: false`.
+ * The caller must hold the batch row lock.
+ */
+async function returnBatchMaterials(tx: Tx, batch: typeof batches.$inferSelect, reason: string, actorId?: string): Promise<ReturnedMaterial[]> {
+  const { items } = await outstandingIssues(tx, batch.id)
+  const results: ReturnedMaterial[] = []
+  for (const item of items) {
+    const quantity = round3(item.quantity - item.returned)
+    if (quantity <= 0) continue
+    const updated = item.inventoryItemId
+      ? await tx.update(inventoryItems)
+        .set({ stockQty: sql`${inventoryItems.stockQty} + ${quantity}::numeric`, updatedAt: new Date() })
+        .where(and(eq(inventoryItems.id, item.inventoryItemId), isNotNull(inventoryItems.stockQty)))
+        .returning({ id: inventoryItems.id })
+      : []
+    if (updated.length > 0) {
+      await tx.insert(inventoryMovements).values({
+        inventoryItemId: item.inventoryItemId,
+        movementType: 'reversal',
+        quantity: String(quantity),
+        workOrderId: batch.workOrderId,
+        batchId: batch.id,
+        reason,
+        metadata: { material: item.material, unit: item.unit, batchNumber: batch.batchNumber },
+        createdBy: actorId,
+      })
+    }
+    results.push({ material: item.material, quantity, unit: item.unit, returned: updated.length > 0 })
+  }
+  return results
+}
 
-  return result.length > 0
+export async function setBatchLifecycle(
+  batchNumber: string,
+  status: 'on_hold' | 'rejected' | 'cancelled',
+  reason: string,
+  version?: number,
+  options: { returnMaterials?: boolean; actorId?: string } = {},
+) {
+  const outcome = await db.transaction(async (tx) => {
+    const [existing] = await tx.select().from(batches).where(eq(batches.batchNumber, batchNumber)).for('update')
+    if (!existing) return { code: 'BATCH_NOT_FOUND' as const }
+    if (existing.lifecycleStatus === 'released' || existing.lifecycleStatus === 'closed') {
+      return { code: 'BATCH_NOT_RELEASABLE' as const, blockingReasons: ['released_batch_immutable'] }
+    }
+    if (version !== undefined && existing.version !== version) return { code: 'VERSION_CONFLICT' as const }
+    // Its materials are back in stock, so this batch can't quietly become live again.
+    if (existing.lifecycleStatus === 'cancelled' && status !== 'cancelled' && (await outstandingIssues(tx, existing.id)).hasReturns) {
+      return { code: 'BATCH_NOT_RELEASABLE' as const, blockingReasons: ['materials_returned'] }
+    }
+    const [updated] = await tx.update(batches).set({ lifecycleStatus: status, releaseNotes: reason, version: existing.version + 1 })
+      .where(and(eq(batches.id, existing.id), eq(batches.version, existing.version))).returning()
+    if (!updated) return { code: 'VERSION_CONFLICT' as const }
+    await tx.update(finishedGoods).set({ status: 'Quarantined', updatedAt: new Date() }).where(eq(finishedGoods.batchId, existing.id))
+    if (updated.workOrderId) {
+      // A held/rejected batch stops counting as output; the hub then offers the next batch.
+      await tx.insert(productionEvents).values({
+        workOrderId: updated.workOrderId, batchId: updated.id, action: `batch_${status}`, fromStatus: existing.lifecycleStatus, toStatus: status,
+        payload: { batchNumber, reason },
+      })
+    }
+    const materialsReturned = status === 'cancelled' && options.returnMaterials
+      ? await returnBatchMaterials(tx, updated, `Batch cancelled: ${reason}`, options.actorId)
+      : []
+    return { updated, materialsReturned }
+  })
+  if ('code' in outcome) return outcome
+  return { ...(await withInvoice(outcome.updated)), materialsReturned: outcome.materialsReturned }
+}
+
+/** Deletes a batch and returns its outstanding materials. Null if there's no such batch. */
+export async function deleteBatch(id: string, actorId?: string): Promise<{ materialsReturned: ReturnedMaterial[] } | null> {
+  return db.transaction(async (tx) => {
+    const [existing] = await tx.select().from(batches).where(eq(batches.id, id)).for('update')
+    if (!existing) return null
+    const materialsReturned = await returnBatchMaterials(tx, existing, 'Batch deleted', actorId)
+    await tx.delete(batches).where(eq(batches.id, id))
+    return { materialsReturned }
+  })
 }

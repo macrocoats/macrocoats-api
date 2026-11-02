@@ -7,7 +7,8 @@ import {
   inventoryItems, batches, finishedGoods, users,
 } from '../../db/schema/index.js'
 import { USABLE_VARIANT_STATUSES, type VariantStatus } from '../../types/index.js'
-import { findMaterialMatch } from '../../utils/materialMatch.js'
+import { findMaterialMatch, isWaterMaterial } from '../../utils/materialMatch.js'
+import { toInventoryQuantity } from '../../utils/materialQuantity.js'
 import { findPackContainer } from '../batches/packContainers.js'
 import { OPEN_FOR_BATCH, OUTPUT_TOLERANCE, WorkOrderStateError, syncWorkOrderProgress } from '../../utils/workOrderProgress.js'
 import {
@@ -76,8 +77,14 @@ function materialRequirements(snapshot: Record<string, unknown>, plannedQuantity
     const name = String(component.materialName ?? component.name ?? '').trim()
     const rawPercentage = component.percentage ?? component.percentWV
     const percentage = rawPercentage === null || rawPercentage === undefined ? null : Number(rawPercentage)
-    if (!name || percentage === null || !Number.isFinite(percentage) || percentage <= 0) return []
-    return [{ name, normalizedName: name.toLowerCase().replace(/[^a-z0-9]/g, ''), requiredQuantity: (percentage / 100) * plannedQuantity }]
+    if (!name || isWaterMaterial(name) || percentage === null || !Number.isFinite(percentage) || percentage <= 0) return []
+    const density = Number(component.density)
+    return [{
+      name,
+      unit: String(component.unit ?? ''),
+      density: component.density !== null && Number.isFinite(density) && density > 0 ? density : null,
+      requiredQuantity: (percentage / 100) * plannedQuantity,
+    }]
   })
 }
 
@@ -88,16 +95,19 @@ async function calculateMaterialReadiness(
 ) {
   const requirements = materialRequirements(formulaSnapshot, plannedQuantity)
   const inventory = await tx.select({ material: inventoryItems.material, stockQty: inventoryItems.stockQty, unit: inventoryItems.unit }).from(inventoryItems)
-  const stockByMaterial = new Map(inventory.map((item) => [item.material.toLowerCase().replace(/[^a-z0-9]/g, ''), item]))
+  // Same matcher and unit conversion as the deduction in createBatch, so this agrees with what a batch will do.
+  const names = inventory.map((item) => item.material)
   const materials = requirements.map((requirement) => {
-    const match = stockByMaterial.get(requirement.normalizedName)
+    const matchedName = findMaterialMatch(requirement.name, names)
+    const match = inventory.find((item) => item.material === matchedName)
+    const required = match ? toInventoryQuantity(requirement.requiredQuantity, requirement.unit, match.unit, requirement.density) : null
     const availableQuantity = match?.stockQty === null || match?.stockQty === undefined ? null : Number(match.stockQty)
     return {
       materialName: requirement.name,
-      requiredQuantity: Math.round(requirement.requiredQuantity * 1000) / 1000,
+      requiredQuantity: Math.round((required ?? requirement.requiredQuantity) * 1000) / 1000,
       availableQuantity,
       unit: match?.unit ?? null,
-      sufficient: availableQuantity !== null && availableQuantity >= requirement.requiredQuantity,
+      sufficient: availableQuantity !== null && required !== null && availableQuantity >= required,
     }
   })
   const shortages = materials.filter((material) => !material.sufficient)
@@ -581,7 +591,7 @@ export async function createWorkOrderBatch(
     const match = findMaterialMatch(row.name, materials)
     const materialRate = Number(inventory.find((item) => item.material === match)?.price ?? 0)
     const quantityUsed = round3((percentage / 100) * data.batchSize)
-    return { name: row.name, percentage, quantityUsed, unit: wo.unit, materialRate, costContribution: round3(quantityUsed * materialRate) }
+    return { name: row.name, percentage, quantityUsed, unit: row.unit.trim() || wo.unit, density: row.density, materialRate, costContribution: round3(quantityUsed * materialRate) }
   })
   const rawMaterialCostPerL = components.reduce((sum, c) => sum + c.costContribution, 0) / data.batchSize
   const sellingPricePerL = demand ? Number(demand.unitPrice) : 0

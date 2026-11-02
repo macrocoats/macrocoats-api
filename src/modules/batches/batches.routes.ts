@@ -36,7 +36,10 @@ export async function batchRoutes(app: FastifyInstance) {
       return reply.code(409).send({ error: result.code, message: `No usable inventory balance exists for ${result.materialName}.` })
     }
     if ('code' in result && result.code === 'INSUFFICIENT_MATERIAL') {
-      return reply.code(409).send({ error: result.code, message: `Insufficient ${result.materialName}.`, available: result.available, required: result.required })
+      return reply.code(409).send({ error: result.code, message: `Insufficient ${result.materialName}.`, available: result.available, required: result.required, unit: result.unit })
+    }
+    if ('code' in result && result.code === 'UNIT_CONVERSION_UNAVAILABLE') {
+      return reply.code(409).send({ error: result.code, message: `${result.materialName} is in ${result.fromUnit} here but stocked in ${result.toUnit}. Add its density to the formula so it can be converted.` })
     }
 
     return reply.code(201).send({ data: result })
@@ -104,7 +107,10 @@ export async function batchRoutes(app: FastifyInstance) {
   app.post<{ Params: { batchNumber: string } }>('/:batchNumber/lifecycle', { preHandler }, async (request, reply) => {
     const body = setBatchLifecycleSchema.safeParse(request.body)
     if (!body.success) return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
-    const result = await setBatchLifecycle(request.params.batchNumber, body.data.status, body.data.reason, body.data.version)
+    const result = await setBatchLifecycle(request.params.batchNumber, body.data.status, body.data.reason, body.data.version, {
+      returnMaterials: body.data.returnMaterials,
+      actorId: request.authUser?.id,
+    })
     if ('code' in result) {
       const status = result.code === 'BATCH_NOT_FOUND' ? 404 : 409
       return reply.code(status).send({ error: result.code, blockingReasons: result.blockingReasons })
@@ -133,8 +139,8 @@ export async function batchRoutes(app: FastifyInstance) {
 
   // ── DELETE /batches/:id ───────────────────────────────────────────────────
   app.delete<{ Params: { id: string } }>('/:id', { preHandler }, async (request, reply) => {
-    const deleted = await deleteBatch(request.params.id)
+    const deleted = await deleteBatch(request.params.id, request.authUser?.id)
     if (!deleted) return reply.code(404).send({ error: AppErrors.BATCH_NOT_FOUND })
-    return reply.code(204).send()
+    return reply.send({ data: deleted })
   })
 }

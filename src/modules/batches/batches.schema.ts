@@ -9,6 +9,7 @@ const formulationComponentSchema = z.object({
   percentage:       z.number(),
   quantityUsed:     z.number(),
   unit:             z.string(),
+  density:          z.number().positive().nullable().optional(),
   materialRate:     z.number(),
   costContribution: z.number(),
 })
@@ -101,6 +102,8 @@ export const setBatchLifecycleSchema = z.object({
   status: z.enum(['on_hold', 'rejected', 'cancelled']),
   reason: z.string().min(1).max(2000),
   version: z.number().int().positive().optional(),
+  // Cancelled only: true when the materials were never used, so they go back to stock.
+  returnMaterials: z.boolean().optional(),
 })
 
 export type SetPaymentStatusBody = z.infer<typeof setPaymentStatusSchema>
