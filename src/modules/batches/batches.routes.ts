@@ -3,8 +3,8 @@ import { authenticate, requireAuth } from '../../middleware/authenticate.js'
 import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js'
 import { requireRole } from '../../middleware/requireRole.js'
 import { AppErrors } from '../../types/errors.js'
-import { createBatchSchema, listBatchesQuerySchema, saveCoaSnapshotSchema, setPaymentStatusSchema, releaseBatchSchema, releaseBatchesSchema, setBatchLifecycleSchema } from './batches.schema.js'
-import { listPackContainersWithStock, createBatch, listBatches, getBatchByNumber, deleteBatch, saveCoaSnapshot, clearCoaSnapshot, setPaymentStatus, releaseBatch, releaseBatches, setBatchLifecycle } from './batches.service.js'
+import { createBatchSchema, updateBatchMetadataSchema, listBatchesQuerySchema, saveCoaSnapshotSchema, setPaymentStatusSchema, releaseBatchSchema, releaseBatchesSchema, setBatchLifecycleSchema } from './batches.schema.js'
+import { listPackContainersWithStock, createBatch, updateBatchMetadata, listBatches, getBatchByNumber, deleteBatch, saveCoaSnapshot, clearCoaSnapshot, setPaymentStatus, releaseBatch, releaseBatches, setBatchLifecycle } from './batches.service.js'
 
 const preHandler = [authenticate, requireAuth, requireSuperAdmin]
 // Operators may VIEW batches (with formula/cost stripped — see toOperatorBatchResponse
@@ -70,6 +70,20 @@ export async function batchRoutes(app: FastifyInstance) {
     const batch = await getBatchByNumber(request.params.batchNumber, role)
     if (!batch) return reply.code(404).send({ error: AppErrors.BATCH_NOT_FOUND })
     return reply.send(batch)
+  })
+
+  // ── PATCH /batches/:batchNumber ─────────────────────────────────────────
+  // Superadmin-only correction of non-transactional metadata. Formulation,
+  // quantities, costs, QC and lifecycle fields remain immutable here.
+  app.patch<{ Params: { batchNumber: string } }>('/:batchNumber', { preHandler }, async (request, reply) => {
+    const body = updateBatchMetadataSchema.safeParse(request.body)
+    if (!body.success) return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
+    const result = await updateBatchMetadata(request.params.batchNumber, body.data)
+    if ('code' in result) {
+      const status = result.code === 'BATCH_NOT_FOUND' ? 404 : 409
+      return reply.code(status).send({ error: result.code })
+    }
+    return reply.send({ data: result })
   })
 
   // ── PATCH /batches/:batchNumber/coa ──────────────────────────────────────

@@ -8,8 +8,9 @@ import { findMaterialMatch, isWaterMaterial } from '../../utils/materialMatch.js
 import { round3, toInventoryQuantity } from '../../utils/materialQuantity.js'
 import { createFinishedGoodsRecord } from '../finished-goods/finished-goods.service.js'
 import { USABLE_VARIANT_STATUSES, type VariantStatus } from '../../types/index.js'
-import type { CreateBatchBody, ListBatchesQuery, SaveCoaSnapshotBody } from './batches.schema.js'
+import type { CreateBatchBody, UpdateBatchMetadataBody, ListBatchesQuery, SaveCoaSnapshotBody } from './batches.schema.js'
 import { findPackContainer } from './packContainers.js'
+import { updateTransportCostSummary } from './batchCostSummary.js'
 import {
   containersNeeded, hasReturnedContainers, issueContainers, listContainers, lockContainerStock, returnBatchContainers,
   type ReturnedContainer,
@@ -342,6 +343,33 @@ export async function getBatchByNumber(batchNumber: string, role: 'superadmin' |
   if (!row) return null
   const invoice = (await loadBatchInvoices([row.id])).get(row.id) ?? null
   return role === 'operator' ? toOperatorBatchResponse(row, invoice) : toBatchResponse(row, invoice)
+}
+
+export async function updateBatchMetadata(batchNumber: string, data: UpdateBatchMetadataBody) {
+  const outcome = await db.transaction(async (tx) => {
+    const [existing] = await tx.select().from(batches).where(eq(batches.batchNumber, batchNumber)).for('update')
+    if (!existing) return { code: 'BATCH_NOT_FOUND' as const }
+    if (['released', 'closed'].includes(existing.lifecycleStatus)) return { code: 'BATCH_IMMUTABLE' as const }
+    if (existing.version !== data.version) return { code: 'VERSION_CONFLICT' as const }
+
+    const labelSnapshot = {
+      ...(existing.labelSnapshot as Record<string, unknown>),
+      companyName: data.companyName,
+      manufactureDate: data.productionDate,
+    }
+    const costSummary = updateTransportCostSummary(existing.costSummary as Record<string, unknown>, data.transportCostPerL)
+    const [updated] = await tx.update(batches).set({
+      companyName: data.companyName,
+      productionDate: data.productionDate,
+      paymentTermDays: data.paymentTermDays,
+      notes: data.notes?.trim() || null,
+      labelSnapshot,
+      costSummary,
+      version: existing.version + 1,
+    }).where(and(eq(batches.id, existing.id), eq(batches.version, existing.version))).returning()
+    return updated ?? { code: 'VERSION_CONFLICT' as const }
+  })
+  return 'code' in outcome ? outcome : withInvoice(outcome)
 }
 
 export async function saveCoaSnapshot(
