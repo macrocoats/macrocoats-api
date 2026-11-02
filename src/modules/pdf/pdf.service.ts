@@ -18,12 +18,12 @@ interface PoolEntry {
   createdAt: number;
 }
 
-// tds/msds get a header/footer/margin/body that mirrors the frontend's
-// print-to-PDF design pixel-for-pixel — see safteyDataSheet's TDSPage.jsx /
-// MSDSPage.jsx print CSS. coa keeps its own separately-polished branded
-// letterhead (logo + expanded meta) — the two must not be merged.
+// tds/msds use repeated header/footer bands matching their frontend print
+// views. CoA owns its complete A4 page in the body so its download matches
+// the single-page certificate printed by the frontend.
 const PRINT_MATCHED_DOC_TYPES: ReadonlySet<DocType> = new Set(['tds', 'msds']);
-const LEGACY_BRANDED_DOC_TYPES: ReadonlySet<DocType> = new Set(['coa']);
+const FULL_PAGE_DOC_TYPES: ReadonlySet<DocType> = new Set(['coa']);
+const LEGACY_BRANDED_DOC_TYPES: ReadonlySet<DocType> = new Set();
 // 4th header/footer treatment — the executive report cover/summary letterhead.
 // Distinct from legacy-branded (coa): a wider band with period/confidential meta,
 // see buildExecutiveHeader/buildExecutiveFooter below.
@@ -35,8 +35,8 @@ const EXECUTIVE_DOC_TYPES: ReadonlySet<DocType> = new Set(['investor-report']);
 const LETTERHEAD_DOC_TYPES: ReadonlySet<DocType> = new Set(['letterhead']);
 const BROCHURE_DOC_TYPES: ReadonlySet<DocType> = new Set(['brochure']);
 
-// All five get the faint centered watermark.
-const WATERMARK_DOC_TYPES: ReadonlySet<DocType> = new Set(['tds', 'msds', 'coa', 'investor-report', 'letterhead']);
+// CoA places the watermark inside its full-page certificate body.
+const WATERMARK_DOC_TYPES: ReadonlySet<DocType> = new Set(['tds', 'msds', 'investor-report', 'letterhead']);
 
 // Per-docType copy for the print-matched page header (tds/msds only) —
 // mirrors the frontend's PrintMasthead props in TDSPage/MSDSPage print blocks.
@@ -578,6 +578,12 @@ class PDFService {
       ...(docType === 'tds' ? buildTdsContext(payload) : {}),
       ...(docType === 'brochure' ? buildBrochureContext(payload) : {}),
       ...(docType === 'investor-report' ? buildInvestorReportContext(payload) : {}),
+      coaLogoDataUri: docType === 'coa' ? await getLogoDataUri() : null,
+      coaWatermarkDataUri: docType === 'coa' ? await getWatermarkDataUri() : null,
+      coaBrand: docType === 'coa' ? COMPANY : null,
+      coaPrintZoom: docType === 'coa'
+        ? Math.max(0.6, Math.min(1, 10 / Math.max(10, Array.isArray(payload['testResults']) ? payload['testResults'].length : 0))).toFixed(3)
+        : null,
       brochureLogoDataUri: brochure ? await getBrochureAssetDataUri('logo-2026.png') : null,
       brochureHeroDataUri: brochure ? await getBrochureAssetDataUri(`${brochureFamily}.png`) : null,
       brochureQrDataUri: brochure ? await getBrochureAssetDataUri('website-qr.png') : null,
@@ -601,6 +607,7 @@ class PDFService {
   ): Promise<RenderResult> {
     const { date, time } = nowFormatted();
     const printMatched   = PRINT_MATCHED_DOC_TYPES.has(docType);
+    const fullPage       = FULL_PAGE_DOC_TYPES.has(docType);
     const legacyBranded  = !printMatched && LEGACY_BRANDED_DOC_TYPES.has(docType);
     const executive      = !printMatched && !legacyBranded && EXECUTIVE_DOC_TYPES.has(docType);
     const letterhead     = !printMatched && !legacyBranded && !executive && LETTERHEAD_DOC_TYPES.has(docType);
@@ -620,7 +627,7 @@ class PDFService {
       ? `${formatDate(String(payload['from'] ?? ''))} – ${formatDate(String(payload['to'] ?? ''))}`
       : '';
 
-    const headerHtml = brochure
+    const headerHtml = (brochure || fullPage)
       ? '<span></span>'
       : printMatched
       ? buildPrintMatchedHeader(docType, productName)
@@ -629,7 +636,7 @@ class PDFService {
         : letterhead
           ? buildLetterheadHeader(logoDataUri)
           : buildHeaderTemplate(docTitle, productName, docNumber, { docType, logoDataUri, revisionDate });
-    const footerHtml = brochure
+    const footerHtml = (brochure || fullPage)
       ? '<span></span>'
       : printMatched
       ? buildPrintMatchedFooter()
@@ -651,7 +658,7 @@ class PDFService {
     // tds/msds: the header band ends ~25mm down; the extra ~5mm is breathing
     // room so a section that opens a continuation page (its margin-top is
     // dropped at the break) doesn't butt its rule against the header's.
-    const margin = brochure
+    const margin = (brochure || fullPage)
       ? { top: '0', bottom: '0', left: '0', right: '0' }
       : printMatched
       ? { top: '31mm', bottom: '16mm', left: '14mm', right: '14mm' }
@@ -686,7 +693,7 @@ class PDFService {
         printBackground: true,
         preferCSSPageSize: false,
         margin,
-        displayHeaderFooter: !brochure,
+        displayHeaderFooter: !(brochure || fullPage),
         headerTemplate: headerHtml,
         footerTemplate: footerHtml,
       });

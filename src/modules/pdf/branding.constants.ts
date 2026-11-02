@@ -11,6 +11,7 @@ export const COMPANY = {
   tagline: 'Metal Surface Treatment Specialists',
   // Short locality for one-line footers (tds/msds print-matched footer).
   city: 'Chennai, India',
+  certificateLocation: 'Chennai 600132, Tamil Nadu, India',
   addressLine: 'SF.NO 224/11, Kalaimagal Nagar, Pazhanthandalam, Chennai - 600132, Tamil Nadu, India',
   gstin: '33AARCM7377G1ZY',
   phone: '+91 94449 61815',

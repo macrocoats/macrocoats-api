@@ -3,7 +3,7 @@ import { authenticate, requireAuth } from '../../middleware/authenticate.js'
 import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js'
 import { AppErrors } from '../../types/errors.js'
 import { zohoInvoiceParamsSchema, zohoInvoicePdfParamsSchema, listZohoInvoicesQuerySchema } from './zoho-invoice.schema.js'
-import { getSyncStatus, syncDispatchInvoice, listZohoInvoices, fetchZohoInvoicePdf } from './zoho-invoice.service.js'
+import { getSyncStatus, syncDispatchInvoice, listZohoInvoices, fetchZohoInvoicePdf, fetchZohoEwayBillPdf } from './zoho-invoice.service.js'
 
 const preHandler = [authenticate, requireAuth, requireSuperAdmin]
 
@@ -50,6 +50,40 @@ export async function zohoInvoiceRoutes(app: FastifyInstance) {
     return reply
       .type('application/pdf')
       .header('Content-Disposition', `attachment; filename="invoice-${params.data.invoiceId}.pdf"`)
+      .header('Cache-Control', 'no-store')
+      .send(result.pdf)
+  })
+
+  // ── GET /zoho-invoices/:invoiceId/eway-bill/pdf ────────────────────────────
+  // Live e-way bill PDF from Zoho, found through its invoice — stored nowhere.
+  app.get<{ Params: { invoiceId: string } }>('/:invoiceId/eway-bill/pdf', { preHandler }, async (request, reply) => {
+    const params = zohoInvoicePdfParamsSchema.safeParse(request.params)
+    if (!params.success) {
+      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: params.error.flatten() })
+    }
+
+    const result = await fetchZohoEwayBillPdf(params.data.invoiceId)
+    if ('code' in result) {
+      switch (result.code) {
+        case 'ZOHO_NOT_CONFIGURED':
+          return reply.code(400).send({ error: AppErrors.ZOHO_NOT_CONFIGURED })
+        case 'ZOHO_INVOICE_NOT_FOUND':
+          return reply.code(404).send({ error: AppErrors.ZOHO_INVOICE_NOT_FOUND })
+        case 'EWAY_BILL_NOT_FOUND':
+          return reply.code(404).send({ error: AppErrors.EWAY_BILL_NOT_FOUND, message: 'This invoice has no e-way bill.' })
+        case 'EWAY_BILL_PDF_UNAVAILABLE':
+          return reply.code(404).send({
+            error: AppErrors.EWAY_BILL_PDF_UNAVAILABLE,
+            message: `E-way bill ${result.ewayBillNumber ?? ''} was entered manually, so Zoho has no PDF for it.`,
+          })
+        case 'ZOHO_SYNC_FAILED':
+          return reply.code(502).send({ error: AppErrors.ZOHO_SYNC_FAILED, message: result.message })
+      }
+    }
+
+    return reply
+      .type('application/pdf')
+      .header('Content-Disposition', `attachment; filename="eway-bill-${params.data.invoiceId}.pdf"`)
       .header('Cache-Control', 'no-store')
       .send(result.pdf)
   })

@@ -1,179 +1,76 @@
-<div class="document coa-document">
+<article class="coa-cert" style="--doc-accent: {{accentColor}}; --doc-accent-text: {{accentTextColor}}; --coa-print-zoom: {{coaPrintZoom}}">
+  <img class="coa-cert__watermark" src="{{coaWatermarkDataUri}}" alt="">
 
-  {{!-- ═══ TITLE BLOCK ═══════════════════════════════════════════════════════ --}}
-  <div class="doc-title-block no-break">
-    <div class="doc-title-block__title">Certificate of Analysis</div>
-    {{#if productCode}}<div class="coa-document__certno">Certificate No: {{productCode}}</div>{{/if}}
-    <div class="doc-title-block__product">{{productName}}</div>
-    <div class="doc-title-block__sub">
-      Batch No: {{batchNumber}}
-      {{#if manufacturingDate}}&nbsp;|&nbsp; Mfg: {{formatDate manufacturingDate}}{{/if}}
-      {{#if expiryDate}}&nbsp;|&nbsp; Exp: {{formatDate expiryDate}}{{/if}}
+  <header class="coa-cert__letterhead">
+    <div class="coa-cert__brand">
+      <img class="coa-cert__logo" src="{{coaLogoDataUri}}" alt="Macro Coats">
+      <div>
+        <div class="coa-cert__company">{{company}}</div>
+        <div class="coa-cert__tagline">{{coaBrand.tagline}}</div>
+        <div class="coa-cert__contact">{{coaBrand.certificateLocation}} · {{coaBrand.email}}</div>
+      </div>
     </div>
-  </div>
+    <div class="coa-cert__ref">
+      <div class="coa-cert__doctype">Certificate of Analysis</div>
+      <div class="coa-cert__certno">{{batchNumber}}</div>
+      <div class="coa-cert__code">{{productCode}}{{#if revision}} · {{revision}}{{/if}}</div>
+    </div>
+  </header>
+  <div class="coa-cert__rule"></div>
 
-  {{!-- ═══ COMPLIANCE RIBBON ═════════════════════════════════════════════════ --}}
-  <div class="compliance-ribbon no-break">
-    <span class="compliance-tag">GHS Compliant</span>
-    <span class="compliance-tag">Quality Assured</span>
-    <span class="compliance-tag">Macro Coats Pvt Ltd</span>
-  </div>
-
-  {{!-- ═══ INFO CARDS ══════════════════════════════════════════════════════════ --}}
-  <div class="info-cards no-break">
-    <div class="info-card">
-      <div class="info-card__label">Batch Number</div>
-      <div class="info-card__value mono">{{batchNumber}}</div>
-    </div>
-    <div class="info-card">
-      <div class="info-card__label">Manufacturing Date</div>
-      <div class="info-card__value">{{#if manufacturingDate}}{{formatDate manufacturingDate}}{{else}}—{{/if}}</div>
-    </div>
-    {{#if expiryDate}}
-    <div class="info-card">
-      <div class="info-card__label">Expiry Date</div>
-      <div class="info-card__value">{{formatDate expiryDate}}</div>
-    </div>
-    {{/if}}
-    {{#if quantity}}
-    <div class="info-card">
-      <div class="info-card__label">Quantity / Batch Size</div>
-      <div class="info-card__value fw-bold">{{quantity}}</div>
-    </div>
-    {{/if}}
-    {{#if customer}}
-    <div class="info-card">
-      <div class="info-card__label">Customer</div>
-      <div class="info-card__value fw-semi">{{customer.companyName}}</div>
-    </div>
-    {{else}}
-    {{#if signature}}
-    <div class="info-card">
-      <div class="info-card__label">Prepared By</div>
-      <div class="info-card__value">{{signature.preparedBy}}</div>
-    </div>
-    {{/if}}
-    {{/if}}
-    {{#if customer.poNumber}}
-    <div class="info-card">
-      <div class="info-card__label">Purchase Order</div>
-      <div class="info-card__value mono">{{customer.poNumber}}</div>
-    </div>
-    {{else}}
-    {{#if signature}}
-    <div class="info-card">
-      <div class="info-card__label">Approved By</div>
-      <div class="info-card__value">{{signature.approvedBy}}</div>
-    </div>
-    {{/if}}
-    {{/if}}
-  </div>
-
-  {{!-- ═══ 1. QUALITY TEST RESULTS ══════════════════════════════════════════ --}}
-  <div class="sec-title keep-with">1. Quality Test Results</div>
-  <table class="doc-table">
-    <thead>
-      <tr>
-        <th style="width:9mm" class="col-center">#</th>
-        <th>Parameter</th>
-        <th style="width:28mm">Test Method</th>
-        <th style="width:32mm">Specification</th>
-        <th style="width:24mm">Result</th>
-        <th style="width:14mm" class="col-center">Unit</th>
-        <th style="width:18mm" class="col-center">Status</th>
-      </tr>
-    </thead>
-    <tbody>
-      {{#each testResults}}
-      <tr>
-        <td class="col-center text-muted fs-xs">{{inc @index}}</td>
-        <td class="param-cell">{{parameter}}</td>
-        <td class="fs-xs col-mono text-muted">{{method}}</td>
-        <td class="fs-xs">{{specification}}</td>
-        <td class="fw-bold col-mono">{{result}}</td>
-        <td class="col-center fs-xs text-muted">{{unit}}</td>
-        <td class="col-center">
-          <span class="status-badge {{#if (eq status 'PASS')}}badge-pass{{else if (eq status 'FAIL')}}badge-fail{{else}}badge-na{{/if}}">
-            {{status}}
-          </span>
-        </td>
-      </tr>
-      {{/each}}
-    </tbody>
-  </table>
-
-  {{!-- ═══ 2. CONFORMANCE & RELEASE ══════════════════════════════════════════ --}}
-  <div class="sec-title keep-with">2. Conformance &amp; Release Status</div>
-  <div class="conclusion-box conclusion-{{conclusion}} no-break">
-    <div class="conclusion-box__icon">
-      {{#if (eq conclusion 'PASS')}}✓{{else if (eq conclusion 'APPROVED')}}✓{{else}}✗{{/if}}
-    </div>
+  <div class="coa-cert__identity">
     <div>
-      <div class="conclusion-box__label">
-        {{#if (eq conclusion 'PASS')}}PASS — Batch Released for Distribution
-        {{else if (eq conclusion 'APPROVED')}}APPROVED — Batch Released for Distribution
-        {{else}}FAIL — Batch Withheld from Distribution
-        {{/if}}
-      </div>
-      {{#if remarks}}<div class="conclusion-box__sub">{{remarks}}</div>{{/if}}
+      <div class="coa-cert__product">{{productName}}</div>
+      {{#if subtitle}}<div class="coa-cert__subtitle">{{subtitle}}</div>{{/if}}
     </div>
   </div>
 
-  {{!-- ═══ 3. AUTHORIZATION & APPROVAL ═══════════════════════════════════════ --}}
-  {{#if signature}}
-  <div class="sec-title keep-with">3. Authorization &amp; Approval</div>
-  <table class="auth-block no-break">
-    <tr class="auth-block__header">
-      {{#if signature.preparedBy}}<td>Prepared By</td>{{/if}}
-      {{#if signature.checkedBy}}<td>Reviewed By</td>{{/if}}
-      {{#if signature.approvedBy}}<td>Approved By</td>{{/if}}
-    </tr>
-    <tr class="auth-block__sig">
-      {{#if signature.preparedBy}}<td><div class="auth-block__sig-line"></div></td>{{/if}}
-      {{#if signature.checkedBy}}<td><div class="auth-block__sig-line"></div></td>{{/if}}
-      {{#if signature.approvedBy}}<td><div class="auth-block__sig-line"></div></td>{{/if}}
-    </tr>
-    <tr class="auth-block__name">
-      {{#if signature.preparedBy}}
-      <td>
-        <div class="auth-block__person">{{signature.preparedBy}}</div>
-        <div class="auth-block__role">QC Analyst</div>
-      </td>
-      {{/if}}
-      {{#if signature.checkedBy}}
-      <td>
-        <div class="auth-block__person">{{signature.checkedBy}}</div>
-        <div class="auth-block__role">QC Manager</div>
-      </td>
-      {{/if}}
-      {{#if signature.approvedBy}}
-      <td>
-        <div class="auth-block__person">{{signature.approvedBy}}</div>
-        <div class="auth-block__role">Technical Director</div>
-      </td>
-      {{/if}}
-    </tr>
-    <tr class="auth-block__date">
-      {{#if signature.preparedBy}}<td>Date: ___________________________</td>{{/if}}
-      {{#if signature.checkedBy}}<td>Date: ___________________________</td>{{/if}}
-      {{#if signature.approvedBy}}<td>Date: ___________________________</td>{{/if}}
-    </tr>
-  </table>
-  {{/if}}
+  <dl class="coa-cert__info">
+    <div class="coa-cert__info-cell"><dt>Batch number</dt><dd>{{batchNumber}}</dd></div>
+    <div class="coa-cert__info-cell"><dt>Batch size</dt><dd>{{#if quantity}}{{quantity}}{{else}}—{{/if}}</dd></div>
+    <div class="coa-cert__info-cell"><dt>Mfg date</dt><dd>{{#if manufacturingDate}}{{manufacturingDate}}{{else}}—{{/if}}</dd></div>
+    <div class="coa-cert__info-cell"><dt>Expiry date</dt><dd>{{#if expiryDate}}{{expiryDate}}{{else}}—{{/if}}</dd></div>
+    <div class="coa-cert__info-cell"><dt>Customer</dt><dd>{{#if customer.companyName}}{{customer.companyName}}{{else}}—{{/if}}</dd></div>
+    <div class="coa-cert__info-cell"><dt>P.O. number</dt><dd>{{#if customer.poNumber}}{{customer.poNumber}}{{else}}—{{/if}}</dd></div>
+    <div class="coa-cert__info-cell"><dt>Grade</dt><dd>{{#if grade}}{{grade}}{{else}}—{{/if}}</dd></div>
+    <div class="coa-cert__info-cell"><dt>Appearance</dt><dd>{{#if appearance}}{{appearance}}{{else}}—{{/if}}</dd></div>
+  </dl>
 
-  {{!-- ═══ DIGITAL VERIFICATION ════════════════════════════════════════════ --}}
-  <div class="qr-block no-break">
-    <div class="qr-placeholder">QR<br>CODE<br>VERIFY</div>
-    <div class="qr-info">
-      <div class="qr-info__title">Digital Document Verification</div>
-      <div class="qr-info__text">
-        This Certificate of Analysis is an official quality document issued by Macro Coats Pvt Ltd.<br>
-        Batch Reference: <strong>{{batchNumber}}</strong> &nbsp;|&nbsp; Product: <strong>{{productName}}</strong><br>
-      </div>
-    </div>
-    <div class="coa-seal-placeholder">
-      COMPANY<br>SEAL
-    </div>
-  </div>
+  <section class="coa-cert__section">
+    <h4 class="coa-cert__heading">Quality test results</h4>
+    <table class="coa-cert__table">
+      <thead><tr>
+        <th class="coa-cert__th--num">#</th><th>Parameter</th><th>Method</th>
+        <th>Specification</th><th>Result</th><th class="coa-cert__th--status">Status</th>
+      </tr></thead>
+      <tbody>
+        {{#each testResults}}
+        <tr>
+          <td class="coa-cert__td--num">{{pad2 @index}}</td>
+          <td class="coa-cert__td--param">{{parameter}}</td>
+          <td class="coa-cert__td--method">{{#if method}}{{method}}{{else}}—{{/if}}</td>
+          <td class="coa-cert__td--spec">{{specification}}</td>
+          <td class="coa-cert__td--result">{{result}}</td>
+          <td class="coa-cert__td--status {{#if (eq status 'PASS')}}is-pass{{else if (eq status 'FAIL')}}is-fail{{/if}}">{{#if (eq status 'PASS')}}Pass{{else if (eq status 'FAIL')}}Fail{{else}}—{{/if}}</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </section>
 
-</div>
+  <section class="coa-cert__section coa-cert__section--conform">
+    <h4 class="coa-cert__heading">Conformance statement</h4>
+    <div class="coa-cert__conform {{#if (eq conclusion 'APPROVED')}}is-pass{{else}}is-fail{{/if}}">
+      {{#if (eq conclusion 'APPROVED')}}Approved for release{{else}}Hold — failed parameters cannot be released{{/if}}
+    </div>
+    {{#if remarks}}<p class="coa-cert__statement">{{remarks}}</p>{{/if}}
+  </section>
+
+  <div class="coa-cert__spacer"></div>
+  <div class="coa-cert__signoff"><div class="coa-cert__sign">Signature</div><div class="coa-cert__sign">Date</div></div>
+  <footer class="coa-cert__footer">
+    <span class="coa-cert__footer-code">{{productCode}}{{#if revision}} · {{revision}}{{/if}}</span>
+    <span class="coa-cert__footer-center">CONFIDENTIAL — For authorised recipients only · {{company}}</span>
+    <span class="coa-cert__footer-right">{{#if (eq documentStatus 'published')}}<strong>Original · </strong>{{/if}}Page 1 of 1</span>
+  </footer>
+</article>

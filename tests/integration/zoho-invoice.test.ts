@@ -73,4 +73,56 @@ describe('GET /zoho-invoices/:invoiceId/pdf', () => {
     expect(res.headers['content-disposition']).toBe(`attachment; filename="invoice-${invoiceId}.pdf"`)
     expect(res.body.subarray(0, 4).toString()).toBe('%PDF')
   })
+
+  it.runIf(isZohoConfigured())('lists the batches linked to each invoice', async () => {
+    const list = await supertest(app.server).get('/v1/zoho-invoices?perPage=5').set('Cookie', adminCookies)
+    expect(list.status).toBe(200)
+    for (const invoice of list.body.data.invoices) {
+      expect(Array.isArray(invoice.linkedBatches)).toBe(true)
+    }
+  })
+})
+
+describe('GET /zoho-invoices/:invoiceId/eway-bill/pdf', () => {
+  it('requires a session', async () => {
+    const res = await supertest(app.server).get('/v1/zoho-invoices/123/eway-bill/pdf')
+    expect(res.status).toBe(401)
+  })
+
+  it('is superadmin only', async () => {
+    const res = await supertest(app.server).get('/v1/zoho-invoices/123/eway-bill/pdf').set('Cookie', operatorCookies)
+    expect(res.status).toBe(403)
+  })
+
+  it('rejects an id that is not numeric', async () => {
+    const res = await supertest(app.server).get('/v1/zoho-invoices/12a..b/eway-bill/pdf').set('Cookie', adminCookies)
+    expect(res.status).toBe(400)
+  })
+
+  it.runIf(isZohoConfigured())('returns 404 for an invoice Zoho does not have', async () => {
+    const res = await supertest(app.server).get('/v1/zoho-invoices/1/eway-bill/pdf').set('Cookie', adminCookies)
+    expect(res.status).toBe(404)
+  })
+
+  // Read-only: every invoice answers with a PDF or a clear "no PDF" reason.
+  it.runIf(isZohoConfigured())('downloads an e-way bill, or explains why there is none', async () => {
+    const list = await supertest(app.server).get('/v1/zoho-invoices?perPage=25').set('Cookie', adminCookies)
+    const seen: Record<string, number> = {}
+    for (const { invoiceId } of list.body.data.invoices) {
+      const res = await supertest(app.server)
+        .get(`/v1/zoho-invoices/${invoiceId}/eway-bill/pdf`)
+        .set('Cookie', adminCookies)
+        .responseType('blob')
+      if (res.status === 200) {
+        expect(res.body.subarray(0, 4).toString()).toBe('%PDF')
+        seen.pdf = (seen.pdf ?? 0) + 1
+      } else {
+        expect(res.status).toBe(404)
+        const { error } = JSON.parse(res.body.toString())
+        expect(['EWAY_BILL_NOT_FOUND', 'EWAY_BILL_PDF_UNAVAILABLE']).toContain(error)
+        seen[error] = (seen[error] ?? 0) + 1
+      }
+    }
+    console.log('e-way outcomes:', seen)
+  }, 120_000)
 })

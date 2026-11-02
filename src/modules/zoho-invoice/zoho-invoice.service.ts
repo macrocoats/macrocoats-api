@@ -1,6 +1,6 @@
-import { eq, inArray } from 'drizzle-orm'
+import { and, eq, inArray, isNull, sql } from 'drizzle-orm'
 import { db } from '../../db/index.js'
-import { zohoInvoiceSyncs, dispatches, type ZohoInvoiceSync, type NewZohoInvoiceSync } from '../../db/schema/index.js'
+import { zohoInvoiceSyncs, dispatches, batches, type ZohoInvoiceSync, type NewZohoInvoiceSync } from '../../db/schema/index.js'
 import { env } from '../../config/env.js'
 import type { ListZohoInvoicesQuery } from './zoho-invoice.schema.js'
 
@@ -196,6 +196,54 @@ export async function fetchZohoInvoicePdf(invoiceId: string): Promise<ZohoInvoic
   }
 }
 
+export type ZohoEwayBillPdfResult =
+  | ZohoInvoicePdfResult
+  | { code: 'EWAY_BILL_NOT_FOUND' }
+  | { code: 'EWAY_BILL_PDF_UNAVAILABLE'; ewayBillNumber: string | null }
+
+/**
+ * The e-way bill's PDF, found through its invoice. The invoice list doesn't
+ * carry e-way fields, so this reads the invoice detail on click rather than
+ * once per row. Bills entered manually in Zoho have a number but no PDF.
+ */
+export async function fetchZohoEwayBillPdf(invoiceId: string): Promise<ZohoEwayBillPdfResult> {
+  if (!isZohoConfigured()) return { code: 'ZOHO_NOT_CONFIGURED' }
+
+  try {
+    const token = await getAccessToken()
+    const headers = { Authorization: `Zoho-oauthtoken ${token}` }
+
+    const detailUrl = new URL(`/invoice/v3/invoices/${invoiceId}`, env.ZOHO_API_DOMAIN)
+    detailUrl.searchParams.set('organization_id', env.ZOHO_ORG_ID!)
+    const detailRes = await fetch(detailUrl, { headers, signal: AbortSignal.timeout(15_000) })
+    if (detailRes.status === 404) return { code: 'ZOHO_INVOICE_NOT_FOUND' }
+    if (!detailRes.ok) throw new Error(`Zoho Invoice API error (${detailRes.status})`)
+
+    const { invoice } = await detailRes.json() as {
+      invoice?: { ewaybill_id?: string; ewaybill_number?: string; ewaybill_status?: string }
+    }
+    if (!invoice) return { code: 'ZOHO_INVOICE_NOT_FOUND' }
+    if (!invoice.ewaybill_id) return { code: 'EWAY_BILL_NOT_FOUND' }
+    if (invoice.ewaybill_status === 'manually_generated') {
+      return { code: 'EWAY_BILL_PDF_UNAVAILABLE', ewayBillNumber: invoice.ewaybill_number ?? null }
+    }
+
+    const pdfUrl = new URL(`/invoice/v3/ewaybills/${encodeURIComponent(invoice.ewaybill_id)}`, env.ZOHO_API_DOMAIN)
+    pdfUrl.searchParams.set('organization_id', env.ZOHO_ORG_ID!)
+    pdfUrl.searchParams.set('accept', 'pdf')
+    const pdfRes = await fetch(pdfUrl, { headers, signal: AbortSignal.timeout(30_000) })
+    if (!pdfRes.ok) throw new Error(`Zoho Invoice API error (${pdfRes.status})`)
+    if (!pdfRes.headers.get('content-type')?.includes('application/pdf')) {
+      throw new Error('Zoho Invoice API did not return a PDF')
+    }
+
+    return { pdf: Buffer.from(await pdfRes.arrayBuffer()) }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown Zoho e-way bill error'
+    return { code: 'ZOHO_SYNC_FAILED', message }
+  }
+}
+
 export interface ZohoInvoiceListRow {
   invoiceId:      string
   invoiceNumber:  string
@@ -207,6 +255,7 @@ export interface ZohoInvoiceListRow {
   dueDate:        string
   currencyCode:   string | null
   linkedDispatch: { id: string; dispatchNumber: string } | null
+  linkedBatches:  { batchNumber: string; hasCoa: boolean }[]
 }
 
 export type ListZohoInvoicesResult =
@@ -260,6 +309,24 @@ export async function listZohoInvoices(query: ListZohoInvoicesQuery): Promise<Li
       linkedRows.filter((d) => d.invoiceNumber !== null).map((d) => [d.invoiceNumber as string, { id: d.id, dispatchNumber: d.dispatchNumber }]),
     )
 
+    // One invoice can cover several batches. Voided dispatches didn't ship.
+    const batchRows = invoiceNumbers.length
+      ? await db
+          .selectDistinct({
+            invoiceNumber: dispatches.invoiceNumber,
+            batchNumber:   batches.batchNumber,
+            hasCoa:        sql<boolean>`${batches.coaSnapshot} IS NOT NULL`,
+          })
+          .from(dispatches)
+          .innerJoin(batches, eq(dispatches.batchId, batches.id))
+          .where(and(inArray(dispatches.invoiceNumber, invoiceNumbers), isNull(dispatches.voidedAt)))
+      : []
+    const batchesByInvoiceNumber = new Map<string, { batchNumber: string; hasCoa: boolean }[]>()
+    for (const row of batchRows) {
+      const key = row.invoiceNumber as string
+      batchesByInvoiceNumber.set(key, [...(batchesByInvoiceNumber.get(key) ?? []), { batchNumber: row.batchNumber, hasCoa: row.hasCoa }])
+    }
+
     const invoices: ZohoInvoiceListRow[] = rawInvoices.map((inv) => ({
       invoiceId:      inv.invoice_id,
       invoiceNumber:  inv.invoice_number,
@@ -271,6 +338,7 @@ export async function listZohoInvoices(query: ListZohoInvoicesQuery): Promise<Li
       dueDate:        inv.due_date,
       currencyCode:   inv.currency_code ?? null,
       linkedDispatch: dispatchByInvoiceNumber.get(inv.invoice_number) ?? null,
+      linkedBatches:  batchesByInvoiceNumber.get(inv.invoice_number) ?? [],
     }))
 
     return {
