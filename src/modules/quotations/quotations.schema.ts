@@ -19,6 +19,9 @@ export const listQuotationsQuerySchema = z.object({
   page:         z.coerce.number().int().min(1).default(1),
   limit:        z.coerce.number().int().min(1).max(100).default(20),
   customerName: z.string().optional(),
+  // Open = dated in the last 90 days and not yet referenced by a live customer
+  // PO (same rule as the investor-dashboard pipeline); sorted oldest first.
+  open:         z.enum(['true', 'false']).optional().transform((v) => v === 'true'),
 })
 
 export type CreateQuotationBody      = z.infer<typeof createQuotationSchema>

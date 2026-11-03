@@ -77,7 +77,38 @@ export function normalizeUnit(raw: string | null | undefined): string {
   return unit.toUpperCase()
 }
 
-const productKey = (line: SupplyInvoiceLine) => line.itemId || `name:${line.name.trim().toLowerCase()}`
+/**
+ * Zoho item names that are mistakes for another item, both sides normalised
+ * by `normalizeItemName`'s letters-and-digits form. Invoices already raised
+ * against a typo item keep it forever, so the merge has to happen here.
+ * Add an entry when a duplicate Zoho item shows up as a second product.
+ */
+const ITEM_NAME_ALIASES: Record<string, string> = {
+  unkleansp: 'unikleansp', // "UNKLEAN SP" was created in Zoho by mistake for UNIKLEAN-SP
+}
+
+const squash = (name: string) => name.toLowerCase().replace(/[^a-z0-9]/g, '')
+
+/**
+ * Grouping key for a Zoho item name: case, spaces and punctuation ignored
+ * ("UNIKLEAN SP" = "Uniklean-SP"), known typos folded into the real item.
+ */
+export function normalizeItemName(name: string): string {
+  const s = squash(name)
+  return ITEM_NAME_ALIASES[s] ?? s
+}
+
+const isAliasSpelling = (name: string) => squash(name) in ITEM_NAME_ALIASES
+
+/**
+ * Products are grouped by item name rather than Zoho item id, so duplicate
+ * Zoho items for the same product (re-created, or created with a typo) merge
+ * into one row. Lines with an empty name fall back to the item id.
+ */
+const productKey = (line: SupplyInvoiceLine) => {
+  const n = normalizeItemName(line.name ?? '')
+  return n ? `item:${n}` : `id:${line.itemId ?? 'unknown'}`
+}
 
 const round = (n: number, digits = 3) => {
   const f = 10 ** digits
@@ -130,11 +161,18 @@ export function buildSupplySummary(
 
   // Filter options come from every executed invoice, before the filters narrow them.
   const customerOptions = new Map<string, string>()
+  // One display name per merged product: the most recent correctly-spelt name
+  // wins over a typo alias spelling.
   const productOptions = new Map<string, string>()
   for (const inv of executed) {
     customerOptions.set(inv.customerId, inv.customerName)
-    for (const line of inv.lines ?? []) productOptions.set(productKey(line), line.name)
+    for (const line of inv.lines ?? []) {
+      const key = productKey(line)
+      const current = productOptions.get(key)
+      if (current === undefined || (isAliasSpelling(current) && !isAliasSpelling(line.name))) productOptions.set(key, line.name)
+    }
   }
+  const displayName = (id: string, fallback: string) => productOptions.get(id) ?? fallback
 
   // Last invoice per customer across all executed invoices, so "currently
   // supplying" doesn't depend on the selected date window.
@@ -235,14 +273,14 @@ export function buildSupplySummary(
 
         // A product sold in two units gets one row per unit.
         const key = `${id}|${unit}`
-        const cp = customer.products.get(key) ?? { productId: id, name: line.name, unit, invoiced: 0, confirmed: 0, value: 0, invoiceIds: new Set<string>() }
+        const cp = customer.products.get(key) ?? { productId: id, name: displayName(id, line.name), unit, invoiced: 0, confirmed: 0, value: 0, invoiceIds: new Set<string>() }
         cp.invoiced += line.quantity
         if (confirmed) cp.confirmed += line.quantity
         cp.value += line.amount
         cp.invoiceIds.add(inv.invoiceId)
         customer.products.set(key, cp)
 
-        const p = products.get(key) ?? { productId: id, name: line.name, unit, invoiced: 0, confirmed: 0, value: 0, invoiceIds: new Set<string>(), customers: new Map() }
+        const p = products.get(key) ?? { productId: id, name: displayName(id, line.name), unit, invoiced: 0, confirmed: 0, value: 0, invoiceIds: new Set<string>(), customers: new Map() }
         p.invoiced += line.quantity
         if (confirmed) p.confirmed += line.quantity
         p.value += line.amount

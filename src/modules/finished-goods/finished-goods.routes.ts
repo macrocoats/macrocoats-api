@@ -9,6 +9,7 @@ import {
   getFinishedGoodsByBatchNumber,
   setFinishedGoodsStatus,
   getFinishedGoodsSummary,
+  getFinishedGoodsByProduct,
   backfillFinishedGoodsForBatch,
 } from './finished-goods.service.js'
 
@@ -35,6 +36,14 @@ export async function finishedGoodsRoutes(app: FastifyInstance) {
   app.get('/summary', { preHandler: operatorPreHandler }, async (_request, reply) => {
     const summary = await getFinishedGoodsSummary()
     return reply.send({ data: summary })
+  })
+
+  // ── GET /finished-goods/by-product ────────────────────────────────────────
+  // Stock, reserved, available and weeks of cover per product line. Same
+  // operator access as /summary (no formula/cost data). Registered before /:batchNumber.
+  app.get('/by-product', { preHandler: operatorPreHandler }, async (_request, reply) => {
+    const result = await getFinishedGoodsByProduct()
+    return reply.send({ data: result })
   })
 
   // ── POST /finished-goods/backfill/:batchNumber ────────────────────────────

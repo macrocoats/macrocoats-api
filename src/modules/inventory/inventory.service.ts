@@ -1,6 +1,10 @@
-import { eq, asc, and, notExists } from 'drizzle-orm'
+import { eq, asc, and, notExists, inArray } from 'drizzle-orm'
 import { db } from '../../db/index.js'
-import { inventoryItems, purchaseEntries, vendorMaterialPrices } from '../../db/schema/index.js'
+import {
+  inventoryItems, purchaseEntries, vendorMaterialPrices,
+  formulationVariantComponents, productFormulationVariants, productDocuments,
+} from '../../db/schema/index.js'
+import { findMaterialMatch } from '../../utils/materialMatch.js'
 import { getLatestPurchaseEntryPrice } from '../purchase-entries/purchase-entries.service.js'
 import { getBestEffectiveVendorPrice } from '../vendor-prices/vendor-prices.service.js'
 import type { CreateInventoryItemBody, UpdateInventoryItemBody, StockStatus } from './inventory.schema.js'
@@ -45,19 +49,61 @@ export async function getItemById(id: string) {
 
 /**
  * Items whose computed stockStatus is 'low' or 'out_of_stock', out-of-stock
- * first. Thin filter over getAllItems() — no new query, reuses the same
- * computeStockStatus()/lowStockThreshold logic already used by GET /inventory.
+ * first. Filters getAllItems() with the same computeStockStatus()/
+ * lowStockThreshold logic as GET /inventory. Each item also carries
+ * `usedIn`, the product keys whose formulas use it (see productsUsingMaterials).
  */
 export async function getLowStockItems() {
   const items = await getAllItems()
   const flagged = items.filter((item) => item.stockStatus === 'low' || item.stockStatus === 'out_of_stock')
   flagged.sort((a, b) => (a.stockStatus === b.stockStatus ? 0 : a.stockStatus === 'out_of_stock' ? -1 : 1))
+  const usedIn = flagged.length ? await productsUsingMaterials(items.map((i) => i.material)) : new Map<string, string[]>()
 
   return {
-    items: flagged,
+    items: flagged.map((item) => ({ ...item, usedIn: usedIn.get(item.material) ?? [] })),
     lowCount: items.filter((item) => item.stockStatus === 'low').length,
     outOfStockCount: items.filter((item) => item.stockStatus === 'out_of_stock').length,
   }
+}
+
+/**
+ * Inventory material → product keys whose formulas use it. Formulas are the
+ * usable formulation variants (`approved`/`production`) plus each product's
+ * base formula document (`body.composition[].name`, a different shape from
+ * variant components). Component names resolve to inventory items with
+ * `findMaterialMatch`, the same matcher batch deduction uses.
+ */
+async function productsUsingMaterials(inventoryMaterials: string[]): Promise<Map<string, string[]>> {
+  const [variantRows, formulaRows] = await Promise.all([
+    db.select({ productKey: productFormulationVariants.productKey, materialName: formulationVariantComponents.materialName })
+      .from(formulationVariantComponents)
+      .innerJoin(productFormulationVariants, eq(productFormulationVariants.id, formulationVariantComponents.variantId))
+      .where(inArray(productFormulationVariants.status, ['approved', 'production'])),
+    db.select({ productKey: productDocuments.productKey, body: productDocuments.body })
+      .from(productDocuments)
+      .where(eq(productDocuments.docType, 'formula')),
+  ])
+
+  const pairs: Array<{ productKey: string; name: string }> = variantRows.map((r) => ({ productKey: r.productKey, name: r.materialName }))
+  for (const r of formulaRows) {
+    const composition = (r.body as { composition?: unknown })?.composition
+    if (!Array.isArray(composition)) continue
+    for (const c of composition as Array<{ name?: unknown }>) {
+      if (typeof c?.name === 'string' && c.name.trim()) pairs.push({ productKey: r.productKey, name: c.name })
+    }
+  }
+
+  const byMaterial = new Map<string, Set<string>>()
+  const matchCache = new Map<string, string | null>()
+  for (const { productKey, name } of pairs) {
+    if (!matchCache.has(name)) matchCache.set(name, findMaterialMatch(name, inventoryMaterials))
+    const material = matchCache.get(name)
+    if (!material) continue
+    const set = byMaterial.get(material) ?? new Set<string>()
+    set.add(productKey)
+    byMaterial.set(material, set)
+  }
+  return new Map([...byMaterial].map(([m, s]) => [m, [...s].sort()]))
 }
 
 export async function createItem(data: CreateInventoryItemBody, updatedBy: string) {
