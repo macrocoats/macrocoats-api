@@ -38,6 +38,17 @@ describe('matchers', () => {
     expect(m('Unknown Customer')).toBeNull()
   })
 
+  it('matches production names with "P. LTD" and a bracketed plant location', () => {
+    const m = makeCompanyMatcher([
+      { id: 'co-galva', displayName: 'Galva Decoparts Pvt Ltd (Cheyyar)', state: null },
+      { id: 'co-zf', displayName: 'ZF Rane Automotive India Private Limited', state: null },
+      { id: 'co-lt', displayName: 'L&T Valves Limited', state: null },
+    ])
+    expect(m('GALVA DECO PARTS P. LTD')?.id).toBe('co-galva')
+    expect(m('ZF Rane Automotive India Pvt. Ltd.')?.id).toBe('co-zf')
+    expect(m('L&T VALVES LTD')?.id).toBe('co-lt')
+  })
+
   it('matches item names to products, longest first, typo corrected', () => {
     const m = makeProductMatcher(products)
     expect(m('UNIKLEAN-SP 123521560209')?.key).toBe('uniklean-sp')

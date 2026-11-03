@@ -23,12 +23,16 @@ export interface ProductRef { key: string; displayName: string }
 
 const squash = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '')
 // Legal suffixes that differ between Zoho's customer name and the portal's company name.
-const LEGAL_WORDS = /\b(private|pvt|limited|ltd|llp|inc|co|company|india)\b\.?/gi
-const companyKey = (s: string) => squash(s.replace(LEGAL_WORDS, ' '))
+const LEGAL_WORDS = /\b(private|pvt|p|limited|ltd|llp|inc|co|company|india)\b\.?/gi
+// A bracketed site/location the portal adds to tell plants apart: "… (Cheyyar)".
+const BRACKETED = /\([^)]*\)/g
+const companyKey = (s: string) => squash(s.replace(BRACKETED, ' ').replace(LEGAL_WORDS, ' '))
 
 /**
- * Zoho customer name → portal company: exact match ignoring case, punctuation
- * and legal suffixes ("ZF Rane Automotive India Pvt Ltd" = "ZF Rane Automotive").
+ * Zoho customer name → portal company: exact match ignoring case, punctuation,
+ * spacing, legal suffixes and a bracketed location ("ZF Rane Automotive India
+ * Pvt Ltd" = "ZF Rane Automotive"; "GALVA DECO PARTS P. LTD" = "Galva
+ * Decoparts Pvt Ltd (Cheyyar)").
  */
 export function makeCompanyMatcher(companies: CompanyRef[]) {
   const byKey = new Map(companies.map((c) => [companyKey(c.displayName), c]))
