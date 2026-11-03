@@ -37,7 +37,7 @@ import { letterheadRoutes } from './modules/letterheads/letterheads.routes.js'
 import { zohoInvoiceRoutes } from './modules/zoho-invoice/zoho-invoice.routes.js'
 import { customerSupplyRoutes } from './modules/customer-supply/customer-supply.routes.js'
 import { AppErrors } from './types/errors.js'
-import { pgErrorCode } from './utils/pgError.js'
+import { pgErrorCode, redactQueryParams } from './utils/pgError.js'
 
 export async function buildApp() {
   const app = Fastify({
@@ -60,6 +60,13 @@ export async function buildApp() {
           '*.aadharNumber',
         ],
         censor: '[REDACTED]',
+      },
+      // Path redaction can't reach values inside an error message: strip drizzle query params
+      // from any error before it is serialized (see redactQueryParams).
+      hooks: {
+        logMethod(args, method) {
+          return method.apply(this, args.map(redactQueryParams) as Parameters<typeof method>)
+        },
       },
     },
     // Trust exactly one hop (nginx). `true` would take the left-most, client-supplied
