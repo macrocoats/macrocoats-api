@@ -98,9 +98,12 @@ so this is a read composition, not a new data source. `buildInvestorReportContex
   component's wording or thresholds change, mirror the change here too.
 - Precomputes `barPct` (0–100) on each ranked/trend row for the CSS-only bar visuals in
   the template, since Handlebars has no arithmetic beyond the `multiply` helper.
-- Does **not** compute "Receivables" — this system has no accounting/invoicing layer
-  (see root `CLAUDE.md`); the report shows `kpis.pendingOrderValue` labeled "Pending
-  Order Value" instead, same as the on-screen dashboard.
+- Does **not** compute "Receivables"; the report shows `kpis.pendingOrderValue` labeled
+  "Pending Order Value" instead, same as the on-screen dashboard.
+- Since Nov 2026 the payload's sales/revenue figures are Zoho invoiced value before GST
+  (see `macrocoats-api/CLAUDE.md` → Investor Dashboard); the template's provenance note
+  and "Invoiced Sales" table headers say so. Order counts and pending order value are
+  still customer-PO figures.
 
 ## Product Brochure
 

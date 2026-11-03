@@ -288,6 +288,13 @@
       "when": 1793696193888,
       "tag": "0040_backfill_batch_expiry_from_label",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1793708629718,
+      "tag": "0041_easy_gauntlet",
+      "breakpoints": true
     }
   ]
 }

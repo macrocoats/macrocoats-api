@@ -1,6 +1,6 @@
-import { and, asc, desc, eq, isNotNull, isNull } from 'drizzle-orm'
+import { and, asc, desc, eq, isNotNull, isNull, sql } from 'drizzle-orm'
 import { db } from '../../db/index.js'
-import { customerPipelineEntries, dispatches, type CustomerPipelineEntry } from '../../db/schema/index.js'
+import { customerPipelineEntries, dispatches, zohoInvoiceDetails, type CustomerPipelineEntry } from '../../db/schema/index.js'
 import { isZohoConfigured, zohoGet } from '../zoho-invoice/zoho-invoice.service.js'
 import {
   buildSupplySummary,
@@ -117,26 +117,71 @@ async function fetchDetail(row: ZohoListRow): Promise<SupplyInvoice> {
 /** Drafts and voids never need line items. */
 const needsLines = (row: ZohoListRow) => !['draft', 'void'].includes(row.status.toLowerCase())
 
-async function withDetails(rows: ZohoListRow[]): Promise<{ invoices: SupplyInvoice[]; pending: number; failed: number }> {
+/**
+ * The in-memory detail cache is a read-through copy of `zoho_invoice_details`:
+ * loaded from the table once per process, written back after every Zoho read,
+ * so line items survive restarts and deploys instead of being re-read from Zoho.
+ */
+let detailCacheLoaded: Promise<void> | null = null
+function ensureDetailCacheLoaded(): Promise<void> {
+  detailCacheLoaded ??= (async () => {
+    const rows = await db.select().from(zohoInvoiceDetails)
+    for (const r of rows) detailCache.set(r.zohoInvoiceId, { modified: r.lastModified, invoice: r.payload as SupplyInvoice })
+  })().catch((err) => {
+    detailCacheLoaded = null // retry on the next request
+    throw err
+  })
+  return detailCacheLoaded
+}
+
+async function persistDetails(entries: Array<{ modified: string; invoice: SupplyInvoice }>) {
+  if (!entries.length) return
+  await db.insert(zohoInvoiceDetails)
+    .values(entries.map(({ modified, invoice }) => ({
+      zohoInvoiceId:  invoice.invoiceId,
+      lastModified:   modified,
+      invoiceDate:    invoice.date || null,
+      zohoCustomerId: invoice.customerId || null,
+      payload:        invoice,
+      fetchedAt:      new Date(),
+    })))
+    .onConflictDoUpdate({
+      target: zohoInvoiceDetails.zohoInvoiceId,
+      set: {
+        lastModified:   sql`excluded.last_modified`,
+        invoiceDate:    sql`excluded.invoice_date`,
+        zohoCustomerId: sql`excluded.zoho_customer_id`,
+        payload:        sql`excluded.payload`,
+        fetchedAt:      sql`excluded.fetched_at`,
+      },
+    })
+}
+
+async function withDetails(rows: ZohoListRow[], readLimit = DETAIL_FETCH_LIMIT): Promise<{ invoices: SupplyInvoice[]; pending: number; failed: number; read: number }> {
+  await ensureDetailCacheLoaded()
   const todo = rows.filter((r) => {
     if (!needsLines(r)) return false
     const cached = detailCache.get(r.invoice_id)
     return !cached || cached.modified !== (r.last_modified_time ?? '')
   })
-  const batch = todo.slice(0, DETAIL_FETCH_LIMIT)
+  const batch = todo.slice(0, readLimit)
   let failed = 0
+  const fresh: Array<{ modified: string; invoice: SupplyInvoice }> = []
 
   for (let i = 0; i < batch.length; i += DETAIL_CONCURRENCY) {
     const chunk = batch.slice(i, i + DETAIL_CONCURRENCY)
     const results = await Promise.allSettled(chunk.map(fetchDetail))
     results.forEach((result, j) => {
       if (result.status === 'fulfilled') {
-        detailCache.set(chunk[j].invoice_id, { modified: chunk[j].last_modified_time ?? '', invoice: result.value })
+        const entry = { modified: chunk[j].last_modified_time ?? '', invoice: result.value }
+        detailCache.set(chunk[j].invoice_id, entry)
+        fresh.push(entry)
       } else {
         failed += 1
       }
     })
   }
+  await persistDetails(fresh)
 
   const invoices = rows.map((r) => {
     const cached = detailCache.get(r.invoice_id)
@@ -146,7 +191,7 @@ async function withDetails(rows: ZohoListRow[]): Promise<{ invoices: SupplyInvoi
     }
     return fromListRow(r, needsLines(r) ? null : [])
   })
-  return { invoices, pending: Math.max(todo.length - batch.length, 0), failed }
+  return { invoices, pending: Math.max(todo.length - batch.length, 0), failed, read: fresh.length }
 }
 
 async function listInvoiceDispatches(): Promise<SupplyDispatch[]> {
@@ -167,6 +212,42 @@ async function listInvoiceDispatches(): Promise<SupplyDispatch[]> {
   }))
 }
 
+/**
+ * Every Zoho invoice with its line items where known (from the durable cache,
+ * plus up to `readLimit` new/changed invoices read from Zoho now). Shared by
+ * the supply summary and the investor dashboard; throws on Zoho errors.
+ * `listed` is the raw list, for counts.
+ */
+export async function listInvoicesWithDetails(opts: { force?: boolean; readLimit?: number } = {}) {
+  const listed = await listAllInvoices(opts.force ?? false)
+  const result = await withDetails(listed, opts.readLimit ?? DETAIL_FETCH_LIMIT)
+  return { ...result, listed }
+}
+
+/**
+ * Backfill helper: read up to `maxReads` missing/changed invoice details from
+ * Zoho in rate-limit-sized rounds, pausing `pauseMs` between rounds. Returns
+ * how many were read and how many are still pending.
+ */
+export async function fillInvoiceDetails(opts: { maxReads: number; pauseMs?: number; log?: (msg: string) => void }) {
+  let read = 0
+  let pending = Infinity
+  let failed = 0
+  let first = true
+  while (read < opts.maxReads && pending > 0) {
+    const round = Math.min(DETAIL_FETCH_LIMIT, opts.maxReads - read)
+    const res = await listInvoicesWithDetails({ force: first, readLimit: round })
+    first = false
+    read += res.read
+    failed += res.failed
+    pending = res.pending
+    opts.log?.(`read ${read} · pending ${pending} · failed so far ${failed}`)
+    if (res.read === 0) break // nothing left to read, or Zoho refusing every read — stop rather than spin
+    if (pending > 0 && read < opts.maxReads) await new Promise((r) => setTimeout(r, opts.pauseMs ?? 60_000))
+  }
+  return { read, pending, failed }
+}
+
 const localToday = () => {
   const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
@@ -181,8 +262,10 @@ export async function getSupplySummary(query: SupplySummaryQuery): Promise<Suppl
   if (!isZohoConfigured()) return { code: 'ZOHO_NOT_CONFIGURED' }
 
   try {
-    const rows = await listAllInvoices(query.refresh === 'true')
-    const [{ invoices, pending, failed }, linked] = await Promise.all([withDetails(rows), listInvoiceDispatches()])
+    const [{ invoices, pending, failed, listed: rows }, linked] = await Promise.all([
+      listInvoicesWithDetails({ force: query.refresh === 'true' }),
+      listInvoiceDispatches(),
+    ])
     const summary = buildSupplySummary(invoices, linked, query, localToday())
     return {
       source:      'zoho',

@@ -365,9 +365,9 @@ function buildInvestorReportContext(payload: Record<string, unknown>): Record<st
 
   const insightBullets: string[] = [
     insights.highestRevenueProduct ? `${insights.highestRevenueProduct.label} is the highest-revenue product in this window.` : null,
-    insights.largestCustomer ? `${insights.largestCustomer.label} is the largest customer by order value in this window.` : null,
+    insights.largestCustomer ? `${insights.largestCustomer.label} is the largest customer by invoiced sales in this window.` : null,
     `Revenue is ${growthLabel(insights.revenueGrowthPct)} vs. the prior equal-length window.`,
-    insights.topRegion ? `${insights.topRegion.label} leads by order value among regions in this window.` : null,
+    insights.topRegion ? `${insights.topRegion.label} leads by invoiced sales among regions in this window.` : null,
     `Production volume is ${growthLabel(insights.productionTrendPct)} vs. the prior equal-length window.`,
     insights.customerConcentration?.concentrationPct != null
       ? `The top 5 customers account for ${insights.customerConcentration.concentrationPct.toFixed(1)}% of revenue in this window.`

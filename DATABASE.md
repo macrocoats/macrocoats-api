@@ -45,6 +45,7 @@ Reference for the PostgreSQL schema and Drizzle migration workflow. See `CLAUDE.
 | `customer_purchase_order_timeline` | Append-only event log per customer PO (po_received, status_changed, batch_linked, dispatched, etc.) |
 | `customer_purchase_order_sequences` | Per-year atomic counter for customer PO numbering (CPO-YYYY-NNN) |
 | `customer_pipeline_entries` | Prospective customers' trial status and vendor-registration status (Customer Supply tab); optional `companyId`, archived via `archivedAt` |
+| `zoho_invoice_details` | Durable, read-only cache of Zoho invoice details (header + line items) keyed by Zoho invoice id; `payload` JSONB, re-read only when Zoho's `last_modified_time` changes. Feeds Customer Supply, invoiced sales and the Investor Dashboard (migration `0041`) |
 
 ## Migration workflow (canonical)
 

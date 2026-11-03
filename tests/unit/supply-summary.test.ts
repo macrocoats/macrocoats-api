@@ -116,6 +116,22 @@ describe('buildSupplySummary', () => {
     expect(filtered.totals.invoiceCount).toBe(3)
   })
 
+  it('merges the coded production names into UNIKLEAN-SP 123521560209', () => {
+    const coded = [
+      invoice({ invoiceId: 'p1', invoiceNumber: 'INV-P1', date: '2026-10-01', customerId: 'zf', customerName: 'ZF Rane', total: 500,
+        lines: [line('UNKLEAN-SP 123521560209', 100, 'kg', 500, 'zoho-typo')] }),
+      invoice({ invoiceId: 'p2', invoiceNumber: 'INV-P2', date: '2026-10-05', customerId: 'zf', customerName: 'ZF Rane', total: 300,
+        lines: [line('UNIKLEAN-SP 123521560209', 60, 'kg', 300, 'zoho-real'), line('UNIKLEAN-SP', 10, 'kg', 50, 'zoho-plain')] }),
+    ]
+    const s = buildSupplySummary(coded, [], {}, '2026-10-21')
+    const sp = s.products.filter((p) => p.productId === 'item:unikleansp123521560209')
+    expect(sp).toHaveLength(1)
+    expect(sp[0]).toMatchObject({ name: 'UNIKLEAN-SP 123521560209', invoiced: 160, value: 800, invoiceCount: 2 })
+    // The un-coded item stays its own product; only the typo is folded.
+    expect(s.products.map((p) => p.productId).sort()).toEqual(['item:unikleansp', 'item:unikleansp123521560209'])
+    expect(s.sales.rows.every((r) => !r.productName.startsWith('UNKLEAN'))).toBe(true)
+  })
+
   it('builds month × customer × product sales from line amounts', () => {
     const rows = all.sales.rows
     expect(rows).toContainEqual(expect.objectContaining({

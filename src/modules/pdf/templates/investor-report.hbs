@@ -21,8 +21,8 @@
   <div class="sec-title">Executive Summary</div>
 
   <div class="ir-disclaimer no-break">
-    <strong>Data provenance:</strong> "Sales"/"Revenue" figures throughout this report represent confirmed Customer PO
-    order value, not recognized accounting revenue &mdash; this system has no invoicing/accounting layer. Figures are
+    <strong>Data provenance:</strong> "Sales"/"Revenue" figures throughout this report are invoiced value from Zoho Invoice,
+    before GST (invoice line amounts). Pending order value and order counts are from confirmed Customer POs. Figures are
     for internal management and investor reference only and are not audited financial statements.
   </div>
 
@@ -83,14 +83,14 @@
 
   <div class="sec-subtitle">Monthly Sales Trend</div>
   {{#if monthlyTrendAllZero}}
-  <div class="ir-empty-note no-break">No orders recorded across the trailing 6 months shown below &mdash; the line below is a flat baseline at zero, not a rendering error.</div>
+  <div class="ir-empty-note no-break">No invoiced sales across the trailing 6 months shown below &mdash; the line below is a flat baseline at zero, not a rendering error.</div>
   {{/if}}
   <div class="no-break" style="margin-bottom: 6mm;">
     {{{monthlyTrendSvg}}}
   </div>
 
   <table class="doc-table">
-    <thead><tr><th>Rank</th><th>Top Customers</th><th class="col-num">Order Value</th></tr></thead>
+    <thead><tr><th>Rank</th><th>Top Customers</th><th class="col-num">Invoiced Sales</th></tr></thead>
     <tbody>
       {{#if topCustomers5.length}}
       {{#each topCustomers5}}
@@ -103,7 +103,7 @@
   </table>
 
   <table class="doc-table">
-    <thead><tr><th>Rank</th><th>Top Products</th><th class="col-num">Order Value</th></tr></thead>
+    <thead><tr><th>Rank</th><th>Top Products</th><th class="col-num">Invoiced Sales</th></tr></thead>
     <tbody>
       {{#if topProducts5.length}}
       {{#each topProducts5}}
@@ -116,7 +116,7 @@
   </table>
 
   <table class="doc-table">
-    <thead><tr><th>Rank</th><th>Sales by Region</th><th class="col-num">Order Value</th></tr></thead>
+    <thead><tr><th>Rank</th><th>Sales by Region</th><th class="col-num">Invoiced Sales</th></tr></thead>
     <tbody>
       {{#if topRegions5.length}}
       {{#each topRegions5}}

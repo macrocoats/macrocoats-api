@@ -78,27 +78,31 @@ export function normalizeUnit(raw: string | null | undefined): string {
 }
 
 /**
- * Zoho item names that are mistakes for another item, both sides normalised
- * by `normalizeItemName`'s letters-and-digits form. Invoices already raised
- * against a typo item keep it forever, so the merge has to happen here.
- * Add an entry when a duplicate Zoho item shows up as a second product.
+ * Misspellings in Zoho item names → the correct spelling, both in
+ * `squash`'s letters-and-digits form. The typo is corrected wherever it
+ * appears in the name, so a code after it is kept: "UNKLEAN-SP 123521560209"
+ * → "UNIKLEAN-SP 123521560209". Invoices already raised against a typo item
+ * keep it forever, so the merge has to happen here. Add an entry when a
+ * duplicate Zoho item shows up as a second product.
  */
-const ITEM_NAME_ALIASES: Record<string, string> = {
-  unkleansp: 'unikleansp', // "UNKLEAN SP" was created in Zoho by mistake for UNIKLEAN-SP
-}
+const ITEM_NAME_ALIASES: Array<[typo: string, correct: string]> = [
+  ['unkleansp', 'unikleansp'], // "UNKLEAN-SP …" was created in Zoho by mistake for UNIKLEAN-SP
+]
 
 const squash = (name: string) => name.toLowerCase().replace(/[^a-z0-9]/g, '')
 
 /**
  * Grouping key for a Zoho item name: case, spaces and punctuation ignored
- * ("UNIKLEAN SP" = "Uniklean-SP"), known typos folded into the real item.
+ * ("UNIKLEAN SP" = "Uniklean-SP"), known typos corrected to the real item.
  */
 export function normalizeItemName(name: string): string {
-  const s = squash(name)
-  return ITEM_NAME_ALIASES[s] ?? s
+  return ITEM_NAME_ALIASES.reduce((s, [typo, correct]) => s.split(typo).join(correct), squash(name))
 }
 
-const isAliasSpelling = (name: string) => squash(name) in ITEM_NAME_ALIASES
+const isAliasSpelling = (name: string) => {
+  const s = squash(name)
+  return ITEM_NAME_ALIASES.some(([typo]) => s.includes(typo))
+}
 
 /**
  * Products are grouped by item name rather than Zoho item id, so duplicate
