@@ -22,6 +22,7 @@ import {
   isFormulaAssignedToCompany,
 } from './formulation-variants.service.js'
 import type { VariantStatus } from '../../types/index.js'
+import { pgErrorCode } from '../../utils/pgError.js'
 
 const adminHandler = [authenticate, requireAuth, requireSuperAdmin]
 const readHandler  = [authenticate, requireAuth]
@@ -95,7 +96,7 @@ export async function formulationVariantRoutes(app: FastifyInstance) {
       const variant = await createVariant(body.data)
       return reply.code(201).send({ data: variant })
     } catch (err: any) {
-      if (err?.code === '23505') {
+      if (pgErrorCode(err) === '23505') {
         // Only the partial unique index on (productKey, companyId) WHERE is_default
         // can fire now — multiple non-default variants per product+company are allowed.
         return reply.code(409).send({

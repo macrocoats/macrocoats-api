@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify'
+import { pgErrorCode } from '../../utils/pgError.js'
 import { authenticate, requireAuth } from '../../middleware/authenticate.js'
 import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js'
 import { AppErrors } from '../../types/errors.js'
@@ -92,7 +93,7 @@ export async function companyRoutes(app: FastifyInstance) {
       const company = await createCompany(body.data)
       return reply.code(201).send({ data: company })
     } catch (err: any) {
-      if (err?.code === '23505') {
+      if (pgErrorCode(err) === '23505') {
         return reply.code(409).send({ error: AppErrors.COMPANY_KEY_EXISTS, message: `A company with key "${body.data.key}" already exists.` })
       }
       throw err

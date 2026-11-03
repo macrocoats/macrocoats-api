@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify'
+import { pgErrorCode } from '../../utils/pgError.js'
 import { authenticate, requireAuth } from '../../middleware/authenticate.js'
 import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js'
 import { AppErrors } from '../../types/errors.js'
@@ -40,7 +41,7 @@ export async function hazardProfileRoutes(app: FastifyInstance) {
       const profile = await createHazardProfile(body.data, request.authUser!.id)
       return reply.code(201).send({ data: profile })
     } catch (err: any) {
-      if (err?.code === '23505') {
+      if (pgErrorCode(err) === '23505') {
         return reply.code(409).send({
           error: 'HAZARD_PROFILE_EXISTS',
           message: 'A hazard profile with this canonical name already exists.',

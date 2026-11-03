@@ -37,6 +37,7 @@ import { letterheadRoutes } from './modules/letterheads/letterheads.routes.js'
 import { zohoInvoiceRoutes } from './modules/zoho-invoice/zoho-invoice.routes.js'
 import { customerSupplyRoutes } from './modules/customer-supply/customer-supply.routes.js'
 import { AppErrors } from './types/errors.js'
+import { pgErrorCode } from './utils/pgError.js'
 
 export async function buildApp() {
   const app = Fastify({
@@ -125,7 +126,7 @@ export async function buildApp() {
     }
 
     // Postgres constraint/input errors are client errors, not server faults
-    const pgCode = (error as { code?: unknown }).code
+    const pgCode = pgErrorCode(error)
     if (pgCode === '22P02') return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR })
     if (pgCode === '23505') return reply.code(409).send({ error: AppErrors.CONFLICT })
     if (pgCode === '23503') return reply.code(409).send({ error: AppErrors.REFERENCED_RECORD })

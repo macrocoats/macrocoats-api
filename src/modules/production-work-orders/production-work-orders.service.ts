@@ -1,5 +1,6 @@
 import { and, count, desc, eq, gte, inArray, lte, sql, type SQL } from 'drizzle-orm'
 import { db } from '../../db/index.js'
+import { pgErrorCode } from '../../utils/pgError.js'
 import {
   productionWorkOrders, productionWorkOrderDemands, productionWorkOrderSequences, productionEvents,
   customerPurchaseOrders, customerPurchaseOrderItems, companies, products,
@@ -644,7 +645,7 @@ export async function createWorkOrderBatch(
   } catch (error) {
     if (error instanceof WorkOrderStateError) return { code: error.code }
     // Same Idempotency-Key raced in concurrently: the other request won — replay it.
-    if ((error as { code?: string }).code === '23505' && clientRequestId) {
+    if (pgErrorCode(error) === '23505' && clientRequestId) {
       const winner = await replay()
       if (winner) return winner
     }
