@@ -103,9 +103,19 @@ ansible-playbook deploy.yml --ask-vault-pass
 ```
 
 Pulls `repo_version` (default `main`), installs dependencies only if needed, and builds on the VM
-when no CI release artifact was supplied. It writes `.env`, takes a pre-migration database backup,
-runs `db:migrate`, restarts the
+when no CI release artifact was supplied. It writes `.env`, takes a pre-migration database backup
+and runs `db:migrate` only when the database is behind the migration journal, restarts the
 `macrocoats-api` systemd service, and waits for `/health` to report PostgreSQL and Redis healthy.
+
+The `db-backup` and `supabase-replica` roles run only when their inputs change: their role files,
+`group_vars/all.yml`, `database_mode` or the Supabase vault URL. A fingerprint of those inputs is
+stored on the VM at `/var/lib/macrocoats/deploy-infra.sha256`. To run them anyway, for example if
+the VM's backup script was changed by hand, pass `-e force_infra_setup=true`.
+
+CI runs `deploy.yml` unless the only differences from the commit running in production are tests,
+`.github/`, `scripts/` or `*.md` files. Changes to `scripts/supabase-lockdown.sql` always deploy.
+A push that only changes `*.md` files doesn't start the workflow, so after changing a secret, run
+`ansible-playbook deploy.yml` manually or re-run the workflow on a commit that deploys.
 
 Seed data is **not** run by default (it's idempotent but there's no reason to run it every deploy).
 To run it explicitly:
