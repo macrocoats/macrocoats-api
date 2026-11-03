@@ -113,6 +113,12 @@ const DOC_RULES: Rule[] = [
   // uniklean-cu
   { old: 'Glycol ether coupling solvent', new: 'Coupling solvent', exact: true },
   { old: 'Glycol ether co-solvent', new: 'Co-solvent', exact: true },
+  // older production wording (added 2026-11 — not matched by the rules above)
+  { old: 'built on a three-grade Exxsol solvent carrier (D60, D145, and the lighter 32D fraction) for', new: 'built on a three-grade dearomatized hydrocarbon solvent carrier for', products: ['corrucut-500'] },
+  { old: 'Calcium petroleum sulfonate provides the primary corrosion-inhibiting film, and Vaseline (petroleum jelly) reinforces', new: 'A polar corrosion inhibitor provides the primary corrosion-inhibiting film, and a film-forming barrier agent reinforces', products: ['corrucut-500'] },
+  { old: 'Vaseline-Reinforced Film', new: 'Barrier-Reinforced Film', exact: true, products: ['corrucut-500'] },
+  { old: 'Multi-Grade Exxsol Carrier', new: 'Multi-Grade Hydrocarbon Carrier', exact: true, products: ['corrucut-500'] },
+  { old: 'Solvent-based (MTO + Exxsol D145)', new: 'Solvent-based (blended hydrocarbon carrier)', exact: true, products: ['corrcut-200'] },
   // uni-dunk-oil (added 2026-11 — generic names only in TDS/MSDS)
   { old: 'A mineral turpentine oil carrier flushes loose swarf and machining contaminants, while light liquid paraffin and sodium petroleum sulfonate leave', new: 'A hydrocarbon solvent carrier flushes loose swarf and machining contaminants, while a mineral film oil and corrosion inhibitor leave', products: ['uni-dunk-oil'] },
   { old: 'Solvent-rich carrier (80–90% MTO) dissolves', new: 'Solvent-rich hydrocarbon carrier dissolves', products: ['uni-dunk-oil'] },
