@@ -116,6 +116,22 @@ describe('buildSupplySummary', () => {
     expect(filtered.totals.invoiceCount).toBe(3)
   })
 
+  it('builds month × customer × product sales from line amounts', () => {
+    const rows = all.sales.rows
+    expect(rows).toContainEqual(expect.objectContaining({
+      month: '2026-09', customerId: 'zf', productId: 'item:corrcut100', unit: 'L', quantity: 210, value: 1500, invoiceCount: 1,
+    }))
+    expect(rows).toContainEqual(expect.objectContaining({
+      month: '2026-09', customerId: 'galva', productId: 'item:unikleansp', productName: 'UNIKLEAN-SP', value: 500,
+    }))
+    // Voided invoices never count as sales.
+    expect(rows.reduce((n, r) => n + r.value, 0)).toBe(1000 + 500 + 1500 + 500 + 100)
+    expect(all.sales.missingLinesByMonth).toEqual({})
+
+    const missing = buildSupplySummary([invoice({ date: '2026-10-02', lines: null, total: 50 })], [], {}, '2026-10-21')
+    expect(missing.sales.missingLinesByMonth).toEqual({ '2026-10': 1 })
+  })
+
   it('groups by month', () => {
     expect(all.monthly.map((m) => [m.month, m.invoiceCount])).toEqual([['2025-01', 1], ['2026-08', 1], ['2026-09', 2]])
   })

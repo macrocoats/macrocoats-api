@@ -219,6 +219,14 @@ export function buildSupplySummary(
 
   const customers = new Map<string, CustomerAcc>()
   const products = new Map<string, ProductAcc>()
+  // Sales: month × customer × product × unit, from invoice line amounts
+  // (taxable value, before GST) so every breakdown adds up to the same total.
+  type SalesAcc = {
+    month: string; customerId: string; customerName: string; productId: string; productName: string; unit: string
+    quantity: number; value: number; invoiceIds: Set<string>
+  }
+  const sales = new Map<string, SalesAcc>()
+  const missingLinesByMonth = new Map<string, number>()
   const months = new Map<string, { month: string; invoiceCount: number; value: number; quantities: UnitTotals }>()
   const totals = new UnitTotals()
   let invoicedValue = 0
@@ -263,6 +271,7 @@ export function buildSupplySummary(
       month.invoiceCount += 1
       month.value += value
       months.set(monthKey, month)
+      if (lines === null) missingLinesByMonth.set(monthKey, (missingLinesByMonth.get(monthKey) ?? 0) + 1)
 
       for (const line of lines ?? []) {
         const unit = normalizeUnit(line.unit)
@@ -289,6 +298,16 @@ export function buildSupplySummary(
         pc.invoiced += line.quantity
         p.customers.set(inv.customerId, pc)
         products.set(key, p)
+
+        const sk = `${monthKey}|${inv.customerId}|${key}`
+        const s = sales.get(sk) ?? {
+          month: monthKey, customerId: inv.customerId, customerName: inv.customerName,
+          productId: id, productName: displayName(id, line.name), unit, quantity: 0, value: 0, invoiceIds: new Set<string>(),
+        }
+        s.quantity += line.quantity
+        s.value += line.amount
+        s.invoiceIds.add(inv.invoiceId)
+        sales.set(sk, s)
       }
 
       return {
@@ -364,6 +383,17 @@ export function buildSupplySummary(
     customers: customerRows,
     products:  productRows,
     monthly,
+    /**
+     * Invoiced sales by month × customer × product × unit, valued at invoice
+     * line amounts (taxable value, before GST). Invoices whose line items
+     * haven't been read yet are missing here; `missingLinesByMonth` counts them.
+     */
+    sales: {
+      rows: [...sales.values()]
+        .map(({ invoiceIds, ...s }) => ({ ...s, quantity: round(s.quantity), value: round(s.value, 2), invoiceCount: invoiceIds.size }))
+        .sort((a, b) => a.month.localeCompare(b.month) || b.value - a.value),
+      missingLinesByMonth: Object.fromEntries([...missingLinesByMonth.entries()].sort()),
+    },
     invoices,
     coverage: {
       invoicesMissingLines,
