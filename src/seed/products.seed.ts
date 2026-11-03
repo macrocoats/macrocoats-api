@@ -4654,11 +4654,11 @@ export const DOCS: Array<{
     },
     body: {
       grade:       'Industrial Grade — Metal Brightening Concentrate (10× Concentrate)',
-      description: 'UNIKBRIGHTNER is a 10× concentrated metal brightening formulation combining an organic-acid brightening/chelating agent with a peroxide-type oxidising agent in a de-mineralised water carrier. It is intended to be diluted to a working strength prior to use for chemical brightening / oxide-film removal on metal surfaces. Physical performance data for the finished concentrate has not yet been generated in-house; values below are marked accordingly pending laboratory characterisation.',
+      description: 'UNIKBRIGHTNER is a 10× concentrated metal brightening formulation combining an organic-acid brightening/chelating agent with an oxidising agent in a de-mineralised water carrier. It is intended to be diluted to a working strength prior to use for chemical brightening / oxide-film removal on metal surfaces. Physical performance data for the finished concentrate has not yet been generated in-house; values below are marked accordingly pending laboratory characterisation.',
       sections: {
         features: [
           { head: 'Organic-Acid Based Brightening',    body: 'Mild organic-acid brightening/chelating action, avoiding the aggressive mineral-acid attack of stronger acid systems.' },
-          { head: 'Oxidiser-Assisted Oxide Removal',   body: 'A peroxide-type oxidising agent provides an oxidising boost to assist removal of light oxide/scale films.' },
+          { head: 'Oxidiser-Assisted Oxide Removal',   body: 'An oxidising agent provides an oxidising boost to assist removal of light oxide/scale films.' },
           { head: '10× Concentrate',                   body: 'Supplied as a 10× concentrate for dilution to working strength at the point of use, reducing packaging and freight volume.' },
         ],
         physicalProperties: [
@@ -4670,7 +4670,7 @@ export const DOCS: Array<{
         ],
         composition: [
           { name: 'Organic Acid (Brightening Agent)',   function: 'Brightening / chelating acid',      percent: '20.0% w/v', compat: '—' },
-          { name: 'Oxidising Agent (Peroxide-Type)',    function: 'Oxidising brightening agent',       percent: '3.35% v/v', compat: '—' },
+          { name: 'Oxidising Agent',                    function: 'Oxidising brightening agent',       percent: '3.35% v/v', compat: '—' },
           { name: 'DM Water',                            function: 'Diluent / carrier',                 percent: '96.65% v/v', compat: '—' },
         ],
         // Recommended UNIKLEAN-CU Process (brass/copper cleaning & brightening) — supplied process
@@ -4690,7 +4690,7 @@ export const DOCS: Array<{
           { label: 'Brightening Performance', val: 'Not yet characterized — pending lab/field testing' },
           { label: 'Oxide/Scale Removal',      val: 'Not yet characterized — pending lab/field testing' },
         ],
-        safetyNote: 'DANGER — contains a peroxide-type oxidising raw material that is a strong oxidiser and corrosive. Refer to SDS-UB-001 for full hazard information before handling.',
+        safetyNote: 'DANGER — contains an oxidising raw material that is a strong oxidiser and corrosive. Refer to SDS-UB-001 for full hazard information before handling.',
       },
     },
   },
@@ -4710,7 +4710,7 @@ export const DOCS: Array<{
       signalWord: 'DANGER',
       sections: {
         identification: {
-          productType:  'Aqueous organic-acid / peroxide-type metal brightening concentrate (10×)',
+          productType:  'Aqueous organic-acid / oxidising metal brightening concentrate (10×)',
           intendedUse:  'Industrial metal brightening / oxide-film removal; diluted to working strength before use',
           manufacturer: 'Macro Coats Pvt Ltd, Chennai, Tamil Nadu, India',
           emergency:    'AIIMS Poison Control: 1800-11-6117 (Toll-Free)',
@@ -4730,7 +4730,7 @@ export const DOCS: Array<{
         composition: {
           ingredients: [
             { name: 'Organic Acid (Brightening Agent)',  description: 'Brightening / chelating acid',                percent: '15–25%', ghsClass: 'Eye Irritation Cat 2',                              tagType: 'warn' },
-            { name: 'Oxidising Agent (Peroxide-Type)',   description: 'Oxidising brightening agent (aqueous solution)', percent: '1–5%',   ghsClass: 'Oxidizing Liquid Cat 1 / Skin Corrosion Cat 1A',    tagType: 'danger' },
+            { name: 'Oxidising Agent',                   description: 'Oxidising brightening agent (aqueous solution)', percent: '1–5%',   ghsClass: 'Oxidizing Liquid Cat 1 / Skin Corrosion Cat 1A',    tagType: 'danger' },
             { name: 'DM Water',                  description: 'Diluent / carrier',                            percent: '70–90%', ghsClass: '—',                                                  tagType: 'safe' },
           ],
           note: 'Exact formulation ratios are proprietary. Functional ingredient descriptions and standard raw-material hazard classes are provided for safety and emergency purposes only.',
@@ -4757,10 +4757,10 @@ export const DOCS: Array<{
         ],
         handling: {
           handling:    'Avoid contact with skin and eyes. Avoid breathing vapours/mist. Keep away from combustible/organic materials and reducing agents. Use in a well-ventilated area.',
-          storageTemp: 'Below 30 °C; cool, dry, well-ventilated area, protected from direct sunlight and heat sources — standard precaution for a peroxide-containing oxidiser (from the oxidising raw material), which decomposes faster at elevated temperature. Not lab-verified for this specific formulation.',
+          storageTemp: 'Below 30 °C; cool, dry, well-ventilated area, protected from direct sunlight and heat sources — standard precaution for an oxidising component, which decomposes faster at elevated temperature. Not lab-verified for this specific formulation.',
           containers:  'HDPE jerrycans or equivalent oxidiser-compatible containers; keep tightly closed when not in use',
           segregation: 'Store separately from combustible/organic materials, reducing agents and reactive metals',
-          shelfLife:   'TBD — depends on the peroxide component\'s decomposition rate under actual storage conditions, which requires real stability testing and cannot be derived from the formula composition alone; pending QA stability data',
+          shelfLife:   'TBD — depends on the oxidising component\'s decomposition rate under actual storage conditions, which requires real stability testing and cannot be derived from the formula composition alone; pending QA stability data',
         },
         exposure: {
           ppeItems:    ['Safety Goggles / Face Shield', 'Acid-Resistant Gloves', 'Protective Apron', 'Respirator if vapours exceed exposure limits'],
@@ -4913,10 +4913,10 @@ export const DOCS: Array<{
     },
     body: {
       grade:       'Laboratory Evaluation Grade — Heavy-Duty Paint Remover',
-      description: 'UNIKSTRIP-HD is a solvent-based, benzyl alcohol paint remover for heavy-duty paint stripping from mild steel, activated with an organic acid and supported by a glycol ether co-solvent and a non-ionic surfactant. It is used as supplied by immersion at ambient temperature. This formulation contains no corrosion inhibitor and is intended only for controlled laboratory evaluation, not production use.',
+      description: 'UNIKSTRIP-HD is a solvent-based, aromatic alcohol paint remover for heavy-duty paint stripping from mild steel, activated with an organic acid and supported by a glycol ether co-solvent and a non-ionic surfactant. It is used as supplied by immersion at ambient temperature. This formulation contains no corrosion inhibitor and is intended only for controlled laboratory evaluation, not production use.',
       sections: {
         features: [
-          { head: 'Benzyl Alcohol Solvent System', body: 'Aromatic alcohol solvent with a glycol ether co-solvent to soften and lift coatings.' },
+          { head: 'Aromatic Alcohol Solvent System', body: 'Aromatic alcohol solvent with a glycol ether co-solvent to soften and lift coatings.' },
           { head: 'Acid Activated',                body: 'An organic acid activator is included to assist coating penetration.' },
           { head: 'Ambient Temperature Use',       body: 'Used at 25–30 °C without external heating.' },
         ],
@@ -4965,7 +4965,7 @@ export const DOCS: Array<{
       signalWord: 'WARNING',
       sections: {
         identification: {
-          productType:  'Solvent-based benzyl alcohol paint remover with organic acid activator',
+          productType:  'Solvent-based aromatic alcohol paint remover with organic acid activator',
           intendedUse:  'Controlled laboratory evaluation of heavy-duty paint stripping from mild steel. Not for production use.',
           manufacturer: 'Macro Coats Pvt Ltd, Chennai, Tamil Nadu, India',
           emergency:    'AIIMS Poison Control: 1800-11-6117 (Toll-Free)',
@@ -5193,18 +5193,18 @@ export const DOCS: Array<{
     },
     body: {
       grade:       'Industrial Grade — Pilot',
-      description: 'UNI-DUNK OIL is a solvent-based dunking oil for dipping machined steel and cast-iron components. A mineral turpentine oil carrier flushes loose swarf and machining contaminants, while light liquid paraffin and sodium petroleum sulfonate leave a light residual oil film for temporary corrosion protection. Available in three grades — UNI-DUNK 100 (Economy, lightest film), UNI-DUNK 200 (Balanced) and UNI-DUNK 300 (Protection, heaviest film). The process removes loose particles only; it does not chemically remove attached burrs.',
+      description: 'UNI-DUNK OIL is a solvent-based dunking oil for dipping machined steel and cast-iron components. A hydrocarbon solvent carrier flushes loose swarf and machining contaminants, while a mineral film oil and corrosion inhibitor leave a light residual oil film for temporary corrosion protection. Available in three grades — UNI-DUNK 100 (Economy, lightest film), UNI-DUNK 200 (Balanced) and UNI-DUNK 300 (Protection, heaviest film). The process removes loose particles only; it does not chemically remove attached burrs.',
       sections: {
         features: [
-          { head: 'Cleaning by Immersion',        body: 'Solvent-rich carrier (80–90% MTO) dissolves cutting oil residues and flushes loose swarf from machined components' },
-          { head: 'Temporary Protection',          body: 'Light liquid paraffin and sodium petroleum sulfonate leave a residual oil film for inter-process rust protection' },
+          { head: 'Cleaning by Immersion',        body: 'Solvent-rich hydrocarbon carrier dissolves cutting oil residues and flushes loose swarf from machined components' },
+          { head: 'Temporary Protection',          body: 'A mineral film oil and corrosion inhibitor leave a residual oil film for inter-process rust protection' },
           { head: 'Three Grades',                  body: 'UNI-DUNK 100 for high-volume cleaning with low residue; UNI-DUNK 200 for routine cleaning plus protection; UNI-DUNK 300 for a heavier protective film' },
           { head: 'Ambient Operation',             body: 'Used as supplied at ambient temperature — no heating, no dilution' },
         ],
         physicalProperties: [
           { property: 'Appearance',          value: 'Clear, homogeneous liquid',          unit: '—',    method: 'Visual' },
           { property: 'Odour',               value: 'Mild solvent odour',                 unit: '—',    method: 'Organoleptic' },
-          { property: 'Base Type',           value: 'Solvent-based (MTO carrier)',        unit: '—',    method: '—' },
+          { property: 'Base Type',           value: 'Solvent-based (hydrocarbon carrier)', unit: '—',    method: '—' },
           { property: 'Specific Gravity (25 °C)', value: '≈ 0.79 – 0.81 (calculated)',   unit: '—',    method: 'To be measured' },
           { property: 'pH',                  value: 'Not applicable',                     unit: '—',    method: '—' },
           { property: 'Flash Point',         value: 'To be tested per formulation',       unit: '°C',   method: 'ASTM D93' },
@@ -5213,7 +5213,7 @@ export const DOCS: Array<{
         composition: [
           { name: 'Hydrocarbon Carrier Solvent', function: 'Cleaning solvent — dissolves oil residues and flushes loose particles',          percent: '—', compat: 'Steel, cast iron' },
           { name: 'Mineral Film Oil',            function: 'Non-volatile residual film oil for temporary protection',                         percent: '—', compat: 'Steel, cast iron' },
-          { name: 'Corrosion Inhibitor',         function: 'Polar sulfonate inhibitor — adsorbs on the metal and aids water displacement',     percent: '—', compat: 'Ferrous' },
+          { name: 'Corrosion Inhibitor',         function: 'Polar corrosion inhibitor — adsorbs on the metal and aids water displacement',     percent: '—', compat: 'Ferrous' },
         ],
         application: [
           { step: '1', name: 'Dip components',     param: 'Immersion at ambient temperature',                value: '2–5 min, subject to cleaning trials' },
@@ -5271,9 +5271,9 @@ export const DOCS: Array<{
         },
         composition: {
           ingredients: [
-            { name: 'Mineral Turpentine Oil (MTO)',  description: 'Carrier / cleaning solvent — aliphatic petroleum distillate', ghsClass: 'Flammable / Aspiration Hazard', tagType: 'danger' },
-            { name: 'Light Liquid Paraffin',         description: 'Residual film oil',                                         ghsClass: 'Aspiration Hazard',             tagType: 'warn'   },
-            { name: 'Sodium Petroleum Sulfonate',    description: 'Corrosion inhibitor',                                       ghsClass: 'Irritant',                      tagType: 'warn'   },
+            { name: 'Hydrocarbon Carrier Solvent',   description: 'Carrier / cleaning solvent — aliphatic petroleum distillate', ghsClass: 'Flammable / Aspiration Hazard', tagType: 'danger' },
+            { name: 'Mineral Film Oil',              description: 'Residual film oil',                                         ghsClass: 'Aspiration Hazard',             tagType: 'warn'   },
+            { name: 'Corrosion Inhibitor',           description: 'Corrosion inhibitor',                                     ghsClass: 'Irritant',                      tagType: 'warn'   },
           ],
           note: 'Exact formulation is proprietary. Functional ingredient descriptions are provided for safety and emergency purposes only.',
         },
@@ -5285,7 +5285,7 @@ export const DOCS: Array<{
           warning:    '⚠ Do NOT induce vomiting — low-viscosity hydrocarbons carry high aspiration risk into lungs.',
         },
         fireFighting: {
-          flammability:       'Flammable liquid — flash point to be confirmed by test (MTO carrier typically ≥ 38 °C)',
+          flammability:       'Flammable liquid — flash point to be confirmed by test (hydrocarbon carrier typically ≥ 38 °C)',
           extinguishingMedia: 'CO₂, dry powder, foam. Do NOT use water jet on burning liquid.',
           fireHazard:         'Vapours may form flammable mixtures with air. Thermal decomposition may generate CO, CO₂, sulphur oxides and hydrocarbon vapours.',
           ppe:                'SCBA and full fire-resistant protective clothing.',

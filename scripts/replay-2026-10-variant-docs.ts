@@ -113,7 +113,28 @@ const DOC_RULES: Rule[] = [
   // uniklean-cu
   { old: 'Glycol ether coupling solvent', new: 'Coupling solvent', exact: true },
   { old: 'Glycol ether co-solvent', new: 'Co-solvent', exact: true },
-  // unikbrightner
+  // uni-dunk-oil (added 2026-11 — generic names only in TDS/MSDS)
+  { old: 'A mineral turpentine oil carrier flushes loose swarf and machining contaminants, while light liquid paraffin and sodium petroleum sulfonate leave', new: 'A hydrocarbon solvent carrier flushes loose swarf and machining contaminants, while a mineral film oil and corrosion inhibitor leave', products: ['uni-dunk-oil'] },
+  { old: 'Solvent-rich carrier (80–90% MTO) dissolves', new: 'Solvent-rich hydrocarbon carrier dissolves', products: ['uni-dunk-oil'] },
+  { old: 'Light liquid paraffin and sodium petroleum sulfonate leave a residual oil film', new: 'A mineral film oil and corrosion inhibitor leave a residual oil film', products: ['uni-dunk-oil'] },
+  { old: 'Solvent-based (MTO carrier)', new: 'Solvent-based (hydrocarbon carrier)', exact: true, products: ['uni-dunk-oil'] },
+  { old: 'Polar sulfonate inhibitor — adsorbs', new: 'Polar corrosion inhibitor — adsorbs', products: ['uni-dunk-oil'] },
+  { old: 'Mineral Turpentine Oil (MTO)', new: 'Hydrocarbon Carrier Solvent', exact: true, products: ['uni-dunk-oil'] },
+  { old: 'Light Liquid Paraffin', new: 'Mineral Film Oil', exact: true, products: ['uni-dunk-oil'] },
+  { old: 'Sodium Petroleum Sulfonate', new: 'Corrosion Inhibitor', exact: true, products: ['uni-dunk-oil'] },
+  { old: '(MTO carrier typically ≥ 38 °C)', new: '(hydrocarbon carrier typically ≥ 38 °C)', products: ['uni-dunk-oil'] },
+  // unikstrip-hd (added 2026-11)
+  { old: 'solvent-based, benzyl alcohol paint remover', new: 'solvent-based, aromatic alcohol paint remover', products: ['unikstrip-hd'] },
+  { old: 'Solvent-based benzyl alcohol paint remover', new: 'Solvent-based aromatic alcohol paint remover', products: ['unikstrip-hd'] },
+  { old: 'Benzyl Alcohol Solvent System', new: 'Aromatic Alcohol Solvent System', exact: true, products: ['unikstrip-hd'] },
+  // unikbrightner (added 2026-11 — no "peroxide" in TDS/MSDS)
+  { old: 'brightening/chelating agent with a peroxide-type oxidising agent in', new: 'brightening/chelating agent with an oxidising agent in', products: ['unikbrightner'] },
+  { old: 'A peroxide-type oxidising agent provides', new: 'An oxidising agent provides', products: ['unikbrightner'] },
+  { old: 'Oxidising Agent (Peroxide-Type)', new: 'Oxidising Agent', exact: true, products: ['unikbrightner'] },
+  { old: 'contains a peroxide-type oxidising raw material that', new: 'contains an oxidising raw material that', products: ['unikbrightner'] },
+  { old: 'Aqueous organic-acid / peroxide-type metal brightening concentrate', new: 'Aqueous organic-acid / oxidising metal brightening concentrate', products: ['unikbrightner'] },
+  { old: 'standard precaution for a peroxide-containing oxidiser (from the oxidising raw material), which', new: 'standard precaution for an oxidising component, which', products: ['unikbrightner'] },
+  { old: "depends on the peroxide component's decomposition rate", new: "depends on the oxidising component's decomposition rate", products: ['unikbrightner'] },
   { old: 'Calculated — mass of formula components (20.0 kg citric acid + 3.35 L H₂O₂ 50% solution @ ~1.196 g/mL + 96.65 kg DM water) ÷ 100 L reference batch volume; not lab-measured.', new: 'Calculated — mass of formula components ÷ 100 L reference batch volume; not lab-measured.' },
 ]
 
