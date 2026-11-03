@@ -296,6 +296,8 @@ Redis is entirely optional. `src/plugins/redis.ts` exports `cacheGet/cacheSet/ca
 
 Integration tests use a real PostgreSQL database (the same one in `.env.local`). Log in through `tests/helpers/credentials.ts` (`ADMIN_PASSWORD`/`OPERATOR_PASSWORD`, from `SEED_ADMIN_PASSWORD`/`SEED_OPERATOR_PASSWORD`) — never hardcode staff passwords in tests. They must run sequentially (`singleFork: true` in vitest config) because they share DB state. Each test file builds its own Fastify app instance via `buildApp()` and tears it down in `afterAll`. Tests depend on seed data — run `npm run seed` before testing.
 
+**CI runs the PDF suite only when it can be affected.** In `.github/workflows/backend-ci-cd.yml`, the `Detect PDF-affecting changes` step diffs the push/PR against its base. It runs `tests/pdf/**` + `tests/integration/pdf-routes.test.ts`, and installs Chrome for them, only when one of these changed: `src/modules/pdf/`, `tests/pdf/`, `pdf-routes.test.ts`, `src/seed/products.seed.ts` (document content drives the page-count snapshots), `package.json`/`package-lock.json`, `vitest.config.ts`, or the workflow itself. Otherwise it runs every other test with those files excluded. Manual runs, new branches and force-pushes always run it. If a new test or source path starts rendering PDFs, add it to `pdf_paths` there.
+
 ### Quotation numbering
 
 `quotation_sequences` uses an `INSERT ... ON CONFLICT DO UPDATE ... RETURNING` pattern (in `src/utils/quotNumber.ts`) for a lock-free atomic per-year counter that produces `UNIK-YYYY-NNN` numbers without deadlocks. Line items are stored in a separate `quotation_line_items` table (FK → quotations, cascade delete).
