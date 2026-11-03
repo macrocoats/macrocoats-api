@@ -21,6 +21,7 @@ export const PRODUCTS = [
   { key: 'uniklean-cu', displayName: 'UNIKLEAN-CU', code: 'CU', category: 'Alkaline Cleaner', subtitle: 'Industrial Alkaline Cleaning Concentrate', accentColor: '#6b6b6b', defaultProcessTags: ['cleaning', 'degreasing'] },
   { key: 'unikbrightner', displayName: 'UNIKBRIGHTNER', code: 'UB', category: 'Metal Brightening Chemical', subtitle: 'Metal Brightening Concentrate (10× Concentrate)', accentColor: '#c17817', defaultProcessTags: ['metal_brightening'] },
   { key: 'unikstrip-hd', displayName: 'UNIKSTRIP-HD', code: 'SH', category: 'Paint Remover', subtitle: 'Benzyl Alcohol Paint Remover — Heavy-Duty Paint Stripping from Mild Steel', accentColor: '#7a2f4f', defaultProcessTags: ['paint_stripping'] },
+  { key: 'uni-dunk-oil', displayName: 'UNI-DUNK OIL', code: 'UD', category: 'Dunking Oil', subtitle: 'Solvent-Based Dunking Oil — Post-Machining Cleaning & Temporary Protection', accentColor: '#5a6b2d', defaultProcessTags: ['cleaning'] },
 ]
 
 // ── Document data ──────────────────────────────────────────────────────────────
@@ -5163,6 +5164,297 @@ export const DOCS: Array<{
         { parameter: 'Stripping Efficiency',     method: 'Immersion trial at 30, 60 and 120 minutes', specification: 'Report result',                   result: 'TBD', status: 'Pending' },
       ],
       statement: 'Placeholder Certificate of Analysis for UNIKSTRIP-HD. Requirements are preliminary. No batch has been tested yet; this record will be populated once batch data is available.',
+      approvals: {
+        preparedBy: 'TBD',
+        reviewedBy: 'TBD',
+        approvedBy: 'TBD',
+      },
+    },
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // UNI-DUNK OIL
+  // Pilot-stage product: three grades (100 Economy / 200 Balanced / 300
+  // Protection) seeded as formulation variants. The base formula document is
+  // UNI-DUNK 200, the recommended starting grade. Performance figures are
+  // relative engineering expectations, flash point and SG are untested (SG is
+  // calculated from typical densities), so every document starts as 'draft'.
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    productKey: 'uni-dunk-oil',
+    docType:    'tds',
+    docNumber:  'TDS-UDK-001',
+    revision:   'Rev 01 — Nov 2026',
+    status:     'draft',
+    footer: {
+      left:   'TDS-UDK-001 Rev 01 · Nov 2026',
+      center: 'This Technical Data Sheet is for guidance only. Pilot formulation — performance figures are relative expectations pending cleaning and corrosion trials. © Macro Coats Pvt Ltd',
+      right:  'Macro Coats Pvt Ltd · Chennai · India\nPage 1 of 1',
+    },
+    body: {
+      grade:       'Industrial Grade — Pilot',
+      description: 'UNI-DUNK OIL is a solvent-based dunking oil for dipping machined steel and cast-iron components. A mineral turpentine oil carrier flushes loose swarf and machining contaminants, while light liquid paraffin and sodium petroleum sulfonate leave a light residual oil film for temporary corrosion protection. Available in three grades — UNI-DUNK 100 (Economy, lightest film), UNI-DUNK 200 (Balanced) and UNI-DUNK 300 (Protection, heaviest film). The process removes loose particles only; it does not chemically remove attached burrs.',
+      sections: {
+        features: [
+          { head: 'Cleaning by Immersion',        body: 'Solvent-rich carrier (80–90% MTO) dissolves cutting oil residues and flushes loose swarf from machined components' },
+          { head: 'Temporary Protection',          body: 'Light liquid paraffin and sodium petroleum sulfonate leave a residual oil film for inter-process rust protection' },
+          { head: 'Three Grades',                  body: 'UNI-DUNK 100 for high-volume cleaning with low residue; UNI-DUNK 200 for routine cleaning plus protection; UNI-DUNK 300 for a heavier protective film' },
+          { head: 'Ambient Operation',             body: 'Used as supplied at ambient temperature — no heating, no dilution' },
+        ],
+        physicalProperties: [
+          { property: 'Appearance',          value: 'Clear, homogeneous liquid',          unit: '—',    method: 'Visual' },
+          { property: 'Odour',               value: 'Mild solvent odour',                 unit: '—',    method: 'Organoleptic' },
+          { property: 'Base Type',           value: 'Solvent-based (MTO carrier)',        unit: '—',    method: '—' },
+          { property: 'Specific Gravity (25 °C)', value: '≈ 0.79 – 0.81 (calculated)',   unit: '—',    method: 'To be measured' },
+          { property: 'pH',                  value: 'Not applicable',                     unit: '—',    method: '—' },
+          { property: 'Flash Point',         value: 'To be tested per formulation',       unit: '°C',   method: 'ASTM D93' },
+          { property: 'Water Content',       value: 'No free water',                      unit: '—',    method: 'Visual' },
+        ],
+        composition: [
+          { name: 'Hydrocarbon Carrier Solvent', function: 'Cleaning solvent — dissolves oil residues and flushes loose particles',          percent: '—', compat: 'Steel, cast iron' },
+          { name: 'Mineral Film Oil',            function: 'Non-volatile residual film oil for temporary protection',                         percent: '—', compat: 'Steel, cast iron' },
+          { name: 'Corrosion Inhibitor',         function: 'Polar sulfonate inhibitor — adsorbs on the metal and aids water displacement',     percent: '—', compat: 'Ferrous' },
+        ],
+        application: [
+          { step: '1', name: 'Dip components',     param: 'Immersion at ambient temperature',                value: '2–5 min, subject to cleaning trials' },
+          { step: '2', name: 'Agitate',            param: 'Basket movement or solvent-compatible circulation', value: 'Throughout dip' },
+          { step: '3', name: 'Drain',              param: 'Allow excess oil to drain',                       value: 'Until dripping stops' },
+          { step: '4', name: 'Maintain bath',      param: 'Check for free water and contamination',          value: 'No free water; replace when heavily loaded' },
+        ],
+        packaging: [
+          { size: '35',  unit: 'L', type: 'HDPE jerrycan' },
+          { size: '210', unit: 'L', type: 'MS drum' },
+        ],
+        performance: [
+          { label: 'Oil Removal',              val: '100: highest · 200: high · 300: moderate–high (expected)' },
+          { label: 'Residual Oil Film',        val: '100: lightest · 200: medium · 300: heaviest' },
+          { label: 'Corrosion Protection',     val: '100: basic · 200: intermediate · 300: higher target — to be confirmed by humidity cabinet and storage tests' },
+          { label: 'Drainage',                 val: '100: fastest · 200: medium · 300: slowest (expected)' },
+          { label: 'Attached Burr Removal',    val: 'No' },
+          { label: 'Operating Temperature',    val: 'Ambient' },
+        ],
+        safetyNote: 'Flammable liquid — keep away from heat, sparks and open flames, and use flammable-solvent engineering controls. Aspiration hazard if swallowed. Refer to the current SDS (SDS-UDK-001) for full hazard information and PPE requirements.',
+      },
+    },
+  },
+
+  {
+    productKey: 'uni-dunk-oil',
+    docType:    'msds',
+    docNumber:  'SDS-UDK-001',
+    revision:   'Rev 01 — Nov 2026',
+    status:     'draft',
+    footer: {
+      left:   'SDS-UDK-001 Rev 01 · Nov 2026',
+      center: 'This Safety Data Sheet is provided in good faith based on current knowledge. Classification is calculated from ingredient data, pending flash point testing. © Macro Coats Pvt Ltd',
+      right:  'Macro Coats Pvt Ltd · Chennai · India\nGHS Rev 9 Compliant · Page 1 of 1',
+    },
+    body: {
+      signalWord: 'Danger',
+      sections: {
+        identification: {
+          productType:  'Solvent-based dunking oil (grades UNI-DUNK 100 / 200 / 300)',
+          intendedUse:  'Immersion cleaning of machined steel and cast-iron components to remove loose swarf and machining contaminants, leaving a light temporary protective oil film',
+          manufacturer: 'Macro Coats Pvt Ltd, Chennai, Tamil Nadu, India',
+          emergency:    'AIIMS Poison Control: 1800-11-6117 (Toll-Free)',
+        },
+        hazards: {
+          pictograms:      ['flammable', 'health', 'irritant', 'environment'],
+          classifications: [
+            { class: 'Flammable Liquid',           category: 'Cat 3', tagType: 'warn'   },
+            { class: 'Aspiration Hazard',          category: 'Cat 1', tagType: 'danger' },
+            { class: 'STOT Single Exposure',       category: 'Cat 3', tagType: 'warn'   },
+            { class: 'Aquatic Toxicity (Chronic)', category: 'Cat 2', tagType: 'warn'   },
+          ],
+          hStatements: 'H226 — Flammable liquid and vapour. H304 — May be fatal if swallowed and enters airways. H336 — May cause drowsiness or dizziness. H411 — Toxic to aquatic life with long lasting effects.',
+          pStatements: 'P210 · P233 · P261 · P271 · P273 · P280 · P301+P310 · P331 · P403+P235 · P501',
+        },
+        composition: {
+          ingredients: [
+            { name: 'Mineral Turpentine Oil (MTO)',  description: 'Carrier / cleaning solvent — aliphatic petroleum distillate', ghsClass: 'Flammable / Aspiration Hazard', tagType: 'danger' },
+            { name: 'Light Liquid Paraffin',         description: 'Residual film oil',                                         ghsClass: 'Aspiration Hazard',             tagType: 'warn'   },
+            { name: 'Sodium Petroleum Sulfonate',    description: 'Corrosion inhibitor',                                       ghsClass: 'Irritant',                      tagType: 'warn'   },
+          ],
+          note: 'Exact formulation is proprietary. Functional ingredient descriptions are provided for safety and emergency purposes only.',
+        },
+        firstAid: {
+          eyes:       'Flush with water for ≥15 min. Seek medical attention if irritation persists.',
+          skin:       'Wash with soap and water. Remove contaminated clothing. Seek advice if irritation persists.',
+          inhalation: 'Move to fresh air and keep at rest. Seek medical attention if drowsiness or dizziness persists.',
+          ingestion:  'Do NOT induce vomiting — aspiration risk. Seek immediate medical attention.',
+          warning:    '⚠ Do NOT induce vomiting — low-viscosity hydrocarbons carry high aspiration risk into lungs.',
+        },
+        fireFighting: {
+          flammability:       'Flammable liquid — flash point to be confirmed by test (MTO carrier typically ≥ 38 °C)',
+          extinguishingMedia: 'CO₂, dry powder, foam. Do NOT use water jet on burning liquid.',
+          fireHazard:         'Vapours may form flammable mixtures with air. Thermal decomposition may generate CO, CO₂, sulphur oxides and hydrocarbon vapours.',
+          ppe:                'SCBA and full fire-resistant protective clothing.',
+        },
+        accidentalRelease: [
+          'Eliminate all ignition sources immediately — flammable vapour risk',
+          'Contain spill with inert absorbent material (sand, vermiculite)',
+          'Prevent entry into drains and waterways — toxic to aquatic organisms',
+          'Collect contaminated material into sealed, labelled containers',
+          'Dispose as petroleum waste per CPCB Hazardous Waste Management Rules 2016',
+        ],
+        handling: {
+          handling:     'Use at ambient temperature only — do not heat. Keep away from heat, sparks, open flames and all ignition sources. Use in well-ventilated areas with flammable-solvent engineering controls; earth dip tanks and containers.',
+          storageTemp:  '5 °C – 40 °C; cool, dry, well-ventilated area; away from heat sources and direct sunlight',
+          containers:   'Sealed HDPE or steel containers; keep tightly closed when not in use',
+          segregation:  'Store separately from oxidising agents, strong acids and strong alkalis; keep water out',
+          shelfLife:    '24 months from date of manufacture in original sealed containers',
+        },
+        exposure: {
+          ppeItems:    ['Safety Glasses', 'Nitrile Gloves', 'Apron', 'Closed-toe Shoes'],
+          engineering: 'Local exhaust ventilation over dip tanks. Avoid mist generation. Eyewash station within 10 s.',
+        },
+        physical: [
+          { key: 'Appearance',    val: 'Clear, homogeneous liquid' },
+          { key: 'Odour',         val: 'Mild solvent odour' },
+          { key: 'Flash Point',   val: 'To be tested (ASTM D93)' },
+          { key: 'Density',       val: '≈ 0.79 – 0.81 g/mL (calculated)' },
+          { key: 'pH',            val: 'Not applicable' },
+          { key: 'Solubility',    val: 'Insoluble in water' },
+          { key: 'Boiling Point', val: '> 140 °C (carrier solvent)' },
+          { key: 'Vapour Pres.',  val: 'Moderate at ambient temperature' },
+        ],
+        stability: {
+          stability:      'Stable under recommended storage conditions.',
+          avoid:          'Strong oxidising agents, heat, open flame, ignition sources, water contamination',
+          decomposition:  'Combustion may produce CO, CO₂, sulphur oxides and hydrocarbon fragments.',
+          polymerisation: 'Will not occur',
+        },
+        sections11to16: {
+          'Skin / Eye': 'Prolonged contact may defat and irritate skin. Vapours may cause drowsiness or dizziness.',
+          Aquatic:      'H411 — toxic to aquatic life with long lasting effects. Do not discharge to drains, waterways or soil.',
+          Disposal:     'Recover and recycle spent dunking oil where possible. Dispose via licensed waste contractor per CPCB/SPCB norms (E.P. Act 1986).',
+          Transport:    'UN 1268 — Petroleum distillates, n.o.s. · Class 3 · PG III (subject to flash point confirmation)',
+          Regulatory:   'MSIHC Rules 1989 · Factories Act 1948 · Hazardous Waste Rules 2016 · GHS Rev 9',
+          'Other Info': 'SDS Rev 01 issued Nov 2026 (draft — calculated classification). Next review: on completion of pilot testing or upon formulation change.',
+        },
+      },
+    },
+  },
+
+  {
+    productKey: 'uni-dunk-oil',
+    docType:    'formula',
+    docNumber:  'FRM-UDK-001',
+    revision:   'Rev 01 — Nov 2026',
+    status:     'draft',
+    footer: {
+      left:   'FRM-UDK-001 Rev 01 · Nov 2026',
+      center: 'CONFIDENTIAL — This formulation sheet is the proprietary information of Macro Coats Pvt Ltd. Unauthorised reproduction or disclosure is prohibited.',
+      right:  'Macro Coats Pvt Ltd · Chennai · India\nPage 1 of 1',
+    },
+    body: {
+      classification:     'CONFIDENTIAL — Internal Use Only',
+      batchSize:          '100 L (nominal)',
+      formulaType:        'liquid',
+      referenceBatchSize: 100,
+      batchUnit:          'L',
+      totalActivePercent: 100,
+      // Base sheet = UNI-DUNK 200 Balanced. Grades 100 (90/8/2) and 300 (80/15/5)
+      // are formulation variants (formulationVariants.seed.ts). Prices: MTO ₹109/L,
+      // LLP ₹172/L, sulfonate ₹203/kg × 0.95 kg/L assumed density = ₹192.85/L.
+      overview: 'UNI-DUNK 200 (Balanced) is the base grade of the UNI-DUNK OIL family — a solvent-based dunking oil of Mineral Turpentine Oil (MTO), Light Liquid Paraffin (LLP) and oil-soluble sodium petroleum sulfonate. MTO cleans and flushes loose swarf; LLP leaves a residual film; the sulfonate provides temporary corrosion inhibition. Quantities are nominal ingredient volumes — adjust MTO to final volume after mixing. Use an oil-soluble, low-water sulfonate grade and confirm its active matter, carrier oil, water content and density before production; the 2–5% dosage across grades is subject to pilot testing.',
+      composition: [
+        { srNo: 1, name: 'Mineral Turpentine Oil (MTO)', casNo: '8052-41-3',  baseQty: 85.0, unit: 'L', percentWV: 85.0, function: 'Cleaning / carrier solvent — dissolves machining oil residues, flushes loose swarf, then evaporates', density: 0.785, unitPrice: 109    },
+        { srNo: 2, name: 'Light Paraffinic Mineral Oil', casNo: '8042-47-5',  baseQty: 12.0, unit: 'L', percentWV: 12.0, function: 'Residual film oil (LLP) — non-volatile oil that carries the inhibitor as a light protective film',     density: 0.86,  unitPrice: 172    },
+        { srNo: 3, name: 'Sodium Petroleum Sulfonate',   casNo: '68608-26-4', baseQty: 3.0,  unit: 'L', percentWV: 3.0,  function: 'Corrosion inhibitor — polar sulfonate adsorbs on the metal for temporary rust protection',            density: 0.95,  unitPrice: 192.85 },
+      ],
+      preparation: [
+        { step: 1, title: 'Safety Setup',             detail: 'Use a clean, dry, solvent-compatible mixing tank. Eliminate all ignition sources, earth the vessel, and keep a Class B extinguisher accessible. Do not heat at any stage.' },
+        { step: 2, title: 'Charge MTO',               detail: 'Charge approximately 75–80% of the required MTO (64–68 L of 85 L) and start slow mechanical agitation.' },
+        { step: 3, title: 'Add LLP',                  detail: 'Add 12 L of Light Liquid Paraffin and mix for 10 minutes.' },
+        { step: 4, title: 'Add Sodium Sulfonate',     detail: 'Add 3 L of sodium petroleum sulfonate gradually, then continue mixing for 20–30 minutes.' },
+        { step: 5, title: 'Make Up Volume',           detail: 'Add the remaining MTO to the required finished volume.' },
+        { step: 6, title: 'QC Check and Fill',        detail: 'Check for haze, sediment and separation; confirm no free water. Measure specific gravity at 25 °C and test flash point. Filter and fill into labelled containers.' },
+      ],
+      operatingConditions: [
+        { param: 'Operating Temperature', value: 'Ambient' },
+        { param: 'Dip Time',              value: '2 – 5 min, subject to cleaning trials' },
+        { param: 'Agitation',             value: 'Basket movement or solvent-compatible circulation' },
+        { param: 'Draining',              value: 'Allow excess oil to drain' },
+        { param: 'Water Contamination',   value: 'No free water' },
+        { param: 'Corrosion Testing',     value: 'Humidity cabinet and storage exposure' },
+        { param: 'Cleaning Test',         value: 'Oil residue and particle-count comparison' },
+      ],
+      applications: {
+        removes:    ['Loose swarf and metal particles', 'Cutting oil and coolant residues', 'Machining contaminants'],
+        usedBefore: ['Inter-process storage', 'Inspection', 'Assembly staging', 'Packing of machined components'],
+      },
+    },
+  },
+
+  {
+    productKey: 'uni-dunk-oil',
+    docType:    'label',
+    docNumber:  'LBL-UDK-001',
+    revision:   'Rev 01 — Nov 2026',
+    status:     'draft',
+    footer: { left: '', center: '', right: '' },
+    body: {
+      signalWord: 'DANGER',
+      unNo: 'UN 1268',
+      hCodes: [
+        { code: 'H226', text: 'Flammable liquid and vapour' },
+        { code: 'H304', text: 'May be fatal if swallowed and enters airways' },
+        { code: 'H336', text: 'May cause drowsiness or dizziness' },
+        { code: 'H411', text: 'Toxic to aquatic life with long lasting effects' },
+      ],
+      pCodes: [
+        { code: 'P210',      text: 'Keep away from heat, sparks, open flames and hot surfaces. No smoking' },
+        { code: 'P261',      text: 'Avoid breathing vapours' },
+        { code: 'P273',      text: 'Avoid release to the environment' },
+        { code: 'P280',      text: 'Wear protective gloves and eye protection' },
+        { code: 'P301+P310', text: 'If swallowed, immediately call a doctor' },
+        { code: 'P331',      text: 'Do NOT induce vomiting' },
+        { code: 'P403+P235', text: 'Store in a well-ventilated place. Keep cool' },
+      ],
+      firstAid: {
+        skin:       'Wash with soap and water. Remove contaminated clothing.',
+        eyes:       'Flush with water for ≥15 min. Seek medical attention.',
+        ingestion:  'Do NOT induce vomiting. Seek immediate medical attention.',
+        inhalation: 'Move to fresh air. Seek medical attention if symptoms persist.',
+      },
+      directions: [
+        'Use as supplied at ambient temperature — do not heat or dilute',
+        'Dip components 2–5 min with basket movement or circulation',
+        'Allow excess oil to drain before storage or packing',
+        'Keep the bath free of water; does not remove attached burrs',
+      ],
+      storage:  ['Store at 5°C – 40°C', 'Keep away from heat and ignition sources', 'Keep container tightly closed', 'Dispose per CPCB regulations'],
+      products: ['UNI-DUNK 100', 'UNI-DUNK 200', 'UNI-DUNK 300'],
+    },
+  },
+
+  {
+    productKey: 'uni-dunk-oil',
+    docType:    'coa',
+    docNumber:  'COA-UDK-001',
+    revision:   'Draft — pending batch data',
+    status:     'draft',
+    footer: {
+      left:   'COA-UDK-001 Draft',
+      center: 'CONFIDENTIAL — Placeholder Certificate of Analysis · Macro Coats Pvt Ltd',
+      right:  'Macro Coats Pvt Ltd · Chennai · India',
+    },
+    body: {
+      batchNumber:    'TBD',
+      batchSize:      'TBD',
+      productionDate: 'TBD',
+      expiryDate:     'TBD',
+      grade:          'Industrial Grade — Pilot',
+      appearance:     'TBD',
+      tests: [
+        { parameter: 'Appearance',               method: 'Visual',               specification: 'Clear, homogeneous; no haze, sediment or separation', result: 'TBD', status: 'Pending' },
+        { parameter: 'Specific Gravity @ 25 °C', method: 'ISO 2811',             specification: 'Approximately 0.79–0.81 (calculated)',               result: 'TBD', status: 'Pending' },
+        { parameter: 'Free Water',               method: 'Visual',               specification: 'No free water',                                      result: 'TBD', status: 'Pending' },
+        { parameter: 'Flash Point',              method: 'ASTM D93',             specification: 'Report result',                                      result: 'TBD', status: 'Pending' },
+        { parameter: 'Corrosion Protection',     method: 'Humidity cabinet',     specification: 'Report result',                                      result: 'TBD', status: 'Pending' },
+      ],
+      statement: 'Placeholder Certificate of Analysis for UNI-DUNK OIL. Specifications are preliminary pending pilot batches. No batch has been tested yet; this record will be populated once batch data is available.',
       approvals: {
         preparedBy: 'TBD',
         reviewedBy: 'TBD',

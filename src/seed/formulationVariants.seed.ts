@@ -769,6 +769,27 @@ const CORRUCUT_500_HIGH_BARIUM_MTO_LLP_COMPONENTS = [
   { materialName: 'White petroleum jelly',        percentage: 2.85,  unit: 'L' as const, density: 0.87  },  //  10.268 kg →  11.802 L
 ]
 
+/**
+ * UNI-DUNK OIL — three grades from the supplied comparison sheet (100 L nominal
+ * batch, % v/v of nominal ingredient volumes): MTO / LLP / Sodium Petroleum
+ * Sulfonate at 90/8/2 (100 Economy), 85/12/3 (200 Balanced, = FRM-UDK-001) and
+ * 80/15/5 (300 Protection). Sulfonate density 0.95 kg/L is the sheet's
+ * assumption, not the 1.05 typical value in variantDensities.seed.ts.
+ * materialName values match inventory_items names ('Light Paraffinic Mineral
+ * Oil' = LLP).
+ */
+const UNI_DUNK_GRADES = [
+  { name: 'UNI-DUNK 100 Economy',    mto: 90, llp: 8,  sulfonate: 2 },
+  { name: 'UNI-DUNK 200 Balanced',   mto: 85, llp: 12, sulfonate: 3 },
+  { name: 'UNI-DUNK 300 Protection', mto: 80, llp: 15, sulfonate: 5 },
+]
+
+const uniDunkComponents = (g: typeof UNI_DUNK_GRADES[number]) => [
+  { materialName: 'Mineral Turpentine Oil (MTO)', percentage: g.mto,       unit: 'L' as const, density: 0.785 },
+  { materialName: 'Light Paraffinic Mineral Oil', percentage: g.llp,       unit: 'L' as const, density: 0.86  },
+  { materialName: 'Sodium Petroleum Sulfonate',   percentage: g.sulfonate, unit: 'L' as const, density: 0.95  },
+]
+
 export async function seedFormulationVariants() {
   console.log('🌱 Seeding formulation variants...')
 
@@ -1666,6 +1687,60 @@ export async function seedFormulationVariants() {
       )
 
       console.log(`   ✅ Created High-Barium MTO-LLP Grade variant for CORROCUT 500 (id: ${corrucut500HighBariumVariant.id})`)
+    }
+  }
+
+  // ── UNI-DUNK OIL — 100 / 200 / 300 grades ─────────────────────────────────
+  const [uniDunkProduct] = await db
+    .select()
+    .from(products)
+    .where(eq(products.key, 'uni-dunk-oil'))
+
+  if (!uniDunkProduct) {
+    console.warn('   ⚠️  Product uni-dunk-oil not found — skipping UNI-DUNK grade variant seed')
+  } else {
+    for (const grade of UNI_DUNK_GRADES) {
+      const [existing] = await db
+        .select()
+        .from(productFormulationVariants)
+        .where(
+          and(
+            eq(productFormulationVariants.productKey, 'uni-dunk-oil'),
+            variantNameIs(grade.name),
+          ),
+        )
+
+      if (existing) {
+        console.log(`   ↩️  ${grade.name} variant already exists (id: ${existing.id})`)
+        continue
+      }
+
+      const [variant] = await db
+        .insert(productFormulationVariants)
+        .values({
+          productKey:  'uni-dunk-oil',
+          companyId:   null,
+          variantName: grade.name,
+          isDefault:   false,
+          // 'draft' until pilot batches confirm sulfonate solubility, cleaning,
+          // film and corrosion performance — a usable (approved) variant would
+          // start overriding the TDS/MSDS composition and hazard sections.
+          status:      'draft',
+        })
+        .returning()
+
+      await db.insert(formulationVariantComponents).values(
+        uniDunkComponents(grade).map((c, i) => ({
+          variantId:    variant.id,
+          materialName: c.materialName,
+          percentage:   String(c.percentage),
+          unit:         c.unit,
+          density:      String(c.density),
+          sortOrder:    i,
+        })),
+      )
+
+      console.log(`   ✅ Created ${grade.name} variant for UNI-DUNK OIL (id: ${variant.id})`)
     }
   }
 }

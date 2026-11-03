@@ -16,6 +16,10 @@ exports[`TDS/MSDS PDF regression — every seeded product > corrucut-500 msds re
 
 exports[`TDS/MSDS PDF regression — every seeded product > corrucut-500 tds renders and matches its recorded page count > corrucut-500-tds-page-count 1`] = `2`;
 
+exports[`TDS/MSDS PDF regression — every seeded product > uni-dunk-oil msds renders and matches its recorded page count > uni-dunk-oil-msds-page-count 1`] = `4`;
+
+exports[`TDS/MSDS PDF regression — every seeded product > uni-dunk-oil tds renders and matches its recorded page count > uni-dunk-oil-tds-page-count 1`] = `2`;
+
 exports[`TDS/MSDS PDF regression — every seeded product > unicool-al msds renders and matches its recorded page count > unicool-al-msds-page-count 1`] = `4`;
 
 exports[`TDS/MSDS PDF regression — every seeded product > unicool-al tds renders and matches its recorded page count > unicool-al-tds-page-count 1`] = `1`;
