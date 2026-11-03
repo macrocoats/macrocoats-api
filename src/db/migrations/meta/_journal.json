@@ -281,6 +281,13 @@
       "when": 1793613829972,
       "tag": "0039_pack_container_stock",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1793696193888,
+      "tag": "0040_backfill_batch_expiry_from_label",
+      "breakpoints": true
     }
   ]
 }

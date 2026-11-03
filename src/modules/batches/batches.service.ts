@@ -267,7 +267,7 @@ export async function createBatch(data: CreateBatchBody, createdBy: string | nul
         variantName:         data.variantName ?? null,
         batchType:           data.batchType ?? 'Production',
         lifecycleStatus:     'awaiting_qc',
-        expiryDate:          data.labelSnapshot.expiryDate,
+        expiryDate:          data.labelSnapshot.expiryDate || null,
         notes:               data.notes ?? null,
         workOrderId:         options.workOrderId ?? null,
         clientRequestId:     options.clientRequestId ?? null,
