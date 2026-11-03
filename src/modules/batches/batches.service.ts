@@ -428,10 +428,12 @@ export type ReleaseBatchResult =
   | { code: 'BATCH_NOT_FOUND' | 'BATCH_NOT_RELEASABLE' | 'VERSION_CONFLICT'; blockingReasons?: string[] }
 
 export async function releaseBatch(batchNumber: string, releasedBy: string, notes?: string, version?: number): Promise<ReleaseBatchResult> {
-  return db.transaction(async (tx) => {
+  // The invoice lookup runs on `db`, so it happens after the transaction
+  // commits — inside it, it would wait for a second pool connection.
+  const outcome = await db.transaction(async (tx) => {
     const [row] = await tx.select().from(batches).where(eq(batches.batchNumber, batchNumber)).for('update')
     if (!row) return { code: 'BATCH_NOT_FOUND' as const }
-    if (row.lifecycleStatus === 'released') return withInvoice(row)
+    if (row.lifecycleStatus === 'released') return row
     if (version !== undefined && row.version !== version) return { code: 'VERSION_CONFLICT' as const }
     const blockingReasons = getReleaseBlockingReasons(row)
     if (blockingReasons.length) return { code: 'BATCH_NOT_RELEASABLE' as const, blockingReasons }
@@ -455,8 +457,9 @@ export async function releaseBatch(batchNumber: string, releasedBy: string, note
       // Released output is what completes a work order.
       await syncWorkOrderProgress(tx, updated.workOrderId, releasedBy, { batchId: updated.id })
     }
-    return withInvoice(updated)
+    return updated
   })
+  return 'code' in outcome ? outcome : withInvoice(outcome)
 }
 
 export async function releaseBatches(batchNumbers: string[], releasedBy: string, notes?: string) {
