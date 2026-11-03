@@ -32,7 +32,9 @@ export const materialReservations = pgTable('material_reservations', {
 
 export const inventoryMovements = pgTable('inventory_movements', {
   id: uuid('id').primaryKey().defaultRandom(),
-  lotId: uuid('lot_id').notNull().references(() => inventoryLots.id, { onDelete: 'restrict' }),
+  // Stock is held per Inventory item today, so batch movements carry inventoryItemId and no lot.
+  lotId: uuid('lot_id').references(() => inventoryLots.id, { onDelete: 'restrict' }),
+  inventoryItemId: uuid('inventory_item_id').references(() => inventoryItems.id, { onDelete: 'set null' }),
   movementType: text('movement_type', { enum: ['receipt', 'reservation', 'reservation_release', 'issue', 'reversal', 'adjustment'] }).notNull(),
   quantity: numeric('quantity', { precision: 14, scale: 3 }).notNull(),
   workOrderId: uuid('work_order_id').references(() => productionWorkOrders.id, { onDelete: 'set null' }),
@@ -43,6 +45,7 @@ export const inventoryMovements = pgTable('inventory_movements', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [
   index('inventory_movements_lot_idx').on(t.lotId),
+  index('inventory_movements_item_idx').on(t.inventoryItemId),
   index('inventory_movements_work_order_idx').on(t.workOrderId),
   index('inventory_movements_batch_idx').on(t.batchId),
 ])

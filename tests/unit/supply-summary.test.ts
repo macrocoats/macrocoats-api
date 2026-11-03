@@ -61,14 +61,14 @@ describe('buildSupplySummary', () => {
     expect(galva.confirmedInvoiceCount).toBe(1)
     expect(galva.active).toBe(true)
     expect(galva.products).toEqual([
-      { productId: 'UNIKLEAN-SP', name: 'UNIKLEAN-SP', unit: 'KG', invoiced: 300, confirmed: 200, value: 1500, invoiceCount: 2 },
+      { productId: 'item:unikleansp', name: 'UNIKLEAN-SP', unit: 'KG', invoiced: 300, confirmed: 200, value: 1500, invoiceCount: 2 },
     ])
     expect(all.customers.find((c) => c.customerId === 'old')!.active).toBe(false)
     expect(all.totals.activeCustomerCount).toBe(2)
   })
 
   it('builds product-wise rows across customers', () => {
-    const sp = all.products.find((p) => p.productId === 'UNIKLEAN-SP')!
+    const sp = all.products.find((p) => p.productId === 'item:unikleansp')!
     expect(sp.invoiced).toBe(350)
     expect(sp.customerCount).toBe(2)
     expect(sp.invoiceCount).toBe(3)
@@ -86,7 +86,7 @@ describe('buildSupplySummary', () => {
     // Active status ignores the window: Galva is still active.
     expect(window.customers.find((c) => c.customerId === 'galva')!.active).toBe(true)
 
-    const product = buildSupplySummary(invoices, dispatches, { product: 'CORRCUT 100' }, '2026-10-21')
+    const product = buildSupplySummary(invoices, dispatches, { product: 'item:corrcut100' }, '2026-10-21')
     expect(product.totals.invoiceCount).toBe(1)
     expect(product.totals.invoicedValue).toBe(1500)
     expect(product.totals.quantities).toEqual([{ unit: 'L', invoiced: 210, confirmed: 0 }])
@@ -94,6 +94,58 @@ describe('buildSupplySummary', () => {
 
     const customer = buildSupplySummary(invoices, dispatches, { customerId: 'zf' }, '2026-10-21')
     expect(customer.customers.map((c) => c.customerId)).toEqual(['zf'])
+  })
+
+  it('merges duplicate Zoho items for the same product, including the UNKLEAN SP typo', () => {
+    const dupes = [
+      invoice({ invoiceId: 'x1', invoiceNumber: 'INV-X1', date: '2026-10-01', customerId: 'zf', customerName: 'ZF Rane', total: 500,
+        lines: [line('UNIKLEAN SP', 100, 'kg', 500, 'zoho-item-1')] }),
+      invoice({ invoiceId: 'x2', invoiceNumber: 'INV-X2', date: '2026-10-05', customerId: 'zf', customerName: 'ZF Rane', total: 250,
+        lines: [line('UNKLEAN SP', 50, 'kg', 250, 'zoho-item-2')] }),
+      invoice({ invoiceId: 'x3', invoiceNumber: 'INV-X3', date: '2026-10-06', customerId: 'galva', customerName: 'Galva', total: 100,
+        lines: [line('Uniklean-SP', 20, 'kg', 100, 'zoho-item-3')] }),
+    ]
+    const s = buildSupplySummary(dupes, [], {}, '2026-10-21')
+    expect(s.products).toHaveLength(1)
+    expect(s.products[0]).toMatchObject({ productId: 'item:unikleansp', invoiced: 170, invoiceCount: 3, customerCount: 2 })
+    expect(s.products[0].name).not.toBe('UNKLEAN SP') // typo spelling never wins the display name
+    expect(s.filterOptions.products).toHaveLength(1)
+    expect(s.customers.find((c) => c.customerId === 'zf')!.products).toHaveLength(1)
+
+    const filtered = buildSupplySummary(dupes, [], { product: 'item:unikleansp' }, '2026-10-21')
+    expect(filtered.totals.invoiceCount).toBe(3)
+  })
+
+  it('merges the coded production names into UNIKLEAN-SP 123521560209', () => {
+    const coded = [
+      invoice({ invoiceId: 'p1', invoiceNumber: 'INV-P1', date: '2026-10-01', customerId: 'zf', customerName: 'ZF Rane', total: 500,
+        lines: [line('UNKLEAN-SP 123521560209', 100, 'kg', 500, 'zoho-typo')] }),
+      invoice({ invoiceId: 'p2', invoiceNumber: 'INV-P2', date: '2026-10-05', customerId: 'zf', customerName: 'ZF Rane', total: 300,
+        lines: [line('UNIKLEAN-SP 123521560209', 60, 'kg', 300, 'zoho-real'), line('UNIKLEAN-SP', 10, 'kg', 50, 'zoho-plain')] }),
+    ]
+    const s = buildSupplySummary(coded, [], {}, '2026-10-21')
+    const sp = s.products.filter((p) => p.productId === 'item:unikleansp123521560209')
+    expect(sp).toHaveLength(1)
+    expect(sp[0]).toMatchObject({ name: 'UNIKLEAN-SP 123521560209', invoiced: 160, value: 800, invoiceCount: 2 })
+    // The un-coded item stays its own product; only the typo is folded.
+    expect(s.products.map((p) => p.productId).sort()).toEqual(['item:unikleansp', 'item:unikleansp123521560209'])
+    expect(s.sales.rows.every((r) => !r.productName.startsWith('UNKLEAN'))).toBe(true)
+  })
+
+  it('builds month × customer × product sales from line amounts', () => {
+    const rows = all.sales.rows
+    expect(rows).toContainEqual(expect.objectContaining({
+      month: '2026-09', customerId: 'zf', productId: 'item:corrcut100', unit: 'L', quantity: 210, value: 1500, invoiceCount: 1,
+    }))
+    expect(rows).toContainEqual(expect.objectContaining({
+      month: '2026-09', customerId: 'galva', productId: 'item:unikleansp', productName: 'UNIKLEAN-SP', value: 500,
+    }))
+    // Voided invoices never count as sales.
+    expect(rows.reduce((n, r) => n + r.value, 0)).toBe(1000 + 500 + 1500 + 500 + 100)
+    expect(all.sales.missingLinesByMonth).toEqual({})
+
+    const missing = buildSupplySummary([invoice({ date: '2026-10-02', lines: null, total: 50 })], [], {}, '2026-10-21')
+    expect(missing.sales.missingLinesByMonth).toEqual({ '2026-10': 1 })
   })
 
   it('groups by month', () => {

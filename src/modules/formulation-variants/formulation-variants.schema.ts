@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { PRODUCT_KEYS, VARIANT_STATUSES, CREATABLE_VARIANT_STATUSES } from '../../types/index.js'
+import { PRODUCT_KEYS, PROCESS_TAGS, VARIANT_STATUSES, CREATABLE_VARIANT_STATUSES } from '../../types/index.js'
 import { tdsOverridesSchema, msdsOverridesSchema } from '../products/products.body-schemas.js'
 
 export const formulaOverridesSchema = z.object({
@@ -30,6 +30,7 @@ export const createVariantSchema = z.object({
   sourceVariantId:   z.string().uuid().nullable().optional(),
   optimizationMeta:  z.record(z.unknown()).nullable().optional(),
   assignedCompanyIds: z.array(z.string().uuid()).optional(),
+  processTags: z.array(z.enum(PROCESS_TAGS)).max(PROCESS_TAGS.length).optional(),
   components:  z.array(componentBodySchema).min(1),
 })
 
@@ -57,6 +58,7 @@ export const updateVariantSchema = z.object({
   tdsOverrides:  tdsOverridesSchema.nullable().optional(),
   msdsOverrides: msdsOverridesSchema.nullable().optional(),
   formulaOverrides: formulaOverridesSchema.nullable().optional(),
+  processTags: z.array(z.enum(PROCESS_TAGS)).max(PROCESS_TAGS.length).optional(),
 })
 
 export const replaceComponentsSchema = z.object({

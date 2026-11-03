@@ -61,6 +61,8 @@ export const AppErrors = {
   DISPATCH_INVOICE_NUMBER_MISSING:  'DISPATCH_INVOICE_NUMBER_MISSING',
   ZOHO_INVOICE_NOT_FOUND:           'ZOHO_INVOICE_NOT_FOUND',
   ZOHO_SYNC_FAILED:                 'ZOHO_SYNC_FAILED',
+  EWAY_BILL_NOT_FOUND:              'EWAY_BILL_NOT_FOUND',
+  EWAY_BILL_PDF_UNAVAILABLE:        'EWAY_BILL_PDF_UNAVAILABLE',
 } as const
 
 export type AppError = typeof AppErrors[keyof typeof AppErrors]

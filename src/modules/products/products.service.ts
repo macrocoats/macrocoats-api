@@ -412,6 +412,7 @@ export async function listProducts() {
       category:    products.category,
       subtitle:    products.subtitle,
       accentColor: products.accentColor,
+      defaultProcessTags: products.defaultProcessTags,
     })
     .from(products)
     .where(eq(products.active, true))

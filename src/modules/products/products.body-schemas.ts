@@ -131,7 +131,8 @@ const msdsHazardsSchema = z.object({
 const msdsIngredientSchema = z.object({
   name:        z.string(),
   description: z.string(),
-  percent:     z.string(),
+  // Dead data: Section 3 no longer shows percentages, and new rows omit it.
+  percent:     z.string().optional(),
   ghsClass:    z.string(),
   tagType:     z.string(),
 })

@@ -21,6 +21,7 @@ export function registerHelpers(): void {
   Handlebars.registerHelper('or', (a: unknown, b: unknown) => Boolean(a) || Boolean(b));
 
   Handlebars.registerHelper('inc', (val: unknown) => Number(val) + 1);
+  Handlebars.registerHelper('pad2', (val: unknown) => String(Number(val) + 1).padStart(2, '0'));
 
   Handlebars.registerHelper('statusClass', (status: unknown) => {
     const map: Record<string, string> = {

@@ -9,6 +9,7 @@ const formulationComponentSchema = z.object({
   percentage:       z.number(),
   quantityUsed:     z.number(),
   unit:             z.string(),
+  density:          z.number().positive().nullable().optional(),
   materialRate:     z.number(),
   costContribution: z.number(),
 })
@@ -64,6 +65,21 @@ export const createBatchSchema = z.object({
   batchType:           z.enum(BATCH_TYPES).optional().default('Production'),
 })
 
+// Metadata that can be corrected without rewriting inventory, formulation,
+// costing, QC, or lifecycle history. Immutable production records remain out
+// of this schema by design.
+export const updateBatchMetadataSchema = z.object({
+  companyName:     z.string().trim().min(1).max(200),
+  productionDate:  z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(
+                     (date) => date <= new Date().toISOString().slice(0, 10),
+                     { message: 'productionDate cannot be in the future' },
+                   ),
+  paymentTermDays: z.number().int().min(1).max(3650),
+  transportCostPerL: z.number().min(0).max(1000000),
+  notes:           z.string().max(2000).nullable().optional(),
+  version:         z.number().int().positive(),
+})
+
 const coaTestSchema = z.object({
   parameter:     z.string(),
   method:        z.string(),
@@ -101,6 +117,8 @@ export const setBatchLifecycleSchema = z.object({
   status: z.enum(['on_hold', 'rejected', 'cancelled']),
   reason: z.string().min(1).max(2000),
   version: z.number().int().positive().optional(),
+  // Cancelled only: true when the materials were never used, so they go back to stock.
+  returnMaterials: z.boolean().optional(),
 })
 
 export type SetPaymentStatusBody = z.infer<typeof setPaymentStatusSchema>
@@ -117,4 +135,5 @@ export const listBatchesQuerySchema = z.object({
 })
 
 export type CreateBatchBody    = z.infer<typeof createBatchSchema>
+export type UpdateBatchMetadataBody = z.infer<typeof updateBatchMetadataSchema>
 export type ListBatchesQuery   = z.infer<typeof listBatchesQuerySchema>

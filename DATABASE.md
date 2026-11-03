@@ -14,12 +14,15 @@ Reference for the PostgreSQL schema and Drizzle migration workflow. See `CLAUDE.
 | `companies` | Client companies; holds `accessToken` + `tokenExpiresAt` for magic-link login |
 | `company_product_access` | Junction: which products each company may view |
 | `company_product_prices` | Per-company special pricing for specific products |
-| `products` | Product line definitions (12 chemical products) |
+| `products` | Product line definitions, including controlled default process tags inherited by formulas |
 | `product_documents` | TDS/MSDS/Formula/Label/COA per product (JSONB body); also carries `status`, `createdAt`, `updatedAt`, `updatedBy` |
 | `document_audit_log` | Per-document history: created/updated/status_changed events, who, when, notes |
-| `product_formulation_variants` | Product variant headers (e.g. customized formulations) |
+| `product_formulation_variants` | Product variant headers, including process-tag additions/removals from product defaults |
 | `formulation_variant_components` | Line items (materials) for formulation variants |
 | `inventory_items` | Raw materials: price, stock, supplier, reorder threshold |
+| `pack_container_stock` | Stock and minimum per container type (types are fixed in code) |
+| `pack_container_movements` | Container stock log: batch issues and returns, receipts, counts |
+| `inventory_movements` | Stock movement log. Batch deductions (`issue`) and returns (`reversal`) carry `inventory_item_id`; `lot_id` stays null until lots are in use |
 | `quotations` | Sales quotations with auto-generated UNIK-YYYY-NNN numbers |
 | `quotation_line_items` | Line items in a quotation (FK → quotations, cascade delete) |
 | `quotation_sequences` | Per-year atomic counter for quotation numbering |
@@ -42,6 +45,7 @@ Reference for the PostgreSQL schema and Drizzle migration workflow. See `CLAUDE.
 | `customer_purchase_order_timeline` | Append-only event log per customer PO (po_received, status_changed, batch_linked, dispatched, etc.) |
 | `customer_purchase_order_sequences` | Per-year atomic counter for customer PO numbering (CPO-YYYY-NNN) |
 | `customer_pipeline_entries` | Prospective customers' trial status and vendor-registration status (Customer Supply tab); optional `companyId`, archived via `archivedAt` |
+| `zoho_invoice_details` | Durable, read-only cache of Zoho invoice details (header + line items) keyed by Zoho invoice id; `payload` JSONB, re-read only when Zoho's `last_modified_time` changes. Feeds Customer Supply, invoiced sales and the Investor Dashboard (migration `0041`) |
 
 ## Migration workflow (canonical)
 

@@ -35,8 +35,24 @@ export const PRODUCT_KEYS = [
   'unicut-al',
   'uniklean-cu',
   'unikbrightner',
+  'unikstrip-hd',
+  'uni-dunk-oil',
 ] as const
 export type ProductKey = typeof PRODUCT_KEYS[number]
+
+export const PROCESS_TAGS = [
+  'cleaning',
+  'degreasing',
+  'derusting',
+  'phosphating',
+  'rust_preventive_oil',
+  'passivation',
+  'metalworking',
+  'metal_brightening',
+  'paint_stripping',
+  'process_additive',
+] as const
+export type ProcessTag = typeof PROCESS_TAGS[number]
 
 /** Doc types restricted to superadmin only */
 export const RESTRICTED_DOC_TYPES: DocType[] = ['formula', 'label', 'coa']

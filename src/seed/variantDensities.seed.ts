@@ -29,11 +29,13 @@ const DENSITY_G_PER_ML: Record<string, number> = {
   'dowanol pm (propylene glycol methyl ether)': 0.92,
   'dipropylene glycol methyl ether (dowanol dpm)': 0.951,
   'butyl glycol': 0.902,
+  'benzyl alcohol': 1.045,
   // Amines / alkalis / acids (liquid grades)
   'tea': 1.124, 'tea (triethanolamine)': 1.124, 'triethanolamine (tea)': 1.124,
   'ammonium hydroxide': 0.91, 'ammonium hydroxide (25%)': 0.91,
   'phosphoric acid': 1.685, 'phosphoric acid (85%)': 1.685,
   'hydrogen peroxide (50%)': 1.196,
+  'formic acid (85%)': 1.195,
   // Surfactants / defoamers
   'lae-9': 0.95, 'lae 9 (lauryl alcohol ethoxylate)': 0.95, 'lae-9 (lauryl alcohol ethoxylate)': 0.95,
   'lae-7': 0.95, 'alcohol ethoxylate (lae-7)': 0.95,

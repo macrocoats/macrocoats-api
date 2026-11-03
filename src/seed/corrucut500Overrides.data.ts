@@ -55,7 +55,7 @@ const CORRUCUT_500_PERFORMANCE = [
 ]
 
 export const TDS_OVERRIDES_CORRUCUT_500_WDRPO = {
-  description: 'CORROCUT 500 – Exxsol Blend Grade is a solvent-based rust preventive built on a hydrocarbon solvent carrier with a dearomatized co-solvent. The fast-evaporating carrier penetrates and displaces moisture from wet or freshly washed components, leaving a thin, lightly oily film of mineral base oil, corrosion inhibitor and film-forming barrier agent. Suited for inter-operational protection, transit, and indoor or covered storage.',
+  description: 'This CORROCUT 500 water-displacing grade is a solvent-based rust preventive built on a hydrocarbon solvent carrier with a dearomatized co-solvent. The fast-evaporating carrier penetrates and displaces moisture from wet or freshly washed components, leaving a thin, lightly oily film of mineral base oil, corrosion inhibitor and film-forming barrier agent. Suited for inter-operational protection, transit, and indoor or covered storage.',
   features: [
     { head: 'Water-Displacing Action',        body: 'Low-surface-tension solvent carrier gets under water films and lifts moisture off wet or freshly washed parts.' },
     { head: 'Inhibited Oil Film',             body: 'A polar corrosion inhibitor adsorbs on the metal surface while the mineral base oil carries it as a continuous protective film.' },
@@ -81,7 +81,7 @@ export const TDS_OVERRIDES_CORRUCUT_500_WDRPO = {
     { name: 'Film-forming barrier agent',      function: 'Protective film former',                       percent: '< 10%',    compat: 'Ferrous and non-ferrous metals' },
   ],
   performance: CORRUCUT_500_PERFORMANCE,
-  safetyNote: 'Flammable liquid (flash point ≈ 43 °C, calculated) — keep away from heat and ignition sources. Contains hydrocarbon solvents: use only with adequate ventilation, as vapours may cause drowsiness. Refer to the CORROCUT 500 – Exxsol Blend Grade Safety Data Sheet before use.',
+  safetyNote: 'Flammable liquid (flash point ≈ 43 °C, calculated) — keep away from heat and ignition sources. Contains hydrocarbon solvents: use only with adequate ventilation, as vapours may cause drowsiness. Refer to the CORROCUT 500 Safety Data Sheet before use.',
 }
 
 export const TDS_OVERRIDES_CORRUCUT_500_MTO_BASED = {

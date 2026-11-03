@@ -56,14 +56,14 @@ assets/
 `pdf.service.ts` picks one of five header/footer/margin treatments per `docType`:
 
 1. **Print-matched** (`tds`, `msds` — `PRINT_MATCHED_DOC_TYPES`): `buildPrintMatchedHeader` reproduces the frontend's `PrintMasthead` (company line, doc title, product / standard / "Page n of N") and `buildPrintMatchedFooter` reproduces the `@page datasheet` margin-box footer from safteyDataSheet's `print.css` (same sizes, colours, copy; see "TDS/MSDS print parity" below). Header/footer templates can't load web fonts, so they fall back from IBM Plex to system fonts. Margin: `31mm/16mm/14mm/14mm` (the band ends ~25mm down; the rest keeps a section that opens a continuation page clear of the header rule).
-2. **Legacy branded** (`coa` only — `LEGACY_BRANDED_DOC_TYPES`): `buildHeaderTemplate`/`buildFooterTemplate`'s branded branch — logo, tagline, Email/Web only, expanded footer with "computer generated"/"Confidential"/Page X of Y. Margin: `30mm/22mm/14mm/14mm`. This is CoA's own polished letterhead — do not merge it with the print-matched treatment above.
+2. **Full-page certificate** (`coa` only — `FULL_PAGE_DOC_TYPES`): `coa.hbs` owns the complete A4 page, including letterhead, watermark, signature lines, and footer. Puppeteer adds no header/footer or margins. Its structure and `.coa-cert` CSS mirror the frontend `CoaCertificate.jsx` Print view and must be changed together.
 3. **Executive** (`investor-report` only — `EXECUTIVE_DOC_TYPES`): `buildExecutiveHeader`/`buildExecutiveFooter` — a taller band (logo + period line, no per-product doc-number meta since this isn't a per-product document) plus a "Confidential" footer tag distinct from CoA's "computer generated" copy. Margin: `32mm/20mm/16mm/16mm`. Added for the Investor Report; do not reuse for a per-product document type.
 4. **Letterhead** (`letterhead` only — `LETTERHEAD_DOC_TYPES`): `buildLetterheadHeader`/`buildLetterheadFooter` — same visual weight as CoA's legacy-branded header (logo + legal name + tagline + address) plus optional GSTIN/CIN/ISO lines gated on `branding.constants.ts` fields being non-empty. No per-product doc-number meta — the letter's own date/reference-no/customer/subject/attention band renders inside the document body (`.info-cards` in `letterhead.hbs`), not the header. Margin: `30mm/22mm/14mm/14mm`.
 5. **Plain** (`quotation`, `batch`): `buildHeaderTemplate`/`buildFooterTemplate`'s non-branded branch — full company address/GSTIN/phone, unchanged from the module's original design.
 
 All company name/address/GSTIN/phone/email/website/CIN/ISO strings in every treatment above come from `branding.constants.ts` — do not reintroduce a hardcoded literal copy when editing any of these builders.
 
-`tds`/`msds`/`coa`/`investor-report`/`letterhead` (`WATERMARK_DOC_TYPES`) get the faint centered logo watermark via `wrapBody()`, independent of which header/footer treatment they use.
+`tds`/`msds`/`investor-report`/`letterhead` (`WATERMARK_DOC_TYPES`) get the faint centered logo watermark via `wrapBody()`. CoA embeds the same asset inside its full-page certificate body to match the frontend Print view.
 
 When adding a doc type to any of these sets, verify the other doc types still render byte-identical to before.
 
@@ -98,9 +98,12 @@ so this is a read composition, not a new data source. `buildInvestorReportContex
   component's wording or thresholds change, mirror the change here too.
 - Precomputes `barPct` (0–100) on each ranked/trend row for the CSS-only bar visuals in
   the template, since Handlebars has no arithmetic beyond the `multiply` helper.
-- Does **not** compute "Receivables" — this system has no accounting/invoicing layer
-  (see root `CLAUDE.md`); the report shows `kpis.pendingOrderValue` labeled "Pending
-  Order Value" instead, same as the on-screen dashboard.
+- Does **not** compute "Receivables"; the report shows `kpis.pendingOrderValue` labeled
+  "Pending Order Value" instead, same as the on-screen dashboard.
+- Since Nov 2026 the payload's sales/revenue figures are Zoho invoiced value before GST
+  (see `macrocoats-api/CLAUDE.md` → Investor Dashboard); the template's provenance note
+  and "Invoiced Sales" table headers say so. Order counts and pending order value are
+  still customer-PO figures.
 
 ## Product Brochure
 

@@ -3,23 +3,25 @@ import { products, productDocuments } from '../db/schema/index.js'
 
 // ── Product master data ────────────────────────────────────────────────────────
 export const PRODUCTS = [
-  { key: 'uniklean-sp',    displayName: 'UNIKLEAN-SP',    code: 'SP',  category: 'Alkaline Cleaner - Cast Iron',      subtitle: 'Industrial Surface Cleaner & Metal Conditioner',                  accentColor: '#1e6b5a' },
-  { key: 'uniklean-fe',    displayName: 'UNIKLEAN-FE',    code: 'FE',  category: 'Iron-based Cleaner',                subtitle: 'Iron Phosphating & Metal Conditioning Agent',                     accentColor: '#7a3a1a' },
-  { key: 'uniprotect-oil', displayName: 'UNIPROTECT OIL', code: 'UP',  category: 'Rust Preventive Oil',               subtitle: 'Water Displacing Rust Preventive',                                accentColor: '#1a4971' },
-  { key: 'uniflow-ecm',    displayName: 'UNIFLOW ECM',    code: 'ECM', category: 'Corrosion Preventive Oil',          subtitle: 'Corrosion Preventive Oil — Hydrocarbon + Petroleum Sulfonate',     accentColor: '#1a5c73' },
-  { key: 'unicool-al',      displayName: 'UNICOOL AL',      code: 'AL',  category: 'Alcohol Based Cleaner', subtitle: 'Fast-Drying Alcohol Cleaner — Cooling & Precision Cleaning Fluid', accentColor: '#1590c2' },
-  { key: 'unikoat-lt-700', displayName: 'UNIKOAT LT 700', code: 'LT',  category: 'Zinc Phosphating',      subtitle: 'Zinc Phosphating & Surface Conversion Agent',                     accentColor: '#4a6741' },
-  { key: 'unisolve-h3',    displayName: 'UNISOLVE H3',    code: 'H3',  category: 'Degreasing / Derusting Chemical', subtitle: 'Phosphoric Acid-Based Acidic Cleaner & Rust Remover',         accentColor: '#7a5c1a' },
-  { key: 'unipass',        displayName: 'UNIPASS',        code: 'PS',  category: 'Passivation Chemical',             subtitle: 'Post-treatment / Anti-corrosion Passivation',                   accentColor: '#2d6a6a' },
-  { key: 'uniktonner',    displayName: 'UNIKTONNER',    code: 'TN',  category: 'Tonnage Additive / Accelerator',   subtitle: 'Nitrite-Based Phosphating Accelerator Solution',                 accentColor: '#8b2500' },
-  { key: 'corroklean',   displayName: 'CORROKLEAN',   code: 'CK',  category: 'Alkaline Cleaner',                 subtitle: 'Heavy-Duty Alkaline Metal Cleaner & Degreaser',                   accentColor: '#2a5c7a' },
-  { key: 'corrcut-100',  displayName: 'CORRCUT 100',  code: 'CR',  category: 'Rust Preventive Oil',              subtitle: 'Light-Bodied Mineral Oil Based Rust Preventive',                  accentColor: '#4a2d5c' },
-  { key: 'corrucut-500', displayName: 'CORROCUT 500', code: 'CC',  category: 'Corrosion Preventive Fluid',       subtitle: 'Fast-Drying Dearomatized Hydrocarbon Rust Preventive',            accentColor: '#3d5a6e' },
-  { key: 'uniklean-sf',  displayName: 'UNIKLEAN-SF',  code: 'SF',  category: 'Industrial Cleaner',               subtitle: 'Low-Foam Heavy Duty Alkaline Cleaner Concentrate',                accentColor: '#1c7a6e' },
-  { key: 'corrcut-200',  displayName: 'CORRCUT 200',  code: 'C2',  category: 'Rust Preventive Oils',             subtitle: 'Ordinary Solvent-Based Rust Preventive Oil',                      accentColor: '#8a4a2d' },
-  { key: 'unicut-al',    displayName: 'UNICUT-AL',    code: 'CA',  category: 'Metal Working Fluid',              subtitle: 'Semi-Synthetic Cutting & Grinding Coolant — Water Dilutable Metalworking Fluid', accentColor: '#2f6f91' },
-  { key: 'uniklean-cu', displayName: 'UNIKLEAN-CU', code: 'CU', category: 'Alkaline Cleaner', subtitle: 'Industrial Alkaline Cleaning Concentrate', accentColor: '#6b6b6b' },
-  { key: 'unikbrightner', displayName: 'UNIKBRIGHTNER', code: 'UB', category: 'Metal Brightening Chemical', subtitle: 'Metal Brightening Concentrate (10× Concentrate)', accentColor: '#c17817' },
+  { key: 'uniklean-sp', displayName: 'UNIKLEAN-SP', code: 'SP', category: 'Alkaline Cleaner - Cast Iron', subtitle: 'Industrial Surface Cleaner & Metal Conditioner', accentColor: '#1e6b5a', defaultProcessTags: ['cleaning', 'degreasing'] },
+  { key: 'uniklean-fe', displayName: 'UNIKLEAN-FE', code: 'FE', category: 'Iron-based Cleaner', subtitle: 'Iron Phosphating & Metal Conditioning Agent', accentColor: '#7a3a1a', defaultProcessTags: ['cleaning', 'phosphating'] },
+  { key: 'uniprotect-oil', displayName: 'UNIPROTECT OIL', code: 'UP', category: 'Rust Preventive Oil', subtitle: 'Water Displacing Rust Preventive', accentColor: '#1a4971', defaultProcessTags: ['rust_preventive_oil'] },
+  { key: 'uniflow-ecm', displayName: 'UNIFLOW ECM', code: 'ECM', category: 'Corrosion Preventive Oil', subtitle: 'Corrosion Preventive Oil — Hydrocarbon + Petroleum Sulfonate', accentColor: '#1a5c73', defaultProcessTags: ['rust_preventive_oil'] },
+  { key: 'unicool-al', displayName: 'UNICOOL AL', code: 'AL', category: 'Alcohol Based Cleaner', subtitle: 'Fast-Drying Alcohol Cleaner — Cooling & Precision Cleaning Fluid', accentColor: '#1590c2', defaultProcessTags: ['cleaning'] },
+  { key: 'unikoat-lt-700', displayName: 'UNIKOAT LT 700', code: 'LT', category: 'Zinc Phosphating', subtitle: 'Zinc Phosphating & Surface Conversion Agent', accentColor: '#4a6741', defaultProcessTags: ['phosphating'] },
+  { key: 'unisolve-h3', displayName: 'UNISOLVE H3', code: 'H3', category: 'Degreasing / Derusting Chemical', subtitle: 'Phosphoric Acid-Based Acidic Cleaner & Rust Remover', accentColor: '#7a5c1a', defaultProcessTags: ['degreasing', 'derusting'] },
+  { key: 'unipass', displayName: 'UNIPASS', code: 'PS', category: 'Passivation Chemical', subtitle: 'Post-treatment / Anti-corrosion Passivation', accentColor: '#2d6a6a', defaultProcessTags: ['passivation'] },
+  { key: 'uniktonner', displayName: 'UNIKTONNER', code: 'TN', category: 'Tonnage Additive / Accelerator', subtitle: 'Nitrite-Based Phosphating Accelerator Solution', accentColor: '#8b2500', defaultProcessTags: ['phosphating', 'process_additive'] },
+  { key: 'corroklean', displayName: 'CORROKLEAN', code: 'CK', category: 'Alkaline Cleaner', subtitle: 'Heavy-Duty Alkaline Metal Cleaner & Degreaser', accentColor: '#2a5c7a', defaultProcessTags: ['cleaning', 'degreasing'] },
+  { key: 'corrcut-100', displayName: 'CORRCUT 100', code: 'CR', category: 'Rust Preventive Oil', subtitle: 'Light-Bodied Mineral Oil Based Rust Preventive', accentColor: '#4a2d5c', defaultProcessTags: ['rust_preventive_oil'] },
+  { key: 'corrucut-500', displayName: 'CORROCUT 500', code: 'CC', category: 'Corrosion Preventive Fluid', subtitle: 'Fast-Drying Dearomatized Hydrocarbon Rust Preventive', accentColor: '#3d5a6e', defaultProcessTags: ['rust_preventive_oil'] },
+  { key: 'uniklean-sf', displayName: 'UNIKLEAN-SF', code: 'SF', category: 'Industrial Cleaner', subtitle: 'Low-Foam Heavy Duty Alkaline Cleaner Concentrate', accentColor: '#1c7a6e', defaultProcessTags: ['cleaning', 'degreasing'] },
+  { key: 'corrcut-200', displayName: 'CORRCUT 200', code: 'C2', category: 'Rust Preventive Oils', subtitle: 'Ordinary Solvent-Based Rust Preventive Oil', accentColor: '#8a4a2d', defaultProcessTags: ['rust_preventive_oil'] },
+  { key: 'unicut-al', displayName: 'UNICUT-AL', code: 'CA', category: 'Metal Working Fluid', subtitle: 'Semi-Synthetic Cutting & Grinding Coolant — Water Dilutable Metalworking Fluid', accentColor: '#2f6f91', defaultProcessTags: ['metalworking'] },
+  { key: 'uniklean-cu', displayName: 'UNIKLEAN-CU', code: 'CU', category: 'Alkaline Cleaner', subtitle: 'Industrial Alkaline Cleaning Concentrate', accentColor: '#6b6b6b', defaultProcessTags: ['cleaning', 'degreasing'] },
+  { key: 'unikbrightner', displayName: 'UNIKBRIGHTNER', code: 'UB', category: 'Metal Brightening Chemical', subtitle: 'Metal Brightening Concentrate (10× Concentrate)', accentColor: '#c17817', defaultProcessTags: ['metal_brightening'] },
+  { key: 'unikstrip-hd', displayName: 'UNIKSTRIP-HD', code: 'SH', category: 'Paint Remover', subtitle: 'Benzyl Alcohol Paint Remover — Heavy-Duty Paint Stripping from Mild Steel', accentColor: '#7a2f4f', defaultProcessTags: ['paint_stripping'] },
+  { key: 'uni-dunk-oil', displayName: 'UNI-DUNK OIL', code: 'UD', category: 'Dunking Oil', subtitle: 'Solvent-Based Dunking Oil — Post-Machining Cleaning & Temporary Protection', accentColor: '#5a6b2d', defaultProcessTags: ['cleaning'] },
 ]
 
 // ── Document data ──────────────────────────────────────────────────────────────
@@ -4652,11 +4654,11 @@ export const DOCS: Array<{
     },
     body: {
       grade:       'Industrial Grade — Metal Brightening Concentrate (10× Concentrate)',
-      description: 'UNIKBRIGHTNER is a 10× concentrated metal brightening formulation combining an organic-acid brightening/chelating agent with a peroxide-type oxidising agent in a de-mineralised water carrier. It is intended to be diluted to a working strength prior to use for chemical brightening / oxide-film removal on metal surfaces. Physical performance data for the finished concentrate has not yet been generated in-house; values below are marked accordingly pending laboratory characterisation.',
+      description: 'UNIKBRIGHTNER is a 10× concentrated metal brightening formulation combining an organic-acid brightening/chelating agent with an oxidising agent in a de-mineralised water carrier. It is intended to be diluted to a working strength prior to use for chemical brightening / oxide-film removal on metal surfaces. Physical performance data for the finished concentrate has not yet been generated in-house; values below are marked accordingly pending laboratory characterisation.',
       sections: {
         features: [
           { head: 'Organic-Acid Based Brightening',    body: 'Mild organic-acid brightening/chelating action, avoiding the aggressive mineral-acid attack of stronger acid systems.' },
-          { head: 'Oxidiser-Assisted Oxide Removal',   body: 'A peroxide-type oxidising agent provides an oxidising boost to assist removal of light oxide/scale films.' },
+          { head: 'Oxidiser-Assisted Oxide Removal',   body: 'An oxidising agent provides an oxidising boost to assist removal of light oxide/scale films.' },
           { head: '10× Concentrate',                   body: 'Supplied as a 10× concentrate for dilution to working strength at the point of use, reducing packaging and freight volume.' },
         ],
         physicalProperties: [
@@ -4668,7 +4670,7 @@ export const DOCS: Array<{
         ],
         composition: [
           { name: 'Organic Acid (Brightening Agent)',   function: 'Brightening / chelating acid',      percent: '20.0% w/v', compat: '—' },
-          { name: 'Oxidising Agent (Peroxide-Type)',    function: 'Oxidising brightening agent',       percent: '3.35% v/v', compat: '—' },
+          { name: 'Oxidising Agent',                    function: 'Oxidising brightening agent',       percent: '3.35% v/v', compat: '—' },
           { name: 'DM Water',                            function: 'Diluent / carrier',                 percent: '96.65% v/v', compat: '—' },
         ],
         // Recommended UNIKLEAN-CU Process (brass/copper cleaning & brightening) — supplied process
@@ -4688,7 +4690,7 @@ export const DOCS: Array<{
           { label: 'Brightening Performance', val: 'Not yet characterized — pending lab/field testing' },
           { label: 'Oxide/Scale Removal',      val: 'Not yet characterized — pending lab/field testing' },
         ],
-        safetyNote: 'DANGER — contains a peroxide-type oxidising raw material that is a strong oxidiser and corrosive. Refer to SDS-UB-001 for full hazard information before handling.',
+        safetyNote: 'DANGER — contains an oxidising raw material that is a strong oxidiser and corrosive. Refer to SDS-UB-001 for full hazard information before handling.',
       },
     },
   },
@@ -4708,7 +4710,7 @@ export const DOCS: Array<{
       signalWord: 'DANGER',
       sections: {
         identification: {
-          productType:  'Aqueous organic-acid / peroxide-type metal brightening concentrate (10×)',
+          productType:  'Aqueous organic-acid / oxidising metal brightening concentrate (10×)',
           intendedUse:  'Industrial metal brightening / oxide-film removal; diluted to working strength before use',
           manufacturer: 'Macro Coats Pvt Ltd, Chennai, Tamil Nadu, India',
           emergency:    'AIIMS Poison Control: 1800-11-6117 (Toll-Free)',
@@ -4728,7 +4730,7 @@ export const DOCS: Array<{
         composition: {
           ingredients: [
             { name: 'Organic Acid (Brightening Agent)',  description: 'Brightening / chelating acid',                percent: '15–25%', ghsClass: 'Eye Irritation Cat 2',                              tagType: 'warn' },
-            { name: 'Oxidising Agent (Peroxide-Type)',   description: 'Oxidising brightening agent (aqueous solution)', percent: '1–5%',   ghsClass: 'Oxidizing Liquid Cat 1 / Skin Corrosion Cat 1A',    tagType: 'danger' },
+            { name: 'Oxidising Agent',                   description: 'Oxidising brightening agent (aqueous solution)', percent: '1–5%',   ghsClass: 'Oxidizing Liquid Cat 1 / Skin Corrosion Cat 1A',    tagType: 'danger' },
             { name: 'DM Water',                  description: 'Diluent / carrier',                            percent: '70–90%', ghsClass: '—',                                                  tagType: 'safe' },
           ],
           note: 'Exact formulation ratios are proprietary. Functional ingredient descriptions and standard raw-material hazard classes are provided for safety and emergency purposes only.',
@@ -4755,10 +4757,10 @@ export const DOCS: Array<{
         ],
         handling: {
           handling:    'Avoid contact with skin and eyes. Avoid breathing vapours/mist. Keep away from combustible/organic materials and reducing agents. Use in a well-ventilated area.',
-          storageTemp: 'Below 30 °C; cool, dry, well-ventilated area, protected from direct sunlight and heat sources — standard precaution for a peroxide-containing oxidiser (from the oxidising raw material), which decomposes faster at elevated temperature. Not lab-verified for this specific formulation.',
+          storageTemp: 'Below 30 °C; cool, dry, well-ventilated area, protected from direct sunlight and heat sources — standard precaution for an oxidising component, which decomposes faster at elevated temperature. Not lab-verified for this specific formulation.',
           containers:  'HDPE jerrycans or equivalent oxidiser-compatible containers; keep tightly closed when not in use',
           segregation: 'Store separately from combustible/organic materials, reducing agents and reactive metals',
-          shelfLife:   'TBD — depends on the peroxide component\'s decomposition rate under actual storage conditions, which requires real stability testing and cannot be derived from the formula composition alone; pending QA stability data',
+          shelfLife:   'TBD — depends on the oxidising component\'s decomposition rate under actual storage conditions, which requires real stability testing and cannot be derived from the formula composition alone; pending QA stability data',
         },
         exposure: {
           ppeItems:    ['Safety Goggles / Face Shield', 'Acid-Resistant Gloves', 'Protective Apron', 'Respirator if vapours exceed exposure limits'],
@@ -4891,6 +4893,576 @@ export const DOCS: Array<{
     },
   },
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // UNIKSTRIP-HD — supplied laboratory preparation method (2.857 kg trial batch).
+  // Contains no corrosion inhibitor and is for controlled laboratory evaluation
+  // only, so every document stays 'draft'. Hazard classification is calculated
+  // from typical raw-material data (formic acid 5% × 85% = 4.25% active) and
+  // specific gravity from component densities; neither is lab-measured.
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    productKey: 'unikstrip-hd',
+    docType:    'tds',
+    docNumber:  'TDS-USH-001',
+    revision:   'Rev 01 — Oct 2026',
+    status:     'draft',
+    footer: {
+      left:   'TDS-USH-001 Rev 01 · Oct 2026',
+      center: 'This Technical Data Sheet is for guidance only. Laboratory evaluation formulation — not released for production use. © Macro Coats Pvt Ltd',
+      right:  'Macro Coats Pvt Ltd · Chennai · India\nPage 1 of 1',
+    },
+    body: {
+      grade:       'Laboratory Evaluation Grade — Heavy-Duty Paint Remover',
+      description: 'UNIKSTRIP-HD is a solvent-based, aromatic alcohol paint remover for heavy-duty paint stripping from mild steel, activated with an organic acid and supported by a glycol ether co-solvent and a non-ionic surfactant. It is used as supplied by immersion at ambient temperature. This formulation contains no corrosion inhibitor and is intended only for controlled laboratory evaluation, not production use.',
+      sections: {
+        features: [
+          { head: 'Aromatic Alcohol Solvent System', body: 'Aromatic alcohol solvent with a glycol ether co-solvent to soften and lift coatings.' },
+          { head: 'Acid Activated',                body: 'An organic acid activator is included to assist coating penetration.' },
+          { head: 'Ambient Temperature Use',       body: 'Used at 25–30 °C without external heating.' },
+        ],
+        physicalProperties: [
+          { property: 'Appearance',             value: 'Homogeneous liquid',  unit: '—',    method: 'Preliminary requirement — visual; pending lab confirmation' },
+          { property: 'Specific Gravity @ 25 °C', value: '1.01 – 1.02',       unit: '—',    method: 'Calculated — from component densities; not lab-measured' },
+          { property: 'Phase Separation',       value: 'None after 24 hours', unit: '—',    method: 'Preliminary requirement — visual after 24 h standing; pending lab confirmation' },
+          { property: 'Working Concentration',  value: 'As supplied',         unit: '—',    method: 'Used neat by immersion' },
+          { property: 'Reference Batch Size',   value: '2.857',               unit: 'kg',   method: 'As supplied — laboratory batch, approximately 2.8 L' },
+        ],
+        composition: [
+          { name: 'Aromatic Alcohol Solvent',    function: 'Primary paint-stripping solvent', percent: '60–80% w/w', compat: 'Mild steel' },
+          { name: 'Glycol Ether Co-Solvent',     function: 'Co-solvent / coupling agent',     percent: '10–30% w/w', compat: 'Mild steel' },
+          { name: 'Organic Acid (aqueous)',      function: 'Stripping activator',             percent: '1–10% w/w',  compat: 'Not for aluminium or galvanised steel' },
+          { name: 'Non-Ionic Surfactant',        function: 'Wetting agent',                   percent: '1–5% w/w',   compat: 'Mild steel' },
+          { name: 'DM Water',                    function: 'Carrier',                         percent: '1–5% w/w',   compat: '—' },
+        ],
+        application: [
+          { step: '1', name: 'Sample Preparation', param: 'Cut a small sample from the coated steel component', value: 'Evaluate on a sample before committing a full component.' },
+          { step: '2', name: 'Immersion',          param: 'Immerse the sample in the stripper at 25–30 °C',     value: 'Do not apply external heat.' },
+          { step: '3', name: 'Inspection',         param: 'Inspect at 30 minutes; continue to 60 and 120 minutes if necessary', value: 'Check whether the coating has softened or lifted.' },
+          { step: '4', name: 'Paint Removal',      param: 'Remove the sample and mechanically remove loosened paint', value: 'Inspect the steel surface for etching.' },
+        ],
+        packaging: [],
+        performance: [
+          { label: 'Stripping Efficiency', val: 'Not yet characterized — evaluate at 30, 60 and 120 minutes' },
+          { label: 'Steel Corrosion',      val: 'Not yet characterized — no unacceptable etching required on test coupon' },
+        ],
+        safetyNote: 'WARNING — harmful if swallowed or inhaled; causes skin and serious eye irritation. Contains no corrosion inhibitor. Do not use on aluminium or galvanised steel. Refer to SDS-USH-001 before handling.',
+      },
+    },
+  },
+
+  {
+    productKey: 'unikstrip-hd',
+    docType:    'msds',
+    docNumber:  'SDS-USH-001',
+    revision:   'Rev 01 — Oct 2026',
+    status:     'draft',
+    footer: {
+      left:   'SDS-USH-001 Rev 01 · Oct 2026',
+      center: 'This Safety Data Sheet is provided in good faith based on current knowledge. © Macro Coats Pvt Ltd',
+      right:  'Macro Coats Pvt Ltd · Chennai · India\nGHS Rev 9 Compliant · Page 1 of 1',
+    },
+    body: {
+      signalWord: 'WARNING',
+      sections: {
+        identification: {
+          productType:  'Solvent-based aromatic alcohol paint remover with organic acid activator',
+          intendedUse:  'Controlled laboratory evaluation of heavy-duty paint stripping from mild steel. Not for production use.',
+          manufacturer: 'Macro Coats Pvt Ltd, Chennai, Tamil Nadu, India',
+          emergency:    'AIIMS Poison Control: 1800-11-6117 (Toll-Free)',
+        },
+        hazards: {
+          pictograms:      ['irritant'],
+          classifications: [
+            { class: 'Acute Toxicity (Oral)',      category: 'Cat 4', tagType: 'warn' },
+            { class: 'Acute Toxicity (Inhalation)', category: 'Cat 4', tagType: 'warn' },
+            { class: 'Skin Irritation',            category: 'Cat 2', tagType: 'warn' },
+            { class: 'Serious Eye Irritation',     category: 'Cat 2', tagType: 'warn' },
+            { class: 'STOT — Single Exposure',     category: 'Cat 3', tagType: 'warn' },
+          ],
+          hStatements: 'H302 + H332 — Harmful if swallowed or if inhaled. H315 — Causes skin irritation. H319 — Causes serious eye irritation. H335 — May cause respiratory irritation. Calculated from typical raw-material classifications; a formal GHS classification against supplier SDS and measured data has not yet been performed.',
+          pStatements: 'P261 · P264 · P270 · P271 · P280 · P301+P312 · P302+P352 · P304+P340 · P305+P351+P338 · P332+P313 · P337+P313 · P403+P233 · P501',
+        },
+        composition: {
+          ingredients: [
+            { name: 'Aromatic Alcohol Solvent', description: 'Primary paint-stripping solvent', ghsClass: 'Acute Tox. 4 / Eye Irritation Cat 2',                  tagType: 'warn' },
+            { name: 'Glycol Ether Co-Solvent',  description: 'Co-solvent / coupling agent',     ghsClass: 'Acute Tox. 4 / Skin & Eye Irritation Cat 2',           tagType: 'warn' },
+            { name: 'Organic Acid (85% aqueous)', description: 'Stripping activator',           ghsClass: 'Skin Corrosion Cat 1B / Acute Tox. 3 (raw material)',  tagType: 'danger' },
+            { name: 'Non-Ionic Surfactant',     description: 'Wetting agent',                   ghsClass: 'Serious Eye Damage Cat 1 (raw material)',              tagType: 'danger' },
+            { name: 'DM Water',                 description: 'Carrier',                         ghsClass: '—',                                                    tagType: 'safe' },
+          ],
+          note: 'Exact formulation ratios are proprietary. Functional ingredient descriptions and standard raw-material hazard classes are provided for safety and emergency purposes only.',
+        },
+        firstAid: {
+          skin:       'Remove contaminated clothing. Wash affected area with plenty of soap and water. Seek medical attention if irritation persists.',
+          eyes:       'Rinse cautiously with water for at least 15 minutes. Remove contact lenses if present and easy to do. Continue rinsing. Seek medical attention if irritation persists.',
+          ingestion:  'Rinse mouth with water. Do not induce vomiting. Call a poison center or doctor if you feel unwell.',
+          inhalation: 'Remove to fresh air and keep at rest in a position comfortable for breathing. Call a poison center or doctor if you feel unwell.',
+        },
+        fireFighting: {
+          flammability:       'Flash point not yet measured. Treat as a combustible liquid until tested.',
+          extinguishingMedia: 'Water spray/fog, alcohol-resistant foam, dry chemical or CO₂.',
+          fireHazard:         'May release irritating vapours and carbon oxides on heating or combustion.',
+          ppe:                'Self-contained breathing apparatus (SCBA) and full protective clothing for firefighters.',
+        },
+        accidentalRelease: [
+          'Evacuate non-essential personnel and ventilate the area',
+          'Remove ignition sources',
+          'Wear appropriate PPE (chemical-resistant gloves, goggles/face shield, apron) before attempting cleanup',
+          'Contain spill to prevent entry into drains, waterways or soil',
+          'Absorb with inert absorbent material and collect into suitable containers',
+          'Dispose of collected material per CPCB/SPCB guidelines',
+        ],
+        handling: {
+          handling:    'Use a compatible, ventilated mixing system with chemical splash protection. Avoid contact with skin and eyes and avoid breathing vapours. Do not apply external heat. Consult raw-material SDS before manufacturing.',
+          storageTemp: 'Ambient; cool, well-ventilated area, protected from direct sunlight and heat sources. Not lab-verified for this formulation.',
+          containers:  'Chemically compatible, tightly closed containers. Do not use aluminium, galvanised steel or incompatible seals. Container material pending compatibility confirmation.',
+          segregation: 'Store away from oxidisers, strong bases, reactive metals and ignition sources',
+          shelfLife:   'TBD — pending QA stability data',
+        },
+        exposure: {
+          ppeItems:    ['Safety Goggles / Face Shield', 'Chemical-Resistant Gloves', 'Protective Apron', 'Respirator if ventilation is inadequate'],
+          engineering: 'Use with local exhaust ventilation. Eyewash station and safety shower should be available within the work area.',
+        },
+        physical: [
+          { key: 'Appearance',               val: 'Homogeneous liquid — preliminary requirement; pending lab confirmation' },
+          { key: 'Specific Gravity @ 25 °C', val: '1.01 – 1.02 (calculated; not lab-measured)' },
+          { key: 'Flash Point',              val: 'Not yet measured' },
+          { key: 'pH',                       val: 'Not yet measured' },
+        ],
+        stability: {
+          stability:      'Long-term stability not yet tested. Observe for cloudiness or phase separation.',
+          avoid:          'Heat, ignition sources, aluminium, galvanised steel, incompatible seals, oxidisers, strong bases',
+          decomposition:  'Carbon oxides and irritating vapours on heating or combustion.',
+          polymerisation: 'Will not occur',
+        },
+        sections11to16: {
+          'Skin / Eye': 'Causes skin and serious eye irritation — flush with water if contact occurs, per First Aid section. Harmful if swallowed or inhaled; may cause respiratory irritation.',
+          Aquatic:      'Not yet assessed for aquatic toxicity — treat as potentially harmful and avoid discharge to drains or watercourses.',
+          Disposal:     'Do not discharge to drains. Dispose of via licensed waste contractor per CPCB/SPCB norms (E.P. Act 1986).',
+          Transport:    'UN number and transport classification not yet determined — pending flash point and corrosivity testing.',
+          Regulatory:   'MSIHC Rules 1989 · Factories Act 1948 · Hazardous Waste Rules 2016 · GHS Rev 9',
+          'Other Info': 'SDS Rev 01 issued Oct 2026 — draft for laboratory evaluation, based on typical raw-material hazard data. Next review: upon formal finished-product GHS classification.',
+        },
+      },
+    },
+  },
+
+  {
+    productKey: 'unikstrip-hd',
+    docType:    'formula',
+    docNumber:  'FRM-USH-001',
+    revision:   'Rev 01 — Oct 2026',
+    status:     'draft',
+    footer: {
+      left:   'FRM-USH-001 Rev 01 · Oct 2026',
+      center: 'CONFIDENTIAL — This formulation sheet is the proprietary information of Macro Coats Pvt Ltd. Unauthorised reproduction or disclosure is prohibited.',
+      right:  'Macro Coats Pvt Ltd · Chennai · India\nPage 1 of 1',
+    },
+    body: {
+      classification:     'CONFIDENTIAL — Internal Use Only',
+      batchSize:          '100 kg (reference) · laboratory batch 2.857 kg',
+      formulaType:        'liquid',
+      referenceBatchSize: 100,
+      batchUnit:          'kg',
+      totalActivePercent: 97,
+      overview: 'UNIKSTRIP-HD is a benzyl alcohol paint remover for heavy-duty paint stripping from mild steel, with butyl glycol as co-solvent, formic acid (85%) as activator, LAE-7 as wetting agent and DM water, on a % w/w basis. This formulation contains 5% formic acid and no corrosion inhibitor; it is intended only for controlled laboratory evaluation, not production use. Test a lower-acid variant before committing the entire batch. Mixing times are preliminary laboratory guidelines, not validated process specifications.',
+      composition: [
+        { srNo: 1, name: 'Benzyl Alcohol',    casNo: '100-51-6',  baseQty: 70, unit: 'kg', percentWV: 70, function: 'Primary paint-stripping solvent',    density: 1.045, unitPrice: 0   },
+        { srNo: 2, name: 'Butyl Glycol',      casNo: '111-76-2',  baseQty: 20, unit: 'kg', percentWV: 20, function: 'Co-solvent / coupling agent (EGBE)', density: 0.902, unitPrice: 240 },
+        { srNo: 3, name: 'LAE-7',             casNo: '9002-92-0', baseQty: 2,  unit: 'kg', percentWV: 2,  function: 'Non-ionic surfactant — wetting agent', density: 0.95,  unitPrice: 0   },
+        { srNo: 4, name: 'DM Water',          casNo: '7732-18-5', baseQty: 3,  unit: 'kg', percentWV: 3,  function: 'Carrier',                            density: 1.0,   unitPrice: 0   },
+        { srNo: 5, name: 'Formic Acid (85%)', casNo: '64-18-6',   baseQty: 5,  unit: 'kg', percentWV: 5,  function: 'Stripping activator — 85% aqueous grade', density: 1.195, unitPrice: 0 },
+      ],
+      preparation: [
+        { step: 1, title: 'Charge Benzyl Alcohol', detail: 'Charge benzyl alcohol (2,000 g per 2.857 kg batch) into a clean, dry, chemically compatible vessel. Mix 3 min at 200–400 RPM, adjusted to avoid splashing.' },
+        { step: 2, title: 'Add Butyl Glycol',      detail: 'Add butyl glycol (571 g) gradually while stirring. Mix 5 min.' },
+        { step: 3, title: 'Add LAE-7',             detail: 'Add LAE-7 (57 g) slowly and mix until uniformly dispersed. Mix 5 min.' },
+        { step: 4, title: 'Add DM Water',          detail: 'Add DM water (86 g) gradually; observe for cloudiness or separation. Mix 5 min.' },
+        { step: 5, title: 'Add Formic Acid (85%)', detail: 'Add formic acid 85% (143 g) slowly under controlled agitation and temperature monitoring. Mix 5–10 min. Stop addition if excessive heating, unexpected fumes or phase separation occurs.' },
+        { step: 6, title: 'Final Mixing',          detail: 'Mix until homogeneous; check appearance and temperature. Mix 15 min.' },
+      ],
+      operatingConditions: [
+        { param: 'Preparation Temperature', value: '25–30 °C — no external heat' },
+        { param: 'Mixing',                  value: 'Mechanical stirrer, approximately 200–400 RPM, adjusted to avoid splashing' },
+        { param: 'Vessel & Seals',          value: 'No aluminium, galvanised steel or incompatible seals in contact with the mixture' },
+        { param: 'Ventilation',             value: 'Compatible, ventilated mixing system with chemical splash protection' },
+      ],
+      applications: {
+        removes:    ['Paint coatings'],
+        usedBefore: [],
+      },
+    },
+  },
+
+  {
+    productKey: 'unikstrip-hd',
+    docType:    'label',
+    docNumber:  'LBL-USH-001',
+    revision:   'Rev 01 — Oct 2026',
+    status:     'draft',
+    footer: { left: '', center: '', right: '' },
+    body: {
+      signalWord: 'WARNING',
+      unNo: 'TBD',
+      hCodes: [
+        { code: 'H302', text: 'Harmful if swallowed' },
+        { code: 'H332', text: 'Harmful if inhaled' },
+        { code: 'H315', text: 'Causes skin irritation' },
+        { code: 'H319', text: 'Causes serious eye irritation' },
+        { code: 'H335', text: 'May cause respiratory irritation' },
+      ],
+      pCodes: [
+        { code: 'P261',            text: 'Avoid breathing vapours.' },
+        { code: 'P271',            text: 'Use only outdoors or in a well-ventilated area.' },
+        { code: 'P280',            text: 'Wear protective gloves/protective clothing/eye protection/face protection.' },
+        { code: 'P301+P312',       text: 'IF SWALLOWED: Call a POISON CENTER/doctor if you feel unwell.' },
+        { code: 'P302+P352',       text: 'IF ON SKIN: Wash with plenty of water.' },
+        { code: 'P305+P351+P338', text: 'IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.' },
+      ],
+      firstAid: {
+        skin:       'Remove contaminated clothing. Wash affected area with plenty of soap and water. Seek medical attention if irritation persists.',
+        eyes:       'Rinse cautiously with water for at least 15 minutes. Remove contact lenses if present and easy to do. Continue rinsing. Seek medical attention if irritation persists.',
+        ingestion:  'Rinse mouth with water. Do not induce vomiting. Call a poison center or doctor if you feel unwell.',
+        inhalation: 'Remove to fresh air and keep at rest in a position comfortable for breathing. Call a poison center or doctor if you feel unwell.',
+      },
+      directions: [
+        'For controlled laboratory evaluation only — not for production use.',
+        'Use as supplied by immersion at 25–30 °C. Do not apply external heat.',
+        'Inspect at 30 minutes; continue to 60 and 120 minutes if necessary.',
+        'Mechanically remove loosened paint and inspect the steel surface.',
+        'Do not use on aluminium or galvanised steel.',
+      ],
+      storage:  ['Store in a cool, well-ventilated location away from direct sunlight and heat sources.', 'Keep container tightly closed.', 'Do not store in aluminium or galvanised steel containers.'],
+      products: ['UNIKSTRIP-HD'],
+    },
+  },
+
+  {
+    productKey: 'unikstrip-hd',
+    docType:    'coa',
+    docNumber:  'COA-USH-001',
+    revision:   'Draft — pending batch data',
+    status:     'draft',
+    footer: {
+      left:   'COA-USH-001 Draft',
+      center: 'CONFIDENTIAL — Placeholder Certificate of Analysis · Macro Coats Pvt Ltd',
+      right:  'Macro Coats Pvt Ltd · Chennai · India',
+    },
+    body: {
+      batchNumber:    'TBD',
+      batchSize:      'TBD',
+      productionDate: 'TBD',
+      expiryDate:     'TBD',
+      grade:          'Laboratory Evaluation Grade',
+      appearance:     'TBD',
+      tests: [
+        { parameter: 'Appearance',               method: 'Visual',                                  specification: 'Homogeneous liquid',                result: 'TBD', status: 'Pending' },
+        { parameter: 'Specific Gravity @ 25 °C', method: 'TBD',                                     specification: 'Approximately 1.01–1.02 (calculated)', result: 'TBD', status: 'Pending' },
+        { parameter: 'Phase Separation',         method: 'Visual after 24 hours',                   specification: 'None after 24 hours',               result: 'TBD', status: 'Pending' },
+        { parameter: 'Temperature After Mixing', method: 'Temperature check',                       specification: 'Return to ambient',                 result: 'TBD', status: 'Pending' },
+        { parameter: 'Steel Corrosion',          method: 'Test coupon',                             specification: 'No unacceptable etching',           result: 'TBD', status: 'Pending' },
+        { parameter: 'Stripping Efficiency',     method: 'Immersion trial at 30, 60 and 120 minutes', specification: 'Report result',                   result: 'TBD', status: 'Pending' },
+      ],
+      statement: 'Placeholder Certificate of Analysis for UNIKSTRIP-HD. Requirements are preliminary. No batch has been tested yet; this record will be populated once batch data is available.',
+      approvals: {
+        preparedBy: 'TBD',
+        reviewedBy: 'TBD',
+        approvedBy: 'TBD',
+      },
+    },
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // UNI-DUNK OIL
+  // Pilot-stage product: three grades (100 Economy / 200 Balanced / 300
+  // Protection) seeded as formulation variants. The base formula document is
+  // UNI-DUNK 200, the recommended starting grade. Performance figures are
+  // relative engineering expectations, flash point and SG are untested (SG is
+  // calculated from typical densities), so every document starts as 'draft'.
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    productKey: 'uni-dunk-oil',
+    docType:    'tds',
+    docNumber:  'TDS-UDK-001',
+    revision:   'Rev 01 — Nov 2026',
+    status:     'draft',
+    footer: {
+      left:   'TDS-UDK-001 Rev 01 · Nov 2026',
+      center: 'This Technical Data Sheet is for guidance only. Pilot formulation — performance figures are relative expectations pending cleaning and corrosion trials. © Macro Coats Pvt Ltd',
+      right:  'Macro Coats Pvt Ltd · Chennai · India\nPage 1 of 1',
+    },
+    body: {
+      grade:       'Industrial Grade — Pilot',
+      description: 'UNI-DUNK OIL is a solvent-based dunking oil for dipping machined steel and cast-iron components. A hydrocarbon solvent carrier flushes loose swarf and machining contaminants, while a mineral film oil and corrosion inhibitor leave a light residual oil film for temporary corrosion protection. Available in three grades — UNI-DUNK 100 (Economy, lightest film), UNI-DUNK 200 (Balanced) and UNI-DUNK 300 (Protection, heaviest film). The process removes loose particles only; it does not chemically remove attached burrs.',
+      sections: {
+        features: [
+          { head: 'Cleaning by Immersion',        body: 'Solvent-rich hydrocarbon carrier dissolves cutting oil residues and flushes loose swarf from machined components' },
+          { head: 'Temporary Protection',          body: 'A mineral film oil and corrosion inhibitor leave a residual oil film for inter-process rust protection' },
+          { head: 'Three Grades',                  body: 'UNI-DUNK 100 for high-volume cleaning with low residue; UNI-DUNK 200 for routine cleaning plus protection; UNI-DUNK 300 for a heavier protective film' },
+          { head: 'Ambient Operation',             body: 'Used as supplied at ambient temperature — no heating, no dilution' },
+        ],
+        physicalProperties: [
+          { property: 'Appearance',          value: 'Clear, homogeneous liquid',          unit: '—',    method: 'Visual' },
+          { property: 'Odour',               value: 'Mild solvent odour',                 unit: '—',    method: 'Organoleptic' },
+          { property: 'Base Type',           value: 'Solvent-based (hydrocarbon carrier)', unit: '—',    method: '—' },
+          { property: 'Specific Gravity (25 °C)', value: '≈ 0.79 – 0.81 (calculated)',   unit: '—',    method: 'To be measured' },
+          { property: 'pH',                  value: 'Not applicable',                     unit: '—',    method: '—' },
+          { property: 'Flash Point',         value: 'To be tested per formulation',       unit: '°C',   method: 'ASTM D93' },
+          { property: 'Water Content',       value: 'No free water',                      unit: '—',    method: 'Visual' },
+        ],
+        composition: [
+          { name: 'Hydrocarbon Carrier Solvent', function: 'Cleaning solvent — dissolves oil residues and flushes loose particles',          percent: '—', compat: 'Steel, cast iron' },
+          { name: 'Mineral Film Oil',            function: 'Non-volatile residual film oil for temporary protection',                         percent: '—', compat: 'Steel, cast iron' },
+          { name: 'Corrosion Inhibitor',         function: 'Polar corrosion inhibitor — adsorbs on the metal and aids water displacement',     percent: '—', compat: 'Ferrous' },
+        ],
+        application: [
+          { step: '1', name: 'Dip components',     param: 'Immersion at ambient temperature',                value: '2–5 min, subject to cleaning trials' },
+          { step: '2', name: 'Agitate',            param: 'Basket movement or solvent-compatible circulation', value: 'Throughout dip' },
+          { step: '3', name: 'Drain',              param: 'Allow excess oil to drain',                       value: 'Until dripping stops' },
+          { step: '4', name: 'Maintain bath',      param: 'Check for free water and contamination',          value: 'No free water; replace when heavily loaded' },
+        ],
+        packaging: [
+          { size: '35',  unit: 'L', type: 'HDPE jerrycan' },
+          { size: '210', unit: 'L', type: 'MS drum' },
+        ],
+        performance: [
+          { label: 'Oil Removal',              val: '100: highest · 200: high · 300: moderate–high (expected)' },
+          { label: 'Residual Oil Film',        val: '100: lightest · 200: medium · 300: heaviest' },
+          { label: 'Corrosion Protection',     val: '100: basic · 200: intermediate · 300: higher target — to be confirmed by humidity cabinet and storage tests' },
+          { label: 'Drainage',                 val: '100: fastest · 200: medium · 300: slowest (expected)' },
+          { label: 'Attached Burr Removal',    val: 'No' },
+          { label: 'Operating Temperature',    val: 'Ambient' },
+        ],
+        safetyNote: 'Flammable liquid — keep away from heat, sparks and open flames, and use flammable-solvent engineering controls. Aspiration hazard if swallowed. Refer to the current SDS (SDS-UDK-001) for full hazard information and PPE requirements.',
+      },
+    },
+  },
+
+  {
+    productKey: 'uni-dunk-oil',
+    docType:    'msds',
+    docNumber:  'SDS-UDK-001',
+    revision:   'Rev 01 — Nov 2026',
+    status:     'draft',
+    footer: {
+      left:   'SDS-UDK-001 Rev 01 · Nov 2026',
+      center: 'This Safety Data Sheet is provided in good faith based on current knowledge. Classification is calculated from ingredient data, pending flash point testing. © Macro Coats Pvt Ltd',
+      right:  'Macro Coats Pvt Ltd · Chennai · India\nGHS Rev 9 Compliant · Page 1 of 1',
+    },
+    body: {
+      signalWord: 'Danger',
+      sections: {
+        identification: {
+          productType:  'Solvent-based dunking oil (grades UNI-DUNK 100 / 200 / 300)',
+          intendedUse:  'Immersion cleaning of machined steel and cast-iron components to remove loose swarf and machining contaminants, leaving a light temporary protective oil film',
+          manufacturer: 'Macro Coats Pvt Ltd, Chennai, Tamil Nadu, India',
+          emergency:    'AIIMS Poison Control: 1800-11-6117 (Toll-Free)',
+        },
+        hazards: {
+          pictograms:      ['flammable', 'health', 'irritant', 'environment'],
+          classifications: [
+            { class: 'Flammable Liquid',           category: 'Cat 3', tagType: 'warn'   },
+            { class: 'Aspiration Hazard',          category: 'Cat 1', tagType: 'danger' },
+            { class: 'STOT Single Exposure',       category: 'Cat 3', tagType: 'warn'   },
+            { class: 'Aquatic Toxicity (Chronic)', category: 'Cat 2', tagType: 'warn'   },
+          ],
+          hStatements: 'H226 — Flammable liquid and vapour. H304 — May be fatal if swallowed and enters airways. H336 — May cause drowsiness or dizziness. H411 — Toxic to aquatic life with long lasting effects.',
+          pStatements: 'P210 · P233 · P261 · P271 · P273 · P280 · P301+P310 · P331 · P403+P235 · P501',
+        },
+        composition: {
+          ingredients: [
+            { name: 'Hydrocarbon Carrier Solvent',   description: 'Carrier / cleaning solvent — aliphatic petroleum distillate', ghsClass: 'Flammable / Aspiration Hazard', tagType: 'danger' },
+            { name: 'Mineral Film Oil',              description: 'Residual film oil',                                         ghsClass: 'Aspiration Hazard',             tagType: 'warn'   },
+            { name: 'Corrosion Inhibitor',           description: 'Corrosion inhibitor',                                     ghsClass: 'Irritant',                      tagType: 'warn'   },
+          ],
+          note: 'Exact formulation is proprietary. Functional ingredient descriptions are provided for safety and emergency purposes only.',
+        },
+        firstAid: {
+          eyes:       'Flush with water for ≥15 min. Seek medical attention if irritation persists.',
+          skin:       'Wash with soap and water. Remove contaminated clothing. Seek advice if irritation persists.',
+          inhalation: 'Move to fresh air and keep at rest. Seek medical attention if drowsiness or dizziness persists.',
+          ingestion:  'Do NOT induce vomiting — aspiration risk. Seek immediate medical attention.',
+          warning:    '⚠ Do NOT induce vomiting — low-viscosity hydrocarbons carry high aspiration risk into lungs.',
+        },
+        fireFighting: {
+          flammability:       'Flammable liquid — flash point to be confirmed by test (hydrocarbon carrier typically ≥ 38 °C)',
+          extinguishingMedia: 'CO₂, dry powder, foam. Do NOT use water jet on burning liquid.',
+          fireHazard:         'Vapours may form flammable mixtures with air. Thermal decomposition may generate CO, CO₂, sulphur oxides and hydrocarbon vapours.',
+          ppe:                'SCBA and full fire-resistant protective clothing.',
+        },
+        accidentalRelease: [
+          'Eliminate all ignition sources immediately — flammable vapour risk',
+          'Contain spill with inert absorbent material (sand, vermiculite)',
+          'Prevent entry into drains and waterways — toxic to aquatic organisms',
+          'Collect contaminated material into sealed, labelled containers',
+          'Dispose as petroleum waste per CPCB Hazardous Waste Management Rules 2016',
+        ],
+        handling: {
+          handling:     'Use at ambient temperature only — do not heat. Keep away from heat, sparks, open flames and all ignition sources. Use in well-ventilated areas with flammable-solvent engineering controls; earth dip tanks and containers.',
+          storageTemp:  '5 °C – 40 °C; cool, dry, well-ventilated area; away from heat sources and direct sunlight',
+          containers:   'Sealed HDPE or steel containers; keep tightly closed when not in use',
+          segregation:  'Store separately from oxidising agents, strong acids and strong alkalis; keep water out',
+          shelfLife:    '24 months from date of manufacture in original sealed containers',
+        },
+        exposure: {
+          ppeItems:    ['Safety Glasses', 'Nitrile Gloves', 'Apron', 'Closed-toe Shoes'],
+          engineering: 'Local exhaust ventilation over dip tanks. Avoid mist generation. Eyewash station within 10 s.',
+        },
+        physical: [
+          { key: 'Appearance',    val: 'Clear, homogeneous liquid' },
+          { key: 'Odour',         val: 'Mild solvent odour' },
+          { key: 'Flash Point',   val: 'To be tested (ASTM D93)' },
+          { key: 'Density',       val: '≈ 0.79 – 0.81 g/mL (calculated)' },
+          { key: 'pH',            val: 'Not applicable' },
+          { key: 'Solubility',    val: 'Insoluble in water' },
+          { key: 'Boiling Point', val: '> 140 °C (carrier solvent)' },
+          { key: 'Vapour Pres.',  val: 'Moderate at ambient temperature' },
+        ],
+        stability: {
+          stability:      'Stable under recommended storage conditions.',
+          avoid:          'Strong oxidising agents, heat, open flame, ignition sources, water contamination',
+          decomposition:  'Combustion may produce CO, CO₂, sulphur oxides and hydrocarbon fragments.',
+          polymerisation: 'Will not occur',
+        },
+        sections11to16: {
+          'Skin / Eye': 'Prolonged contact may defat and irritate skin. Vapours may cause drowsiness or dizziness.',
+          Aquatic:      'H411 — toxic to aquatic life with long lasting effects. Do not discharge to drains, waterways or soil.',
+          Disposal:     'Recover and recycle spent dunking oil where possible. Dispose via licensed waste contractor per CPCB/SPCB norms (E.P. Act 1986).',
+          Transport:    'UN 1268 — Petroleum distillates, n.o.s. · Class 3 · PG III (subject to flash point confirmation)',
+          Regulatory:   'MSIHC Rules 1989 · Factories Act 1948 · Hazardous Waste Rules 2016 · GHS Rev 9',
+          'Other Info': 'SDS Rev 01 issued Nov 2026 (draft — calculated classification). Next review: on completion of pilot testing or upon formulation change.',
+        },
+      },
+    },
+  },
+
+  {
+    productKey: 'uni-dunk-oil',
+    docType:    'formula',
+    docNumber:  'FRM-UDK-001',
+    revision:   'Rev 01 — Nov 2026',
+    status:     'draft',
+    footer: {
+      left:   'FRM-UDK-001 Rev 01 · Nov 2026',
+      center: 'CONFIDENTIAL — This formulation sheet is the proprietary information of Macro Coats Pvt Ltd. Unauthorised reproduction or disclosure is prohibited.',
+      right:  'Macro Coats Pvt Ltd · Chennai · India\nPage 1 of 1',
+    },
+    body: {
+      classification:     'CONFIDENTIAL — Internal Use Only',
+      batchSize:          '100 L (nominal)',
+      formulaType:        'liquid',
+      referenceBatchSize: 100,
+      batchUnit:          'L',
+      totalActivePercent: 100,
+      // Base sheet = UNI-DUNK 200 Balanced. Grades 100 (90/8/2) and 300 (80/15/5)
+      // are formulation variants (formulationVariants.seed.ts). Prices: MTO ₹109/L,
+      // LLP ₹172/L, sulfonate ₹203/kg × 0.95 kg/L assumed density = ₹192.85/L.
+      overview: 'UNI-DUNK 200 (Balanced) is the base grade of the UNI-DUNK OIL family — a solvent-based dunking oil of Mineral Turpentine Oil (MTO), Light Liquid Paraffin (LLP) and oil-soluble sodium petroleum sulfonate. MTO cleans and flushes loose swarf; LLP leaves a residual film; the sulfonate provides temporary corrosion inhibition. Quantities are nominal ingredient volumes — adjust MTO to final volume after mixing. Use an oil-soluble, low-water sulfonate grade and confirm its active matter, carrier oil, water content and density before production; the 2–5% dosage across grades is subject to pilot testing.',
+      composition: [
+        { srNo: 1, name: 'Mineral Turpentine Oil (MTO)', casNo: '8052-41-3',  baseQty: 85.0, unit: 'L', percentWV: 85.0, function: 'Cleaning / carrier solvent — dissolves machining oil residues, flushes loose swarf, then evaporates', density: 0.785, unitPrice: 109    },
+        { srNo: 2, name: 'Light Paraffinic Mineral Oil', casNo: '8042-47-5',  baseQty: 12.0, unit: 'L', percentWV: 12.0, function: 'Residual film oil (LLP) — non-volatile oil that carries the inhibitor as a light protective film',     density: 0.86,  unitPrice: 172    },
+        { srNo: 3, name: 'Sodium Petroleum Sulfonate',   casNo: '68608-26-4', baseQty: 3.0,  unit: 'L', percentWV: 3.0,  function: 'Corrosion inhibitor — polar sulfonate adsorbs on the metal for temporary rust protection',            density: 0.95,  unitPrice: 192.85 },
+      ],
+      preparation: [
+        { step: 1, title: 'Safety Setup',             detail: 'Use a clean, dry, solvent-compatible mixing tank. Eliminate all ignition sources, earth the vessel, and keep a Class B extinguisher accessible. Do not heat at any stage.' },
+        { step: 2, title: 'Charge MTO',               detail: 'Charge approximately 75–80% of the required MTO (64–68 L of 85 L) and start slow mechanical agitation.' },
+        { step: 3, title: 'Add LLP',                  detail: 'Add 12 L of Light Liquid Paraffin and mix for 10 minutes.' },
+        { step: 4, title: 'Add Sodium Sulfonate',     detail: 'Add 3 L of sodium petroleum sulfonate gradually, then continue mixing for 20–30 minutes.' },
+        { step: 5, title: 'Make Up Volume',           detail: 'Add the remaining MTO to the required finished volume.' },
+        { step: 6, title: 'QC Check and Fill',        detail: 'Check for haze, sediment and separation; confirm no free water. Measure specific gravity at 25 °C and test flash point. Filter and fill into labelled containers.' },
+      ],
+      operatingConditions: [
+        { param: 'Operating Temperature', value: 'Ambient' },
+        { param: 'Dip Time',              value: '2 – 5 min, subject to cleaning trials' },
+        { param: 'Agitation',             value: 'Basket movement or solvent-compatible circulation' },
+        { param: 'Draining',              value: 'Allow excess oil to drain' },
+        { param: 'Water Contamination',   value: 'No free water' },
+        { param: 'Corrosion Testing',     value: 'Humidity cabinet and storage exposure' },
+        { param: 'Cleaning Test',         value: 'Oil residue and particle-count comparison' },
+      ],
+      applications: {
+        removes:    ['Loose swarf and metal particles', 'Cutting oil and coolant residues', 'Machining contaminants'],
+        usedBefore: ['Inter-process storage', 'Inspection', 'Assembly staging', 'Packing of machined components'],
+      },
+    },
+  },
+
+  {
+    productKey: 'uni-dunk-oil',
+    docType:    'label',
+    docNumber:  'LBL-UDK-001',
+    revision:   'Rev 01 — Nov 2026',
+    status:     'draft',
+    footer: { left: '', center: '', right: '' },
+    body: {
+      signalWord: 'DANGER',
+      unNo: 'UN 1268',
+      hCodes: [
+        { code: 'H226', text: 'Flammable liquid and vapour' },
+        { code: 'H304', text: 'May be fatal if swallowed and enters airways' },
+        { code: 'H336', text: 'May cause drowsiness or dizziness' },
+        { code: 'H411', text: 'Toxic to aquatic life with long lasting effects' },
+      ],
+      pCodes: [
+        { code: 'P210',      text: 'Keep away from heat, sparks, open flames and hot surfaces. No smoking' },
+        { code: 'P261',      text: 'Avoid breathing vapours' },
+        { code: 'P273',      text: 'Avoid release to the environment' },
+        { code: 'P280',      text: 'Wear protective gloves and eye protection' },
+        { code: 'P301+P310', text: 'If swallowed, immediately call a doctor' },
+        { code: 'P331',      text: 'Do NOT induce vomiting' },
+        { code: 'P403+P235', text: 'Store in a well-ventilated place. Keep cool' },
+      ],
+      firstAid: {
+        skin:       'Wash with soap and water. Remove contaminated clothing.',
+        eyes:       'Flush with water for ≥15 min. Seek medical attention.',
+        ingestion:  'Do NOT induce vomiting. Seek immediate medical attention.',
+        inhalation: 'Move to fresh air. Seek medical attention if symptoms persist.',
+      },
+      directions: [
+        'Use as supplied at ambient temperature — do not heat or dilute',
+        'Dip components 2–5 min with basket movement or circulation',
+        'Allow excess oil to drain before storage or packing',
+        'Keep the bath free of water; does not remove attached burrs',
+      ],
+      storage:  ['Store at 5°C – 40°C', 'Keep away from heat and ignition sources', 'Keep container tightly closed', 'Dispose per CPCB regulations'],
+      products: ['UNI-DUNK 100', 'UNI-DUNK 200', 'UNI-DUNK 300'],
+    },
+  },
+
+  {
+    productKey: 'uni-dunk-oil',
+    docType:    'coa',
+    docNumber:  'COA-UDK-001',
+    revision:   'Draft — pending batch data',
+    status:     'draft',
+    footer: {
+      left:   'COA-UDK-001 Draft',
+      center: 'CONFIDENTIAL — Placeholder Certificate of Analysis · Macro Coats Pvt Ltd',
+      right:  'Macro Coats Pvt Ltd · Chennai · India',
+    },
+    body: {
+      batchNumber:    'TBD',
+      batchSize:      'TBD',
+      productionDate: 'TBD',
+      expiryDate:     'TBD',
+      grade:          'Industrial Grade — Pilot',
+      appearance:     'TBD',
+      tests: [
+        { parameter: 'Appearance',               method: 'Visual',               specification: 'Clear, homogeneous; no haze, sediment or separation', result: 'TBD', status: 'Pending' },
+        { parameter: 'Specific Gravity @ 25 °C', method: 'ISO 2811',             specification: 'Approximately 0.79–0.81 (calculated)',               result: 'TBD', status: 'Pending' },
+        { parameter: 'Free Water',               method: 'Visual',               specification: 'No free water',                                      result: 'TBD', status: 'Pending' },
+        { parameter: 'Flash Point',              method: 'ASTM D93',             specification: 'Report result',                                      result: 'TBD', status: 'Pending' },
+        { parameter: 'Corrosion Protection',     method: 'Humidity cabinet',     specification: 'Report result',                                      result: 'TBD', status: 'Pending' },
+      ],
+      statement: 'Placeholder Certificate of Analysis for UNI-DUNK OIL. Specifications are preliminary pending pilot batches. No batch has been tested yet; this record will be populated once batch data is available.',
+      approvals: {
+        preparedBy: 'TBD',
+        reviewedBy: 'TBD',
+        approvedBy: 'TBD',
+      },
+    },
+  },
+
 ]
 
 // ── Seed function ──────────────────────────────────────────────────────────────
@@ -4898,17 +5470,17 @@ export const DOCS: Array<{
 export async function seedProducts() {
   console.log('🌱 Seeding products and documents...')
 
-  // Insert products — skip if already exists
-  let productInserted = 0
+  // Synchronize product master classification while preserving all other fields.
+  let productSynced = 0
   for (const product of PRODUCTS) {
     const rows = await db
       .insert(products)
       .values(product)
-      .onConflictDoNothing()
+      .onConflictDoUpdate({ target: products.key, set: { defaultProcessTags: product.defaultProcessTags } })
       .returning({ key: products.key })
-    if (rows.length > 0) productInserted++
+    if (rows.length > 0) productSynced++
   }
-  console.log(`   ✅ Inserted ${productInserted} new products (${PRODUCTS.length - productInserted} already existed)`)
+  console.log(`   ✅ Synchronized process classification for ${productSynced} products`)
 
   // Insert documents — skip if already exists
   let docInserted = 0

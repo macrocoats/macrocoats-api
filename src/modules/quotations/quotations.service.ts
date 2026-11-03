@@ -1,4 +1,4 @@
-import { eq, like, desc, count, sql, inArray } from 'drizzle-orm'
+import { eq, like, desc, asc, and, count, sql, inArray, type SQL } from 'drizzle-orm'
 import { db } from '../../db/index.js'
 import { quotations, quotationLineItems, companies } from '../../db/schema/index.js'
 import { nextQuotNumber } from '../../utils/quotNumber.js'
@@ -98,9 +98,18 @@ async function loadCompanyNames(rows: { companyId: string | null }[]): Promise<M
 export async function listQuotations(query: ListQuotationsQuery) {
   const offset = (query.page - 1) * query.limit
 
-  const baseWhere = query.customerName
-    ? like(quotations.customerName, `%${query.customerName}%`)
-    : undefined
+  const conditions: SQL[] = []
+  if (query.customerName) conditions.push(like(quotations.customerName, `%${query.customerName}%`))
+  if (query.open) {
+    conditions.push(
+      sql`${quotations.quotDate} >= CURRENT_DATE - 90`,
+      sql`NOT EXISTS (
+        SELECT 1 FROM customer_purchase_orders o
+        WHERE o.reference_quotation_id = ${quotations.id} AND o.deleted_at IS NULL AND o.status != 'cancelled'
+      )`,
+    )
+  }
+  const baseWhere = conditions.length ? and(...conditions) : undefined
 
   const [{ total }] = await db
     .select({ total: count() })
@@ -111,7 +120,7 @@ export async function listQuotations(query: ListQuotationsQuery) {
     .select()
     .from(quotations)
     .where(baseWhere)
-    .orderBy(desc(quotations.createdAt))
+    .orderBy(query.open ? asc(quotations.quotDate) : desc(quotations.createdAt))
     .limit(query.limit)
     .offset(offset)
 

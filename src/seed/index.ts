@@ -7,6 +7,7 @@
 
 import { seedProducts }             from './products.seed.js'
 import { seedInventory }            from './inventory.seed.js'
+import { seedPackContainers }       from './packContainers.seed.js'
 import { seedCompanies }            from './companies.seed.js'
 import { seedFormulationVariants }  from './formulationVariants.seed.js'
 import { seedVariantDensities }     from './variantDensities.seed.js'
@@ -18,6 +19,7 @@ async function main() {
 
   await seedProducts()
   await seedInventory()
+  await seedPackContainers()
   await seedCompanies()
   await seedFormulationVariants()
   await seedVariantDensities()

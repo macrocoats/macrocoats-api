@@ -350,3 +350,65 @@ export async function getFinishedGoodsSummary() {
 
   return { finishedGoodsQuantity, partiallyDispatched, fullyDispatched, pendingDispatch, cancelled }
 }
+
+/** Trailing window used for the "average weekly dispatch" behind stock cover. */
+export const COVER_WINDOW_WEEKS = 8
+
+/**
+ * Finished goods per product line (Operations Center → Stock → Materials &
+ * finished goods). `inStock` = produced − dispatched, `reserved` = reserved
+ * quantity, `available` = inStock − reserved, over non-cancelled records.
+ * `avgWeeklyDispatch` = non-voided dispatch quantity of that product's
+ * batches over the last COVER_WINDOW_WEEKS weeks ÷ COVER_WINDOW_WEEKS, and
+ * `coverWeeks` = available ÷ avgWeeklyDispatch (null when nothing shipped).
+ * Quantities are in each batch's own unit (L or kg) — no density conversion.
+ */
+export async function getFinishedGoodsByProduct() {
+  const rows = await db.execute<{
+    [key: string]: unknown
+    productCode: string; inStock: string; reserved: string; dispatchedWindow: string; batchCount: string
+  }>(sql`
+    WITH stock AS (
+      SELECT product_code,
+             sum(produced_quantity - dispatched_quantity) AS in_stock,
+             sum(reserved_quantity)                      AS reserved,
+             count(*)                                    AS batch_count
+      FROM finished_goods
+      WHERE status <> 'Cancelled'
+      GROUP BY product_code
+    ),
+    shipped AS (
+      SELECT b.product_code, sum(d.quantity) AS dispatched_window
+      FROM dispatches d
+      JOIN batches b ON b.id = d.batch_id
+      WHERE d.voided_at IS NULL
+        AND d.dispatch_date >= (CURRENT_DATE - ${COVER_WINDOW_WEEKS * 7}::int)
+      GROUP BY b.product_code
+    )
+    SELECT coalesce(s.product_code, sh.product_code) AS "productCode",
+           coalesce(s.in_stock, 0)                   AS "inStock",
+           coalesce(s.reserved, 0)                   AS "reserved",
+           coalesce(sh.dispatched_window, 0)         AS "dispatchedWindow",
+           coalesce(s.batch_count, 0)                AS "batchCount"
+    FROM stock s
+    FULL OUTER JOIN shipped sh ON sh.product_code = s.product_code
+  `)
+
+  const products = rows.map((r) => {
+    const inStock = Number(r.inStock)
+    const reserved = Number(r.reserved)
+    const available = inStock - reserved
+    const avgWeeklyDispatch = Number(r.dispatchedWindow) / COVER_WINDOW_WEEKS
+    return {
+      productCode: r.productCode,
+      inStock,
+      reserved,
+      available,
+      avgWeeklyDispatch,
+      coverWeeks: avgWeeklyDispatch > 0 ? available / avgWeeklyDispatch : null,
+      batchCount: Number(r.batchCount),
+    }
+  }).sort((a, b) => b.available - a.available)
+
+  return { windowWeeks: COVER_WINDOW_WEEKS, products }
+}

@@ -1,19 +1,84 @@
 import { sql, type SQL } from 'drizzle-orm'
 import { db } from '../../db/index.js'
+import { companies, products } from '../../db/schema/index.js'
 import { getProfitability } from '../cost-intelligence/cost-intelligence.service.js'
+import { listInvoicesWithDetails } from '../customer-supply/customer-supply.service.js'
+import { isZohoConfigured } from '../zoho-invoice/zoho-invoice.service.js'
+import {
+  toSaleLines, windowTotals, trend, breakdown, missingIn, type SaleLine,
+} from '../../utils/invoicedSales.js'
 import type { DashboardFilter, ProjectionsQuery } from './investor-dashboard.schema.js'
 
 /**
- * Business-intelligence read layer over existing operational tables — every
- * figure here is derived, nothing is stored. "Sales"/"Revenue" throughout
- * this module means Customer PO order value (confirmed+ orders, excludes
- * cancelled), NOT invoiced/recognized revenue — this system has no
- * accounting/invoicing layer by design (see root CLAUDE.md). All date-keyed
- * figures use `customer_po_date` (the date on the customer's actual PO), not
- * `created_at` (when it was entered into the system) — see the Order
- * Management Dashboard's "Orders by Month" fix for why this distinction
- * matters for backfilled/historical data.
+ * Business-intelligence read layer — every figure here is derived, nothing is
+ * stored. Two bases, kept apart on purpose:
+ *
+ * - **Revenue / sales** (this month, quarter, financial YTD, trends, customer /
+ *   product / region mix, run-rate projections, revenue growth and
+ *   concentration) = **Zoho invoiced value before GST** — invoice line
+ *   amounts, the same basis as Operations Center → Sales → Invoiced sales.
+ *   Line items come from the durable `zoho_invoice_details` cache; invoices
+ *   not read yet are reported in `revenueBasis.invoicesMissingLines`.
+ * - **Order flow** (pending order value, orders received / completed, average
+ *   order value, open-order revenue, quotation pipeline) = Customer PO order
+ *   value keyed on `customer_po_date`, as before.
+ *
+ * Zoho customers and items are matched to portal companies / products by
+ * name (utils/invoicedSales.ts), so the customer and product filters apply
+ * to invoiced figures only where a match exists.
  */
+
+type RevenueBasis = {
+  source: 'zoho_invoices'
+  valuation: 'before_gst'
+  available: boolean
+  reason: 'ZOHO_NOT_CONFIGURED' | 'ZOHO_SYNC_FAILED' | null
+  message: string | null
+  invoicesMissingLines: number
+  detailsPending: number
+}
+
+type SalesData = { lines: SaleLine[]; missing: Array<{ invoiceId: string; date: string }>; basis: RevenueBasis }
+
+const SALES_MEMO_MS = 30_000
+let salesMemo: { at: number; data: Promise<SalesData> } | null = null
+
+/**
+ * Invoiced sale lines for every executed Zoho invoice. Memoised for a few
+ * seconds so one dashboard load (KPIs + analytics + insights + projections)
+ * reads Zoho once. Never throws: when Zoho is unavailable the lines are empty
+ * and `basis.available` is false, so callers report 0 with a reason.
+ */
+function loadSales(): Promise<SalesData> {
+  if (salesMemo && Date.now() - salesMemo.at < SALES_MEMO_MS) return salesMemo.data
+  const data = (async (): Promise<SalesData> => {
+    const empty = (reason: RevenueBasis['reason'], message: string | null): SalesData => ({
+      lines: [], missing: [],
+      basis: { source: 'zoho_invoices', valuation: 'before_gst', available: false, reason, message, invoicesMissingLines: 0, detailsPending: 0 },
+    })
+    if (!isZohoConfigured()) return empty('ZOHO_NOT_CONFIGURED', 'Zoho Invoice is not connected on this server.')
+    try {
+      const [{ invoices, pending }, companyRows, productRows] = await Promise.all([
+        listInvoicesWithDetails(),
+        db.select({ id: companies.id, displayName: companies.displayName, state: companies.state }).from(companies),
+        db.select({ key: products.key, displayName: products.displayName }).from(products),
+      ])
+      const { lines, missing } = toSaleLines(invoices, companyRows, productRows)
+      return {
+        lines, missing,
+        basis: { source: 'zoho_invoices', valuation: 'before_gst', available: true, reason: null, message: null, invoicesMissingLines: missing.length, detailsPending: pending },
+      }
+    } catch (err) {
+      salesMemo = null
+      return empty('ZOHO_SYNC_FAILED', err instanceof Error ? err.message : 'Unknown Zoho error')
+    }
+  })()
+  salesMemo = { at: Date.now(), data }
+  return data
+}
+
+/** Coverage note scoped to one window: how many invoices in it have no line items yet. */
+const basisFor = (s: SalesData, from: string, to: string): RevenueBasis => ({ ...s.basis, invoicesMissingLines: missingIn(s.missing, from, to) })
 
 // NOT d.toISOString().slice(0,10) — that converts to UTC first, which shifts
 // a local-midnight date backward by a day whenever the server timezone is
@@ -62,16 +127,17 @@ export async function getExecutiveKpis(filter: DashboardFilter) {
     ? sql`AND EXISTS (SELECT 1 FROM customer_purchase_order_items pi WHERE pi.order_id = o.id AND pi.product_key = ${filter.productKey})`
     : sql``
 
-  // Fixed-period figures — always "this calendar month/quarter, this financial year", independent of the range filter.
-  const [fixedRow] = await db.execute<{ [k: string]: unknown; currentMonthSales: string; quarterlySales: string; ytdSales: string; pendingOrderValue: string }>(sql`
-    SELECT
-      COALESCE(SUM(total_value) FILTER (WHERE customer_po_date >= ${monthStart}), 0)   AS "currentMonthSales",
-      COALESCE(SUM(total_value) FILTER (WHERE customer_po_date >= ${quarterStart}), 0) AS "quarterlySales",
-      COALESCE(SUM(total_value) FILTER (WHERE customer_po_date >= ${yearStart}), 0)    AS "ytdSales",
-      COALESCE(SUM(total_value) FILTER (WHERE status NOT IN ('completed', 'cancelled')), 0) AS "pendingOrderValue"
+  // Fixed-period sales — always "this calendar month/quarter, this financial
+  // year", independent of the range filter — are Zoho invoiced value before GST.
+  // Pending order value stays on the customer-PO order book.
+  const sales = await loadSales()
+  const todayIso = iso(today)
+  const [fixedRow] = await db.execute<{ [k: string]: unknown; pendingOrderValue: string }>(sql`
+    SELECT COALESCE(SUM(total_value) FILTER (WHERE status NOT IN ('completed', 'cancelled')), 0) AS "pendingOrderValue"
     FROM customer_purchase_orders
     WHERE deleted_at IS NULL AND status != 'cancelled'
   `)
+  const salesFilter = { customerId: filter.customerId, productKey: filter.productKey }
 
   // Filter-scoped figures — respect range/customerId/productKey. Computed for
   // both the selected window and the prior equal-length window so the
@@ -79,10 +145,16 @@ export async function getExecutiveKpis(filter: DashboardFilter) {
   const windowDays = daysBetween(new Date(from), new Date(to)) + 1
   const priorTo = iso(addDays(new Date(from), -1))
   const priorFrom = iso(addDays(new Date(priorTo), -(windowDays - 1)))
-  const [current, prior] = await Promise.all([
+  const [currentOrders, priorOrders] = await Promise.all([
     getWindowFigures(from, to, customerCond, productJoinCond),
     getWindowFigures(priorFrom, priorTo, customerCond, productJoinCond),
   ])
+  const withInvoiced = (orders: typeof currentOrders, f: string, t: string) => {
+    const inv = windowTotals(sales.lines, f, t, salesFilter)
+    return { ...orders, invoicedValue: inv.value, invoiceCount: inv.invoices, invoicedCustomers: inv.customers }
+  }
+  const current = withInvoiced(currentOrders, from, to)
+  const prior = withInvoiced(priorOrders, priorFrom, priorTo)
 
   // Customer growth: customers whose FIRST-EVER order date falls in this window vs the prior equal-length window.
   const [growthRow] = await db.execute<{ [k: string]: unknown; newInWindow: string; newInPriorWindow: string }>(sql`
@@ -105,10 +177,11 @@ export async function getExecutiveKpis(filter: DashboardFilter) {
 
   return {
     range: filter.range, from, to,
-    currentMonthSales:  Number(fixedRow?.currentMonthSales ?? 0),
-    quarterlySales:     Number(fixedRow?.quarterlySales ?? 0),
-    ytdSales:           Number(fixedRow?.ytdSales ?? 0),
+    currentMonthSales:  windowTotals(sales.lines, monthStart, todayIso).value,
+    quarterlySales:     windowTotals(sales.lines, quarterStart, todayIso).value,
+    ytdSales:           windowTotals(sales.lines, yearStart, todayIso).value,
     pendingOrderValue:  Number(fixedRow?.pendingOrderValue ?? 0),
+    revenueBasis:       basisFor(sales, yearStart < from ? yearStart : from, todayIso > to ? todayIso : to),
     ...current,
     customerGrowthPct,
     newCustomersInWindow: newInWindow,
@@ -159,93 +232,41 @@ async function getWindowFigures(from: string, to: string, customerCond: SQL, pro
 
 // ── Sales Analytics ───────────────────────────────────────────────────────────
 
-type TrendRow = { [k: string]: unknown; period: string; orderCount: string; totalValue: string; priorTotalValue: string }
-
+/**
+ * Invoiced sales (Zoho, before GST) trends and mix. Trends are always the
+ * trailing 12 months / 8 quarters / 5 years from today, honouring
+ * `customerId`; each bucket carries `priorTotalValue`, the same period a year
+ * earlier. The top-10 customer / product / region breakdowns are scoped to
+ * the resolved range window. `orderCount` is kept for the existing client
+ * and carries the invoice count (also returned as `invoiceCount`).
+ */
 export async function getSalesAnalytics(filter: DashboardFilter) {
-  const customerCond = filter.customerId ? sql`AND o.customer_id = ${filter.customerId}` : sql``
-  // Only the top-N breakdowns below (salesByCustomer/salesByProduct/salesByRegion)
-  // use this — monthlyTrend/quarterlyTrend/yearlyTrend are deliberately always
-  // "the trailing N calendar periods from today", independent of `filter.range`,
-  // so they stay untouched here.
   const { from, to } = resolveWindow(filter)
-  const windowCond = sql`AND o.customer_po_date BETWEEN ${from} AND ${to}`
-  // Same-period-a-year-earlier order value for each trend bucket (the trend
-  // chart's "prior year" overlay) — correlated on the grouped gs.period.
-  const priorCustomerCond = filter.customerId ? sql`AND p.customer_id = ${filter.customerId}` : sql``
-  const priorYearValue = (unit: 'month' | 'quarter' | 'year') => sql`(
-      SELECT COALESCE(SUM(p.total_value), 0) FROM customer_purchase_orders p
-      WHERE date_trunc(${sql.raw(`'${unit}'`)}, p.customer_po_date) = gs.period - INTERVAL '1 year'
-        AND p.deleted_at IS NULL AND p.status != 'cancelled' ${priorCustomerCond}
-    )`
+  const sales = await loadSales()
+  const today = new Date()
+  const trendFilter = { customerId: filter.customerId }
 
-  const monthlyRows = await db.execute<TrendRow>(sql`
-    SELECT to_char(gs.period, 'YYYY-MM') AS period,
-      COUNT(o.id) AS "orderCount", COALESCE(SUM(o.total_value), 0) AS "totalValue",
-      ${priorYearValue('month')} AS "priorTotalValue"
-    FROM generate_series(date_trunc('month', CURRENT_DATE - INTERVAL '11 months'), date_trunc('month', CURRENT_DATE), INTERVAL '1 month') AS gs(period)
-    LEFT JOIN customer_purchase_orders o
-      ON date_trunc('month', o.customer_po_date) = gs.period AND o.deleted_at IS NULL AND o.status != 'cancelled' ${customerCond}
-    GROUP BY gs.period ORDER BY gs.period
-  `)
-
-  const quarterlyRows = await db.execute<TrendRow>(sql`
-    SELECT to_char(gs.period, 'YYYY-"Q"Q') AS period,
-      COUNT(o.id) AS "orderCount", COALESCE(SUM(o.total_value), 0) AS "totalValue",
-      ${priorYearValue('quarter')} AS "priorTotalValue"
-    FROM generate_series(date_trunc('quarter', CURRENT_DATE - INTERVAL '21 months'), date_trunc('quarter', CURRENT_DATE), INTERVAL '3 months') AS gs(period)
-    LEFT JOIN customer_purchase_orders o
-      ON date_trunc('quarter', o.customer_po_date) = gs.period AND o.deleted_at IS NULL AND o.status != 'cancelled' ${customerCond}
-    GROUP BY gs.period ORDER BY gs.period
-  `)
-
-  const yearlyRows = await db.execute<TrendRow>(sql`
-    SELECT to_char(gs.period, 'YYYY') AS period,
-      COUNT(o.id) AS "orderCount", COALESCE(SUM(o.total_value), 0) AS "totalValue",
-      ${priorYearValue('year')} AS "priorTotalValue"
-    FROM generate_series(date_trunc('year', CURRENT_DATE - INTERVAL '4 years'), date_trunc('year', CURRENT_DATE), INTERVAL '1 year') AS gs(period)
-    LEFT JOIN customer_purchase_orders o
-      ON date_trunc('year', o.customer_po_date) = gs.period AND o.deleted_at IS NULL AND o.status != 'cancelled' ${customerCond}
-    GROUP BY gs.period ORDER BY gs.period
-  `)
-
-  const byCustomerRows = await db.execute<{ [k: string]: unknown; customerId: string; customerName: string; orderCount: string; totalValue: string }>(sql`
-    SELECT o.customer_id AS "customerId", c.display_name AS "customerName",
-      COUNT(*) AS "orderCount", COALESCE(SUM(o.total_value), 0) AS "totalValue"
-    FROM customer_purchase_orders o JOIN companies c ON c.id = o.customer_id
-    WHERE o.deleted_at IS NULL AND o.status != 'cancelled' ${windowCond}
-    GROUP BY o.customer_id, c.display_name ORDER BY "totalValue" DESC LIMIT 10
-  `)
-
-  const byProductRows = await db.execute<{ [k: string]: unknown; productKey: string; productDisplayName: string; orderCount: string; totalValue: string }>(sql`
-    SELECT i.product_key AS "productKey", p.display_name AS "productDisplayName",
-      COUNT(DISTINCT i.order_id) AS "orderCount", COALESCE(SUM(i.amount), 0) AS "totalValue"
-    FROM customer_purchase_order_items i
-    JOIN products p ON p.key = i.product_key
-    JOIN customer_purchase_orders o ON o.id = i.order_id
-    WHERE o.deleted_at IS NULL AND o.status != 'cancelled' ${windowCond}
-    GROUP BY i.product_key, p.display_name ORDER BY "totalValue" DESC LIMIT 10
-  `)
-
-  const byRegionRows = await db.execute<{ [k: string]: unknown; region: string; orderCount: string; totalValue: string }>(sql`
-    SELECT COALESCE(NULLIF(c.state, ''), 'Unspecified') AS region,
-      COUNT(*) AS "orderCount", COALESCE(SUM(o.total_value), 0) AS "totalValue"
-    FROM customer_purchase_orders o JOIN companies c ON c.id = o.customer_id
-    WHERE o.deleted_at IS NULL AND o.status != 'cancelled' ${windowCond}
-    GROUP BY region ORDER BY "totalValue" DESC LIMIT 10
-  `)
-
-  const mapTrend = (rows: typeof monthlyRows) => rows.map((r) => ({
-    period: r.period, orderCount: Number(r.orderCount), totalValue: Number(r.totalValue), priorTotalValue: Number(r.priorTotalValue),
-  }))
+  const byCustomer = breakdown(sales.lines, from, to, (l) => l.companyId ?? `zoho:${l.zohoCustomer}`)
+  const byProduct = breakdown(sales.lines, from, to, (l) => l.productKey ?? `item:${l.productName}`)
+  const byRegion = breakdown(sales.lines, from, to, (l) => l.region)
 
   return {
-    monthlyTrend:   mapTrend(monthlyRows),
-    quarterlyTrend: mapTrend(quarterlyRows),
-    yearlyTrend:    mapTrend(yearlyRows),
-    salesByCustomer: byCustomerRows.map((r) => ({ customerId: r.customerId, customerName: r.customerName, orderCount: Number(r.orderCount), totalValue: Number(r.totalValue) })),
-    salesByProduct:  byProductRows.map((r) => ({ productKey: r.productKey, productDisplayName: r.productDisplayName, orderCount: Number(r.orderCount), totalValue: Number(r.totalValue) })),
-    // "Sales by Region" — future-ready proxy using companies.state; no dedicated region field exists yet.
-    salesByRegion:   byRegionRows.map((r) => ({ region: r.region, orderCount: Number(r.orderCount), totalValue: Number(r.totalValue) })),
+    monthlyTrend:   trend(sales.lines, today, 'month', 12, trendFilter),
+    quarterlyTrend: trend(sales.lines, today, 'quarter', 8, trendFilter),
+    yearlyTrend:    trend(sales.lines, today, 'year', 5, trendFilter),
+    salesByCustomer: byCustomer.map((r) => ({
+      customerId: r.sample.companyId, customerName: r.sample.customerName,
+      orderCount: r.invoiceCount, invoiceCount: r.invoiceCount, totalValue: r.totalValue,
+    })),
+    salesByProduct: byProduct.map((r) => ({
+      productKey: r.sample.productKey, productDisplayName: r.sample.productName,
+      orderCount: r.invoiceCount, invoiceCount: r.invoiceCount, totalValue: r.totalValue,
+    })),
+    // Region = the invoice's billing state, else the matched company's state.
+    salesByRegion: byRegion.map((r) => ({
+      region: r.key, orderCount: r.invoiceCount, invoiceCount: r.invoiceCount, totalValue: r.totalValue,
+    })),
+    revenueBasis: basisFor(sales, `${today.getFullYear() - 4}-01-01`, iso(today)),
   }
 }
 
@@ -270,16 +291,14 @@ export async function getProjections(query: ProjectionsQuery) {
   const dayOfYear = daysBetween(yearStart, today) + 1
   const totalDaysInYear = daysBetween(yearStart, new Date(yearStart.getFullYear() + 1, 3, 1))
 
-  const [toDateRow] = await db.execute<{ [k: string]: unknown; monthToDate: string; quarterToDate: string; yearToDate: string }>(sql`
-    SELECT
-      COALESCE(SUM(total_value) FILTER (WHERE customer_po_date >= ${iso(monthStart)}), 0)   AS "monthToDate",
-      COALESCE(SUM(total_value) FILTER (WHERE customer_po_date >= ${iso(quarterStart)}), 0) AS "quarterToDate",
-      COALESCE(SUM(total_value) FILTER (WHERE customer_po_date >= ${iso(yearStart)}), 0)    AS "yearToDate"
-    FROM customer_purchase_orders WHERE deleted_at IS NULL AND status != 'cancelled'
-  `)
-  const monthToDate = Number(toDateRow?.monthToDate ?? 0)
-  const quarterToDate = Number(toDateRow?.quarterToDate ?? 0)
-  const yearToDate = Number(toDateRow?.yearToDate ?? 0)
+  // Period-to-date actuals are Zoho invoiced value before GST; the run-rate
+  // projections below extrapolate those. Open-order revenue and the
+  // quotation pipeline further down stay on the order book.
+  const sales = await loadSales()
+  const todayIso = iso(today)
+  const monthToDate = windowTotals(sales.lines, iso(monthStart), todayIso).value
+  const quarterToDate = windowTotals(sales.lines, iso(quarterStart), todayIso).value
+  const yearToDate = windowTotals(sales.lines, iso(yearStart), todayIso).value
 
   const projectedMonthlyRevenue   = round2((monthToDate / dayOfMonth) * totalDaysInMonth)
   const projectedQuarterlyRevenue = round2((quarterToDate / dayOfQuarter) * totalDaysInQuarter)
@@ -329,6 +348,7 @@ export async function getProjections(query: ProjectionsQuery) {
     conversionRate: query.conversionRate,
     pipelineUpside,
     projectedMonthlyRevenueWithPipeline: round2(projectedMonthlyRevenue + pipelineUpside),
+    revenueBasis: basisFor(sales, iso(yearStart), todayIso),
   }
 }
 
@@ -355,17 +375,12 @@ export async function getExecutiveInsights(filter: DashboardFilter) {
     getSalesAnalytics(filter),
   ])
 
-  // Revenue in-window vs. the prior equal-length window (mirrors the customerGrowthPct
-  // "first order date" comparison in getExecutiveKpis, but for total order value).
-  const [revenueRow] = await db.execute<{ [k: string]: unknown; windowRevenue: string; priorWindowRevenue: string }>(sql`
-    SELECT
-      COALESCE(SUM(total_value) FILTER (WHERE customer_po_date BETWEEN ${from} AND ${to}), 0) AS "windowRevenue",
-      COALESCE(SUM(total_value) FILTER (WHERE customer_po_date BETWEEN ${priorFrom} AND ${priorTo}), 0) AS "priorWindowRevenue"
-    FROM customer_purchase_orders
-    WHERE deleted_at IS NULL AND status != 'cancelled'
-  `)
-  const windowRevenue = Number(revenueRow?.windowRevenue ?? 0)
-  const priorWindowRevenue = Number(revenueRow?.priorWindowRevenue ?? 0)
+  // Revenue in-window vs. the prior equal-length window — Zoho invoiced value
+  // before GST, unscoped by customer/product like the breakdowns it is the
+  // denominator for.
+  const sales = await loadSales()
+  const windowRevenue = windowTotals(sales.lines, from, to).value
+  const priorWindowRevenue = windowTotals(sales.lines, priorFrom, priorTo).value
   const revenueGrowthPct = growthPct(windowRevenue, priorWindowRevenue)
 
   const [priorProductionRow] = await db.execute<{ [k: string]: unknown; priorProductionVolume: string }>(sql`
@@ -487,7 +502,9 @@ export async function getExecutiveInsights(filter: DashboardFilter) {
     topRegion: topRegion ? { label: topRegion.region, value: topRegion.totalValue } : null,
     revenueGrowthPct,
     windowRevenue, priorWindowRevenue,
-    averageRevenuePerCustomer: kpis.activeCustomers > 0 ? round2(windowRevenue / kpis.activeCustomers) : 0,
+    // Invoiced revenue ÷ customers invoiced in the window (both Zoho-based).
+    averageRevenuePerCustomer: kpis.invoicedCustomers > 0 ? round2(windowRevenue / kpis.invoicedCustomers) : 0,
+    revenueBasis: basisFor(sales, priorFrom, to),
     productionTrendPct,
     pendingOrderRisk: {
       pendingOrderValue: kpis.pendingOrderValue,

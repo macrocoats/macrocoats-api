@@ -16,6 +16,10 @@ exports[`TDS/MSDS PDF regression — every seeded product > corrucut-500 msds re
 
 exports[`TDS/MSDS PDF regression — every seeded product > corrucut-500 tds renders and matches its recorded page count > corrucut-500-tds-page-count 1`] = `2`;
 
+exports[`TDS/MSDS PDF regression — every seeded product > uni-dunk-oil msds renders and matches its recorded page count > uni-dunk-oil-msds-page-count 1`] = `4`;
+
+exports[`TDS/MSDS PDF regression — every seeded product > uni-dunk-oil tds renders and matches its recorded page count > uni-dunk-oil-tds-page-count 1`] = `2`;
+
 exports[`TDS/MSDS PDF regression — every seeded product > unicool-al msds renders and matches its recorded page count > unicool-al-msds-page-count 1`] = `4`;
 
 exports[`TDS/MSDS PDF regression — every seeded product > unicool-al tds renders and matches its recorded page count > unicool-al-tds-page-count 1`] = `1`;
@@ -51,6 +55,10 @@ exports[`TDS/MSDS PDF regression — every seeded product > uniklean-sp tds rend
 exports[`TDS/MSDS PDF regression — every seeded product > unikoat-lt-700 msds renders and matches its recorded page count > unikoat-lt-700-msds-page-count 1`] = `4`;
 
 exports[`TDS/MSDS PDF regression — every seeded product > unikoat-lt-700 tds renders and matches its recorded page count > unikoat-lt-700-tds-page-count 1`] = `2`;
+
+exports[`TDS/MSDS PDF regression — every seeded product > unikstrip-hd msds renders and matches its recorded page count > unikstrip-hd-msds-page-count 1`] = `4`;
+
+exports[`TDS/MSDS PDF regression — every seeded product > unikstrip-hd tds renders and matches its recorded page count > unikstrip-hd-tds-page-count 1`] = `1`;
 
 exports[`TDS/MSDS PDF regression — every seeded product > uniktonner msds renders and matches its recorded page count > uniktonner-msds-page-count 1`] = `4`;
 

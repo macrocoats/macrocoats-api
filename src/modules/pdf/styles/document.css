@@ -846,6 +846,63 @@ p { margin: 0 0 2mm; line-height: var(--lh); }
   print-color-adjust: exact;
 }
 
+/* ─── COA: full-page certificate matching the frontend Print view ─────── */
+body:has(.coa-cert) { background: #fff; }
+.coa-cert {
+  --cert-ink: #1b2430; --cert-ink-2: #2b3542; --cert-ink-3: #3d4a57;
+  --cert-muted: #5a6875; --cert-rule: #d9dee4; --cert-row: #e3e7eb;
+  --cert-ok: #28724f; --cert-bad: #a93b32;
+  position: relative; width: calc(210mm / var(--coa-print-zoom, 1));
+  min-height: calc(297mm / var(--coa-print-zoom, 1)); display: flex;
+  flex-direction: column; overflow: hidden; background: #fff; color: var(--cert-ink);
+  font-family: 'IBM Plex Sans', Arial, sans-serif; font-size: 10pt;
+  line-height: 1.35; font-variant-numeric: tabular-nums;
+  zoom: var(--coa-print-zoom, 1); -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.coa-cert__watermark { position: absolute; left: 50%; top: 50%; width: 111mm; transform: translate(-50%, -50%); opacity: .035; filter: grayscale(1); pointer-events: none; }
+.coa-cert__letterhead { display: flex; justify-content: space-between; align-items: flex-start; gap: 6.35mm; padding: 10.58mm 12.7mm 0; }
+.coa-cert__brand { display: flex; align-items: center; gap: 3.7mm; }
+.coa-cert__logo { height: 11.64mm; width: auto; }
+.coa-cert__company { font-size: 15pt; font-weight: 700; letter-spacing: -.01em; }
+.coa-cert__tagline { margin-top: .53mm; font-size: 7.5pt; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--cert-muted); }
+.coa-cert__contact { margin-top: 1.06mm; font-size: 7.5pt; color: var(--cert-muted); }
+.coa-cert__ref { text-align: right; }
+.coa-cert__doctype { font-size: 8.25pt; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--cert-muted); }
+.coa-cert__certno { margin-top: 1.59mm; font-family: 'IBM Plex Mono', monospace; font-size: 9.75pt; font-weight: 600; }
+.coa-cert__code { margin-top: .53mm; font-family: 'IBM Plex Mono', monospace; font-size: 7.875pt; color: var(--cert-muted); }
+.coa-cert__rule { height: .79mm; margin: 5.29mm 12.7mm 0; background: var(--doc-accent, #123a6d); }
+.coa-cert__identity { display: flex; justify-content: space-between; align-items: flex-end; gap: 6.35mm; padding: 5.82mm 12.7mm 0; }
+.coa-cert__product { font-size: 22.5pt; font-weight: 700; letter-spacing: -.01em; line-height: 1.05; color: var(--doc-accent-text, var(--doc-accent, #123a6d)); }
+.coa-cert__subtitle { margin-top: 1.59mm; font-size: 9pt; color: var(--cert-ink-3); }
+.coa-cert__info { display: grid; grid-template-columns: repeat(4, 1fr); margin: 6.35mm 12.7mm 0; border-top: 1px solid var(--cert-rule); }
+.coa-cert__info-cell { padding: 2.38mm 3.17mm 2.65mm 0; border-bottom: 1px solid var(--cert-rule); min-width: 0; }
+.coa-cert__info dt { font-size: 7.125pt; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--cert-muted); }
+.coa-cert__info dd { margin: .79mm 0 0; font-family: 'IBM Plex Mono', monospace; font-size: 9.375pt; font-weight: 600; overflow-wrap: anywhere; }
+.coa-cert__section { padding: 7.41mm 12.7mm 0; }
+.coa-cert__section--conform { padding-top: 6.88mm; }
+.coa-cert__heading { margin: 0 0 2.12mm; font-size: 8.25pt; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--cert-muted); }
+.coa-cert__table { width: 100%; border-collapse: collapse; font-size: 8.625pt; }
+.coa-cert__table th { padding: 1.85mm 2.12mm; text-align: left; font-size: 7.125pt; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--cert-ink-3); background: #f2f4f6; }
+.coa-cert__th--num { width: 7.4mm; } .coa-cert__th--status { width: 16.9mm; }
+.coa-cert__table td { padding: 2.12mm; border-bottom: 1px solid var(--cert-row); vertical-align: top; }
+.coa-cert__td--num { font-family: 'IBM Plex Mono', monospace; color: var(--cert-muted); }
+.coa-cert__td--param { font-weight: 500; }
+.coa-cert__td--method { font-family: 'IBM Plex Mono', monospace; font-size: 7.875pt; color: var(--cert-ink-3); }
+.coa-cert__td--spec { font-family: 'IBM Plex Mono', monospace; color: var(--cert-ink-3); }
+.coa-cert__td--result { font-family: 'IBM Plex Mono', monospace; font-weight: 700; }
+.coa-cert__td--status { font-weight: 600; color: #8a94a0; }
+.coa-cert__td--status.is-pass { color: var(--cert-ok); } .coa-cert__td--status.is-fail { color: var(--cert-bad); }
+.coa-cert__conform { font-size: 9.75pt; font-weight: 700; color: #6b7682; }
+.coa-cert__conform.is-pass { color: var(--cert-ok); } .coa-cert__conform.is-fail { color: var(--cert-bad); }
+.coa-cert__statement { margin: 1.59mm 0 0; font-size: 8.625pt; line-height: 1.6; color: var(--cert-ink-2); }
+.coa-cert__spacer { flex: 1; }
+.coa-cert__signoff { display: grid; grid-template-columns: 2fr 1fr; gap: 10.58mm; padding: 10.58mm 12.7mm 0; }
+.coa-cert__sign { padding-top: 1.59mm; border-top: 1px solid var(--cert-ink); font-size: 7.5pt; color: var(--cert-muted); }
+.coa-cert__footer { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 3.17mm; margin-top: 7.41mm; padding: 2.65mm 12.7mm 3.7mm; border-top: 1px solid var(--cert-row); font-size: 6.75pt; color: var(--cert-muted); }
+.coa-cert__footer-code { font-family: 'IBM Plex Mono', monospace; }
+.coa-cert__footer-center { text-align: center; } .coa-cert__footer-right { text-align: right; }
+.coa-cert__footer-right strong { font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--cert-ink); }
+
 /* ═══════════════════════════════════════════════════════════════════════════
    GHS / PPE COMPONENTS
    ═══════════════════════════════════════════════════════════════════════════ */

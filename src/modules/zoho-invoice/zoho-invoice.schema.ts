@@ -4,6 +4,11 @@ export const zohoInvoiceParamsSchema = z.object({
   dispatchId: z.string().uuid(),
 })
 
+// Goes into the Zoho URL path, so digits only.
+export const zohoInvoicePdfParamsSchema = z.object({
+  invoiceId: z.string().regex(/^\d{1,32}$/),
+})
+
 export const listZohoInvoicesQuerySchema = z.object({
   page:     z.coerce.number().int().min(1).default(1),
   perPage:  z.coerce.number().int().min(1).max(200).default(25),

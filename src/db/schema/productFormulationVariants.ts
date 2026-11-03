@@ -23,6 +23,9 @@ export const productFormulationVariants = pgTable('product_formulation_variants'
   msdsOverrides: jsonb('msds_overrides'),
   /** Internal formula-workspace content such as variant-specific preparation methods. */
   formulaOverrides: jsonb('formula_overrides'),
+  /** Formula-specific delta from the product's default process classification. */
+  processTagAdditions: text('process_tag_additions').array().notNull().default(sql`ARRAY[]::text[]`),
+  processTagRemovals: text('process_tag_removals').array().notNull().default(sql`ARRAY[]::text[]`),
   createdAt:   timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt:   timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [

@@ -77,7 +77,42 @@ export function normalizeUnit(raw: string | null | undefined): string {
   return unit.toUpperCase()
 }
 
-const productKey = (line: SupplyInvoiceLine) => line.itemId || `name:${line.name.trim().toLowerCase()}`
+/**
+ * Misspellings in Zoho item names → the correct spelling, both in
+ * `squash`'s letters-and-digits form. The typo is corrected wherever it
+ * appears in the name, so a code after it is kept: "UNKLEAN-SP 123521560209"
+ * → "UNIKLEAN-SP 123521560209". Invoices already raised against a typo item
+ * keep it forever, so the merge has to happen here. Add an entry when a
+ * duplicate Zoho item shows up as a second product.
+ */
+const ITEM_NAME_ALIASES: Array<[typo: string, correct: string]> = [
+  ['unkleansp', 'unikleansp'], // "UNKLEAN-SP …" was created in Zoho by mistake for UNIKLEAN-SP
+]
+
+const squash = (name: string) => name.toLowerCase().replace(/[^a-z0-9]/g, '')
+
+/**
+ * Grouping key for a Zoho item name: case, spaces and punctuation ignored
+ * ("UNIKLEAN SP" = "Uniklean-SP"), known typos corrected to the real item.
+ */
+export function normalizeItemName(name: string): string {
+  return ITEM_NAME_ALIASES.reduce((s, [typo, correct]) => s.split(typo).join(correct), squash(name))
+}
+
+const isAliasSpelling = (name: string) => {
+  const s = squash(name)
+  return ITEM_NAME_ALIASES.some(([typo]) => s.includes(typo))
+}
+
+/**
+ * Products are grouped by item name rather than Zoho item id, so duplicate
+ * Zoho items for the same product (re-created, or created with a typo) merge
+ * into one row. Lines with an empty name fall back to the item id.
+ */
+const productKey = (line: SupplyInvoiceLine) => {
+  const n = normalizeItemName(line.name ?? '')
+  return n ? `item:${n}` : `id:${line.itemId ?? 'unknown'}`
+}
 
 const round = (n: number, digits = 3) => {
   const f = 10 ** digits
@@ -130,11 +165,18 @@ export function buildSupplySummary(
 
   // Filter options come from every executed invoice, before the filters narrow them.
   const customerOptions = new Map<string, string>()
+  // One display name per merged product: the most recent correctly-spelt name
+  // wins over a typo alias spelling.
   const productOptions = new Map<string, string>()
   for (const inv of executed) {
     customerOptions.set(inv.customerId, inv.customerName)
-    for (const line of inv.lines ?? []) productOptions.set(productKey(line), line.name)
+    for (const line of inv.lines ?? []) {
+      const key = productKey(line)
+      const current = productOptions.get(key)
+      if (current === undefined || (isAliasSpelling(current) && !isAliasSpelling(line.name))) productOptions.set(key, line.name)
+    }
   }
+  const displayName = (id: string, fallback: string) => productOptions.get(id) ?? fallback
 
   // Last invoice per customer across all executed invoices, so "currently
   // supplying" doesn't depend on the selected date window.
@@ -181,6 +223,14 @@ export function buildSupplySummary(
 
   const customers = new Map<string, CustomerAcc>()
   const products = new Map<string, ProductAcc>()
+  // Sales: month × customer × product × unit, from invoice line amounts
+  // (taxable value, before GST) so every breakdown adds up to the same total.
+  type SalesAcc = {
+    month: string; customerId: string; customerName: string; productId: string; productName: string; unit: string
+    quantity: number; value: number; invoiceIds: Set<string>
+  }
+  const sales = new Map<string, SalesAcc>()
+  const missingLinesByMonth = new Map<string, number>()
   const months = new Map<string, { month: string; invoiceCount: number; value: number; quantities: UnitTotals }>()
   const totals = new UnitTotals()
   let invoicedValue = 0
@@ -225,6 +275,7 @@ export function buildSupplySummary(
       month.invoiceCount += 1
       month.value += value
       months.set(monthKey, month)
+      if (lines === null) missingLinesByMonth.set(monthKey, (missingLinesByMonth.get(monthKey) ?? 0) + 1)
 
       for (const line of lines ?? []) {
         const unit = normalizeUnit(line.unit)
@@ -235,14 +286,14 @@ export function buildSupplySummary(
 
         // A product sold in two units gets one row per unit.
         const key = `${id}|${unit}`
-        const cp = customer.products.get(key) ?? { productId: id, name: line.name, unit, invoiced: 0, confirmed: 0, value: 0, invoiceIds: new Set<string>() }
+        const cp = customer.products.get(key) ?? { productId: id, name: displayName(id, line.name), unit, invoiced: 0, confirmed: 0, value: 0, invoiceIds: new Set<string>() }
         cp.invoiced += line.quantity
         if (confirmed) cp.confirmed += line.quantity
         cp.value += line.amount
         cp.invoiceIds.add(inv.invoiceId)
         customer.products.set(key, cp)
 
-        const p = products.get(key) ?? { productId: id, name: line.name, unit, invoiced: 0, confirmed: 0, value: 0, invoiceIds: new Set<string>(), customers: new Map() }
+        const p = products.get(key) ?? { productId: id, name: displayName(id, line.name), unit, invoiced: 0, confirmed: 0, value: 0, invoiceIds: new Set<string>(), customers: new Map() }
         p.invoiced += line.quantity
         if (confirmed) p.confirmed += line.quantity
         p.value += line.amount
@@ -251,6 +302,16 @@ export function buildSupplySummary(
         pc.invoiced += line.quantity
         p.customers.set(inv.customerId, pc)
         products.set(key, p)
+
+        const sk = `${monthKey}|${inv.customerId}|${key}`
+        const s = sales.get(sk) ?? {
+          month: monthKey, customerId: inv.customerId, customerName: inv.customerName,
+          productId: id, productName: displayName(id, line.name), unit, quantity: 0, value: 0, invoiceIds: new Set<string>(),
+        }
+        s.quantity += line.quantity
+        s.value += line.amount
+        s.invoiceIds.add(inv.invoiceId)
+        sales.set(sk, s)
       }
 
       return {
@@ -326,6 +387,17 @@ export function buildSupplySummary(
     customers: customerRows,
     products:  productRows,
     monthly,
+    /**
+     * Invoiced sales by month × customer × product × unit, valued at invoice
+     * line amounts (taxable value, before GST). Invoices whose line items
+     * haven't been read yet are missing here; `missingLinesByMonth` counts them.
+     */
+    sales: {
+      rows: [...sales.values()]
+        .map(({ invoiceIds, ...s }) => ({ ...s, quantity: round(s.quantity), value: round(s.value, 2), invoiceCount: invoiceIds.size }))
+        .sort((a, b) => a.month.localeCompare(b.month) || b.value - a.value),
+      missingLinesByMonth: Object.fromEntries([...missingLinesByMonth.entries()].sort()),
+    },
     invoices,
     coverage: {
       invoicesMissingLines,
