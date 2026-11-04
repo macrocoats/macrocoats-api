@@ -17,7 +17,9 @@ branding.constants.ts   Single source of truth for company name/address/GSTIN/ph
                         website/CIN/ISO certification — imported by every header/footer
                         builder in pdf.service.ts instead of each one hardcoding its own
                         literal copy. `cin`/`isoCertification` are blank by default (not
-                        fabricated) and only render in the Letterhead header when set.
+                        fabricated). No treatment renders them since the Nov 2026
+                        letterhead redesign (its masthead has no slot) — add one to
+                        letterhead.hbs + LetterheadParts.jsx when real values exist.
 test-render.ts         Standalone script to render a template to disk without going through Fastify — use for visually debugging a template change
 helpers/
   currency.helper.ts      Handlebars helper: currency formatting
@@ -31,9 +33,10 @@ partials/
 styles/
   document.css            Shared CSS injected into every rendered template — `.ir-*` classes
                           near the end are scoped to investor-report.hbs only (cover page +
-                          KPI grid have no prior equivalent); `.lh-*` classes (also near the
-                          end) are scoped to letterhead.hbs's free-form `{{{bodyHtml}}}`
-                          band only; everything else in either template reuses existing
+                          KPI grid have no prior equivalent); the "COMPANY LETTERHEAD" block
+                          (`.lhd-*` + `.lh-body`, also near the end) is a copy of
+                          safteyDataSheet's styles/letterhead.css paper/print rules, scoped
+                          to letterhead.hbs; everything else in either template reuses existing
                           `.doc-table`/`.sec-title`/`.callout`/`.doc-list`/`.sig-block`/
                           `.page-break`/`.info-cards` classes.
 templates/
@@ -58,18 +61,23 @@ assets/
 1. **Print-matched** (`tds`, `msds` — `PRINT_MATCHED_DOC_TYPES`): `buildPrintMatchedHeader` reproduces the frontend's `PrintMasthead` (company line, doc title, product / standard / "Page n of N") and `buildPrintMatchedFooter` reproduces the `@page datasheet` margin-box footer from safteyDataSheet's `print.css` (same sizes, colours, copy; see "TDS/MSDS print parity" below). Header/footer templates can't load web fonts, so they fall back from IBM Plex to system fonts. Margin: `31mm/16mm/14mm/14mm` (the band ends ~25mm down; the rest keeps a section that opens a continuation page clear of the header rule).
 2. **Full-page certificate** (`coa` only — `FULL_PAGE_DOC_TYPES`): `coa.hbs` owns the complete A4 page, including letterhead, watermark, signature lines, and footer. Puppeteer adds no header/footer or margins. Its structure and `.coa-cert` CSS mirror the frontend `CoaCertificate.jsx` Print view and must be changed together.
 3. **Executive** (`investor-report` only — `EXECUTIVE_DOC_TYPES`): `buildExecutiveHeader`/`buildExecutiveFooter` — a taller band (logo + period line, no per-product doc-number meta since this isn't a per-product document) plus a "Confidential" footer tag distinct from CoA's "computer generated" copy. Margin: `32mm/20mm/16mm/16mm`. Added for the Investor Report; do not reuse for a per-product document type.
-4. **Letterhead** (`letterhead` only — `LETTERHEAD_DOC_TYPES`): `buildLetterheadHeader`/`buildLetterheadFooter` — same visual weight as CoA's legacy-branded header (logo + legal name + tagline + address) plus optional GSTIN/CIN/ISO lines gated on `branding.constants.ts` fields being non-empty. No per-product doc-number meta — the letter's own date/reference-no/customer/subject/attention band renders inside the document body (`.info-cards` in `letterhead.hbs`), not the header. Margin: `30mm/22mm/14mm/14mm`.
+4. **Letterhead** (`letterhead` only — `LETTERHEAD_DOC_TYPES`): no header template (`<span></span>`); `letterhead.hbs` draws the page-1 masthead and the page-2+ running header itself (see "Letterhead" below). `buildLetterheadFooter` is the three-part footer (confidential note · web/email/phone · Page n of N). Margin: `0 / 44px / 64px / 64px` — the same page box as the frontend's `@page letterhead`.
 5. **Plain** (`quotation`, `batch`): `buildHeaderTemplate`/`buildFooterTemplate`'s non-branded branch — full company address/GSTIN/phone, unchanged from the module's original design.
 
 All company name/address/GSTIN/phone/email/website/CIN/ISO strings in every treatment above come from `branding.constants.ts` — do not reintroduce a hardcoded literal copy when editing any of these builders.
 
-`tds`/`msds`/`investor-report`/`letterhead` (`WATERMARK_DOC_TYPES`) get the faint centered logo watermark via `wrapBody()`. CoA embeds the same asset inside its full-page certificate body to match the frontend Print view.
+`tds`/`msds`/`investor-report` (`WATERMARK_DOC_TYPES`) get the faint centered logo watermark (the letterhead dropped it in the Nov 2026 redesign) via `wrapBody()`. CoA embeds the same asset inside its full-page certificate body to match the frontend Print view.
 
 When adding a doc type to any of these sets, verify the other doc types still render byte-identical to before.
 
 ## Letterhead
 
-`letterhead.hbs` renders the reference-info band (`.info-cards`, reused from `coa.hbs`'s pattern) → the letter body as raw pre-authored HTML (`{{{bodyHtml}}}`, styled by the `.lh-body` rules in `document.css`) → an optional signature block (`.sig-block`/`.sig-slot`, reused from `batch.hbs`/`quotation.hbs`, rendered only when `preparedBy` is set). `bodyHtml` arrives already `{{Variable}}`-resolved from the frontend's TipTap editor — unlike `msds`'s server-side derivation mirror, there is no server-side substitution step here since it's a plain string replace, not layout logic. The frontend's `downloadLetterheadPDF()` (`safteyDataSheet/src/services/pdfService.js`) posts the same `{ referenceNo, letterDate, customerName, companyName, subject, attention, preparedBy, approvedBy, designation, bodyHtml }` shape the `letterheads` module's document rows store.
+Redesigned Nov 2026 (Claude Design "Navigation and letterhead redesign" → `Letterhead.dc.html` 1a). `letterhead.hbs` mirrors the frontend's print document (`safteyDataSheet/src/pages/Documentation/Letterhead/LetterheadPrintDoc.jsx` + `LetterheadParts.jsx`) and its CSS is a copy of `safteyDataSheet/src/styles/letterhead.css` — **Download PDF and Print produce the same pages; change both copies together.** Sizes are CSS px at 96 dpi (A4 = 794 × 1123), matching `letterheadLayout.js`, which paginates the on-screen sheets with the same numbers.
+
+- **Page-1 masthead vs. running header.** Puppeteer's bundled Chrome (127) has no CSS page-margin boxes and paints `headerTemplate` over the content on every page, so a header that differs on page 1 can't come from the template. Instead the body is one table: `<thead>` holds the short running header (repeats on every page) and the page-1 masthead (`.lhd-print__cover`) is pulled up over it with a negative margin and white background. The `<tfoot>` spacer repeats to keep text clear of the footer. Side effect: page 1's text layer still contains the covered running-header text (invisible).
+- **Blocks don't split.** Every top-level body block has `break-inside: avoid`, headings `break-after: avoid`, `.lh-page-break` forces a page; the on-screen editor applies the same rules when it lays out sheets.
+- Context: `lhLogoDataUri` (`p1.png`, full lockup), `lhMarkDataUri` (`macro-coats-logo.png`), `lhBrand` (`COMPANY`, incl. `letterheadLegalName`/`letterheadAddressLines`, mirrored by `COMPANY_NAME`/`COMPANY_ADDRESS_LINES` in the frontend's `config/company.js`).
+- `bodyHtml` arrives already `{{Variable}}`-resolved from the frontend — no server-side substitution. The payload shape (`{ referenceNo, letterDate, customerName, companyName, subject, attention, preparedBy, approvedBy, designation, bodyHtml }`) is unchanged and matches the `letterheads` module's document rows.
 
 ## TDS/MSDS print parity
 

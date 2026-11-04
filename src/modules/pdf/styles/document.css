@@ -1923,60 +1923,97 @@ body:has(.ds-print) {
 .ir-trend-svg { display: block; font-family: var(--font-table); }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   LETTERHEAD — free-form rich-text body (letterhead.hbs only). Styles the raw
-   TipTap-authored HTML ({{{bodyHtml}}}) — plain semantic tags, no custom
-   classes, so these rules key off element selectors scoped to .lh-body.
+   COMPANY LETTERHEAD (letterhead.hbs only) — Nov 2026 redesign. A copy of the
+   paper + print rules in safteyDataSheet/src/styles/letterhead.css (`.lhd-*`,
+   `.lh-body`) so Download PDF matches Print: page-1 masthead, a short running
+   header from page 2 (table <thead>, covered on page 1 by .lhd-print__cover),
+   footer via Puppeteer's footerTemplate (buildLetterheadFooter). px are CSS
+   px at 96 dpi; the A4 page is 794 × 1123. Change both copies together.
    ═══════════════════════════════════════════════════════════════════════════ */
-.lh-body {
-  font-family: var(--font-body);
-  font-size: var(--fs-base);
-  color: var(--c-text);
-  line-height: 1.6;
-  margin: 6mm 0;
+html:has(.lhd-print), body:has(.lhd-print) { background: #fff; }
+.lhd-print {
+  font-family: 'IBM Plex Sans', Arial, sans-serif;
+  color: #1d232b;
+  line-height: normal;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
-.lh-body p { margin: 0 0 3mm; }
-.lh-body h1 { font-family: var(--font-heading); color: var(--c-primary); font-weight: 700; font-size: 15pt; margin: 5mm 0 2.5mm; }
-.lh-body h2 { font-family: var(--font-heading); color: var(--c-primary); font-weight: 700; font-size: 12.5pt; margin: 4mm 0 2mm; }
-.lh-body h3 { font-family: var(--font-heading); color: var(--c-primary); font-weight: 700; font-size: 11pt; margin: 3.5mm 0 2mm; }
-.lh-body blockquote {
-  border-left: 3px solid var(--c-primary);
-  margin: 3mm 0;
-  padding: 1mm 4mm;
-  color: var(--c-muted);
-  font-style: italic;
-}
-.lh-body code {
-  background: var(--c-bg-meta);
-  padding: 0.3mm 1.5mm;
-  border-radius: 1px;
-  font-family: var(--font-mono);
-  font-size: var(--fs-sm);
-}
-.lh-body hr { border: none; border-top: 1px solid var(--c-border); margin: 4mm 0; }
-.lh-body mark { background: #fef08a; padding: 0 0.5mm; }
-.lh-body a { color: var(--c-primary); text-decoration: underline; }
-.lh-body ul, .lh-body ol { margin: 0 0 3mm 5mm; padding: 0; }
-.lh-body li { margin-bottom: 1mm; }
-.lh-body table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 3mm 0;
-  page-break-inside: auto;
-}
-.lh-body th, .lh-body td {
-  border: 1px solid var(--c-border);
-  padding: 1.5mm 2.5mm;
-  font-size: var(--fs-sm);
-  text-align: left;
-}
-.lh-body th {
-  background: var(--c-bg-meta);
-  font-weight: 700;
-  color: var(--c-primary);
-}
+.lhd-print * { box-sizing: border-box; }
+.lhd-mono { font-family: 'IBM Plex Mono', ui-monospace, Menlo, monospace; }
+.lhd-print__table { width: 100%; border-collapse: collapse; }
+.lhd-print__table td { padding: 0; }
+.lhd-print__table thead { display: table-header-group; }
+.lhd-print__table tfoot { display: table-footer-group; }
+.lhd-print__cover { position: relative; z-index: 1; margin-top: -92px; padding-bottom: 28px; background: #fff; }
+.lhd-print__foot-space { height: 32px; }
+
+.lhd-masthead { height: 150px; padding: 36px 0 0; display: flex; flex-direction: column; }
+.lhd-masthead__row { flex: 1; display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+.lhd-masthead__brand { display: flex; align-items: center; gap: 16px; min-width: 0; }
+.lhd-masthead__logo, .lhd-masthead__contact { flex-shrink: 0; }
+.lhd-masthead__logo { height: 60px; width: auto; display: block; }
+.lhd-masthead__name { display: flex; flex-direction: column; gap: 3px; padding-left: 16px; border-left: 1px solid #d9dee4; }
+.lhd-masthead__legal { font-size: 15px; font-weight: 600; color: #1f2a36; letter-spacing: -0.005em; }
+.lhd-masthead__tagline { font-size: 10.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #56636f; }
+.lhd-masthead__contact { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; font-size: 11px; line-height: 1.35; color: #46525e; text-align: right; white-space: nowrap; }
+.lhd-masthead__contact .lhd-mono { font-size: 10.5px; }
+.lhd-masthead__rule { display: flex; height: 2px; }
+.lhd-masthead__rule span:first-child { width: 72px; background: #d7141a; }
+.lhd-masthead__rule span:last-child { flex: 1; background: #1f2a36; }
+
+.lhd-running { height: 64px; padding: 28px 0 0; margin-bottom: 28px; display: flex; flex-direction: column; }
+.lhd-running__row { flex: 1; display: flex; align-items: flex-start; justify-content: space-between; font-size: 11px; color: #56636f; }
+.lhd-running__brand { display: flex; align-items: center; gap: 8px; }
+.lhd-running__mark { width: 22px; height: 14px; object-fit: contain; }
+.lhd-running__name { font-weight: 600; color: #1f2a36; }
+.lhd-running__rule { height: 1px; background: #d9dee4; }
+
+.lhd-flow__ref, .lhd-flow__subject { padding-bottom: 22px; }
+.lhd-ref { display: grid; grid-template-columns: minmax(0, 1fr) 230px; gap: 32px; align-items: start; }
+.lhd-ref__to { display: flex; flex-direction: column; gap: 2px; font-size: 14px; line-height: 1.45; }
+.lhd-ref__label { margin-bottom: 4px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #6a7580; }
+.lhd-ref__customer { font-weight: 600; }
+.lhd-ref__attn { color: #46525e; }
+.lhd-ref__meta { display: grid; grid-template-columns: auto 1fr; gap: 5px 14px; padding: 10px 12px; border: 1px solid #e1e5ea; border-radius: 4px; font-size: 12.5px; line-height: 1.4; }
+.lhd-ref__k { color: #6a7580; }
+.lhd-ref__v { text-align: right; }
+.lhd-ref__v.lhd-mono { font-size: 12px; }
+.lhd-subject { padding: 10px 0; border-top: 1px solid #e1e5ea; border-bottom: 1px solid #e1e5ea; font-size: 15px; font-weight: 600; line-height: 1.45; }
+.lhd-subject__label { color: #6a7580; font-weight: 500; }
+
+.lhd-sign { display: flex; flex-direction: column; gap: 6px; font-size: 15px; line-height: 1.5; }
+.lhd-sign__for { font-weight: 600; }
+.lhd-sign__grid { display: grid; grid-template-columns: 1fr 1fr 96px; gap: 28px; margin-top: 44px; align-items: end; }
+.lhd-sign__slot { display: flex; flex-direction: column; gap: 2px; padding-top: 6px; border-top: 1px solid #1f2a36; }
+.lhd-sign__name { font-size: 14px; font-weight: 600; }
+.lhd-sign__role { font-size: 12px; color: #6a7580; }
+.lhd-sign__seal { width: 84px; height: 84px; margin-bottom: -6px; border: 1.5px dashed #c3ccd6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: #8a949e; }
+
+.lh-body { font-size: 15px; line-height: 1.65; color: #1d232b; }
+.lh-body > * { margin: 0; padding-bottom: 14px; }
+.lh-body > :is(h1, h2, h3) { padding-bottom: 8px; line-height: 1.45; }
+.lh-body :is(h1, h2) { font-size: 15px; font-weight: 700; color: #1f2a36; }
+.lh-body h3 { font-size: 14px; font-weight: 600; color: #46525e; }
+.lh-body :is(ul, ol) { padding-left: 20px; line-height: 1.6; }
+.lh-body li { margin: 0 0 4px; }
+.lh-body li > p { margin: 0; padding: 0; }
+.lh-body a { color: #1f2a36; text-decoration: underline; }
+.lh-body strong { font-weight: 600; }
+.lh-body blockquote { padding-left: 12px; border-left: 2px solid #d9dee4; color: #46525e; }
+.lh-body hr { height: 0; border: 0; border-top: 1px solid #e1e5ea; box-sizing: content-box; }
+.lh-body table { width: 100%; border-collapse: separate; border-spacing: 0; border: 1px solid #d9dee4; border-radius: 4px; font-size: 13.5px; line-height: 1.4; }
+.lh-body > table { margin-bottom: 14px; padding-bottom: 0; }
+.lh-body :is(td, th) { padding: 7px 12px; border-top: 1px solid #e1e5ea; text-align: left; vertical-align: top; }
+.lh-body tr:first-child > * { border-top: 0; }
+.lh-body :is(th, td:first-child) { background: #f4f6f8; color: #46525e; font-weight: 400; }
+.lh-body :is(td, th) p { margin: 0; padding: 0; }
 .lh-body [style*="text-align: center"]  { text-align: center; }
 .lh-body [style*="text-align: right"]   { text-align: right; }
 .lh-body [style*="text-align: justify"] { text-align: justify; }
+
+.lhd-flow__ref, .lhd-flow__subject, .lhd-flow__sign, .lh-body > * { break-inside: avoid; page-break-inside: avoid; }
+.lh-body > :is(h1, h2, h3) { break-after: avoid; page-break-after: avoid; }
+.lh-body > .lh-page-break { height: 0; padding: 0; border: 0; break-after: page; page-break-after: always; }
 
 /* PRODUCT BROCHURE - one-page customer-facing technical overview (front sheet of Claude Design "Product Brochure v5";
  * the design's back sheet is deliberately not rendered). --brochure-accent* are set inline per product from buildBrochureContext(). */

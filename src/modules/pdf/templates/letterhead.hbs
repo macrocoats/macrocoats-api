@@ -1,67 +1,89 @@
-<div class="document letterhead-document">
+{{!--
+  Company Letterhead (Nov 2026 redesign). Mirrors safteyDataSheet's
+  pages/Documentation/Letterhead/LetterheadPrintDoc.jsx + LetterheadParts.jsx
+  and the `.lhd-*` / `.lh-body` rules in its styles/letterhead.css (copied into
+  styles/document.css). The <thead> running header repeats on every page; the
+  page-1 masthead (.lhd-print__cover) is pulled up over it. The footer is
+  Puppeteer's footerTemplate (buildLetterheadFooter in pdf.service.ts).
+  bodyHtml arrives {{Variable}}-resolved from the frontend.
+--}}
+<div class="lhd-print">
+  <table class="lhd-print__table">
+    <thead><tr><td>
+      <div class="lhd-running">
+        <div class="lhd-running__row">
+          <span class="lhd-running__brand">
+            {{#if lhMarkDataUri}}<img class="lhd-running__mark" src="{{lhMarkDataUri}}" alt="" />{{/if}}
+            <span class="lhd-running__name">{{lhBrand.letterheadLegalName}}</span>
+          </span>
+          <span>{{#if referenceNo}}Ref <span class="lhd-mono">{{referenceNo}}</span> · {{/if}}{{#if letterDate}}{{formatDate letterDate}} · {{/if}}continued</span>
+        </div>
+        <div class="lhd-running__rule"></div>
+      </div>
+    </td></tr></thead>
+    <tfoot><tr><td><div class="lhd-print__foot-space"></div></td></tr></tfoot>
+    <tbody><tr><td>
 
-  {{!-- ═══ REFERENCE INFO ════════════════════════════════════════════════════ --}}
-  <div class="info-cards no-break">
-    {{#if letterDate}}
-    <div class="info-card">
-      <div class="info-card__label">Date</div>
-      <div class="info-card__value">{{formatDate letterDate}}</div>
-    </div>
-    {{/if}}
-    {{#if referenceNo}}
-    <div class="info-card">
-      <div class="info-card__label">Reference No.</div>
-      <div class="info-card__value mono">{{referenceNo}}</div>
-    </div>
-    {{/if}}
-    {{#if customerName}}
-    <div class="info-card">
-      <div class="info-card__label">Customer</div>
-      <div class="info-card__value fw-semi">{{customerName}}</div>
-    </div>
-    {{/if}}
-    {{#if companyName}}
-    <div class="info-card">
-      <div class="info-card__label">Company</div>
-      <div class="info-card__value fw-semi">{{companyName}}</div>
-    </div>
-    {{/if}}
-    {{#if attention}}
-    <div class="info-card">
-      <div class="info-card__label">Attention</div>
-      <div class="info-card__value">{{attention}}</div>
-    </div>
-    {{/if}}
-    {{#if subject}}
-    <div class="info-card">
-      <div class="info-card__label">Subject</div>
-      <div class="info-card__value fw-semi">{{subject}}</div>
-    </div>
-    {{/if}}
-  </div>
+      <div class="lhd-print__cover">
+        <div class="lhd-masthead">
+          <div class="lhd-masthead__row">
+            <div class="lhd-masthead__brand">
+              {{#if lhLogoDataUri}}<img class="lhd-masthead__logo" src="{{lhLogoDataUri}}" alt="Macro Coats" />{{/if}}
+              <div class="lhd-masthead__name">
+                <span class="lhd-masthead__legal">{{lhBrand.letterheadLegalName}}</span>
+                <span class="lhd-masthead__tagline">{{lhBrand.tagline}}</span>
+              </div>
+            </div>
+            <div class="lhd-masthead__contact">
+              {{#each lhBrand.letterheadAddressLines}}<span>{{this}}</span>{{/each}}
+              <span>{{lhBrand.phone}} · {{lhBrand.email}}</span>
+              <span>{{lhBrand.website}} · <span class="lhd-mono">GSTIN {{lhBrand.gstin}}</span></span>
+            </div>
+          </div>
+          <div class="lhd-masthead__rule"><span></span><span></span></div>
+        </div>
+      </div>
 
-  {{!-- ═══ LETTER BODY (rich text authored in the editor) ═══════════════════ --}}
-  <div class="lh-body">
-    {{{bodyHtml}}}
-  </div>
+      <div class="lhd-flow__ref">
+        <div class="lhd-ref">
+          <div class="lhd-ref__to">
+            <span class="lhd-ref__label">To</span>
+            {{#if customerName}}<span class="lhd-ref__customer">{{customerName}}</span>{{/if}}
+            {{#if companyName}}<span>{{companyName}}</span>{{/if}}
+            {{#if attention}}<span class="lhd-ref__attn">Kind attention: {{attention}}</span>{{/if}}
+          </div>
+          <div class="lhd-ref__meta">
+            <span class="lhd-ref__k">Date</span><span class="lhd-ref__v">{{formatDate letterDate}}</span>
+            <span class="lhd-ref__k">Our ref.</span><span class="lhd-ref__v lhd-mono">{{referenceNo}}</span>
+            <span class="lhd-ref__k">Prepared by</span><span class="lhd-ref__v">{{preparedBy}}</span>
+          </div>
+        </div>
+      </div>
 
-  {{!-- ═══ SIGNATURE BLOCK ═══════════════════════════════════════════════════ --}}
-  {{#if preparedBy}}
-  <div class="sig-block no-break">
-    <div class="sig-slot">
-      <div class="sig-slot__space"></div>
-      <div class="sig-slot__role">Prepared By</div>
-      <div class="sig-slot__name">{{preparedBy}}</div>
-    </div>
-    {{#if approvedBy}}
-    <div class="sig-slot">
-      <div class="sig-slot__space"></div>
-      <div class="sig-slot__role">Approved By</div>
-      <div class="sig-slot__name">{{approvedBy}}</div>
-      {{#if designation}}<div class="text-muted fs-sm">{{designation}}</div>{{/if}}
-    </div>
-    {{/if}}
-  </div>
-  {{/if}}
+      <div class="lhd-flow__subject">
+        <div class="lhd-subject"><span class="lhd-subject__label">Subject: </span>{{subject}}</div>
+      </div>
 
+      <div class="lh-body">{{{bodyHtml}}}</div>
+
+      <div class="lhd-flow__sign">
+        <div class="lhd-sign">
+          <span>Yours faithfully,</span>
+          <span class="lhd-sign__for">For {{lhBrand.letterheadLegalName}}</span>
+          <div class="lhd-sign__grid">
+            <div class="lhd-sign__slot">
+              <span class="lhd-sign__name">{{preparedBy}}</span>
+              <span class="lhd-sign__role">Prepared by</span>
+            </div>
+            <div class="lhd-sign__slot">
+              <span class="lhd-sign__name">{{approvedBy}}</span>
+              <span class="lhd-sign__role">{{designation}}</span>
+            </div>
+            <div class="lhd-sign__seal">Seal</div>
+          </div>
+        </div>
+      </div>
+
+    </td></tr></tbody>
+  </table>
 </div>

@@ -13,6 +13,13 @@ export const COMPANY = {
   city: 'Chennai, India',
   certificateLocation: 'Chennai 600132, Tamil Nadu, India',
   addressLine: 'SF.NO 224/11, Kalaimagal Nagar, Pazhanthandalam, Chennai - 600132, Tamil Nadu, India',
+  // Two-line masthead address for the Company Letterhead — mirrors
+  // COMPANY_ADDRESS_LINES in safteyDataSheet/src/config/company.js.
+  letterheadAddressLines: [
+    'PL.NO 14 SF.NO 224/11, Kalaimagal Nagar',
+    'Pazanthandalam, Kundrathur, Chennai 600 132',
+  ],
+  letterheadLegalName: 'Macro Coats Private Limited',
   gstin: '33AARCM7377G1ZY',
   phone: '+91 94449 61815',
   email: 'info@macrocoats.in',

@@ -36,7 +36,8 @@ const LETTERHEAD_DOC_TYPES: ReadonlySet<DocType> = new Set(['letterhead']);
 const BROCHURE_DOC_TYPES: ReadonlySet<DocType> = new Set(['brochure']);
 
 // CoA places the watermark inside its full-page certificate body.
-const WATERMARK_DOC_TYPES: ReadonlySet<DocType> = new Set(['tds', 'msds', 'investor-report', 'letterhead']);
+// letterhead left out since the Nov 2026 redesign (no watermark on the letter).
+const WATERMARK_DOC_TYPES: ReadonlySet<DocType> = new Set(['tds', 'msds', 'investor-report']);
 
 // Per-docType copy for the print-matched page header (tds/msds only) —
 // mirrors the frontend's PrintMasthead props in TDSPage/MSDSPage print blocks.
@@ -578,6 +579,10 @@ class PDFService {
       ...(docType === 'tds' ? buildTdsContext(payload) : {}),
       ...(docType === 'brochure' ? buildBrochureContext(payload) : {}),
       ...(docType === 'investor-report' ? buildInvestorReportContext(payload) : {}),
+      // Letterhead masthead uses the full lockup (p1.png), the running header the mark.
+      lhLogoDataUri: docType === 'letterhead' ? await getWatermarkDataUri() : null,
+      lhMarkDataUri: docType === 'letterhead' ? await getLogoDataUri() : null,
+      lhBrand: docType === 'letterhead' ? COMPANY : null,
       coaLogoDataUri: docType === 'coa' ? await getLogoDataUri() : null,
       coaWatermarkDataUri: docType === 'coa' ? await getWatermarkDataUri() : null,
       coaBrand: docType === 'coa' ? COMPANY : null,
@@ -612,7 +617,7 @@ class PDFService {
     const executive      = !printMatched && !legacyBranded && EXECUTIVE_DOC_TYPES.has(docType);
     const letterhead     = !printMatched && !legacyBranded && !executive && LETTERHEAD_DOC_TYPES.has(docType);
     const brochure       = BROCHURE_DOC_TYPES.has(docType);
-    const logoDataUri    = (legacyBranded || executive || letterhead) ? await getLogoDataUri() : null;
+    const logoDataUri    = (legacyBranded || executive) ? await getLogoDataUri() : null;
 
     const html = await this.renderHTML(docType, payload);
 
@@ -634,7 +639,7 @@ class PDFService {
       : executive
         ? buildExecutiveHeader(logoDataUri, periodLabel)
         : letterhead
-          ? buildLetterheadHeader(logoDataUri)
+          ? '<span></span>' // running header lives in the body's table <thead>
           : buildHeaderTemplate(docTitle, productName, docNumber, { docType, logoDataUri, revisionDate });
     const footerHtml = (brochure || fullPage)
       ? '<span></span>'
@@ -649,12 +654,11 @@ class PDFService {
     // tds/msds reserve enough header/footer space for the repeated
     // print-matched letterhead; the company/product emphasis makes this
     // band taller than the original compact treatment. The executive
-    // report's header is taller still (logo + period line), and the Company
-    // Letterhead treatment matches coa's band height since it carries the
-    // same amount of company-identity copy — see
-    // buildPrintMatchedHeader/Footer/buildExecutiveHeader/
-    // buildLetterheadHeader/Footer for the content that must fit inside
-    // these bands.
+    // report's header is taller still (logo + period line). The Company
+    // Letterhead has no top margin (its headers are in the body) and a
+    // footer-only bottom band — see buildPrintMatchedHeader/Footer/
+    // buildExecutiveHeader/buildLetterheadFooter for the content that must
+    // fit inside these bands.
     // tds/msds: the header band ends ~25mm down; the extra ~5mm is breathing
     // room so a section that opens a continuation page (its margin-top is
     // dropped at the break) doesn't butt its rule against the header's.
@@ -664,7 +668,12 @@ class PDFService {
       ? { top: '31mm', bottom: '16mm', left: '14mm', right: '14mm' }
       : executive
         ? { top: '32mm', bottom: '20mm', left: '16mm', right: '16mm' }
-        : { top: '30mm', bottom: '22mm', left: '14mm', right: '14mm' };
+        : letterhead
+          // Same page box as safteyDataSheet's `@page letterhead`
+          // (styles/letterhead.css): no top margin — letterhead.hbs draws the
+          // page-1 masthead and the repeating running header itself.
+          ? { top: '0', bottom: '44px', left: '64px', right: '64px' }
+          : { top: '30mm', bottom: '22mm', left: '14mm', right: '14mm' };
 
     const entry = await this.acquireBrowser();
     let page: Page | null = null;
@@ -1053,75 +1062,29 @@ function buildExecutiveFooter(): string {
 </div>`;
 }
 
-// ─── Letterhead header/footer (letterhead only) ────────────────────────────────
-// 5th treatment. Not per-product (no docNumber/productName meta grid like
-// print-matched) — the letter's own reference info (date/refNo/customer/
-// subject/attention) is rendered in the document body's .info-cards band
-// instead, matching letterhead.hbs. Company identity band mirrors the
-// legacy-branded (coa) header's logo+tagline shape, extended with optional
-// GSTIN/CIN/ISO lines gated on branding.constants.ts fields being non-empty.
-
-function buildLetterheadHeader(logoDataUri: string | null): string {
-  const certRows = [
-    COMPANY.gstin ? `<div class="h-row"><b>GSTIN:</b> ${esc(COMPANY.gstin)}</div>` : '',
-    COMPANY.cin ? `<div class="h-row"><b>CIN:</b> ${esc(COMPANY.cin)}</div>` : '',
-    COMPANY.isoCertification ? `<div class="h-row"><b>ISO:</b> ${esc(COMPANY.isoCertification)}</div>` : '',
-  ].join('');
-
-  return `
-<style>
-  html { font-size: 10pt; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Inter', Arial, 'Helvetica Neue', Helvetica, sans-serif; }
-  .hw { width: 100%; background: #ffffff; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-  .hb { display: flex; align-items: center; padding: 3mm 14mm 2.5mm 14mm; gap: 4mm; }
-  .h-logo { height: 18mm; width: auto; max-width: 46mm; object-fit: contain; flex-shrink: 0; }
-  .h-left { flex: 1; min-width: 0; border-left: 1px solid #C5D3E8; padding-left: 4mm; }
-  .h-company { font-size: 16pt; font-weight: 800; color: #123A6D; line-height: 1.1; letter-spacing: -.02em; }
-  .h-tagline { font-size: 8.5pt; font-weight: 700; color: #5C6470; margin-top: 0.5mm; text-transform: uppercase; letter-spacing: .06em; }
-  .h-addr { font-size: 7.5pt; color: #5C6470; margin-top: 1.5mm; line-height: 1.5; }
-  .h-right { text-align: right; flex-shrink: 0; border-left: 1px solid #C5D3E8; padding-left: 3mm; }
-  .h-row { font-size: 7.5pt; line-height: 1.6; color: #5C6470; }
-  .h-row b { color: #123A6D; font-weight: 700; }
-  .h-rule  { height: 2px; background: #123A6D; margin: 0 14mm; -webkit-print-color-adjust: exact !important; }
-</style>
-<div class="hw">
-  <div class="hb">
-    ${logoDataUri ? `<img class="h-logo" src="${logoDataUri}" />` : ''}
-    <div class="h-left">
-      <div class="h-company">${COMPANY.legalName}</div>
-      <div class="h-tagline">${COMPANY.tagline}</div>
-      <div class="h-addr">${esc(COMPANY.addressLine)}</div>
-    </div>
-    <div class="h-right">
-      <div class="h-row"><b>Ph:</b> ${esc(COMPANY.phone)}</div>
-      <div class="h-row"><b>Email:</b> ${esc(COMPANY.email)}</div>
-      <div class="h-row"><b>Web:</b> ${esc(COMPANY.website)}</div>
-      ${certRows}
-    </div>
-  </div>
-  <div class="h-rule"></div>
-</div>`;
-}
-
+// ─── Letterhead footer (letterhead only) ───────────────────────────────────────
+// Company Letterhead footer (Nov 2026 redesign) — mirrors the three
+// `@page letterhead` margin boxes in safteyDataSheet/src/styles/letterhead.css
+// and the on-screen sheet footer (LetterheadParts.jsx PageFooter). The header
+// has no template: letterhead.hbs puts the page-1 masthead and the repeating
+// running header in the body (see the "COMPANY LETTERHEAD" block in
+// styles/document.css).
 function buildLetterheadFooter(): string {
   return `
 <style>
-  html { font-size: 7.5pt; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  html { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Inter', Arial, 'Helvetica Neue', Helvetica, sans-serif; }
-  .fw { width: 100%; padding: 0 14mm; }
-  .f-rule { height: 0.5px; background: #b8bec3; margin-bottom: 1mm; }
-  .fb { display: flex; justify-content: space-between; align-items: baseline; }
-  .f-left { font-size: 7.5pt; color: #4f5a64; letter-spacing: .02em; }
-  .f-left b { color: #123A6D; }
-  .f-right { font-size: 7.5pt; color: #4f5a64; text-align: right; }
+  .fw { width: 100%; height: 44px; padding: 0 64px; font-family: 'IBM Plex Sans', Arial, 'Helvetica Neue', sans-serif; }
+  .fb { display: flex; justify-content: space-between; gap: 12px; padding-top: 9px; border-top: 1px solid #d9dee4; font-size: 10.5px; color: #6a7580; }
+  .fb span { flex: 1; }
+  .fc { text-align: center; flex: 0 0 auto !important; }
+  .fr { text-align: right; font-family: 'IBM Plex Mono', ui-monospace, Menlo, monospace; }
 </style>
 <div class="fw">
-  <div class="f-rule"></div>
   <div class="fb">
-    <div class="f-left"><b>${COMPANY.name}</b> &nbsp;·&nbsp; ${esc(COMPANY.addressLine)} &nbsp;·&nbsp; ${COMPANY.website}</div>
-    <div class="f-right">Page <span class="pageNumber"></span> of <span class="totalPages"></span></div>
+    <span>Confidential &middot; for the addressee only</span>
+    <span class="fc">${esc(COMPANY.website)} &middot; ${esc(COMPANY.email)} &middot; ${esc(COMPANY.phone)}</span>
+    <span class="fr">Page <span class="pageNumber"></span> of <span class="totalPages"></span></span>
   </div>
 </div>`;
 }
