@@ -176,3 +176,73 @@ describe('GET /v1/purchase-entries', () => {
     await req().get('/v1/purchase-entries').expect(401)
   })
 })
+
+describe('Purchase analytics (redesign, Nov 2026)', () => {
+  let itemId: string
+
+  beforeAll(async () => {
+    const itemRes = await req()
+      .post('/v1/inventory')
+      .set('Cookie', adminCookies)
+      .send({ material: `Test Material PE Trend ${Date.now()}`, unit: 'Kg', price: 10 })
+    itemId = itemRes.body.data.id
+    const today = new Date().toISOString().slice(0, 10)
+    // Recorded out of date order on purpose: "previous" follows purchaseDate, not record time.
+    for (const [purchaseDate, unitPrice] of [['2024-03-01', 12], ['2024-01-01', 10], [today, 15]] as const) {
+      await req()
+        .post('/v1/purchase-entries')
+        .set('Cookie', adminCookies)
+        .send({ vendorId, inventoryItemId: itemId, purchaseDate, quantity: 2, unit: 'Kg', unitPrice })
+        .expect(201)
+    }
+  })
+
+  it('list rows carry the previous purchase price of the same material, by receipt date', async () => {
+    const res = await req()
+      .get('/v1/purchase-entries')
+      .query({ inventoryItemId: itemId, sort: 'purchaseDate' })
+      .set('Cookie', adminCookies)
+      .expect(200)
+    const rows = res.body.data.purchaseEntries
+    expect(rows.map((r: { unitPrice: number }) => r.unitPrice)).toEqual([15, 12, 10])
+    expect(rows.map((r: { previousUnitPrice: number | null }) => r.previousUnitPrice)).toEqual([12, 10, null])
+    expect(rows[0].previousPurchaseDate).toBe('2024-03-01')
+  })
+
+  it('GET /summary returns a zero-filled monthly series, vendor spend and filtered counts', async () => {
+    const res = await req()
+      .get('/v1/purchase-entries/summary')
+      .query({ inventoryItemId: itemId, months: 6 })
+      .set('Cookie', adminCookies)
+      .expect(200)
+    const { monthly, byVendor, priceRises, filtered } = res.body.data
+    expect(monthly).toHaveLength(6)
+    expect(monthly[5].month).toBe(new Date().toISOString().slice(0, 7))
+    expect(monthly[5].totalValue).toBeGreaterThanOrEqual(30)
+    expect(byVendor.some((v: { vendorId: string }) => v.vendorId === vendorId)).toBe(true)
+    expect(priceRises.windowDays).toBe(90)
+    expect(priceRises.count).toBeGreaterThanOrEqual(1)
+    expect(filtered).toMatchObject({ entryCount: 3, totalValue: 74, manualCount: 3, vendorHistoryCount: 0, priceRiseCount: 2 })
+  })
+
+  it('GET /inventory/price-history returns the last N purchases per item, oldest first', async () => {
+    const res = await req()
+      .get('/v1/inventory/price-history')
+      .query({ limit: 2 })
+      .set('Cookie', adminCookies)
+      .expect(200)
+    const entry = res.body.data[itemId]
+    expect(entry.purchaseCount).toBe(3)
+    expect(entry.recent.map((r: { unitPrice: number }) => r.unitPrice)).toEqual([12, 15])
+    expect(entry.recent[0]).toHaveProperty('vendorName')
+  })
+
+  it('403 for company role on the new reads', async () => {
+    await req().get('/v1/purchase-entries/summary').set('Cookie', raneCookies).expect(403)
+    await req().get('/v1/inventory/price-history').set('Cookie', raneCookies).expect(403)
+  })
+
+  it('400 on an out-of-range months param', async () => {
+    await req().get('/v1/purchase-entries/summary').query({ months: 99 }).set('Cookie', adminCookies).expect(400)
+  })
+})

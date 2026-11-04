@@ -2,8 +2,8 @@ import type { FastifyInstance } from 'fastify'
 import { authenticate, requireAuth } from '../../middleware/authenticate.js'
 import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js'
 import { AppErrors } from '../../types/errors.js'
-import { createPurchaseEntrySchema, listPurchaseEntriesQuerySchema } from './purchase-entries.schema.js'
-import { listPurchaseEntries, getPurchaseEntryById, createPurchaseEntry } from './purchase-entries.service.js'
+import { createPurchaseEntrySchema, listPurchaseEntriesQuerySchema, purchaseSummaryQuerySchema } from './purchase-entries.schema.js'
+import { listPurchaseEntries, getPurchaseEntryById, createPurchaseEntry, getPurchaseSummary } from './purchase-entries.service.js'
 
 const preHandler = [authenticate, requireAuth, requireSuperAdmin]
 
@@ -17,6 +17,16 @@ export async function purchaseEntryRoutes(app: FastifyInstance) {
 
     const result = await listPurchaseEntries(query.data)
     return reply.send({ data: result })
+  })
+
+  // ── GET /purchase-entries/summary ─────────────────────────────────────────
+  // Literal segment registered ahead of `/:id` so it is never read as an id.
+  app.get('/summary', { preHandler }, async (request, reply) => {
+    const query = purchaseSummaryQuerySchema.safeParse(request.query)
+    if (!query.success) {
+      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: query.error.flatten() })
+    }
+    return reply.send({ data: await getPurchaseSummary(query.data) })
   })
 
   // ── GET /purchase-entries/:id ──────────────────────────────────────────────
