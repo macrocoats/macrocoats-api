@@ -34,3 +34,8 @@ export type CreateInventoryItemBody = z.infer<typeof createInventoryItemSchema>
 export type UpdateInventoryItemBody = z.infer<typeof updateInventoryItemSchema>
 export type StockStatus = 'unknown' | 'out_of_stock' | 'low' | 'in_stock'
 export type ReceiptPricesQuery = z.infer<typeof receiptPricesQuerySchema>
+
+/** GET /inventory/price-history — how many recent purchases to return per material. */
+export const priceHistoryQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(24).default(6),
+})
