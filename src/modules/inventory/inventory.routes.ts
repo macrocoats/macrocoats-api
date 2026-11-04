@@ -2,7 +2,8 @@ import type { FastifyInstance } from 'fastify'
 import { authenticate, requireAuth } from '../../middleware/authenticate.js'
 import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js'
 import { AppErrors } from '../../types/errors.js'
-import { createInventoryItemSchema, updateInventoryItemSchema, receiptPricesQuerySchema } from './inventory.schema.js'
+import { createInventoryItemSchema, updateInventoryItemSchema, receiptPricesQuerySchema, priceHistoryQuerySchema } from './inventory.schema.js'
+import { getRecentPurchasesByItem } from '../purchase-entries/purchase-entries.service.js'
 import {
   getAllItems, createItem, updateItem, deleteItem, resetToDefaults, getReceiptDatePrices, getLowStockItems,
 } from './inventory.service.js'
@@ -36,6 +37,17 @@ export async function inventoryRoutes(app: FastifyInstance) {
   app.get('/low-stock', { preHandler }, async (_request, reply) => {
     const result = await getLowStockItems()
     return reply.send({ data: result })
+  })
+
+  // ── GET /inventory/price-history ──────────────────────────────────────────
+  // Last N purchase prices per material (from purchase_entries), keyed by
+  // inventory item id — drives the Inventory list sparkline and inspector.
+  app.get('/price-history', { preHandler }, async (request, reply) => {
+    const query = priceHistoryQuerySchema.safeParse(request.query)
+    if (!query.success) {
+      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: query.error.flatten() })
+    }
+    return reply.send({ data: await getRecentPurchasesByItem(query.data.limit) })
   })
 
   // ── POST /inventory ───────────────────────────────────────────────────────

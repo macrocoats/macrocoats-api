@@ -121,12 +121,12 @@ Routes never import from other modules' services. Cross-cutting concerns (auth, 
 | `formulation-variants` | GET /formulation-variants, GET /formulation-variants/:variantId, POST /formulation-variants, PUT /formulation-variants/:variantId, PUT /formulation-variants/:variantId/components, PATCH /formulation-variants/:variantId/status, DELETE /formulation-variants/:variantId |
 | `quotations` | POST /quotations, GET /quotations, GET /quotations/:id |
 | `batches` | POST /batches, GET /batches, GET /batches/pack-containers, GET /batches/:batchNumber, PATCH /batches/:batchNumber/coa, DELETE /batches/:batchNumber/coa, POST /batches/release (bulk), POST /batches/:batchNumber/release, POST /batches/:batchNumber/lifecycle, PATCH /batches/:batchNumber/payment, DELETE /batches/:id |
-| `inventory` | GET /inventory, GET /inventory/receipt-prices, POST /inventory, PATCH /inventory/:id, DELETE /inventory/:id, POST /inventory/reset |
+| `inventory` | GET /inventory, GET /inventory/receipt-prices, GET /inventory/price-history, POST /inventory, PATCH /inventory/:id, DELETE /inventory/:id, POST /inventory/reset |
 | `pack-containers` | GET /pack-containers, GET /pack-containers/movements, POST /pack-containers/:id/adjustments, PATCH /pack-containers/:id |
 | `analytics` | GET /analytics/access-log (`docType`, `q` = company key/name, product or IP, `customerOnly=true` = company TDS/MSDS opens only), GET /analytics/summary, GET /analytics/access-overview (`days` 7/30/90 → IST-day × company × product × docType cube for 2×days, `uniqueIps`, `lastOpenByCompany`; Redis 120s) |
 | `vendors` | GET /vendors, GET /vendors/:id, POST /vendors, PUT /vendors/:id, DELETE /vendors/:id, GET /vendors/:id/purchase-summary |
 | `vendor-prices` | GET /vendors/:vendorId/prices, GET /vendors/:vendorId/prices/active, GET /vendors/:vendorId/prices/effective, POST /vendors/:vendorId/prices |
-| `purchase-entries` | GET /purchase-entries, GET /purchase-entries/:id, POST /purchase-entries |
+| `purchase-entries` | GET /purchase-entries, GET /purchase-entries/summary, GET /purchase-entries/:id, POST /purchase-entries |
 | `hazard-profiles` | GET /hazard-profiles, GET /hazard-profiles/:id, POST /hazard-profiles, PUT /hazard-profiles/:id, DELETE /hazard-profiles/:id (soft-delete) |
 | `finished-goods` | GET /finished-goods, GET /finished-goods/summary, GET /finished-goods/:batchNumber, POST /finished-goods/backfill/:batchNumber, PATCH /finished-goods/:id/status |
 | `dispatch` | POST /dispatches, GET /dispatches, GET /dispatches/summary, GET /dispatches/:dispatchNumber, PATCH /dispatches/:id, PATCH /dispatches/:id/void |
@@ -141,6 +141,13 @@ Routes never import from other modules' services. Cross-cutting concerns (auth, 
 | `customer-supply` | GET /customer-supply/summary (Zoho-derived supply), GET/POST /customer-supply/pipeline, PATCH/DELETE /customer-supply/pipeline/:id |
 
 All endpoints except auth are `superadmin`-only, except product document reads which use `checkProductAccess` for company users. Within `products`, only `GET /products/:productLine/:docType` uses `checkProductAccess` — every other `products` endpoint (including status transitions, audit trail, and expiry summary) is `requireSuperAdmin`-only. `GET /products/expiry-summary` is registered before the `/:productLine/:docType` route so the literal segment `expiry-summary` never matches as a `:productLine` param.
+
+### Purchase analytics (purchase-entries, Nov 2026 redesign)
+
+Read-only aggregates for the web Purchase entries and Inventory pages; nothing is stored.
+- **List rows** carry `previousUnitPrice`/`previousPurchaseDate`: the same material's purchase immediately before this one (any vendor), ordered by `(purchase_date, created_at)` — a correlated subquery in `JOINED_COLUMNS`. Optional `sort=purchaseDate` orders by receipt date (default `recorded` keeps newest-recorded-first).
+- **`GET /purchase-entries/summary`** (`months` 1–24, default 6, plus the list's filters): `monthly` (zero-filled trailing months by receipt date), `byVendor` (spend in that window), `priceRises` (entries in the last 90 days that cost more than the material's previous purchase — `LAG` over the same ordering), `manualCount` (all time), and `filtered` (count/value/vendor-history/manual/price-rise counts for exactly the rows the filtered list returns). `monthly`/`byVendor`/`priceRises` ignore the filters.
+- **`GET /inventory/price-history`** (`limit` 1–24, default 6): `{ [inventoryItemId]: { purchaseCount, recent: [{ purchaseDate, unitPrice, quantity, unit, vendorName }] } }`, oldest → newest. Items never purchased are absent. Implemented in `purchase-entries.service.ts` (`getRecentPurchasesByItem`), routed from `inventory.routes.ts`.
 
 ### Customer purchase order documents (company-documents)
 
