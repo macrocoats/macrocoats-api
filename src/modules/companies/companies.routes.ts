@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify'
+import { createReadStream } from 'node:fs'
 import { pgErrorCode } from '../../utils/pgError.js'
 import { authenticate, requireAuth } from '../../middleware/authenticate.js'
 import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js'
@@ -11,6 +12,8 @@ import {
   listCompanyFormulaAssignments,
   unassignFormulaFromCompany,
   updateCompanyFormulaAssignment,
+  saveCompanyLogo,
+  getCompanyLogo,
 } from './companies.service.js'
 
 const preHandler = [authenticate, requireAuth, requireSuperAdmin]
@@ -80,6 +83,43 @@ export async function companyRoutes(app: FastifyInstance) {
     const company = await getCompanyById(request.params.id)
     if (!company) return reply.code(404).send({ error: AppErrors.COMPANY_NOT_FOUND })
     return reply.send({ data: company })
+  })
+
+  // ── PUT /companies/:id/logo ──────────────────────────────────────────────
+  app.put<{ Params: { id: string } }>('/:id/logo', { preHandler }, async (request, reply) => {
+    const data = await request.file({ limits: { files: 1, fileSize: 2 * 1024 * 1024 } })
+    if (!data) {
+      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, message: 'Choose a logo to upload.' })
+    }
+
+    const result = await saveCompanyLogo(request.params.id, {
+      mimetype: data.mimetype,
+      fileStream: data.file,
+    })
+
+    if ('code' in result) {
+      if (result.code === 'NOT_FOUND') return reply.code(404).send({ error: AppErrors.COMPANY_NOT_FOUND })
+      if (result.code === 'INVALID_TYPE') {
+        return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, message: 'Use a PNG, JPEG, or WebP image.' })
+      }
+      if (result.code === 'TOO_LARGE') {
+        return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, message: 'Logo must be 2 MB or smaller.' })
+      }
+      return reply.code(500).send({ error: 'COMPANY_LOGO_UPLOAD_FAILED', message: 'Logo could not be uploaded.' })
+    }
+
+    return reply.send({ data: result.company })
+  })
+
+  // ── GET /companies/:id/logo ──────────────────────────────────────────────
+  app.get<{ Params: { id: string } }>('/:id/logo', { preHandler }, async (request, reply) => {
+    const logo = await getCompanyLogo(request.params.id)
+    if (!logo) return reply.code(404).send({ error: 'COMPANY_LOGO_NOT_FOUND' })
+
+    reply
+      .type(logo.mimeType)
+      .header('Cache-Control', 'private, max-age=300')
+    return reply.send(createReadStream(logo.storageKey))
   })
 
   // ── POST /companies ───────────────────────────────────────────────────────

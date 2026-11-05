@@ -3,6 +3,12 @@ import { db } from '../../db/index.js'
 import { companies, companyFormulaAssignments, companyProductAccess, customerPurchaseOrders, refreshTokens, users } from '../../db/schema/index.js'
 import { generateToken, hashPassword } from '../../utils/crypto.js'
 import type { CreateCompanyBody, UpdateCompanyBody } from './companies.schema.js'
+import { createWriteStream } from 'node:fs'
+import { mkdir, stat, unlink } from 'node:fs/promises'
+import { dirname, join } from 'node:path'
+import { pipeline } from 'node:stream/promises'
+import { randomUUID } from 'node:crypto'
+import { env } from '../../config/env.js'
 
 // Company formula assignments live in the formulation-variants module; re-exported
 // here so companies.routes.ts only ever imports from its own service.
@@ -35,7 +41,86 @@ function toResponse(
     city:            company.city ?? null,
     state:           company.state ?? null,
     pincode:         company.pincode ?? null,
+    hasLogo:         Boolean(company.logoStorageKey),
+    logoUpdatedAt:   company.logoUpdatedAt?.toISOString() ?? null,
     createdAt:       company.createdAt.toISOString(),
+  }
+}
+
+const COMPANY_LOGO_TYPES: Record<string, string> = {
+  'image/png': 'png',
+  'image/jpeg': 'jpg',
+  'image/webp': 'webp',
+}
+const MAX_COMPANY_LOGO_BYTES = 2 * 1024 * 1024
+
+export type SaveCompanyLogoResult =
+  | { company: ReturnType<typeof toResponse> }
+  | { code: 'INVALID_TYPE' | 'TOO_LARGE' | 'UPLOAD_FAILED' | 'NOT_FOUND' }
+
+export async function saveCompanyLogo(
+  companyId: string,
+  file: { mimetype: string; fileStream: NodeJS.ReadableStream },
+): Promise<SaveCompanyLogoResult> {
+  const extension = COMPANY_LOGO_TYPES[file.mimetype]
+  if (!extension) return { code: 'INVALID_TYPE' }
+
+  const [existing] = await db.select().from(companies).where(eq(companies.id, companyId))
+  if (!existing) return { code: 'NOT_FOUND' }
+
+  const fullPath = join(env.PROCUREMENT_STORAGE_PATH, 'company-logos', companyId, `${randomUUID()}.${extension}`)
+  await mkdir(dirname(fullPath), { recursive: true })
+
+  try {
+    await pipeline(file.fileStream, createWriteStream(fullPath))
+    const sizeBytes = (await stat(fullPath)).size
+    const wasTruncated = Boolean((file.fileStream as NodeJS.ReadableStream & { truncated?: boolean }).truncated)
+    if (wasTruncated || sizeBytes > MAX_COMPANY_LOGO_BYTES) {
+      await unlink(fullPath).catch(() => {})
+      return { code: 'TOO_LARGE' }
+    }
+
+    const [updated] = await db
+      .update(companies)
+      .set({ logoStorageKey: fullPath, logoMimeType: file.mimetype, logoUpdatedAt: new Date() })
+      .where(eq(companies.id, companyId))
+      .returning()
+
+    if (!updated) {
+      await unlink(fullPath).catch(() => {})
+      return { code: 'NOT_FOUND' }
+    }
+
+    if (existing.logoStorageKey && existing.logoStorageKey !== fullPath) {
+      await unlink(existing.logoStorageKey).catch((err) => {
+        console.error(`[companies] failed to remove replaced logo ${existing.logoStorageKey}:`, err)
+      })
+    }
+
+    const accessRows = await db
+      .select({ productKey: companyProductAccess.productKey })
+      .from(companyProductAccess)
+      .where(eq(companyProductAccess.companyId, companyId))
+
+    return { company: toResponse(updated, accessRows.map((row) => row.productKey)) }
+  } catch (err) {
+    console.error(`[companies] failed to store logo for ${companyId}:`, err)
+    await unlink(fullPath).catch(() => {})
+    return { code: 'UPLOAD_FAILED' }
+  }
+}
+
+export async function getCompanyLogo(companyId: string) {
+  const [company] = await db
+    .select({ storageKey: companies.logoStorageKey, mimeType: companies.logoMimeType, updatedAt: companies.logoUpdatedAt })
+    .from(companies)
+    .where(eq(companies.id, companyId))
+
+  if (!company?.storageKey || !company.mimeType) return null
+  return {
+    storageKey: company.storageKey,
+    mimeType: company.mimeType,
+    updatedAt: company.updatedAt,
   }
 }
 

@@ -17,6 +17,9 @@ export const companies = pgTable('companies', {
   city:           text('city'),
   state:          text('state'),
   pincode:        text('pincode'),
+  logoStorageKey: text('logo_storage_key'),
+  logoMimeType:   text('logo_mime_type'),
+  logoUpdatedAt:  timestamp('logo_updated_at', { withTimezone: true }),
   createdAt:      timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 

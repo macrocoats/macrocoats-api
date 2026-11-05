@@ -295,6 +295,13 @@
       "when": 1793708629718,
       "tag": "0041_easy_gauntlet",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1793862450384,
+      "tag": "0042_legal_snowbird",
+      "breakpoints": true
     }
   ]
 }
