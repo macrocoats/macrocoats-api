@@ -5,6 +5,7 @@ import { AppErrors } from '../../types/errors.js'
 import { createVendorSchema, updateVendorSchema } from './vendors.schema.js'
 import {
   listVendors, getVendorById, createVendor, updateVendor, deleteVendor,
+  getVendorsInsights, getVendorInsights,
 } from './vendors.service.js'
 
 const preHandler = [authenticate, requireAuth, requireSuperAdmin]
@@ -14,6 +15,19 @@ export async function vendorRoutes(app: FastifyInstance) {
   app.get('/', { preHandler }, async (_request, reply) => {
     const items = await listVendors()
     return reply.send({ data: items })
+  })
+
+  // ── GET /vendors/insights ─────────────────────────────────────────────────
+  // Static segment wins over /:id in Fastify's router regardless of order.
+  app.get('/insights', { preHandler }, async (_request, reply) => {
+    return reply.send({ data: await getVendorsInsights() })
+  })
+
+  // ── GET /vendors/:id/insights ─────────────────────────────────────────────
+  app.get<{ Params: { id: string } }>('/:id/insights', { preHandler }, async (request, reply) => {
+    const insights = await getVendorInsights(request.params.id)
+    if (!insights) return reply.code(404).send({ error: AppErrors.VENDOR_NOT_FOUND })
+    return reply.send({ data: insights })
   })
 
   // ── GET /vendors/:id ──────────────────────────────────────────────────────

@@ -124,7 +124,7 @@ Routes never import from other modules' services. Cross-cutting concerns (auth, 
 | `inventory` | GET /inventory, GET /inventory/receipt-prices, GET /inventory/price-history, POST /inventory, PATCH /inventory/:id, DELETE /inventory/:id, POST /inventory/reset |
 | `pack-containers` | GET /pack-containers, GET /pack-containers/movements, POST /pack-containers/:id/adjustments, PATCH /pack-containers/:id |
 | `analytics` | GET /analytics/access-log (`docType`, `q` = company key/name, product or IP, `customerOnly=true` = company TDS/MSDS opens only), GET /analytics/summary, GET /analytics/access-overview (`days` 7/30/90 → IST-day × company × product × docType cube for 2×days, `uniqueIps`, `lastOpenByCompany`; Redis 120s) |
-| `vendors` | GET /vendors, GET /vendors/:id, POST /vendors, PUT /vendors/:id, DELETE /vendors/:id, GET /vendors/:id/purchase-summary |
+| `vendors` | GET /vendors, GET /vendors/insights, GET /vendors/:id, GET /vendors/:id/insights, POST /vendors, PUT /vendors/:id, DELETE /vendors/:id |
 | `vendor-prices` | GET /vendors/:vendorId/prices, GET /vendors/:vendorId/prices/active, GET /vendors/:vendorId/prices/effective, POST /vendors/:vendorId/prices |
 | `purchase-entries` | GET /purchase-entries, GET /purchase-entries/summary, GET /purchase-entries/:id, POST /purchase-entries |
 | `hazard-profiles` | GET /hazard-profiles, GET /hazard-profiles/:id, POST /hazard-profiles, PUT /hazard-profiles/:id, DELETE /hazard-profiles/:id (soft-delete) |
@@ -148,6 +148,12 @@ Read-only aggregates for the web Purchase entries and Inventory pages; nothing i
 - **List rows** carry `previousUnitPrice`/`previousPurchaseDate`: the same material's purchase immediately before this one (any vendor), ordered by `(purchase_date, created_at)` — a correlated subquery in `JOINED_COLUMNS`. Optional `sort=purchaseDate` orders by receipt date (default `recorded` keeps newest-recorded-first).
 - **`GET /purchase-entries/summary`** (`months` 1–24, default 6, plus the list's filters): `monthly` (zero-filled trailing months by receipt date), `byVendor` (spend in that window), `priceRises` (entries in the last 90 days that cost more than the material's previous purchase — `LAG` over the same ordering), `manualCount` (all time), and `filtered` (count/value/vendor-history/manual/price-rise counts for exactly the rows the filtered list returns). `monthly`/`byVendor`/`priceRises` ignore the filters.
 - **`GET /inventory/price-history`** (`limit` 1–24, default 6): `{ [inventoryItemId]: { purchaseCount, recent: [{ purchaseDate, unitPrice, quantity, unit, vendorName }] } }`, oldest → newest. Items never purchased are absent. Implemented in `purchase-entries.service.ts` (`getRecentPurchasesByItem`), routed from `inventory.routes.ts`.
+
+### Vendor insights (vendors, Nov 2026)
+
+Read-only aggregates for the web Vendors ledger and vendor detail page (design 1a); nothing stored. Spend = `quantity × unit_price` by receipt date over the trailing 6 calendar months (current month to date).
+- **`GET /vendors/insights`** → `{ months: ['YYYY-MM' ×6], vendors: [{ vendorId, spend, monthly[6], lastReceipt (all time), activeRateCount, ratesUp, ratesDown, rates: [{ inventoryItemId, material, unitPrice, unit, effectiveFrom, changePct }] }] }`. `changePct` compares each active `vendor_material_prices` row with the previous row for the same vendor + material (`LAG`); `null` for a first rate. Vendors with no purchases and no rates are absent — the client fills zeros.
+- **`GET /vendors/:id/insights`** → `{ months, monthly: [{ month, totalValue }], spend, byMaterial: [{ inventoryItemId, material, totalValue }], lastReceipt }`; 404 `VENDOR_NOT_FOUND`. Rate history for the detail page comes from the existing `GET /vendors/:vendorId/prices`.
 
 ### Customer purchase order documents (company-documents)
 
