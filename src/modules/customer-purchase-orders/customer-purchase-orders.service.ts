@@ -11,6 +11,7 @@ import {
 } from '../../db/schema/index.js'
 import { env } from '../../config/env.js'
 import { nextCustomerOrderNumber } from '../../utils/customerOrderNumber.js'
+import { quantitiesByUnit, storedUnit, type OrderQuantities } from '../../utils/orderQuantities.js'
 import type {
   CreateCustomerOrderBody, UpdateCustomerOrderBody, ListCustomerOrdersQuery,
   LinkBatchBody, DocumentMeta, OrderStatus, OrderPriority,
@@ -174,7 +175,7 @@ export async function createOrder(data: CreateCustomerOrderBody, createdBy: stri
         variantId:           item.variantId ?? null,
         customerProductCode: item.customerProductCode ?? null,
         quantityOrdered:     String(item.quantityOrdered),
-        unit:                item.unit,
+        unit:                storedUnit(item.unit),
         unitPrice:           String(item.unitPrice),
         amount:              String(item.amount),
         remarks:             item.remarks ?? null,
@@ -260,7 +261,7 @@ function updateOrderTx(id: string, data: UpdateCustomerOrderBody): Promise<Updat
           .set({
             customerProductCode: item.customerProductCode ?? null,
             quantityOrdered:     String(item.quantityOrdered),
-            unit:                item.unit,
+            unit:                storedUnit(item.unit),
             unitPrice:           String(item.unitPrice),
             amount:              String(item.amount),
             remarks:             item.remarks ?? null,
@@ -292,7 +293,7 @@ function updateOrderTx(id: string, data: UpdateCustomerOrderBody): Promise<Updat
         variantId:           item.variantId ?? null,
         customerProductCode: item.customerProductCode ?? null,
         quantityOrdered:     String(item.quantityOrdered),
-        unit:                item.unit,
+        unit:                storedUnit(item.unit),
         unitPrice:           String(item.unitPrice),
         amount:              String(item.amount),
         remarks:             item.remarks ?? null,
@@ -386,7 +387,18 @@ async function recomputeStatus(tx: DB, orderId: string): Promise<void> {
   }
 }
 
-export async function softDeleteOrder(id: string): Promise<'deleted' | null> {
+/**
+ * Soft delete is only for orders entered by mistake: an order with a linked
+ * batch or a non-voided dispatch has production/dispatch history pointing at
+ * it, so it must be cancelled instead (`ORDER_HAS_ACTIVITY`).
+ */
+export async function softDeleteOrder(id: string): Promise<'deleted' | 'has_activity' | null> {
+  const activity = await loadOrderQuantities([id])
+  if (activity.get(id)?.hasActivity) {
+    const [exists] = await db.select({ id: customerPurchaseOrders.id }).from(customerPurchaseOrders)
+      .where(and(eq(customerPurchaseOrders.id, id), isNull(customerPurchaseOrders.deletedAt)))
+    return exists ? 'has_activity' : null
+  }
   const [row] = await db
     .update(customerPurchaseOrders)
     .set({ deletedAt: new Date() })
@@ -396,6 +408,44 @@ export async function softDeleteOrder(id: string): Promise<'deleted' | null> {
 }
 
 // ── Read ────────────────────────────────────────────────────────────────────────
+
+/**
+ * Per-unit ordered / produced / dispatched totals for a set of orders (three
+ * indexed reads, grouped in memory via utils/orderQuantities.ts), plus
+ * whether each order has any batch link or non-voided dispatch.
+ */
+async function loadOrderQuantities(orderIds: string[]): Promise<Map<string, OrderQuantities & { hasActivity: boolean }>> {
+  const result = new Map<string, OrderQuantities & { hasActivity: boolean }>()
+  if (orderIds.length === 0) return result
+  const ids = sql.join(orderIds.map((id) => sql`${id}`), sql`, `)
+  const lines = await db.execute<{ [key: string]: unknown; id: string; orderId: string; unit: string; quantityOrdered: string }>(sql`
+    SELECT id, order_id AS "orderId", unit, quantity_ordered AS "quantityOrdered"
+    FROM customer_purchase_order_items WHERE order_id IN (${ids})
+  `)
+  const links = await db.execute<{ [key: string]: unknown; orderId: string; orderItemId: string; quantity: string }>(sql`
+    SELECT order_id AS "orderId", order_item_id AS "orderItemId", linked_quantity AS quantity
+    FROM customer_purchase_order_batches WHERE order_id IN (${ids})
+  `)
+  const sent = await db.execute<{ [key: string]: unknown; orderId: string; orderItemId: string | null; quantity: string }>(sql`
+    SELECT customer_purchase_order_id AS "orderId", customer_purchase_order_item_id AS "orderItemId", quantity
+    FROM dispatches WHERE voided_at IS NULL AND customer_purchase_order_id IN (${ids})
+  `)
+  const group = <T extends { orderId: string }>(rows: T[]) => {
+    const m = new Map<string, T[]>()
+    for (const r of rows) m.set(r.orderId, [...(m.get(r.orderId) ?? []), r])
+    return m
+  }
+  const linesBy = group([...lines]); const linksBy = group([...links]); const sentBy = group([...sent])
+  for (const id of orderIds) {
+    const q = quantitiesByUnit(
+      (linesBy.get(id) ?? []).map((l) => ({ id: l.id, unit: l.unit, quantityOrdered: Number(l.quantityOrdered) })),
+      (linksBy.get(id) ?? []).map((l) => ({ orderItemId: l.orderItemId, quantity: Number(l.quantity) })),
+      (sentBy.get(id) ?? []).map((d) => ({ orderItemId: d.orderItemId, quantity: Number(d.quantity) })),
+    )
+    result.set(id, { ...q, hasActivity: (linksBy.get(id)?.length ?? 0) > 0 || (sentBy.get(id)?.length ?? 0) > 0 })
+  }
+  return result
+}
 
 export async function listOrders(query: ListCustomerOrdersQuery) {
   const offset = (query.page - 1) * query.limit
@@ -474,6 +524,8 @@ export async function listOrders(query: ListCustomerOrdersQuery) {
     LIMIT ${query.limit} OFFSET ${offset}
   `)
 
+  const quantities = await loadOrderQuantities(rows.map((r) => r.id))
+
   return {
     orders: rows.map((r) => {
       const totalQuantity = Number(r.totalQuantity)
@@ -492,6 +544,8 @@ export async function listOrders(query: ListCustomerOrdersQuery) {
         totalQuantityProduced: Number(r.totalQuantityProduced),
         totalQuantityDispatched,
         totalQuantityPending: Math.max(0, totalQuantity - totalQuantityDispatched),
+        quantitiesByUnit: quantities.get(r.id)?.byUnit ?? [],
+        canDelete: !quantities.get(r.id)?.hasActivity,
       }
     }),
     total, page: query.page, limit: query.limit,
@@ -620,11 +674,20 @@ export async function getOrderById(id: string) {
     remarks: r.remarks, metadata: r.metadata ?? null, at: new Date(r.at).toISOString(),
   }))
 
+  const quantities = quantitiesByUnit(
+    items.map((i) => ({ id: i.id, unit: i.unit, quantityOrdered: i.quantityOrdered })),
+    batchLinks.map((l) => ({ orderItemId: l.orderItemId, quantity: l.linkedQuantity })),
+    dispatches.filter((d) => !d.voided).map((d) => ({ orderItemId: d.orderItemId, quantity: d.quantity })),
+  )
+
   return {
     ...toOrderResponse(order),
     customerName: customer?.displayName ?? null,
     createdByName,
     referenceQuotation,
+    quantitiesByUnit: quantities.byUnit,
+    unattributedDispatched: quantities.unattributedDispatched,
+    canDelete: batchLinks.length === 0 && dispatches.every((d) => d.voided),
     items, documents, batchLinks, dispatches, timeline,
   }
 }

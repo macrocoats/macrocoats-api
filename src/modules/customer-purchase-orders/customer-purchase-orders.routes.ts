@@ -83,6 +83,12 @@ export async function customerPurchaseOrderRoutes(app: FastifyInstance) {
   app.delete<{ Params: { id: string } }>('/:id', { preHandler }, async (request, reply) => {
     const result = await softDeleteOrder(request.params.id)
     if (!result) return reply.code(404).send({ error: AppErrors.CUSTOMER_ORDER_NOT_FOUND })
+    if (result === 'has_activity') {
+      return reply.code(409).send({
+        error: AppErrors.ORDER_HAS_ACTIVITY,
+        message: 'This order has linked batches or dispatches. Cancel it instead of deleting it.',
+      })
+    }
     return reply.code(204).send()
   })
 
