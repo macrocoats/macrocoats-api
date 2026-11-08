@@ -9,6 +9,7 @@ import type {
   InternalHazardBreakdownEntry,
   InternalCompositionRow,
 } from './document-sanitization.types.js'
+import { mixturePictograms } from '../../utils/ghsPictograms.js'
 
 /**
  * Pure derivation logic — no DB access. The ingredient-profile map is always
@@ -111,7 +112,9 @@ export function deriveHazardAggregate(
   components: RawComponent[],
   profileMap: Map<string, HazardProfileRow>,
 ): HazardAggregate {
-  const pictogramSet = new Set<string>()
+  // Pictograms stored on contributing profiles that carry no H-codes (legacy data);
+  // everything else is derived from the H-codes (CLP Annex I + Art. 26 precedence).
+  const uncodedPictograms = new Set<string>()
   const classificationMap = new Map<string, HazardClassificationUnion>()
   const hStatementParts: string[] = []
   const hStatementCodesSeen = new Set<string>()
@@ -123,7 +126,9 @@ export function deriveHazardAggregate(
     if (!profile) continue
     if (c.percentage < Number(profile.thresholdPercent)) continue
 
-    for (const p of profile.pictograms) pictogramSet.add(p)
+    if (!profile.hazardClassifications.some((cls) => cls.hStatementCode?.trim())) {
+      for (const p of profile.pictograms) uncodedPictograms.add(p)
+    }
 
     for (const cls of profile.hazardClassifications) {
       const key = `${cls.class}::${cls.category}`
@@ -142,7 +147,7 @@ export function deriveHazardAggregate(
   const signalWord: 'DANGER' | 'Warning' = classifications.some((c) => c.tagType === 'danger') ? 'DANGER' : 'Warning'
 
   return {
-    pictograms:      Array.from(pictogramSet),
+    pictograms:      mixturePictograms([...hStatementCodesSeen], [...uncodedPictograms]),
     classifications,
     hStatements:     hStatementParts.join(' '),
     pStatements:     Array.from(pStatementCodesSeen).join(' · '),

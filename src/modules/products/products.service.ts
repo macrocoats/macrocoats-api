@@ -379,25 +379,53 @@ export async function listAuditTrail(productLine: string, docType: DocType) {
     .orderBy(desc(documentAuditLog.at))
 }
 
+/**
+ * Per-document review state plus the real revision facts the web Documentation
+ * history and product overview show: last change (`updatedAt`), who made it
+ * (`updatedByName`, from `product_documents.updated_by`) and the latest
+ * `document_audit_log` note. Replaces the web's old device-local placeholder
+ * revision store.
+ */
 export async function listExpirySummary() {
   const rows = await db
     .select({
-      productKey: productDocuments.productKey,
-      docType:    productDocuments.docType,
-      status:     productDocuments.status,
-      updatedAt:  productDocuments.updatedAt,
+      id:            productDocuments.id,
+      productKey:    productDocuments.productKey,
+      docType:       productDocuments.docType,
+      status:        productDocuments.status,
+      updatedAt:     productDocuments.updatedAt,
+      updatedByName: users.name,
     })
     .from(productDocuments)
+    .leftJoin(users, eq(productDocuments.updatedBy, users.id))
+
+  // Latest audit entry per document (one indexed DISTINCT ON scan).
+  const latest = await db
+    .selectDistinctOn([documentAuditLog.productDocumentId], {
+      productDocumentId: documentAuditLog.productDocumentId,
+      action:            documentAuditLog.action,
+      toStatus:          documentAuditLog.toStatus,
+      notes:             documentAuditLog.notes,
+      at:                documentAuditLog.at,
+      userName:          users.name,
+    })
+    .from(documentAuditLog)
+    .leftJoin(users, eq(documentAuditLog.userId, users.id))
+    .orderBy(documentAuditLog.productDocumentId, desc(documentAuditLog.at))
+  const latestByDoc = new Map(latest.map((a) => [a.productDocumentId, a]))
 
   const now = Date.now()
   return rows.map((row) => {
     const ageMs = now - row.updatedAt.getTime()
     const reviewState = ageMs > EXPIRED_AFTER_MS ? 'expired' : ageMs > DUE_AFTER_MS ? 'due' : 'ok'
+    const audit = latestByDoc.get(row.id)
     return {
-      productKey: row.productKey,
-      docType:    row.docType,
-      status:     row.status,
-      updatedAt:  row.updatedAt,
+      productKey:    row.productKey,
+      docType:       row.docType,
+      status:        row.status,
+      updatedAt:     row.updatedAt,
+      updatedByName: row.updatedByName ?? audit?.userName ?? null,
+      lastChange:    audit ? { action: audit.action, toStatus: audit.toStatus, notes: audit.notes, at: audit.at, userName: audit.userName } : null,
       reviewState,
     }
   })
