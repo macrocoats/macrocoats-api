@@ -240,6 +240,30 @@ describe('GET /v1/products/expiry-summary', () => {
     expect(Array.isArray(res.body.data)).toBe(true)
     expect(res.body.data.length).toBeGreaterThanOrEqual(5)
     expect(res.body.data[0]).toHaveProperty('reviewState')
+    // Real revision facts (replace the web's old device-local placeholder store)
+    expect(res.body.data[0]).toHaveProperty('updatedAt')
+    expect(res.body.data[0]).toHaveProperty('updatedByName')
+    expect(res.body.data[0]).toHaveProperty('lastChange')
+  })
+
+  it('reports the latest audit entry and its author after a status change', async () => {
+    const before = await req().get('/v1/products/expiry-summary').set('Cookie', adminCookies).expect(200)
+    const target = before.body.data.find((r: { status: string }) => r.status === 'published')
+    expect(target).toBeTruthy()
+    await req()
+      .patch(`/v1/products/${target.productKey}/${target.docType}/status`)
+      .set('Cookie', adminCookies)
+      .send({ status: 'archived', notes: 'expiry-summary audit check' })
+      .expect(200)
+    const after = await req().get('/v1/products/expiry-summary').set('Cookie', adminCookies).expect(200)
+    const row = after.body.data.find((r: { productKey: string; docType: string }) => r.productKey === target.productKey && r.docType === target.docType)
+    expect(row.lastChange).toMatchObject({ action: 'status_changed', toStatus: 'archived', notes: 'expiry-summary audit check' })
+    expect(typeof row.lastChange.userName).toBe('string')
+    expect(typeof row.updatedByName).toBe('string')
+    // restore: archived → draft → pending_review → qa_review → published
+    for (const status of ['draft', 'pending_review', 'qa_review', 'published']) {
+      await req().patch(`/v1/products/${target.productKey}/${target.docType}/status`).set('Cookie', adminCookies).send({ status }).expect(200)
+    }
   })
 
   it('company user cannot view the expiry summary', async () => {

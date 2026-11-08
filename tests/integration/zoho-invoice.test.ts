@@ -126,3 +126,32 @@ describe('GET /zoho-invoices/:invoiceId/eway-bill/pdf', () => {
     console.log('e-way outcomes:', seen)
   }, 120_000)
 })
+
+describe('GET /zoho-invoices/receivables', () => {
+  it('requires a session', async () => {
+    const res = await supertest(app.server).get('/v1/zoho-invoices/receivables')
+    expect(res.status).toBe(401)
+  })
+
+  it('is superadmin only', async () => {
+    const res = await supertest(app.server).get('/v1/zoho-invoices/receivables').set('Cookie', operatorCookies)
+    expect(res.status).toBe(403)
+  })
+
+  it.runIf(!isZohoConfigured())('reports ZOHO_NOT_CONFIGURED without the Zoho credentials', async () => {
+    const res = await supertest(app.server).get('/v1/zoho-invoices/receivables').set('Cookie', adminCookies)
+    expect(res.status).toBe(400)
+    expect(res.body.error).toBe('ZOHO_NOT_CONFIGURED')
+  })
+
+  // Read-only call to the real Zoho account; skipped where it isn't connected.
+  it.runIf(isZohoConfigured())('returns ageing buckets that add up to the outstanding total', async () => {
+    const res = await supertest(app.server).get('/v1/zoho-invoices/receivables?refresh=true').set('Cookie', adminCookies)
+    expect(res.status).toBe(200)
+    const { totals, buckets, invoices } = res.body.data
+    const bucketSum = buckets.reduce((s: number, b: { value: number }) => s + b.value, 0)
+    expect(bucketSum).toBeCloseTo(totals.outstanding, 2)
+    expect(invoices.length).toBe(totals.invoiceCount)
+    expect(invoices.every((i: { balance: number }) => i.balance > 0)).toBe(true)
+  })
+})

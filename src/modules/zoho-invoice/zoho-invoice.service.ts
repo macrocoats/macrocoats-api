@@ -3,6 +3,7 @@ import { db } from '../../db/index.js'
 import { zohoInvoiceSyncs, dispatches, batches, type ZohoInvoiceSync, type NewZohoInvoiceSync } from '../../db/schema/index.js'
 import { env } from '../../config/env.js'
 import type { ListZohoInvoicesQuery } from './zoho-invoice.schema.js'
+import { summariseReceivables, type ReceivableInput, type ReceivablesSummary } from '../../utils/receivablesAgeing.js'
 
 interface ZohoInvoiceApiRow {
   invoice_id:     string
@@ -352,3 +353,65 @@ export async function listZohoInvoices(query: ListZohoInvoicesQuery): Promise<Li
     return { code: 'ZOHO_SYNC_FAILED', message }
   }
 }
+
+// ── Receivables (all unpaid invoices, aged by due date) ──────────────────────
+
+/** Zoho statuses that can carry a balance. Fetched separately and de-duplicated,
+ *  because Zoho's `unpaid` filter is not documented to include `overdue`/`partially_paid`. */
+const OPEN_STATUSES = ['unpaid', 'overdue', 'partially_paid'] as const
+const RECEIVABLES_PAGE_SIZE = 200
+/** Safety cap per status (200 × 25 = 5,000 invoices); hitting it sets `truncated`. */
+const RECEIVABLES_MAX_PAGES = 25
+const RECEIVABLES_TTL_MS = 2 * 60 * 1000
+
+export type ZohoReceivablesResult =
+  | ({ asOf: string; truncated: boolean } & ReceivablesSummary)
+  | { code: 'ZOHO_NOT_CONFIGURED' }
+  | { code: 'ZOHO_SYNC_FAILED'; message: string }
+
+let receivablesCache: { at: number; value: Extract<ZohoReceivablesResult, { asOf: string }> } | null = null
+
+/**
+ * Every open Zoho invoice (no date window), aged by days past due date —
+ * backs the web Invoices page's Receivables panel. Read-only; nothing stored.
+ * Cached in memory for 2 minutes (`refresh` bypasses), like customer-supply's list.
+ */
+export async function listZohoReceivables({ refresh = false } = {}): Promise<ZohoReceivablesResult> {
+  if (!isZohoConfigured()) return { code: 'ZOHO_NOT_CONFIGURED' }
+  if (!refresh && receivablesCache && Date.now() - receivablesCache.at < RECEIVABLES_TTL_MS) return receivablesCache.value
+
+  try {
+    const rows: ReceivableInput[] = []
+    let truncated = false
+    for (const status of OPEN_STATUSES) {
+      for (let page = 1; page <= RECEIVABLES_MAX_PAGES; page++) {
+        const body = await zohoGet<{ invoices?: ZohoInvoiceApiRow[]; page_context?: { has_more_page?: boolean } }>(
+          '/invoice/v3/invoices',
+          { status, page: String(page), per_page: String(RECEIVABLES_PAGE_SIZE), sort_column: 'due_date', sort_order: 'A' },
+        )
+        for (const inv of body.invoices ?? []) {
+          rows.push({
+            invoiceId:     inv.invoice_id,
+            invoiceNumber: inv.invoice_number,
+            customerName:  inv.customer_name ?? null,
+            status:        inv.status,
+            total:         Number(inv.total),
+            balance:       Number(inv.balance),
+            invoiceDate:   inv.date ?? null,
+            dueDate:       inv.due_date ?? null,
+          })
+        }
+        if (!body.page_context?.has_more_page) break
+        if (page === RECEIVABLES_MAX_PAGES) truncated = true
+      }
+    }
+    const value = { asOf: new Date().toISOString(), truncated, ...summariseReceivables(rows) }
+    receivablesCache = { at: Date.now(), value }
+    return value
+  } catch (err) {
+    return { code: 'ZOHO_SYNC_FAILED', message: err instanceof Error ? err.message : 'Unknown Zoho error' }
+  }
+}
+
+/** Test hook: forget the cached receivables. */
+export function clearReceivablesCache() { receivablesCache = null }
