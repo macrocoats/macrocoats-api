@@ -251,7 +251,7 @@ describe('customer PO edit with batch links', () => {
       .set('Cookie', adminCookies)
       .send({ status: 'confirmed' })
       .expect(200)
-    await req()
+    const link = await req()
       .post(`/v1/customer-purchase-orders/${orderId}/batches`)
       .set('Cookie', adminCookies)
       .send({ orderItemId: itemId, batchId: batch.id, linkedQuantity: 20 })
@@ -274,6 +274,42 @@ describe('customer PO edit with batch links', () => {
     expect(unchanged.body.data.items[0].id).toBe(itemId)
     expect(unchanged.body.data.customerPoNumber).toBe(header.customerPoNumber)
 
-    await req().delete(`/v1/customer-purchase-orders/${orderId}`).set('Cookie', adminCookies)
+    // Per-unit totals and the delete guard: an order with a linked batch can't be deleted
+    expect(unchanged.body.data.quantitiesByUnit).toEqual([{ unit: 'L', ordered: 60, produced: 20, dispatched: 0, pending: 60 }])
+    expect(unchanged.body.data.canDelete).toBe(false)
+    const blocked = await req().delete(`/v1/customer-purchase-orders/${orderId}`).set('Cookie', adminCookies).expect(409)
+    expect(blocked.body.error).toBe('ORDER_HAS_ACTIVITY')
+
+    const linkId = link.body.data.id
+    await req().delete(`/v1/customer-purchase-orders/${orderId}/batches/${linkId}`).set('Cookie', adminCookies).expect((r) => expect([200, 204]).toContain(r.status))
+    await req().delete(`/v1/customer-purchase-orders/${orderId}`).set('Cookie', adminCookies).expect(204)
+  })
+
+  it('normalises units on save and keeps litres and kilograms apart in totals', async () => {
+    const companies = await req().get('/v1/companies').set('Cookie', adminCookies).expect(200)
+    const customerId = companies.body.data[0].id
+    const created = await req()
+      .post('/v1/customer-purchase-orders')
+      .set('Cookie', adminCookies)
+      .send({
+        customerId, customerPoNumber: `UNIT-${Date.now()}`, customerPoDate: '2026-11-01',
+        items: [
+          { productKey: 'uniklean-sp', quantityOrdered: 200, unit: 'ltr', unitPrice: 20 },
+          { productKey: 'uniklean-fe', quantityOrdered: 50, unit: 'Kgs', unitPrice: 30 },
+        ],
+      })
+      .expect(201)
+    const orderId = created.body.data.id
+    const detail = await req().get(`/v1/customer-purchase-orders/${orderId}`).set('Cookie', adminCookies).expect(200)
+    expect(detail.body.data.items.map((i: { unit: string }) => i.unit)).toEqual(['L', 'KG'])
+    expect(detail.body.data.quantitiesByUnit.map((q: { unit: string; ordered: number }) => [q.unit, q.ordered])).toEqual([['L', 200], ['KG', 50]])
+    expect(detail.body.data.canDelete).toBe(true)
+
+    const list = await req().get(`/v1/customer-purchase-orders?search=${created.body.data.customerPoNumber}`).set('Cookie', adminCookies).expect(200)
+    const row = list.body.data.orders.find((o: { id: string }) => o.id === orderId)
+    expect(row.quantitiesByUnit.map((q: { unit: string }) => q.unit)).toEqual(['L', 'KG'])
+    expect(row.canDelete).toBe(true)
+
+    await req().delete(`/v1/customer-purchase-orders/${orderId}`).set('Cookie', adminCookies).expect(204)
   })
 })
