@@ -127,6 +127,45 @@ describe('GET /zoho-invoices/:invoiceId/eway-bill/pdf', () => {
   }, 120_000)
 })
 
+describe('GET /zoho-invoices/customers', () => {
+  it('requires a session', async () => {
+    const res = await supertest(app.server).get('/v1/zoho-invoices/customers')
+    expect(res.status).toBe(401)
+  })
+
+  it('is superadmin only', async () => {
+    const res = await supertest(app.server).get('/v1/zoho-invoices/customers').set('Cookie', operatorCookies)
+    expect(res.status).toBe(403)
+  })
+
+  it.runIf(!isZohoConfigured())('reports ZOHO_NOT_CONFIGURED without the Zoho credentials', async () => {
+    const res = await supertest(app.server).get('/v1/zoho-invoices/customers').set('Cookie', adminCookies)
+    expect(res.status).toBe(400)
+    expect(res.body.error).toBe('ZOHO_NOT_CONFIGURED')
+  })
+
+  it('rejects an over-long customer filter on the list', async () => {
+    const res = await supertest(app.server).get(`/v1/zoho-invoices?customer=${'x'.repeat(101)}`).set('Cookie', adminCookies)
+    expect(res.status).toBe(400)
+  })
+
+  // Read-only calls to the real Zoho account; skipped where it isn't connected.
+  it.runIf(isZohoConfigured())('lists customer names whose invoices the list filter returns', async () => {
+    const res = await supertest(app.server).get('/v1/zoho-invoices/customers?refresh=true').set('Cookie', adminCookies)
+    expect(res.status).toBe(200)
+    const { customers } = res.body.data
+    expect(Array.isArray(customers)).toBe(true)
+    const recent = await supertest(app.server).get('/v1/zoho-invoices?perPage=1').set('Cookie', adminCookies)
+    const name = recent.body.data.invoices[0]?.customerName
+    if (!name) return
+    expect(customers).toContain(name)
+    const list = await supertest(app.server).get('/v1/zoho-invoices').query({ customer: name }).set('Cookie', adminCookies)
+    expect(list.status).toBe(200)
+    expect(list.body.data.invoices.length).toBeGreaterThan(0)
+    expect(list.body.data.invoices.every((i: { customerName: string }) => i.customerName === name)).toBe(true)
+  })
+})
+
 describe('GET /zoho-invoices/receivables', () => {
   it('requires a session', async () => {
     const res = await supertest(app.server).get('/v1/zoho-invoices/receivables')

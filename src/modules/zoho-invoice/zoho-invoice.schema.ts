@@ -16,6 +16,8 @@ export const listZohoInvoicesQuerySchema = z.object({
   dateFrom: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   dateTo:   z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   search:   z.string().max(200).optional(),
+  // Exact Zoho customer name (Zoho's own limit is 100 chars).
+  customer: z.string().min(1).max(100).optional(),
 })
 
 export type ZohoInvoiceParams       = z.infer<typeof zohoInvoiceParamsSchema>

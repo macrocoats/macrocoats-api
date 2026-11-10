@@ -3,7 +3,7 @@ import { authenticate, requireAuth } from '../../middleware/authenticate.js'
 import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js'
 import { AppErrors } from '../../types/errors.js'
 import { zohoInvoiceParamsSchema, zohoInvoicePdfParamsSchema, listZohoInvoicesQuerySchema } from './zoho-invoice.schema.js'
-import { getSyncStatus, syncDispatchInvoice, listZohoInvoices, listZohoReceivables, fetchZohoInvoicePdf, fetchZohoEwayBillPdf } from './zoho-invoice.service.js'
+import { getSyncStatus, syncDispatchInvoice, listZohoInvoices, listZohoReceivables, listZohoCustomers, fetchZohoInvoicePdf, fetchZohoEwayBillPdf } from './zoho-invoice.service.js'
 
 const preHandler = [authenticate, requireAuth, requireSuperAdmin]
 
@@ -33,6 +33,19 @@ export async function zohoInvoiceRoutes(app: FastifyInstance) {
   app.get('/receivables', { preHandler }, async (request, reply) => {
     const refresh = (request.query as { refresh?: string } | undefined)?.refresh === 'true'
     const result = await listZohoReceivables({ refresh })
+    if ('code' in result) {
+      if (result.code === 'ZOHO_NOT_CONFIGURED') return reply.code(400).send({ error: AppErrors.ZOHO_NOT_CONFIGURED })
+      return reply.code(502).send({ error: AppErrors.ZOHO_SYNC_FAILED, message: result.message })
+    }
+    return reply.send({ data: result })
+  })
+
+  // ── GET /zoho-invoices/customers ───────────────────────────────────────────
+  // Every Zoho customer name, for the list's exact `customer` filter. Registered
+  // before `/:dispatchId`; `?refresh=true` skips the 10-min cache.
+  app.get('/customers', { preHandler }, async (request, reply) => {
+    const refresh = (request.query as { refresh?: string } | undefined)?.refresh === 'true'
+    const result = await listZohoCustomers({ refresh })
     if ('code' in result) {
       if (result.code === 'ZOHO_NOT_CONFIGURED') return reply.code(400).send({ error: AppErrors.ZOHO_NOT_CONFIGURED })
       return reply.code(502).send({ error: AppErrors.ZOHO_SYNC_FAILED, message: result.message })

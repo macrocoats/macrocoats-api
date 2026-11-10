@@ -286,6 +286,7 @@ export async function listZohoInvoices(query: ListZohoInvoicesQuery): Promise<Li
     if (query.dateFrom) url.searchParams.set('date_start', query.dateFrom)
     if (query.dateTo) url.searchParams.set('date_end', query.dateTo)
     if (query.search) url.searchParams.set('search_text', query.search)
+    if (query.customer) url.searchParams.set('customer_name', query.customer)
 
     const res = await fetch(url, {
       headers: { Authorization: `Zoho-oauthtoken ${token}` },
@@ -407,6 +408,50 @@ export async function listZohoReceivables({ refresh = false } = {}): Promise<Zoh
     }
     const value = { asOf: new Date().toISOString(), truncated, ...summariseReceivables(rows) }
     receivablesCache = { at: Date.now(), value }
+    return value
+  } catch (err) {
+    return { code: 'ZOHO_SYNC_FAILED', message: err instanceof Error ? err.message : 'Unknown Zoho error' }
+  }
+}
+
+// ── Customers (names for the Invoices page's customer filter) ────────────────
+
+/** Safety cap (200 × 25 = 5,000 invoices); hitting it sets `truncated`. */
+const CUSTOMERS_MAX_PAGES = 25
+const CUSTOMERS_TTL_MS = 10 * 60 * 1000
+
+export type ZohoCustomersResult =
+  | { customers: string[]; truncated: boolean }
+  | { code: 'ZOHO_NOT_CONFIGURED' }
+  | { code: 'ZOHO_SYNC_FAILED'; message: string }
+
+let customersCache: { at: number; value: Extract<ZohoCustomersResult, { customers: string[] }> } | null = null
+
+/**
+ * Every customer name that appears on a Zoho invoice, A–Z, de-duplicated — the
+ * values the list's `customer_name` filter matches exactly. Read from the invoice
+ * list, not `/contacts`, because the self-client only has the invoices READ scope.
+ * Read-only; cached in memory for 10 minutes.
+ */
+export async function listZohoCustomers({ refresh = false } = {}): Promise<ZohoCustomersResult> {
+  if (!isZohoConfigured()) return { code: 'ZOHO_NOT_CONFIGURED' }
+  if (!refresh && customersCache && Date.now() - customersCache.at < CUSTOMERS_TTL_MS) return customersCache.value
+
+  try {
+    const names = new Set<string>()
+    let truncated = false
+    for (let page = 1; page <= CUSTOMERS_MAX_PAGES; page++) {
+      const body = await zohoGet<{ invoices?: ZohoInvoiceApiRow[]; page_context?: { has_more_page?: boolean } }>(
+        '/invoice/v3/invoices',
+        { page: String(page), per_page: '200', sort_column: 'customer_name', sort_order: 'A' },
+      )
+      // Untrimmed: the filter must send the name exactly as Zoho stores it.
+      for (const inv of body.invoices ?? []) if (inv.customer_name?.trim()) names.add(inv.customer_name)
+      if (!body.page_context?.has_more_page) break
+      if (page === CUSTOMERS_MAX_PAGES) truncated = true
+    }
+    const value = { customers: [...names].sort((a, b) => a.localeCompare(b)), truncated }
+    customersCache = { at: Date.now(), value }
     return value
   } catch (err) {
     return { code: 'ZOHO_SYNC_FAILED', message: err instanceof Error ? err.message : 'Unknown Zoho error' }
