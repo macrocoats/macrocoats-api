@@ -109,14 +109,14 @@ function toResponse(row: ZohoInvoiceSync) {
   }
 }
 
-export type ZohoInvoiceSyncRow = ReturnType<typeof toResponse>
+type ZohoInvoiceSyncRow = ReturnType<typeof toResponse>
 
 export async function getSyncStatus(dispatchId: string): Promise<ZohoInvoiceSyncRow | null> {
   const [row] = await db.select().from(zohoInvoiceSyncs).where(eq(zohoInvoiceSyncs.dispatchId, dispatchId))
   return row ? toResponse(row) : null
 }
 
-export type SyncDispatchInvoiceResult =
+type SyncDispatchInvoiceResult =
   | ZohoInvoiceSyncRow
   | { code: 'DISPATCH_NOT_FOUND' }
   | { code: 'DISPATCH_INVOICE_NUMBER_MISSING' }
@@ -160,7 +160,7 @@ export async function syncDispatchInvoice(dispatchId: string): Promise<SyncDispa
   }
 }
 
-export type ZohoInvoicePdfResult =
+type ZohoInvoicePdfResult =
   | { pdf: Buffer }
   | { code: 'ZOHO_NOT_CONFIGURED' }
   | { code: 'ZOHO_INVOICE_NOT_FOUND' }
@@ -197,7 +197,7 @@ export async function fetchZohoInvoicePdf(invoiceId: string): Promise<ZohoInvoic
   }
 }
 
-export type ZohoEwayBillPdfResult =
+type ZohoEwayBillPdfResult =
   | ZohoInvoicePdfResult
   | { code: 'EWAY_BILL_NOT_FOUND' }
   | { code: 'EWAY_BILL_PDF_UNAVAILABLE'; ewayBillNumber: string | null }
@@ -245,7 +245,7 @@ export async function fetchZohoEwayBillPdf(invoiceId: string): Promise<ZohoEwayB
   }
 }
 
-export interface ZohoInvoiceListRow {
+interface ZohoInvoiceListRow {
   invoiceId:      string
   invoiceNumber:  string
   customerName:   string | null
@@ -259,7 +259,7 @@ export interface ZohoInvoiceListRow {
   linkedBatches:  { batchNumber: string; hasCoa: boolean }[]
 }
 
-export type ListZohoInvoicesResult =
+type ListZohoInvoicesResult =
   | { invoices: ZohoInvoiceListRow[]; page: number; perPage: number; hasMorePage: boolean }
   | { code: 'ZOHO_NOT_CONFIGURED' }
   | { code: 'ZOHO_SYNC_FAILED'; message: string }
@@ -365,7 +365,7 @@ const RECEIVABLES_PAGE_SIZE = 200
 const RECEIVABLES_MAX_PAGES = 25
 const RECEIVABLES_TTL_MS = 2 * 60 * 1000
 
-export type ZohoReceivablesResult =
+type ZohoReceivablesResult =
   | ({ asOf: string; truncated: boolean } & ReceivablesSummary)
   | { code: 'ZOHO_NOT_CONFIGURED' }
   | { code: 'ZOHO_SYNC_FAILED'; message: string }
@@ -420,7 +420,7 @@ export async function listZohoReceivables({ refresh = false } = {}): Promise<Zoh
 const CUSTOMERS_MAX_PAGES = 25
 const CUSTOMERS_TTL_MS = 10 * 60 * 1000
 
-export type ZohoCustomersResult =
+type ZohoCustomersResult =
   | { customers: string[]; truncated: boolean }
   | { code: 'ZOHO_NOT_CONFIGURED' }
   | { code: 'ZOHO_SYNC_FAILED'; message: string }
@@ -459,4 +459,4 @@ export async function listZohoCustomers({ refresh = false } = {}): Promise<ZohoC
 }
 
 /** Test hook: forget the cached receivables. */
-export function clearReceivablesCache() { receivablesCache = null }
+function clearReceivablesCache() { receivablesCache = null }

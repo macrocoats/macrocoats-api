@@ -15,9 +15,9 @@ export interface ReceivableInput {
   dueDate:       string | null
 }
 
-export type AgeingBucketKey = 'current' | 'd30' | 'd60' | 'd90' | 'd90plus'
+type AgeingBucketKey = 'current' | 'd30' | 'd60' | 'd90' | 'd90plus'
 
-export const AGEING_BUCKETS: { key: AgeingBucketKey; label: string; min: number; max: number }[] = [
+const AGEING_BUCKETS: { key: AgeingBucketKey; label: string; min: number; max: number }[] = [
   { key: 'current', label: 'Not yet due',      min: -Infinity, max: 0 },
   { key: 'd30',     label: '1–30 days overdue',  min: 1,  max: 30 },
   { key: 'd60',     label: '31–60 days overdue', min: 31, max: 60 },

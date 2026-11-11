@@ -1,18 +1,18 @@
 import { z } from 'zod'
 
-export const ORDER_STATUSES = [
+const ORDER_STATUSES = [
   'draft', 'confirmed', 'production_planned', 'in_production',
   'partially_produced', 'ready_for_dispatch', 'partially_dispatched',
   'completed', 'cancelled',
 ] as const
 
-export const DOCUMENT_CATEGORIES = [
+const DOCUMENT_CATEGORIES = [
   'po_pdf', 'email_confirmation', 'drawing', 'specification', 'supporting',
 ] as const
 
-export const ORDER_PRIORITIES = ['low', 'normal', 'high', 'urgent'] as const
+const ORDER_PRIORITIES = ['low', 'normal', 'high', 'urgent'] as const
 
-export const orderItemSchema = z.object({
+const orderItemSchema = z.object({
   productKey:           z.string().min(1).max(100),
   variantId:            z.string().uuid().nullable().optional(),
   customerProductCode:  z.string().max(100).nullable().optional(),
@@ -75,13 +75,13 @@ export const searchQuerySchema = z.object({
   q: z.string().min(1).max(200),
 })
 
-export type OrderItemInput          = z.infer<typeof orderItemSchema>
+type OrderItemInput          = z.infer<typeof orderItemSchema>
 export type CreateCustomerOrderBody = z.infer<typeof createCustomerOrderSchema>
 export type UpdateCustomerOrderBody = z.infer<typeof updateCustomerOrderSchema>
 export type ListCustomerOrdersQuery = z.infer<typeof listCustomerOrdersQuerySchema>
-export type UpdateOrderStatusBody   = z.infer<typeof updateOrderStatusSchema>
+type UpdateOrderStatusBody   = z.infer<typeof updateOrderStatusSchema>
 export type LinkBatchBody           = z.infer<typeof linkBatchSchema>
-export type AddTimelineNoteBody     = z.infer<typeof addTimelineNoteSchema>
+type AddTimelineNoteBody     = z.infer<typeof addTimelineNoteSchema>
 export type DocumentMeta            = z.infer<typeof documentMetaSchema>
 export type OrderStatus             = typeof ORDER_STATUSES[number]
 export type OrderPriority           = typeof ORDER_PRIORITIES[number]

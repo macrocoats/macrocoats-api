@@ -12,7 +12,7 @@ export const formulaOverridesSchema = z.object({
   }).strict()).min(1),
 }).strict()
 
-export const componentBodySchema = z.object({
+const componentBodySchema = z.object({
   materialName: z.string().min(1),
   percentage:   z.number().min(0).max(100).nullable(),
   unit:         z.enum(['L', 'Kg']),
@@ -69,5 +69,5 @@ export type ComponentBody      = z.infer<typeof componentBodySchema>
 export type CreateVariantBody  = z.infer<typeof createVariantSchema>
 export type ListVariantsQuery  = z.infer<typeof listVariantsQuerySchema>
 export type UpdateVariantBody  = z.infer<typeof updateVariantSchema>
-export type ReplaceComponentsBody = z.infer<typeof replaceComponentsSchema>
-export type TransitionStatusBody  = z.infer<typeof transitionStatusSchema>
+type ReplaceComponentsBody = z.infer<typeof replaceComponentsSchema>
+type TransitionStatusBody  = z.infer<typeof transitionStatusSchema>

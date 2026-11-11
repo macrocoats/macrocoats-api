@@ -44,7 +44,7 @@ const formulaOperatingConditionSchema = z.object({
   value: z.string(),
 })
 
-export const formulaBodySchema = z.object({
+const formulaBodySchema = z.object({
   classification:      z.string(),
   batchSize:            z.string(),
   formulaType:          z.string(),
@@ -89,7 +89,7 @@ const tdsPackagingRowSchema = z.object({
 })
 const tdsPerformanceRowSchema = z.object({ label: z.string(), val: z.string() })
 
-export const tdsBodySchema = z.object({
+const tdsBodySchema = z.object({
   grade:       z.string(),
   description: z.string(),
   sections: z.object({
@@ -179,7 +179,7 @@ const msdsStabilitySchema = z.object({
   polymerisation: z.string(),
 }).passthrough()
 
-export const msdsBodySchema = z.object({
+const msdsBodySchema = z.object({
   signalWord: z.string(),
   sections: z.object({
     identification:     msdsIdentificationSchema,

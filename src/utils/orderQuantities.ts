@@ -9,9 +9,9 @@ import { normalizeUnit } from './supplySummary.js'
  * `kilogram` → `KG`; `ltr`, `litre` → `L`). No density conversion.
  */
 
-export interface OrderLineQty { id: string; unit: string | null; quantityOrdered: number }
-export interface LinkQty      { orderItemId: string; quantity: number }
-export interface DispatchQty  { orderItemId: string | null; quantity: number }
+interface OrderLineQty { id: string; unit: string | null; quantityOrdered: number }
+interface LinkQty      { orderItemId: string; quantity: number }
+interface DispatchQty  { orderItemId: string | null; quantity: number }
 
 export interface UnitQuantities {
   unit: string

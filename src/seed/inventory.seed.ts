@@ -73,7 +73,7 @@ const STOCK_UPDATE: Record<string, { stock: string; stockQty: string }> = {
   'TAP 363':                            { stock: '28 Kg',   stockQty: '28'   },
 }
 
-export const DEFAULT_INVENTORY = [
+const DEFAULT_INVENTORY = [
   // ── Solvents & Oils ──────────────────────────────────────────────────────────
   { material: 'Exxol D60',                          unit: 'L'  as const, price: '120', sortOrder: 1  },
   { material: 'Exxol D80',                          unit: 'L'  as const, price: '130', sortOrder: 2  },

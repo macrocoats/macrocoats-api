@@ -115,7 +115,7 @@ export function ppeCode(item: string): string {
   return PPE_RULES.find(([re]) => re.test(item))?.[1] ?? 'PPE';
 }
 
-export const GHS_P_DESCRIPTIONS: Record<string, string> = {
+const GHS_P_DESCRIPTIONS: Record<string, string> = {
   P201: 'Obtain special instructions before use.',
   P202: 'Do not handle until all safety precautions have been read and understood.',
   P210: 'Keep away from heat, hot surfaces, sparks, open flames and other ignition sources. No smoking.',
@@ -190,7 +190,7 @@ export const GHS_P_DESCRIPTIONS: Record<string, string> = {
   P502: 'Refer to manufacturer or supplier for information on recovery or recycling.',
 };
 
-export interface ParsedStatement {
+interface ParsedStatement {
   code: string;
   text: string;
 }
@@ -228,7 +228,7 @@ export function splitRunOn(items: ParsedStatement[]): ParsedStatement[] {
   });
 }
 
-export interface PGroups {
+interface PGroups {
   prevention: ParsedStatement[];
   response: ParsedStatement[];
   storage: ParsedStatement[];

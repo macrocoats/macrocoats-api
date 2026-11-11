@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
-export const FINISHED_GOODS_STATUSES = ['Quarantined', 'Available', 'Partially Dispatched', 'Fully Dispatched', 'Cancelled'] as const
-export type FinishedGoodsStatus = typeof FINISHED_GOODS_STATUSES[number]
+const FINISHED_GOODS_STATUSES = ['Quarantined', 'Available', 'Partially Dispatched', 'Fully Dispatched', 'Cancelled'] as const
+type FinishedGoodsStatus = typeof FINISHED_GOODS_STATUSES[number]
 
 export const listFinishedGoodsQuerySchema = z.object({
   companyName:  z.string().optional(),
@@ -25,5 +25,5 @@ export const backfillFinishedGoodsSchema = z.object({
 })
 
 export type ListFinishedGoodsQuery      = z.infer<typeof listFinishedGoodsQuerySchema>
-export type SetFinishedGoodsStatusBody  = z.infer<typeof setFinishedGoodsStatusSchema>
-export type BackfillFinishedGoodsBody   = z.infer<typeof backfillFinishedGoodsSchema>
+type SetFinishedGoodsStatusBody  = z.infer<typeof setFinishedGoodsStatusSchema>
+type BackfillFinishedGoodsBody   = z.infer<typeof backfillFinishedGoodsSchema>

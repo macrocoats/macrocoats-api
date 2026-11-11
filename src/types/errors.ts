@@ -66,4 +66,4 @@ export const AppErrors = {
   EWAY_BILL_PDF_UNAVAILABLE:        'EWAY_BILL_PDF_UNAVAILABLE',
 } as const
 
-export type AppError = typeof AppErrors[keyof typeof AppErrors]
+type AppError = typeof AppErrors[keyof typeof AppErrors]

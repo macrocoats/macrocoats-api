@@ -18,8 +18,8 @@ export interface SaleLine {
   value:        number
 }
 
-export interface CompanyRef { id: string; displayName: string; state: string | null }
-export interface ProductRef { key: string; displayName: string }
+interface CompanyRef { id: string; displayName: string; state: string | null }
+interface ProductRef { key: string; displayName: string }
 
 const squash = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '')
 // Legal suffixes that differ between Zoho's customer name and the portal's company name.
@@ -90,12 +90,12 @@ export function toSaleLines(invoices: SupplyInvoice[], companies: CompanyRef[], 
   return { lines, missing }
 }
 
-export interface SaleFilter { customerId?: string; productKey?: string }
+interface SaleFilter { customerId?: string; productKey?: string }
 
 const matches = (l: SaleLine, f: SaleFilter) =>
   (!f.customerId || l.companyId === f.customerId) && (!f.productKey || l.productKey === f.productKey)
 
-export const inRange = (l: { date: string }, from: string, to: string) => l.date >= from && l.date <= to
+const inRange = (l: { date: string }, from: string, to: string) => l.date >= from && l.date <= to
 
 /** Total value and invoice/customer/product counts for [from, to]. */
 export function windowTotals(lines: SaleLine[], from: string, to: string, f: SaleFilter = {}) {
@@ -108,7 +108,7 @@ export function windowTotals(lines: SaleLine[], from: string, to: string, f: Sal
   }
 }
 
-export type Grain = 'month' | 'quarter' | 'year'
+type Grain = 'month' | 'quarter' | 'year'
 
 /** Period label for a yyyy-mm-dd date: '2026-11', '2026-Q4', '2026'. */
 export function periodOf(date: string, grain: Grain): string {
@@ -120,7 +120,7 @@ export function periodOf(date: string, grain: Grain): string {
 }
 
 /** The trailing `count` periods ending at `today`'s, oldest first, each with its year-earlier label. */
-export function trailingPeriods(today: Date, grain: Grain, count: number) {
+function trailingPeriods(today: Date, grain: Grain, count: number) {
   const out: Array<{ period: string; prior: string }> = []
   for (let i = count - 1; i >= 0; i -= 1) {
     const step = grain === 'year' ? 12 : grain === 'quarter' ? 3 : 1

@@ -8,7 +8,7 @@ export const createTemplateSchema = z.object({
 
 export const updateTemplateSchema = createTemplateSchema.partial()
 
-export const documentFieldsSchema = z.object({
+const documentFieldsSchema = z.object({
   templateId:   z.string().uuid().nullable().optional(),
   referenceNo:  z.string().nullable().optional(),
   letterDate:   z.string().nullable().optional(),

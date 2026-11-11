@@ -62,4 +62,4 @@ function loadEnv() {
 }
 
 export const env = loadEnv()
-export type Env = typeof env
+type Env = typeof env

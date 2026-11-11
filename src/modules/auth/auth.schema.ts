@@ -20,7 +20,7 @@ export const changePasswordSchema = z.object({
   newPassword:     z.string().min(12).max(200),
 })
 
-export const userResponseSchema = z.object({
+const userResponseSchema = z.object({
   id:              z.string().uuid(),
   name:            z.string(),
   role:            z.enum(['superadmin', 'company']),
@@ -28,8 +28,8 @@ export const userResponseSchema = z.object({
   allowedProducts: z.array(z.string()).nullable(),
 })
 
-export type LoginBody         = z.infer<typeof loginSchema>
-export type TokenBody         = z.infer<typeof tokenSchema>
-export type MobileRefreshBody = z.infer<typeof mobileRefreshSchema>
-export type ChangePasswordBody = z.infer<typeof changePasswordSchema>
-export type UserResponse      = z.infer<typeof userResponseSchema>
+type LoginBody         = z.infer<typeof loginSchema>
+type TokenBody         = z.infer<typeof tokenSchema>
+type MobileRefreshBody = z.infer<typeof mobileRefreshSchema>
+type ChangePasswordBody = z.infer<typeof changePasswordSchema>
+type UserResponse      = z.infer<typeof userResponseSchema>

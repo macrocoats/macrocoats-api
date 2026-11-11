@@ -66,7 +66,7 @@ function toResponse(row: FinishedGoodsJoinRow) {
   }
 }
 
-export type FinishedGoodsRow = ReturnType<typeof toResponse>
+type FinishedGoodsRow = ReturnType<typeof toResponse>
 
 const SELECT_COLUMNS = sql`
   fg.id,
@@ -108,7 +108,7 @@ export async function createFinishedGoodsRecord(tx: DB, batchRow: typeof batches
   })
 }
 
-export type BackfillFinishedGoodsResult =
+type BackfillFinishedGoodsResult =
   | FinishedGoodsRow
   | { code: 'BATCH_NOT_FOUND' }
   | { code: 'ALREADY_EXISTS' }
@@ -271,7 +271,7 @@ async function findByIdWithJoin(id: string): Promise<FinishedGoodsRow | null> {
   return rows[0] ? toResponse(rows[0]) : null
 }
 
-export type SetFinishedGoodsStatusResult =
+type SetFinishedGoodsStatusResult =
   | FinishedGoodsRow
   | null
   | { code: 'REASON_REQUIRED' }
@@ -352,7 +352,7 @@ export async function getFinishedGoodsSummary() {
 }
 
 /** Trailing window used for the "average weekly dispatch" behind stock cover. */
-export const COVER_WINDOW_WEEKS = 8
+const COVER_WINDOW_WEEKS = 8
 
 /**
  * Finished goods per product line (Operations Center → Stock → Materials &

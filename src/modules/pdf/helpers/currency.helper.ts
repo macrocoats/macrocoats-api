@@ -24,7 +24,7 @@ function wordsBelow1000(n: number): string {
   return ones[Math.floor(n / 100)] + ' Hundred' + (n % 100 ? ' ' + wordsBelow1000(n % 100) : '');
 }
 
-export function amountInWords(amount: number): string {
+function amountInWords(amount: number): string {
   const n = Math.round(amount);
   if (n === 0) return 'Zero Rupees Only';
   const crore = Math.floor(n / 10000000);

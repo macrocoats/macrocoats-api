@@ -20,6 +20,6 @@ export const effectivePriceQuerySchema = z.object({
   date:            z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
 })
 
-export type ListVendorPricesQuery = z.infer<typeof listVendorPricesQuerySchema>
+type ListVendorPricesQuery = z.infer<typeof listVendorPricesQuerySchema>
 export type CreateVendorPriceBody = z.infer<typeof createVendorPriceSchema>
-export type EffectivePriceQuery   = z.infer<typeof effectivePriceQuerySchema>
+type EffectivePriceQuery   = z.infer<typeof effectivePriceQuerySchema>

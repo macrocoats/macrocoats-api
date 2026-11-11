@@ -11,7 +11,7 @@
  * by invoice number) — the only delivery evidence this system has.
  */
 
-export interface SupplyInvoiceLine {
+interface SupplyInvoiceLine {
   itemId:   string | null
   name:     string
   quantity: number
@@ -46,14 +46,14 @@ export interface SupplyDispatch {
   quantity:       number
 }
 
-export interface SupplyFilters {
+interface SupplyFilters {
   from?:       string
   to?:         string
   customerId?: string
   product?:    string
 }
 
-export interface UnitQuantity {
+interface UnitQuantity {
   unit:      string
   invoiced:  number
   confirmed: number
@@ -63,7 +63,7 @@ export interface UnitQuantity {
 export const EXCLUDED_STATUSES = ['draft', 'void'] as const
 
 /** A customer counts as currently supplied if invoiced within this many days. */
-export const ACTIVE_WINDOW_DAYS = 180
+const ACTIVE_WINDOW_DAYS = 180
 
 const KG_UNITS = new Set(['kg', 'kgs', 'kilo', 'kilos', 'kilogram', 'kilograms'])
 const LITRE_UNITS = new Set(['l', 'lt', 'lts', 'ltr', 'ltrs', 'lit', 'litre', 'litres', 'liter', 'liters'])

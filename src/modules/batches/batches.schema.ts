@@ -1,8 +1,8 @@
 import { z } from 'zod'
 import { PACK_CONTAINER_IDS } from './packContainers.js'
 
-export const BATCH_TYPES = ['Production', 'Trial'] as const
-export type BatchType = typeof BATCH_TYPES[number]
+const BATCH_TYPES = ['Production', 'Trial'] as const
+type BatchType = typeof BATCH_TYPES[number]
 
 const formulationComponentSchema = z.object({
   name:             z.string(),
@@ -121,7 +121,7 @@ export const setBatchLifecycleSchema = z.object({
   returnMaterials: z.boolean().optional(),
 })
 
-export type SetPaymentStatusBody = z.infer<typeof setPaymentStatusSchema>
+type SetPaymentStatusBody = z.infer<typeof setPaymentStatusSchema>
 
 export const listBatchesQuerySchema = z.object({
   companyName: z.string().optional(),

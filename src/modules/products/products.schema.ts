@@ -27,7 +27,7 @@ export const transitionStatusSchema = z.object({
   notes:  z.string().optional(),
 })
 
-export type ProductParams      = z.infer<typeof productParamsSchema>
-export type DocumentQuery      = z.infer<typeof documentQuerySchema>
+type ProductParams      = z.infer<typeof productParamsSchema>
+type DocumentQuery      = z.infer<typeof documentQuerySchema>
 export type UpdateDocumentBody = z.infer<typeof updateDocumentSchema>
-export type TransitionStatusBody = z.infer<typeof transitionStatusSchema>
+type TransitionStatusBody = z.infer<typeof transitionStatusSchema>

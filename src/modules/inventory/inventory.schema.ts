@@ -13,7 +13,7 @@ export const createInventoryItemSchema = z.object({
 
 export const updateInventoryItemSchema = createInventoryItemSchema.partial()
 
-export const inventoryItemResponseSchema = z.object({
+const inventoryItemResponseSchema = z.object({
   id:                z.string().uuid(),
   material:          z.string(),
   unit:              z.enum(['Kg', 'L']),
@@ -33,7 +33,7 @@ export const receiptPricesQuerySchema = z.object({
 export type CreateInventoryItemBody = z.infer<typeof createInventoryItemSchema>
 export type UpdateInventoryItemBody = z.infer<typeof updateInventoryItemSchema>
 export type StockStatus = 'unknown' | 'out_of_stock' | 'low' | 'in_stock'
-export type ReceiptPricesQuery = z.infer<typeof receiptPricesQuerySchema>
+type ReceiptPricesQuery = z.infer<typeof receiptPricesQuerySchema>
 
 /** GET /inventory/price-history — how many recent purchases to return per material. */
 export const priceHistoryQuerySchema = z.object({

@@ -25,7 +25,7 @@ function toResponse(row: typeof companyDocuments.$inferSelect) {
   }
 }
 
-export type CompanyDocumentRow = ReturnType<typeof toResponse>
+type CompanyDocumentRow = ReturnType<typeof toResponse>
 
 /**
  * Plain existence check against `companies` — mirrors
@@ -42,20 +42,20 @@ function sanitizeFilename(filename: string): string {
   return filename.replace(/[/\\]/g, '_')
 }
 
-export interface UploadedFileInput {
+interface UploadedFileInput {
   filename:   string
   mimetype:   string
   fileStream: NodeJS.ReadableStream
 }
 
-export interface WrittenFile {
+interface WrittenFile {
   fullPath:  string
   sizeBytes: number
   filename:  string
   mimetype:  string
 }
 
-export type WriteUploadedFileResult = WrittenFile | { code: 'UPLOAD_FAILED' }
+type WriteUploadedFileResult = WrittenFile | { code: 'UPLOAD_FAILED' }
 
 /**
  * Streams the multipart file part to disk and returns the written path.
@@ -91,7 +91,7 @@ export async function writeUploadedFile(companyId: string, file: UploadedFileInp
   }
 }
 
-export type SaveDocumentRecordResult = CompanyDocumentRow | { code: 'UPLOAD_FAILED' }
+type SaveDocumentRecordResult = CompanyDocumentRow | { code: 'UPLOAD_FAILED' }
 
 export async function saveDocumentRecord(
   companyId: string,

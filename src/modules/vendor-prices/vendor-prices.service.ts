@@ -64,7 +64,7 @@ function toResponse(row: JoinedRow) {
   }
 }
 
-export type VendorPriceRow = ReturnType<typeof toResponse>
+type VendorPriceRow = ReturnType<typeof toResponse>
 
 /**
  * Plain existence check against `vendors` — deliberately does NOT import
@@ -77,7 +77,7 @@ export async function vendorExists(vendorId: string): Promise<boolean> {
   return !!row
 }
 
-export async function inventoryItemExists(inventoryItemId: string): Promise<boolean> {
+async function inventoryItemExists(inventoryItemId: string): Promise<boolean> {
   const [row] = await db.select({ id: inventoryItems.id }).from(inventoryItems).where(eq(inventoryItems.id, inventoryItemId))
   return !!row
 }
@@ -118,7 +118,7 @@ function subtractOneDay(dateStr: string): string {
   return d.toISOString().slice(0, 10)
 }
 
-export type CreateVendorPriceResult =
+type CreateVendorPriceResult =
   | VendorPriceRow
   | { code: 'VENDOR_NOT_FOUND' }
   | { code: 'ITEM_NOT_FOUND' }

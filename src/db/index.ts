@@ -15,5 +15,3 @@ export const db = drizzle(queryClient, { schema, logger: env.LOG_LEVEL === 'debu
 export const closeDb = () => queryClient.end()
 
 export type DB = typeof db
-
-export { schema }

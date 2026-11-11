@@ -68,7 +68,7 @@ const KG_ONLY = new Set(['bht (butylated hydroxytoluene)', 'antioxidant (dbpc)',
 
 const norm = (name: string) => name.toLowerCase().replace(/\s+/g, ' ').trim()
 
-export type DensityFill = {
+type DensityFill = {
   productKey: string; variantName: string; materialName: string; unit: string
   density: number; source: 'formula doc' | 'table'
 }

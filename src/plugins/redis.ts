@@ -62,7 +62,7 @@ export async function cacheDel(key: string): Promise<void> {
   }
 }
 
-export async function cacheDelPattern(pattern: string): Promise<void> {
+async function cacheDelPattern(pattern: string): Promise<void> {
   const redis = getRedis()
   if (!redis) return
   try {

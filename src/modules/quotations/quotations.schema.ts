@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const lineItemSchema = z.object({
+const lineItemSchema = z.object({
   catalogId:   z.number().int().positive(),
   description: z.string().min(1).max(300),
   code:        z.string().min(1).max(100),

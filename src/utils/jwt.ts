@@ -8,7 +8,7 @@ const PUBLIC_KEY  = Buffer.from(env.JWT_PUBLIC_KEY_B64, 'base64').toString('utf-
 
 // `typ` separates the two token kinds: both are signed with the same RS256 key, so
 // without it a refresh token presented as a Bearer access token would verify.
-export interface AccessTokenPayload {
+interface AccessTokenPayload {
   typ:             'access'
   sub:             string     // user id
   name:            string
@@ -17,7 +17,7 @@ export interface AccessTokenPayload {
   allowedProducts: string[] | null
 }
 
-export interface RefreshTokenPayload {
+interface RefreshTokenPayload {
   typ: 'refresh'
   sub: string   // user id
   jti: string   // unique token id (matches refresh_tokens.id in DB)
@@ -52,7 +52,7 @@ export function signRefreshToken(userId: string, tokenId: string, secret: string
   })
 }
 
-export function verifyAccessToken(token: string): AccessTokenPayload {
+function verifyAccessToken(token: string): AccessTokenPayload {
   const payload = jwt.verify(token, PUBLIC_KEY, { algorithms: ['RS256'] }) as AccessTokenPayload
   if (payload.typ !== 'access' || !payload.role) throw new jwt.JsonWebTokenError('wrong token type')
   return payload

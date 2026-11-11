@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { PACK_CONTAINER_IDS } from '../batches/packContainers.js'
 
-export const WORK_ORDER_STATUSES = ['draft', 'planned', 'released_to_production', 'in_progress', 'completed', 'cancelled'] as const
+const WORK_ORDER_STATUSES = ['draft', 'planned', 'released_to_production', 'in_progress', 'completed', 'cancelled'] as const
 
 const demandSchema = z.object({
   orderId: z.string().uuid(),
@@ -36,7 +36,7 @@ export const createWorkOrderSchema = z.object({
   }
 })
 
-export const WORK_ORDER_VIEWS = ['active', 'awaiting_qc', 'ready_to_ship', 'exceptions', 'done'] as const
+const WORK_ORDER_VIEWS = ['active', 'awaiting_qc', 'ready_to_ship', 'exceptions', 'done'] as const
 
 export const listWorkOrdersQuerySchema = z.object({
   status: z.enum(WORK_ORDER_STATUSES).optional(),

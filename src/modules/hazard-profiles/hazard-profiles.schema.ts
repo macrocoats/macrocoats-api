@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const hazardClassificationSchema = z.object({
+const hazardClassificationSchema = z.object({
   class:           z.string().min(1),
   category:        z.string().min(1),
   tagType:         z.string().min(1),

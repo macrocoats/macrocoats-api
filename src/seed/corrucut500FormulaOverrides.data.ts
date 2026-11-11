@@ -1,11 +1,11 @@
-export type FormulaPreparationStep = {
+type FormulaPreparationStep = {
   step: number
   title: string
   detail: string
   materialNames?: string[]
 }
 
-export type FormulaOverrides = {
+type FormulaOverrides = {
   preparationStatus: 'draft_review_required' | 'approved'
   preparation: FormulaPreparationStep[]
 }

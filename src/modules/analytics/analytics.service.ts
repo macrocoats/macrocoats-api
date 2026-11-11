@@ -5,9 +5,9 @@ import { cacheGet, cacheSet } from '../../plugins/redis.js'
 
 /** Document types that count as a customer "document open" in the access analytics. */
 export const ACCESS_DOC_TYPES = ['tds', 'msds'] as const
-export type AccessDocType = typeof ACCESS_DOC_TYPES[number]
+type AccessDocType = typeof ACCESS_DOC_TYPES[number]
 
-export interface AccessLogQuery {
+interface AccessLogQuery {
   companyKey?: string
   productKey?: string
   docType?: AccessDocType
@@ -131,10 +131,10 @@ async function buildSummary() {
 
 /* ── Access overview (Operations Center → Insights → Document access) ─────── */
 
-export const ACCESS_OVERVIEW_DAYS = [7, 30, 90] as const
-export type AccessOverviewDays = typeof ACCESS_OVERVIEW_DAYS[number]
+const ACCESS_OVERVIEW_DAYS = [7, 30, 90] as const
+type AccessOverviewDays = typeof ACCESS_OVERVIEW_DAYS[number]
 
-export interface AccessOverviewQuery {
+interface AccessOverviewQuery {
   days: AccessOverviewDays
   companyKey?: string
   productKey?: string

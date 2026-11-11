@@ -21,7 +21,7 @@ const SANITIZED_MSDS_NOTE =
   'Exact formulation is proprietary. Functional ingredient descriptions are provided for safety and emergency purposes only.'
 
 /** Buckets a real percentage into the same free-text display-range style used in seed data. */
-export function percentToBand(percent: number | null): string {
+function percentToBand(percent: number | null): string {
   if (percent === null) return 'Balance'
   if (percent < 1)  return '<1%'
   if (percent < 2)  return '1–2%'

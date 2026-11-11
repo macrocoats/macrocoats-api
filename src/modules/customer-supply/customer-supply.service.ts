@@ -229,7 +229,7 @@ export async function listInvoicesWithDetails(opts: { force?: boolean; readLimit
  * Zoho in rate-limit-sized rounds, pausing `pauseMs` between rounds. Returns
  * how many were read and how many are still pending.
  */
-export async function fillInvoiceDetails(opts: { maxReads: number; pauseMs?: number; log?: (msg: string) => void }) {
+async function fillInvoiceDetails(opts: { maxReads: number; pauseMs?: number; log?: (msg: string) => void }) {
   let read = 0
   let pending = Infinity
   let failed = 0
@@ -253,7 +253,7 @@ const localToday = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-export type SupplySummaryResult =
+type SupplySummaryResult =
   | (SupplySummary & { source: 'zoho'; generatedAt: string; coverage: SupplySummary['coverage'] & { detailsPending: number; detailsFailed: number; invoicesListed: number } })
   | { code: 'ZOHO_NOT_CONFIGURED' }
   | { code: 'ZOHO_SYNC_FAILED'; message: string }
@@ -298,7 +298,7 @@ function toPipelineResponse(row: CustomerPipelineEntry) {
   }
 }
 
-export type PipelineEntryResponse = ReturnType<typeof toPipelineResponse>
+type PipelineEntryResponse = ReturnType<typeof toPipelineResponse>
 
 export async function listPipelineEntries(includeArchived: boolean): Promise<PipelineEntryResponse[]> {
   const rows = await db

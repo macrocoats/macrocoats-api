@@ -54,7 +54,7 @@ const COMPANY_LOGO_TYPES: Record<string, string> = {
 }
 const MAX_COMPANY_LOGO_BYTES = 2 * 1024 * 1024
 
-export type SaveCompanyLogoResult =
+type SaveCompanyLogoResult =
   | { company: ReturnType<typeof toResponse> }
   | { code: 'INVALID_TYPE' | 'TOO_LARGE' | 'UPLOAD_FAILED' | 'NOT_FOUND' }
 

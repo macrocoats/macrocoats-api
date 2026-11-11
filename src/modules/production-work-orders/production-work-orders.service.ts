@@ -143,7 +143,7 @@ async function resolveFormulaSnapshot(data: CreateWorkOrderBody) {
   return { revision: document.revision, status: document.status, body: document.body }
 }
 
-export type CreateWorkOrderResult =
+type CreateWorkOrderResult =
   | ReturnType<typeof toResponse>
   | { code: 'VARIANT_NOT_FOUND' | 'VARIANT_NOT_USABLE' | 'FORMULA_NOT_FOUND' | 'ORDER_ITEM_INVALID' | 'DEMAND_EXCEEDS_REMAINING'; remaining?: number }
 
@@ -285,7 +285,7 @@ function toBatchSummary(
     },
   }
 }
-export type BatchSummary = ReturnType<typeof toBatchSummary>
+type BatchSummary = ReturnType<typeof toBatchSummary>
 
 async function loadDemandSummaries(workOrderIds: string[]) {
   if (workOrderIds.length === 0) return new Map<string, DemandSummary[]>()
@@ -460,7 +460,7 @@ export async function getWorkOrder(id: string, includeFormula = false) {
 
 // ── Manual transitions (override path) ─────────────────────────────────────
 
-export type TransitionWorkOrderResult =
+type TransitionWorkOrderResult =
   | NonNullable<Awaited<ReturnType<typeof getWorkOrder>>>
   | { code: 'NOT_FOUND' | 'VERSION_CONFLICT' | 'INVALID_TRANSITION' | 'MATERIALS_NOT_READY' | 'REASON_REQUIRED' | 'FORBIDDEN'; shortages?: unknown[] }
 
@@ -539,7 +539,7 @@ function formulaRows(snapshot: Record<string, unknown>): FormulaRow[] {
   })
 }
 
-export type CreateWorkOrderBatchResult =
+type CreateWorkOrderBatchResult =
   | { batch: Record<string, unknown>; workOrder: Awaited<ReturnType<typeof getWorkOrder>>; replayed: boolean }
   | { code: 'NOT_FOUND' | 'WORK_ORDER_NOT_OPEN' | 'VERSION_CONFLICT' | 'FORMULA_EMPTY' | 'IDEMPOTENCY_KEY_REUSED' }
   | Exclude<CreateBatchResult, { batchNumber: string }>

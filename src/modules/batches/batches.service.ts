@@ -142,7 +142,7 @@ type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0]
  * service uses it to auto-advance the order and write audit events), so a
  * failed advance rolls the batch back too.
  */
-export interface CreateBatchOptions {
+interface CreateBatchOptions {
   workOrderId?: string
   clientRequestId?: string
   onCreated?: (tx: Tx, row: typeof batches.$inferSelect) => Promise<void>
@@ -152,8 +152,6 @@ export async function findBatchByClientRequestId(clientRequestId: string) {
   const [row] = await db.select().from(batches).where(eq(batches.clientRequestId, clientRequestId))
   return row ?? null
 }
-
-export { toOperatorBatchResponse }
 
 export async function createBatch(data: CreateBatchBody, createdBy: string | null, options: CreateBatchOptions = {}): Promise<CreateBatchResult> {
   // ── Variant approval gate ────────────────────────────────────────────────
@@ -423,7 +421,7 @@ export async function clearCoaSnapshot(batchNumber: string): Promise<boolean> {
   return result.length > 0
 }
 
-export type ReleaseBatchResult =
+type ReleaseBatchResult =
   | ReturnType<typeof toBatchResponse>
   | { code: 'BATCH_NOT_FOUND' | 'BATCH_NOT_RELEASABLE' | 'VERSION_CONFLICT'; blockingReasons?: string[] }
 
@@ -475,7 +473,7 @@ export async function releaseBatches(batchNumbers: string[], releasedBy: string,
   return results
 }
 
-export interface ReturnedMaterial { material: string; quantity: number; unit: string; returned: boolean }
+interface ReturnedMaterial { material: string; quantity: number; unit: string; returned: boolean }
 
 /** What this batch has taken from each item and not yet given back, from its movement records. */
 async function outstandingIssues(tx: Tx, batchId: string) {

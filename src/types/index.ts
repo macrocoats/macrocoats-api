@@ -38,7 +38,7 @@ export const PRODUCT_KEYS = [
   'unikstrip-hd',
   'uni-dunk-oil',
 ] as const
-export type ProductKey = typeof PRODUCT_KEYS[number]
+type ProductKey = typeof PRODUCT_KEYS[number]
 
 export const PROCESS_TAGS = [
   'cleaning',
@@ -52,7 +52,7 @@ export const PROCESS_TAGS = [
   'paint_stripping',
   'process_additive',
 ] as const
-export type ProcessTag = typeof PROCESS_TAGS[number]
+type ProcessTag = typeof PROCESS_TAGS[number]
 
 /** Doc types restricted to superadmin only */
 export const RESTRICTED_DOC_TYPES: DocType[] = ['formula', 'label', 'coa']

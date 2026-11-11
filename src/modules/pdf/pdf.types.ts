@@ -2,11 +2,11 @@
 
 export type DocType = 'quotation' | 'tds' | 'msds' | 'brochure' | 'coa' | 'batch' | 'investor-report' | 'letterhead';
 
-export type OutputFormat = 'buffer' | 'stream' | 'file';
+type OutputFormat = 'buffer' | 'stream' | 'file';
 
 // ─── Shared building blocks ───────────────────────────────────────────────────
 
-export interface CompanyInfo {
+interface CompanyInfo {
   name: string;
   addressLine1: string;
   addressLine2: string;
@@ -18,7 +18,7 @@ export interface CompanyInfo {
   website: string;
 }
 
-export interface CustomerInfo {
+interface CustomerInfo {
   companyName: string;
   contactPerson?: string;
   addressLine1?: string;
@@ -31,7 +31,7 @@ export interface CustomerInfo {
   email?: string;
 }
 
-export interface SignatureBlock {
+interface SignatureBlock {
   preparedBy?: string;
   checkedBy?: string;
   approvedBy?: string;
@@ -40,7 +40,7 @@ export interface SignatureBlock {
 
 // ─── Quotation ────────────────────────────────────────────────────────────────
 
-export interface QuotationLineItem {
+interface QuotationLineItem {
   sNo: number;
   productName: string;
   productCode?: string;
@@ -52,7 +52,7 @@ export interface QuotationLineItem {
   amount: number;
 }
 
-export interface QuotationPayload {
+interface QuotationPayload {
   quotationNumber: string;
   quotationDate: string;
   validUntil?: string;
@@ -73,14 +73,14 @@ export interface QuotationPayload {
 
 // ─── TDS ──────────────────────────────────────────────────────────────────────
 
-export interface TDSProperty {
+interface TDSProperty {
   parameter: string;
   value: string;
   unit?: string;
   testMethod?: string;
 }
 
-export interface TDSPayload {
+interface TDSPayload {
   productName: string;
   productCode: string;
   productLine: string;
@@ -103,18 +103,18 @@ export interface TDSPayload {
 
 // ─── MSDS ─────────────────────────────────────────────────────────────────────
 
-export interface HazardStatement {
+interface HazardStatement {
   code: string;
   statement: string;
 }
 
-export interface MSDSSection {
+interface MSDSSection {
   sectionNumber: number;
   title: string;
   content: string | string[] | Record<string, string>;
 }
 
-export interface MSDSPayload {
+interface MSDSPayload {
   productName: string;
   productCode: string;
   productLine: string;
@@ -130,7 +130,7 @@ export interface MSDSPayload {
 
 // ─── COA ──────────────────────────────────────────────────────────────────────
 
-export interface COATestResult {
+interface COATestResult {
   parameter: string;
   specification: string;
   result: string;
@@ -139,7 +139,7 @@ export interface COATestResult {
   status: 'PASS' | 'FAIL' | 'NA';
 }
 
-export interface COAPayload {
+interface COAPayload {
   productName: string;
   productCode: string;
   productLine: string;
@@ -156,7 +156,7 @@ export interface COAPayload {
 
 // ─── Batch Report ─────────────────────────────────────────────────────────────
 
-export interface BatchComponent {
+interface BatchComponent {
   sNo: number;
   rawMaterial: string;
   grade?: string;
@@ -165,7 +165,7 @@ export interface BatchComponent {
   percentage?: number;
 }
 
-export interface BatchPayload {
+interface BatchPayload {
   batchNumber: string;
   productName: string;
   productLine: string;
@@ -182,7 +182,7 @@ export interface BatchPayload {
 // ─── Investor Report (aspirational — see module CLAUDE.md: generatePDF's
 // actual payload is untyped Record<string, unknown>) ───────────────────────────
 
-export interface InvestorReportPayload {
+interface InvestorReportPayload {
   range: string;
   from: string;
   to: string;
@@ -195,7 +195,7 @@ export interface InvestorReportPayload {
 
 // ─── Letterhead ───────────────────────────────────────────────────────────────
 
-export interface LetterheadPayload {
+interface LetterheadPayload {
   referenceNo?: string;
   letterDate?: string;
   customerName?: string;
@@ -217,7 +217,7 @@ export interface PDFOptions {
   filename?: string;
 }
 
-export interface RenderRequest<T = unknown> {
+interface RenderRequest<T = unknown> {
   docType: DocType;
   payload: T;
   options?: PDFOptions;
@@ -243,7 +243,7 @@ export class PDFError extends Error {
   }
 }
 
-export type PDFErrorCode =
+type PDFErrorCode =
   | 'TEMPLATE_NOT_FOUND'
   | 'INVALID_PAYLOAD'
   | 'RENDER_FAILED'

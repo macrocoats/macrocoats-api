@@ -9,7 +9,7 @@
  * templates (`flammable`, `corrosive`, `skull`, …), not `ghs02`-style ids.
  */
 
-export type PictogramId =
+type PictogramId =
   | 'explosive' | 'flammable' | 'oxidiser' | 'corrosive'
   | 'skull' | 'irritant' | 'healthhazard' | 'environment'
 
@@ -40,10 +40,10 @@ const H_CODE_TO_PICTOGRAM: Record<string, PictogramId> = {
 }
 
 /** Statements with no pictogram: Aquatic Chronic 3/4 (CLP Annex I) and UN-GHS eye irritation 2B. */
-export const NO_PICTOGRAM_CODES = new Set(['H412', 'H413', 'H320'])
+const NO_PICTOGRAM_CODES = new Set(['H412', 'H413', 'H320'])
 
 /** "h 314", "H314+H318" → ['H314', 'H318']. */
-export const splitHCodes = (raw: string | null | undefined): string[] =>
+const splitHCodes = (raw: string | null | undefined): string[] =>
   String(raw ?? '').toUpperCase().replace(/\s+/g, '').split('+').filter(Boolean)
 
 /**

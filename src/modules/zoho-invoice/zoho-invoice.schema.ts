@@ -20,5 +20,5 @@ export const listZohoInvoicesQuerySchema = z.object({
   customer: z.string().min(1).max(100).optional(),
 })
 
-export type ZohoInvoiceParams       = z.infer<typeof zohoInvoiceParamsSchema>
+type ZohoInvoiceParams       = z.infer<typeof zohoInvoiceParamsSchema>
 export type ListZohoInvoicesQuery   = z.infer<typeof listZohoInvoicesQuerySchema>

@@ -107,7 +107,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Cache Puppeteer browser
@@ -160,6 +160,9 @@ jobs:
 
       - name: Typecheck
         run: npm run lint
+
+      - name: Check for unused exports and types
+        run: npm run knip
 
       # Report-only until the open advisories (several need major upgrades) are
       # cleared; Dependabot raises the upgrade PRs.

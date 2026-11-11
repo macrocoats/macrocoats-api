@@ -29,7 +29,7 @@ function toDispatchResponse(row: typeof dispatches.$inferSelect) {
   }
 }
 
-export type DispatchRow = ReturnType<typeof toDispatchResponse>
+type DispatchRow = ReturnType<typeof toDispatchResponse>
 
 // ── Row shape returned by the raw joined SELECT (dispatches ⋈ batches ⋈ companies ⋈ users) ──
 interface DispatchJoinRow {
@@ -83,7 +83,7 @@ function toJoinedResponse(row: DispatchJoinRow) {
   }
 }
 
-export type DispatchJoinedRow = ReturnType<typeof toJoinedResponse>
+type DispatchJoinedRow = ReturnType<typeof toJoinedResponse>
 
 const SELECT_COLUMNS = sql`
   d.id,
@@ -116,7 +116,7 @@ const JOINS = sql`
   LEFT JOIN users u ON u.id = d.created_by
 `
 
-export type CreateDispatchResult =
+type CreateDispatchResult =
   | DispatchRow
   | { code: 'FINISHED_GOODS_NOT_FOUND' }
   | { code: 'BATCH_NOT_RELEASED' }
@@ -261,7 +261,7 @@ export async function createDispatch(data: CreateDispatchBody, createdBy: string
   })
 }
 
-export type UpdateDispatchResult =
+type UpdateDispatchResult =
   | DispatchRow
   | { code: 'DISPATCH_NOT_FOUND' }
   | { code: 'DISPATCH_ALREADY_VOIDED' }
@@ -357,7 +357,7 @@ function updateDispatchTx(
   })
 }
 
-export type VoidDispatchResult =
+type VoidDispatchResult =
   | DispatchRow
   | { code: 'DISPATCH_NOT_FOUND' }
   | { code: 'DISPATCH_ALREADY_VOIDED' }

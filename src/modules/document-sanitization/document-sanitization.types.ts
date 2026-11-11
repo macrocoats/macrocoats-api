@@ -12,7 +12,7 @@ export interface SanitizedTdsCompositionRow {
   compat:   string
 }
 
-export interface SanitizedMsdsIngredientRow {
+interface SanitizedMsdsIngredientRow {
   name:        string
   description: string
   percent:     string

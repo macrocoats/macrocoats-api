@@ -80,5 +80,5 @@ export const dispatchTrendQuerySchema = z.object({
 export type CreateDispatchBody   = z.infer<typeof createDispatchSchema>
 export type DispatchTrendQuery   = z.infer<typeof dispatchTrendQuerySchema>
 export type UpdateDispatchBody   = z.infer<typeof updateDispatchSchema>
-export type VoidDispatchBody     = z.infer<typeof voidDispatchSchema>
+type VoidDispatchBody     = z.infer<typeof voidDispatchSchema>
 export type ListDispatchesQuery  = z.infer<typeof listDispatchesQuerySchema>

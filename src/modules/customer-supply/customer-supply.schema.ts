@@ -11,8 +11,8 @@ export const supplySummaryQuerySchema = z.object({
   refresh:    z.enum(['true', 'false']).optional(),
 }).refine((q) => !q.from || !q.to || q.from <= q.to, { message: '`from` must be on or before `to`', path: ['from'] })
 
-export const TRIAL_STATUSES = ['unknown', 'not_started', 'planned', 'in_progress', 'completed', 'failed', 'not_required'] as const
-export const VENDOR_REGISTRATION_STATUSES = ['unknown', 'not_started', 'awaiting', 'submitted', 'registered', 'not_required'] as const
+const TRIAL_STATUSES = ['unknown', 'not_started', 'planned', 'in_progress', 'completed', 'failed', 'not_required'] as const
+const VENDOR_REGISTRATION_STATUSES = ['unknown', 'not_started', 'awaiting', 'submitted', 'registered', 'not_required'] as const
 
 const optionalText = (max: number) => z.string().trim().max(max).nullable().optional()
 

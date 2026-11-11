@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const DATE_RANGES = ['today', 'week', 'month', 'quarter', 'year', 'custom'] as const
+const DATE_RANGES = ['today', 'week', 'month', 'quarter', 'year', 'custom'] as const
 
 export const dashboardFilterSchema = z.object({
   range:      z.enum(DATE_RANGES).default('month'),
@@ -19,4 +19,4 @@ export const projectionsQuerySchema = z.object({
 
 export type DashboardFilter    = z.infer<typeof dashboardFilterSchema>
 export type ProjectionsQuery   = z.infer<typeof projectionsQuerySchema>
-export type DateRange          = typeof DATE_RANGES[number]
+type DateRange          = typeof DATE_RANGES[number]

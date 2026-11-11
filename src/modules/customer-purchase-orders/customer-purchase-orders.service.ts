@@ -190,7 +190,7 @@ export async function createOrder(data: CreateCustomerOrderBody, createdBy: stri
 
 // ── Update (PUT — full replace of header + items) ────────────────────────────────
 
-export type UpdateOrderResult =
+type UpdateOrderResult =
   | ReturnType<typeof toOrderResponse>
   | { code: 'NOT_FOUND' }
   | { code: 'LOCKED' }
@@ -306,7 +306,7 @@ function updateOrderTx(id: string, data: UpdateCustomerOrderBody): Promise<Updat
 
 // ── Status transitions ───────────────────────────────────────────────────────────
 
-export type SetStatusResult =
+type SetStatusResult =
   | ReturnType<typeof toOrderResponse>
   | { code: 'NOT_FOUND' }
   | { code: 'INVALID_TRANSITION' }
@@ -694,7 +694,7 @@ export async function getOrderById(id: string) {
 
 // ── Batch linking ─────────────────────────────────────────────────────────────
 
-export type LinkBatchResult =
+type LinkBatchResult =
   | ReturnType<typeof toBatchLinkResponse>
   | { code: 'ORDER_NOT_FOUND' }
   | { code: 'ITEM_NOT_FOUND' }
@@ -881,15 +881,15 @@ function sanitizeFilename(filename: string): string {
   return filename.replace(/[/\\]/g, '_')
 }
 
-export interface UploadedFileInput {
+interface UploadedFileInput {
   filename:   string
   mimetype:   string
   fileStream: NodeJS.ReadableStream
 }
-export interface WrittenFile {
+interface WrittenFile {
   fullPath: string; sizeBytes: number; filename: string; mimetype: string
 }
-export type WriteUploadedFileResult = WrittenFile | { code: 'UPLOAD_FAILED' }
+type WriteUploadedFileResult = WrittenFile | { code: 'UPLOAD_FAILED' }
 
 /**
  * Must be awaited BEFORE reading other multipart fields — see the busboy
@@ -916,7 +916,7 @@ export async function writeUploadedFile(orderId: string, file: UploadedFileInput
   }
 }
 
-export type SaveDocumentRecordResult = ReturnType<typeof toDocumentResponse> | { code: 'UPLOAD_FAILED' }
+type SaveDocumentRecordResult = ReturnType<typeof toDocumentResponse> | { code: 'UPLOAD_FAILED' }
 
 export async function saveDocumentRecord(
   orderId: string, written: WrittenFile, meta: DocumentMeta, uploadedBy: string | null,

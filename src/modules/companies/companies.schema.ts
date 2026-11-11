@@ -42,5 +42,5 @@ export const updateCompanyFormulaAssignmentSchema = z.object({
 
 export type CreateCompanyBody = z.infer<typeof createCompanySchema>
 export type UpdateCompanyBody = z.infer<typeof updateCompanySchema>
-export type AssignCompanyFormulaBody = z.infer<typeof assignCompanyFormulaSchema>
-export type UpdateCompanyFormulaAssignmentBody = z.infer<typeof updateCompanyFormulaAssignmentSchema>
+type AssignCompanyFormulaBody = z.infer<typeof assignCompanyFormulaSchema>
+type UpdateCompanyFormulaAssignmentBody = z.infer<typeof updateCompanyFormulaAssignmentSchema>

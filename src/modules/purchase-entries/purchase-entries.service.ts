@@ -87,7 +87,7 @@ function toResponse(row: JoinedRow) {
   }
 }
 
-export type PurchaseEntryRow = ReturnType<typeof toResponse>
+type PurchaseEntryRow = ReturnType<typeof toResponse>
 
 function joinedQuery() {
   return db
@@ -279,7 +279,7 @@ export async function getRecentPurchasesByItem(limit: number) {
   return byItem
 }
 
-export type CreatePurchaseEntryResult =
+type CreatePurchaseEntryResult =
   | PurchaseEntryRow
   | { code: 'PRICE_NOT_AVAILABLE' }
 

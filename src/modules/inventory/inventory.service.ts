@@ -42,7 +42,7 @@ export async function getAllItems() {
   return rows.map(toResponse)
 }
 
-export async function getItemById(id: string) {
+async function getItemById(id: string) {
   const [row] = await db.select().from(inventoryItems).where(eq(inventoryItems.id, id))
   return row ? toResponse(row) : null
 }
@@ -197,7 +197,7 @@ function normalizeMaterialName(name: string): string {
   return name.trim().toLowerCase().replace(/[-_\s]+/g, ' ')
 }
 
-export type ReceiptPriceSource = 'purchase_entry' | 'vendor_price' | 'inventory_current'
+type ReceiptPriceSource = 'purchase_entry' | 'vendor_price' | 'inventory_current'
 
 /**
  * For every inventory item, resolves the best-known unit price as of `date`:

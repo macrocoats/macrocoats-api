@@ -204,7 +204,7 @@ export function enqueueStoredPdf(productLine: string, docType: StoredDocType): v
 }
 
 /** Queue TDS, MSDS and brochure for every active product. */
-export async function enqueueAllStoredPdfs(): Promise<number> {
+async function enqueueAllStoredPdfs(): Promise<number> {
   const rows = await db
     .select({ key: products.key })
     .from(products)
