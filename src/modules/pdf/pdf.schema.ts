@@ -11,7 +11,7 @@ import type { DocType } from './pdf.types.js'
 const text     = (max = 500) => z.string().max(max)
 const optText  = (max = 500) => z.string().max(max).nullish()
 const numOrStr = z.union([z.number(), z.string().max(50)])
-const object   = z.record(z.unknown())
+const object   = z.record(z.string(), z.unknown())
 
 const productLine = z.enum(PRODUCT_KEYS as unknown as [string, ...string[]])
 

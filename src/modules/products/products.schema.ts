@@ -14,7 +14,7 @@ export const documentQuerySchema = z.object({
 export const updateDocumentSchema = z.object({
   docNumber: z.string().optional(),
   revision:  z.string().optional(),
-  body:      z.record(z.unknown()).optional(),
+  body:      z.record(z.string(), z.unknown()).optional(),
   footer:    z.object({
     left:   z.string(),
     center: z.string(),

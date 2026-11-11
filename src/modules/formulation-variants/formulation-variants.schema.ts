@@ -28,7 +28,7 @@ export const createVariantSchema = z.object({
   isDefault:   z.boolean().default(false),
   status:            z.enum(CREATABLE_VARIANT_STATUSES as unknown as [string, ...string[]]).default('approved'),
   sourceVariantId:   z.string().uuid().nullable().optional(),
-  optimizationMeta:  z.record(z.unknown()).nullable().optional(),
+  optimizationMeta:  z.record(z.string(), z.unknown()).nullable().optional(),
   assignedCompanyIds: z.array(z.string().uuid()).optional(),
   processTags: z.array(z.enum(PROCESS_TAGS)).max(PROCESS_TAGS.length).optional(),
   components:  z.array(componentBodySchema).min(1),
