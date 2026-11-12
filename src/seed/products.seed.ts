@@ -4925,7 +4925,6 @@ const DOCS: Array<{
           { property: 'Specific Gravity @ 25 °C', value: '1.01 – 1.02',       unit: '—',    method: 'Calculated — from component densities; not lab-measured' },
           { property: 'Phase Separation',       value: 'None after 24 hours', unit: '—',    method: 'Preliminary requirement — visual after 24 h standing; pending lab confirmation' },
           { property: 'Working Concentration',  value: 'As supplied',         unit: '—',    method: 'Used neat by immersion' },
-          { property: 'Reference Batch Size',   value: '2.857',               unit: 'kg',   method: 'As supplied — laboratory batch, approximately 2.8 L' },
         ],
         composition: [
           { name: 'Aromatic Alcohol Solvent',    function: 'Primary paint-stripping solvent', percent: '60–80% w/w', compat: 'Mild steel' },
