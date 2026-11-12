@@ -79,7 +79,7 @@ describe('POST /v1/auth/token', () => {
       .expect(200)
 
     expect(res.body.user.companyName).toBe('sanmar')
-    expect(res.body.redirectTo).toBe('/formulas')
+    expect(res.body.redirectTo).toBe('/portal')
   })
 
   it('returns 401 on invalid token', async () => {

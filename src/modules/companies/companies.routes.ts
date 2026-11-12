@@ -134,7 +134,7 @@ export async function companyRoutes(app: FastifyInstance) {
       return reply.code(201).send({ data: company })
     } catch (err: any) {
       if (pgErrorCode(err) === '23505') {
-        return reply.code(409).send({ error: AppErrors.COMPANY_KEY_EXISTS, message: `A company with key "${body.data.key}" already exists.` })
+        return reply.code(409).send({ error: AppErrors.COMPANY_KEY_EXISTS, message: 'The company key or Zoho customer ID is already assigned.' })
       }
       throw err
     }
@@ -147,10 +147,14 @@ export async function companyRoutes(app: FastifyInstance) {
       return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
     }
 
-    const company = await updateCompany(request.params.id, body.data)
-    if (!company) return reply.code(404).send({ error: AppErrors.COMPANY_NOT_FOUND })
-
-    return reply.send({ data: company })
+    try {
+      const company = await updateCompany(request.params.id, body.data)
+      if (!company) return reply.code(404).send({ error: AppErrors.COMPANY_NOT_FOUND })
+      return reply.send({ data: company })
+    } catch (err) {
+      if (pgErrorCode(err) === '23505') return reply.code(409).send({ error: 'COMPANY_MAPPING_EXISTS', message: 'This Zoho customer ID is already assigned to another company.' })
+      throw err
+    }
   })
 
   // ── POST /companies/:id/rotate-token ──────────────────────────────────────

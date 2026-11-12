@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { PRODUCT_KEYS } from '../../types/index.js'
 
 const contactFields = {
+  zohoCustomerId: z.string().regex(/^\d{1,50}$/, 'Use the numeric Zoho customer ID').optional(),
   contactPerson: z.string().min(1).max(200).optional(),
   email:         z.string().email('Invalid email format').optional(),
   phone:         z.string().regex(/^\d{10}$/, 'Must be 10 digits').optional(),

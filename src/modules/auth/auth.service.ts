@@ -84,7 +84,7 @@ export async function loginWithToken(
 
   const result = await issueTokens(user)
 
-  const redirectTo = '/formulas'
+  const redirectTo = '/portal'
 
   return { ...result, redirectTo }
 }

@@ -1,3 +1,4 @@
+import { customerPortalRoutes } from './modules/customer-portal/customer-portal.routes.js'
 import Fastify from 'fastify'
 import multipart from '@fastify/multipart'
 import helmet from '@fastify/helmet'
@@ -171,6 +172,7 @@ export async function buildApp() {
   await app.register(productionWorkOrderRoutes,   { prefix: `${prefix}/production-work-orders` })
   await app.register(letterheadRoutes,            { prefix: `${prefix}/letterheads` })
   await app.register(zohoInvoiceRoutes,           { prefix: `${prefix}/zoho-invoices` })
+  await app.register(customerPortalRoutes, { prefix: `${prefix}/customer-portal` })
   await app.register(customerSupplyRoutes,        { prefix: `${prefix}/customer-supply` })
 
   // ── 404 handler ───────────────────────────────────────────────────────────

@@ -7,6 +7,7 @@ export const companies = pgTable('companies', {
   id:             uuid('id').primaryKey().defaultRandom(),
   key:            text('key').notNull().unique(),          // 'rane', 'tvs', etc.
   displayName:    text('display_name').notNull(),
+  zohoCustomerId: text('zoho_customer_id').unique(),
   accessToken:    text('access_token').notNull().unique(), // /access/:token value
   tokenExpiresAt: timestamp('token_expires_at', { withTimezone: true }),  // null = never
   contactPerson:  text('contact_person'),

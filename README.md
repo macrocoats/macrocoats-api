@@ -809,3 +809,23 @@ Tests run sequentially (`singleFork: true`) because they share DB state. Never a
 
 **Macro Coats Pvt Ltd** · Chennai · India
 `info@macrocoats.in` · `+91-9444961815`
+
+## Customer portal
+
+Company accounts use the read-only `/v1/customer-portal` API. Every request checks the live user-to-company binding and company access expiry. Customer endpoints never accept a caller-selected company as authorization.
+
+- `GET /company`: selected company/contact fields only.
+- `GET /orders?page=1&search=...` and `/orders/:id`: customer POs and safe order/delivery fields; drafts and soft-deleted orders are excluded.
+- `GET /orders/:id/documents/:documentId`: original PO PDFs only; ownership, category, PDF MIME and local storage containment are checked. Supporting/internal attachments are private.
+- `GET /invoices?page=1&search=...` and `/invoices/:id/pdf`: issued Zoho invoices scoped by the exact mapped Zoho customer ID; PDFs recheck ownership. No customer-name matching.
+- `GET /certificates?page=1&search=...` and `/certificates/:id/pdf`: passing saved CoAs on released/closed batches with a non-voided dispatch to the signed-in company. IDs here are batch UUIDs. Formulation and cost snapshots are never returned.
+
+Lists use 25 records per page and `{ data: { items, page, hasMore } }`. Invoice mapping/integration failures return explicit unavailable errors without preventing other portal features. Private responses are marked `private, no-store`. TDS/MSDS keep their existing product-permission endpoints.
+
+### Rollout and rollback
+
+Apply migration `0043_parallel_joystick.sql` through the normal migration process before deploying this API. It adds a nullable unique `companies.zoho_customer_id`; existing company data is preserved. In the administrator company editor, enter the exact numeric customer ID from Zoho Invoice. Verify mappings against known invoices before enabling customer access; no automatic name-based backfill is performed. Zoho credentials continue to use the existing environment configuration and stay server-side.
+
+Deploy the API before the matching customer frontend. To roll back, restore the previous frontend/API together; the additive nullable mapping column may remain. Company account expiry is enforced on every customer-portal request, including existing sessions. Never run integration tests against production.
+
+Regression checks: `node --env-file=.env.local node_modules/vitest/vitest.mjs run tests/integration/customer-portal.test.ts tests/integration/auth.test.ts tests/integration/products.test.ts tests/integration/companies.test.ts tests/integration/zoho-invoice.test.ts`, followed by `npm run lint` and `npm run build`. The portal suite includes local PDF rendering and needs Puppeteer's Chromium or `PUPPETEER_EXECUTABLE_PATH`.
