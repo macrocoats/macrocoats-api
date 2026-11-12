@@ -20,7 +20,7 @@ const PRODUCTS = [
   { key: 'unicut-al', displayName: 'UNICUT-AL', code: 'CA', category: 'Metal Working Fluid', subtitle: 'Semi-Synthetic Cutting & Grinding Coolant — Water Dilutable Metalworking Fluid', accentColor: '#2f6f91', defaultProcessTags: ['metalworking'] },
   { key: 'uniklean-cu', displayName: 'UNIKLEAN-CU', code: 'CU', category: 'Alkaline Cleaner', subtitle: 'Industrial Alkaline Cleaning Concentrate', accentColor: '#6b6b6b', defaultProcessTags: ['cleaning', 'degreasing'] },
   { key: 'unikbrightner', displayName: 'UNIKBRIGHTNER', code: 'UB', category: 'Metal Brightening Chemical', subtitle: 'Metal Brightening Concentrate (10× Concentrate)', accentColor: '#c17817', defaultProcessTags: ['metal_brightening'] },
-  { key: 'unikstrip-hd', displayName: 'UNIKSTRIP-HD', code: 'SH', category: 'Paint Remover', subtitle: 'Benzyl Alcohol Paint Remover — Heavy-Duty Paint Stripping from Mild Steel', accentColor: '#7a2f4f', defaultProcessTags: ['paint_stripping'] },
+  { key: 'unikstrip-hd', displayName: 'UNIKSTRIP-HD', code: 'SH', category: 'Paint Remover', subtitle: 'Heavy-Duty Paint Stripping from Mild Steel', accentColor: '#7a2f4f', defaultProcessTags: ['paint_stripping'] },
   { key: 'uni-dunk-oil', displayName: 'UNI-DUNK OIL', code: 'UD', category: 'Dunking Oil', subtitle: 'Solvent-Based Dunking Oil — Post-Machining Cleaning & Temporary Protection', accentColor: '#5a6b2d', defaultProcessTags: ['cleaning'] },
 ]
 
@@ -4942,8 +4942,8 @@ const DOCS: Array<{
         ],
         packaging: [],
         performance: [
-          { label: 'Stripping Efficiency', val: 'Not yet characterized — evaluate at 30, 60 and 120 minutes' },
-          { label: 'Steel Corrosion',      val: 'Not yet characterized — no unacceptable etching required on test coupon' },
+          { label: 'Stripping Efficiency', val: 'Formula-based assessment: high stripping potential for many organic coatings. Actual dwell time depends on coating type, thickness, cure and age; confirm on a representative test coupon.' },
+          { label: 'Steel Corrosion',      val: 'Formula-based assessment: risk of mild-steel etching increases with contact time because the system is acid-activated and contains no corrosion inhibitor. Use the shortest effective dwell time, inspect frequently and rinse immediately after stripping.' },
         ],
         safetyNote: 'WARNING — harmful if swallowed or inhaled; causes skin and serious eye irritation. Contains no corrosion inhibitor. Do not use on aluminium or galvanised steel. Refer to SDS-USH-001 before handling.',
       },
