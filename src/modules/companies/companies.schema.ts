@@ -32,6 +32,11 @@ export const updateCompanySchema = z.object({
   ...nullableContactFields,
 })
 
+// Same rule as POST /auth/change-password, so an admin-set password is never weaker.
+export const setCompanyPasswordSchema = z.object({
+  newPassword: z.string().min(12).max(200),
+})
+
 export const assignCompanyFormulaSchema = z.object({
   variantId: z.string().uuid(),
   isDefaultForCompany: z.boolean().default(false),

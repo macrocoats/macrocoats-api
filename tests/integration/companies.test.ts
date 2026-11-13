@@ -118,3 +118,37 @@ describe('companies CRUD', () => {
     expect(invalid.body.issues.fieldErrors.pincode).toBeTruthy()
   })
 })
+
+describe('customer login management', () => {
+  it('lets an admin set the login password and reset the access link', async () => {
+    const key = uniqueKey('login')
+    const created = await req()
+      .post('/v1/companies')
+      .set('Cookie', adminCookies)
+      .send({ key, displayName: 'Login Reset Industries', allowedProducts: ['uniklean-sp'] })
+      .expect(201)
+    const { id, accessToken } = created.body.data
+    createdCompanyIds.push(id)
+
+    const detail = await req().get(`/v1/companies/${id}`).set('Cookie', adminCookies).expect(200)
+    expect(detail.body.data.loginUsername).toBe(key)
+
+    // A customer session that the password change must end.
+    const session = await req().post('/v1/auth/login').send({ username: key, password: accessToken }).expect(200)
+
+    await req().post(`/v1/companies/${id}/password`).set('Cookie', adminCookies).send({ newPassword: 'short' }).expect(400)
+    await req().post(`/v1/companies/00000000-0000-0000-0000-000000000000/password`).set('Cookie', adminCookies).send({ newPassword: 'a-long-enough-password' }).expect(404)
+    await req().post(`/v1/companies/${id}/password`).set('Cookie', session.headers['set-cookie']).send({ newPassword: 'a-long-enough-password' }).expect(403)
+
+    await req().post(`/v1/companies/${id}/password`).set('Cookie', adminCookies).send({ newPassword: 'a-long-enough-password' }).expect(200)
+    await req().post('/v1/auth/login').send({ username: key, password: 'a-long-enough-password' }).expect(200)
+    await req().post('/v1/auth/login').send({ username: key, password: accessToken }).expect(401)
+    await req().post('/v1/auth/refresh').set('Cookie', session.headers['set-cookie']).expect(401)
+    // The access link is separate from the password and still works until the token is rotated.
+    await req().post('/v1/auth/token').send({ token: accessToken }).expect(200)
+
+    const rotated = await req().post(`/v1/companies/${id}/rotate-token`).set('Cookie', adminCookies).expect(200)
+    await req().post('/v1/auth/token').send({ token: accessToken }).expect(401)
+    await req().post('/v1/auth/token').send({ token: rotated.body.data.accessToken }).expect(200)
+  })
+})

@@ -202,10 +202,18 @@ export async function getCompanyById(id: string) {
     .from(companyFormulaAssignments)
     .where(eq(companyFormulaAssignments.companyId, id))
 
-  return toResponse(company, accessRows.map((r) => r.productKey), {
-    formulaCount: new Set(assignmentRows.map((r) => r.variantId)).size,
-    formulaProductKeys: Array.from(new Set(assignmentRows.map((r) => r.productKey))),
-  })
+  const [login] = await db
+    .select({ username: users.username })
+    .from(users)
+    .where(eq(users.companyId, id))
+
+  return {
+    ...toResponse(company, accessRows.map((r) => r.productKey), {
+      formulaCount: new Set(assignmentRows.map((r) => r.variantId)).size,
+      formulaProductKeys: Array.from(new Set(assignmentRows.map((r) => r.productKey))),
+    }),
+    loginUsername: login?.username ?? null,
+  }
 }
 
 export async function createCompany(data: CreateCompanyBody) {
@@ -323,6 +331,29 @@ export async function rotateCompanyToken(id: string) {
     }
 
     return { accessToken: newToken }
+  })
+}
+
+/**
+ * Admin-set password for the company's login (e.g. the customer forgot theirs).
+ * Ends open sessions; the access link keeps working — rotate the token to revoke that.
+ * Returns null when the company or its login doesn't exist.
+ */
+export async function setCompanyPassword(id: string, newPassword: string) {
+  const passwordHash = await hashPassword(newPassword)
+  return db.transaction(async (tx) => {
+    const companyUsers = await tx
+      .update(users)
+      .set({ passwordHash, updatedAt: new Date() })
+      .where(eq(users.companyId, id))
+      .returning({ id: users.id })
+    if (!companyUsers.length) return null
+
+    await tx
+      .update(refreshTokens)
+      .set({ revokedAt: new Date() })
+      .where(and(inArray(refreshTokens.userId, companyUsers.map((u) => u.id)), isNull(refreshTokens.revokedAt)))
+    return { passwordSet: true }
   })
 }
 

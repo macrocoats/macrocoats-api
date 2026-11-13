@@ -4,10 +4,10 @@ import { pgErrorCode } from '../../utils/pgError.js'
 import { authenticate, requireAuth } from '../../middleware/authenticate.js'
 import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js'
 import { AppErrors } from '../../types/errors.js'
-import { createCompanySchema, updateCompanySchema, assignCompanyFormulaSchema, updateCompanyFormulaAssignmentSchema } from './companies.schema.js'
+import { createCompanySchema, updateCompanySchema, assignCompanyFormulaSchema, updateCompanyFormulaAssignmentSchema, setCompanyPasswordSchema } from './companies.schema.js'
 import {
   listCompanies, getCompanyById, createCompany,
-  updateCompany, rotateCompanyToken, deleteCompany,
+  updateCompany, rotateCompanyToken, deleteCompany, setCompanyPassword,
   assignFormulaToCompany,
   listCompanyFormulaAssignments,
   unassignFormulaFromCompany,
@@ -160,6 +160,17 @@ export async function companyRoutes(app: FastifyInstance) {
   // ── POST /companies/:id/rotate-token ──────────────────────────────────────
   app.post<{ Params: { id: string } }>('/:id/rotate-token', { preHandler }, async (request, reply) => {
     const result = await rotateCompanyToken(request.params.id)
+    if (!result) return reply.code(404).send({ error: AppErrors.COMPANY_NOT_FOUND })
+    return reply.send({ data: result })
+  })
+
+  // ── POST /companies/:id/password ──────────────────────────────────────────
+  app.post<{ Params: { id: string } }>('/:id/password', { preHandler }, async (request, reply) => {
+    const body = setCompanyPasswordSchema.safeParse(request.body)
+    if (!body.success) {
+      return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
+    }
+    const result = await setCompanyPassword(request.params.id, body.data.newPassword)
     if (!result) return reply.code(404).send({ error: AppErrors.COMPANY_NOT_FOUND })
     return reply.send({ data: result })
   })

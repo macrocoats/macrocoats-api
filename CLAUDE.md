@@ -115,7 +115,7 @@ Routes never import from other modules' services. Cross-cutting concerns (auth, 
 |---|---|
 | `auth` | POST /auth/login, /auth/token, /auth/refresh, /auth/logout, /auth/change-password; GET /auth/me; POST /auth/mobile/login, /auth/mobile/refresh, /auth/mobile/logout |
 | `products` | GET /products, GET /products/expiry-summary, GET /products/:productLine/:docType, PUT /products/:productLine/:docType, PATCH /products/:productLine/:docType/status, GET /products/:productLine/:docType/audit |
-| `companies` | GET /companies, GET /companies/:id, POST /companies, PATCH /companies/:id, POST /companies/:id/rotate-token, DELETE /companies/:id |
+| `companies` | GET /companies, GET /companies/:id (adds `loginUsername`), POST /companies, PATCH /companies/:id, POST /companies/:id/rotate-token, POST /companies/:id/password (`{ newPassword ≥12 }` — admin sets the company login's password and revokes its refresh tokens; the access token/link is unchanged), DELETE /companies/:id |
 | `company-pricing` | GET /companies/:id/pricing, PUT /companies/:id/pricing |
 | `company-documents` | POST /companies/:id/documents, GET /companies/:id/documents, GET /companies/:id/documents/:docId/download, DELETE /companies/:id/documents/:docId |
 | `formulation-variants` | GET /formulation-variants, GET /formulation-variants/:variantId, POST /formulation-variants, PUT /formulation-variants/:variantId, PUT /formulation-variants/:variantId/components, PATCH /formulation-variants/:variantId/status, DELETE /formulation-variants/:variantId |
