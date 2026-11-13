@@ -302,6 +302,13 @@
       "when": 1793862450384,
       "tag": "0042_legal_snowbird",
       "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1794486567122,
+      "tag": "0043_parallel_joystick",
+      "breakpoints": true
     }
   ]
 }

@@ -33,6 +33,7 @@ function toResponse(
     formulaProductKeys: formulaSummary.formulaProductKeys,
     accessToken:     company.accessToken,
     tokenExpiresAt:  company.tokenExpiresAt?.toISOString() ?? null,
+    zohoCustomerId:  company.zohoCustomerId ?? null,
     contactPerson:   company.contactPerson ?? null,
     email:           company.email ?? null,
     phone:           company.phone ?? null,
@@ -215,6 +216,7 @@ export async function createCompany(data: CreateCompanyBody) {
     const [company] = await tx
       .insert(companies)
       .values({
+        zohoCustomerId: data.zohoCustomerId ?? null,
         key: data.key,
         displayName: data.displayName,
         accessToken,
@@ -259,6 +261,7 @@ export async function updateCompany(id: string, data: UpdateCompanyBody) {
     const patch: Partial<typeof companies.$inferInsert> = {}
     if (data.displayName !== undefined)    patch.displayName   = data.displayName
     if (data.tokenExpiresAt !== undefined) patch.tokenExpiresAt = data.tokenExpiresAt ? new Date(data.tokenExpiresAt) : null
+    if (data.zohoCustomerId !== undefined) patch.zohoCustomerId = data.zohoCustomerId
     if (data.contactPerson !== undefined)  patch.contactPerson = data.contactPerson
     if (data.email !== undefined)          patch.email         = data.email
     if (data.phone !== undefined)          patch.phone         = data.phone
