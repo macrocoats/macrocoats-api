@@ -196,6 +196,10 @@ const DEFAULT_INVENTORY = [
   // ── Paint Remover Raw Materials (UNIKSTRIP-HD) ───────────────────────────────
   { material: 'Benzyl Alcohol',                     unit: 'Kg' as const, price: '0',   sortOrder: 68 },
   { material: 'Formic Acid (85%)',                  unit: 'Kg' as const, price: '0',   sortOrder: 69 },
+
+  // ── Phosphating Additives (UNISLUDGE SR) ─────────────────────────────────────
+  // Platina Chemicals, Chennai — ₹165/kg + 18% GST (Nov 2026); price stored ex-GST
+  { material: 'DTPMP Sodium Salt Solution (Aquacid 1067EX)', unit: 'Kg' as const, price: '165', sortOrder: 70 },
 ]
 
 export async function seedInventory() {

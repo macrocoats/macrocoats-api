@@ -22,6 +22,7 @@ const PRODUCTS = [
   { key: 'unikbrightner', displayName: 'UNIKBRIGHTNER', code: 'UB', category: 'Metal Brightening Chemical', subtitle: 'Metal Brightening Concentrate (10× Concentrate)', accentColor: '#c17817', defaultProcessTags: ['metal_brightening'] },
   { key: 'unikstrip-hd', displayName: 'UNIKSTRIP-HD', code: 'SH', category: 'Paint Remover', subtitle: 'Heavy-Duty Paint Stripping from Mild Steel', accentColor: '#7a2f4f', defaultProcessTags: ['paint_stripping'] },
   { key: 'uni-dunk-oil', displayName: 'UNI-DUNK OIL', code: 'UD', category: 'Dunking Oil', subtitle: 'Solvent-Based Dunking Oil — Post-Machining Cleaning & Temporary Protection', accentColor: '#5a6b2d', defaultProcessTags: ['cleaning'] },
+  { key: 'unisludge-sr', displayName: 'UNISLUDGE SR', code: 'SR', category: 'Phosphating Additive', subtitle: 'Sludge Reducer & Conditioner for Phosphating Baths', accentColor: '#3f5a8a', defaultProcessTags: ['phosphating', 'process_additive'] },
 ]
 
 // ── Document data ──────────────────────────────────────────────────────────────
@@ -5454,6 +5455,274 @@ const DOCS: Array<{
         { parameter: 'Corrosion Protection',     method: 'Humidity cabinet',     specification: 'Report result',                                      result: 'TBD', status: 'Pending' },
       ],
       statement: 'Placeholder Certificate of Analysis for UNI-DUNK OIL. Specifications are preliminary pending pilot batches. No batch has been tested yet; this record will be populated once batch data is available.',
+      approvals: {
+        preparedBy: 'TBD',
+        reviewedBy: 'TBD',
+        approvedBy: 'TBD',
+      },
+    },
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // UNISLUDGE SR
+  // Repacked single-material product: a ~32% neutral-salt sequestrant
+  // solution, dosed at 1–5 ppm into phosphating baths to keep sludge fine and
+  // free-settling. Specs are from the supplier data sheet; hazard classification
+  // is conservative (H319) pending the supplier SDS, so documents start 'draft'.
+  // TDS/MSDS use generic names only (root CLAUDE.md §7).
+  // ─────────────────────────────────────────────────────────────────────────────
+  {
+    productKey: 'unisludge-sr',
+    docType:    'tds',
+    docNumber:  'TDS-USR-001',
+    revision:   'Rev 01 — Nov 2026',
+    status:     'draft',
+    footer: {
+      left:   'TDS-USR-001 Rev 01 · Nov 2026',
+      center: 'This Technical Data Sheet is for guidance only. Dosage should be optimised for each phosphating line. © Macro Coats Pvt Ltd',
+      right:  'Macro Coats Pvt Ltd · Chennai · India\nPage 1 of 1',
+    },
+    body: {
+      grade:       'Industrial Grade',
+      description: 'UNISLUDGE SR is a liquid sludge reducer and conditioner for zinc and iron phosphating baths. Dosed at very low concentration (1–5 ppm), its sequestering action holds metal ions in solution and inhibits uncontrolled precipitation, so the sludge that does form stays fine, soft and free-settling instead of building hard scale on tank walls, heating coils and nozzles. This extends desludging intervals, keeps heat transfer efficient and helps maintain a stable bath.',
+      sections: {
+        features: [
+          { head: 'Reduced Hard Sludge',     body: 'Inhibits crystal growth so sludge stays soft and fine instead of forming hard deposits on tank walls and heaters' },
+          { head: 'Cleaner Heat Transfer',   body: 'Reduces scale on heating coils and spray nozzles, helping maintain bath temperature and spray pressure' },
+          { head: 'Longer Desludging Cycle', body: 'Free-settling sludge is easier to remove and needs less frequent tank cleaning' },
+          { head: 'Very Low Dosage',         body: 'Effective at 1–5 ppm — threshold action at sub-stoichiometric levels' },
+          { head: 'Neutral Liquid',          body: 'Near-neutral, water-soluble liquid that mixes readily into the bath' },
+        ],
+        physicalProperties: [
+          { property: 'Appearance',               value: 'Amber coloured clear liquid', unit: '—',  method: 'Visual' },
+          { property: 'Active Content',           value: '31 – 33',                     unit: '%',  method: 'Titration' },
+          { property: 'Specific Gravity (25 °C)', value: '1.28 – 1.32',                 unit: '—',  method: 'ISO 2811' },
+          { property: 'pH (1% solution)',         value: '6 – 8',                       unit: '—',  method: 'pH meter' },
+          { property: 'Chlorides (as Cl)',        value: '≤ 5',                         unit: '%',  method: 'Titration' },
+          { property: 'Iron Content',             value: '≤ 10',                        unit: 'ppm', method: '—' },
+          { property: 'Solubility',               value: 'Completely soluble in water', unit: '—',  method: 'Visual' },
+        ],
+        composition: [
+          { name: 'Sludge Conditioning Sequestrant', function: 'Sequesters metal ions and inhibits crystal growth so sludge stays fine and free-settling', percent: '—', compat: 'Zinc / iron phosphating baths' },
+          { name: 'Aqueous Carrier',                 function: 'Carrier — balance',                                                                       percent: '—', compat: '—' },
+        ],
+        application: [
+          { step: '1', name: 'Initial dose',     param: 'Add to the phosphating bath',                 value: '1 – 5 ppm (1 – 5 g per 1,000 L of bath)' },
+          { step: '2', name: 'Mix',              param: 'Add near circulation / agitation point',      value: 'Pre-dilute 1:10 with water for easier dispersion' },
+          { step: '3', name: 'Maintain',         param: 'Top up with replenishment additions',         value: 'Proportional to bath make-up' },
+          { step: '4', name: 'Monitor',          param: 'Sludge texture and heater / wall deposits',   value: 'Adjust within 1 – 5 ppm range' },
+        ],
+        packaging: [
+          { size: '25', unit: 'kg', type: 'HDPE carboy' },
+          { size: '65', unit: 'kg', type: 'HDPE carboy' },
+        ],
+        performance: [
+          { label: 'Dosage',                 val: '1 – 5 ppm in the working bath' },
+          { label: 'Sludge Character',       val: 'Fine, soft, free-settling' },
+          { label: 'Hard Scale on Heaters',  val: 'Reduced' },
+          { label: 'Compatible Baths',       val: 'Zinc phosphating, iron phosphating' },
+          { label: 'Operating Temperature',  val: 'Bath operating temperature' },
+        ],
+        safetyNote: 'May cause eye irritation. Wear goggles and rubber gloves when handling. Refer to the current SDS (SDS-USR-001) for full hazard information and PPE requirements.',
+      },
+    },
+  },
+
+  {
+    productKey: 'unisludge-sr',
+    docType:    'msds',
+    docNumber:  'SDS-USR-001',
+    revision:   'Rev 01 — Nov 2026',
+    status:     'draft',
+    footer: {
+      left:   'SDS-USR-001 Rev 01 · Nov 2026',
+      center: 'This Safety Data Sheet is provided in good faith based on current knowledge. Classification is conservative, pending supplier SDS confirmation. © Macro Coats Pvt Ltd',
+      right:  'Macro Coats Pvt Ltd · Chennai · India\nGHS Rev 9 Compliant · Page 1 of 1',
+    },
+    body: {
+      signalWord: 'Warning',
+      sections: {
+        identification: {
+          productType:  'Liquid sludge reducer / conditioner (aqueous solution)',
+          intendedUse:  'Additive for zinc and iron phosphating baths at 1–5 ppm to keep sludge fine and free-settling and reduce hard scale. Industrial use only.',
+          manufacturer: 'Macro Coats Pvt Ltd, Chennai, Tamil Nadu, India',
+          emergency:    'AIIMS Poison Control: 1800-11-6117 (Toll-Free)',
+        },
+        hazards: {
+          pictograms:      ['irritant'],
+          classifications: [
+            { class: 'Serious Eye Irritation', category: 'Cat 2', tagType: 'warn' },
+          ],
+          hStatements: 'H319 — Causes serious eye irritation.',
+          pStatements: 'P264 · P280 · P305+P351+P338 · P337+P313',
+        },
+        composition: {
+          ingredients: [
+            { name: 'Sludge Conditioning Sequestrant', description: 'Sequestrant / crystal-growth inhibitor (neutralised salt)', ghsClass: 'Eye Irritant', tagType: 'warn' },
+            { name: 'Aqueous Carrier',                 description: 'Carrier — balance',                                          ghsClass: 'Not classified', tagType: 'safe' },
+          ],
+          note: 'Exact formulation is proprietary. Functional ingredient descriptions are provided for safety and emergency purposes only.',
+        },
+        firstAid: {
+          eyes:       'Rinse cautiously with water for several minutes. Remove contact lenses if present and easy to do. Continue rinsing for ≥15 min. If irritation persists, get medical attention.',
+          skin:       'Wash with plenty of water. Remove contaminated clothing. Seek advice if irritation develops.',
+          inhalation: 'Not expected to be an inhalation hazard. Move to fresh air if mist is inhaled and discomfort occurs.',
+          ingestion:  'Rinse mouth with water. Do not induce vomiting. Seek medical advice.',
+          warning:    '⚠ Wear goggles — splashes can cause serious eye irritation.',
+        },
+        fireFighting: {
+          flammability:       'Not flammable — aqueous solution',
+          extinguishingMedia: 'Use media suitable for the surrounding fire (water spray, CO₂, dry powder, foam).',
+          fireHazard:         'On drying and strong heating may decompose to oxides of carbon, nitrogen and phosphorus.',
+          ppe:                'SCBA and full protective clothing.',
+        },
+        accidentalRelease: [
+          'Wear goggles and rubber gloves',
+          'Contain spill with inert absorbent material (sand, vermiculite)',
+          'Prevent entry into drains and waterways',
+          'Collect into labelled containers; rinse the area with water',
+          'Dispose per CPCB Hazardous Waste Management Rules 2016',
+        ],
+        handling: {
+          handling:     'Avoid contact with skin and eyes. Wear goggles and rubber gloves. Use in well-ventilated areas.',
+          storageTemp:  '5 °C – 40 °C; cool, dry area away from direct sunlight; protect from freezing',
+          containers:   'Original sealed HDPE containers; keep tightly closed when not in use',
+          segregation:  'Store away from strong oxidising agents and strong acids',
+          shelfLife:    '24 months from date of manufacture in original sealed containers',
+        },
+        exposure: {
+          ppeItems:    ['Safety Goggles', 'Rubber Gloves', 'Apron', 'Closed-toe Shoes'],
+          engineering: 'General ventilation is adequate. Eyewash station within 10 s.',
+        },
+        physical: [
+          { key: 'Appearance',       val: 'Amber coloured clear liquid' },
+          { key: 'Odour',            val: 'Odourless to faint' },
+          { key: 'Flash Point',      val: 'Not applicable (aqueous)' },
+          { key: 'Density',          val: '1.28 – 1.32 g/mL at 25 °C' },
+          { key: 'pH (1% solution)', val: '6 – 8' },
+          { key: 'Solubility',       val: 'Completely soluble in water' },
+          { key: 'Boiling Point',    val: '≈ 100 °C (water)' },
+        ],
+        stability: {
+          stability:      'Stable under recommended storage conditions.',
+          avoid:          'Strong oxidising agents, strong acids, freezing',
+          decomposition:  'Thermal decomposition may produce oxides of carbon, nitrogen and phosphorus.',
+          polymerisation: 'Will not occur',
+        },
+        sections11to16: {
+          'Skin / Eye': 'Causes serious eye irritation. Prolonged skin contact may cause mild irritation.',
+          Aquatic:      'Low aquatic toxicity expected at use concentrations; poorly biodegradable. Do not discharge concentrate to drains or waterways.',
+          Disposal:     'Dispose via licensed waste contractor per CPCB/SPCB norms (E.P. Act 1986).',
+          Transport:    'Not regulated as dangerous goods for road, sea or air transport (subject to supplier SDS confirmation).',
+          Regulatory:   'MSIHC Rules 1989 · Factories Act 1948 · Hazardous Waste Rules 2016 · GHS Rev 9',
+          'Other Info': 'SDS Rev 01 issued Nov 2026 (draft — conservative classification pending supplier SDS). Next review: on receipt of supplier SDS or upon formulation change.',
+        },
+      },
+    },
+  },
+
+  {
+    productKey: 'unisludge-sr',
+    docType:    'formula',
+    docNumber:  'FRM-USR-001',
+    revision:   'Rev 01 — Nov 2026',
+    status:     'draft',
+    footer: {
+      left:   'FRM-USR-001 Rev 01 · Nov 2026',
+      center: 'CONFIDENTIAL — This formulation sheet is the proprietary information of Macro Coats Pvt Ltd. Unauthorised reproduction or disclosure is prohibited.',
+      right:  'Macro Coats Pvt Ltd · Chennai · India\nPage 1 of 1',
+    },
+    body: {
+      classification:     'CONFIDENTIAL — Internal Use Only',
+      batchSize:          '100 kg (nominal)',
+      formulaType:        'liquid',
+      referenceBatchSize: 100,
+      batchUnit:          'kg',
+      totalActivePercent: 100,
+      // Repacked as supplied. Rate: Platina Chemicals, Chennai — ₹165/kg ex-GST (+18% GST), Nov 2026.
+      overview: 'UNISLUDGE SR is the supplier grade Aquacid 1067EX (supplier: Platina Chemicals, Chennai — ₹165/kg + 18% GST) — diethylenetriaminepenta(methylene phosphonic acid) sodium salt (DTPMP-Na) solution, 24–26% as acid / 31–33% as salt, SG 1.28–1.32, pH (1%) 6–8 — repacked as supplied with no dilution. Dosage in the customer phosphating bath is 1–5 ppm. Check each incoming lot against the supplier CoA (assay, SG, pH, chlorides ≤ 5%, iron ≤ 10 ppm).',
+      composition: [
+        { srNo: 1, name: 'DTPMP Sodium Salt Solution (Aquacid 1067EX)', casNo: '22042-96-2', baseQty: 100.0, unit: 'kg', percentWV: 100.0, function: 'Sequestrant / threshold crystal-growth inhibitor — keeps phosphating sludge fine and free-settling', density: 1.30, unitPrice: 165 },
+      ],
+      preparation: [
+        { step: 1, title: 'Incoming Check', detail: 'Verify supplier CoA: amber clear solution, assay 31–33% as salt, SG 1.28–1.32 at 25 °C, pH (1%) 6–8.' },
+        { step: 2, title: 'Repack',         detail: 'Transfer as supplied into clean, dry, labelled HDPE carboys. Do not dilute. Wear goggles and rubber gloves.' },
+        { step: 3, title: 'QC and Label',   detail: 'Record SG and pH of the repacked lot; apply product label and batch number.' },
+      ],
+      operatingConditions: [
+        { param: 'Dosage',            value: '1 – 5 ppm in working bath' },
+        { param: 'Addition',          value: 'Pre-dilute 1:10, add near circulation point' },
+        { param: 'Bath Types',        value: 'Zinc and iron phosphating' },
+        { param: 'Monitoring',        value: 'Sludge texture, heater / wall scale' },
+      ],
+      applications: {
+        removes:    ['Hard phosphate sludge build-up', 'Scale on heating coils and spray nozzles'],
+        usedBefore: ['Zinc phosphating', 'Iron phosphating'],
+      },
+    },
+  },
+
+  {
+    productKey: 'unisludge-sr',
+    docType:    'label',
+    docNumber:  'LBL-USR-001',
+    revision:   'Rev 01 — Nov 2026',
+    status:     'draft',
+    footer: { left: '', center: '', right: '' },
+    body: {
+      signalWord: 'WARNING',
+      unNo: 'N/A',
+      hCodes: [
+        { code: 'H319', text: 'Causes serious eye irritation' },
+      ],
+      pCodes: [
+        { code: 'P264',           text: 'Wash hands thoroughly after handling' },
+        { code: 'P280',           text: 'Wear protective gloves and eye protection' },
+        { code: 'P305+P351+P338', text: 'IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses if present. Continue rinsing' },
+        { code: 'P337+P313',      text: 'If eye irritation persists: Get medical advice' },
+      ],
+      firstAid: {
+        skin:       'Wash with plenty of water.',
+        eyes:       'Rinse with water for ≥15 min. Seek medical attention if irritation persists.',
+        ingestion:  'Rinse mouth. Do not induce vomiting. Seek medical advice.',
+        inhalation: 'Move to fresh air if discomfort occurs.',
+      },
+      directions: [
+        'Dose 1 – 5 ppm into the phosphating bath (1 – 5 g per 1,000 L)',
+        'Pre-dilute 1:10 with water and add near the circulation point',
+        'Top up in proportion to bath replenishment',
+      ],
+      storage:  ['Store at 5°C – 40°C', 'Protect from freezing and direct sunlight', 'Keep container tightly closed', 'Dispose per CPCB regulations'],
+      products: ['UNISLUDGE SR'],
+    },
+  },
+
+  {
+    productKey: 'unisludge-sr',
+    docType:    'coa',
+    docNumber:  'COA-USR-001',
+    revision:   'Draft — pending batch data',
+    status:     'draft',
+    footer: {
+      left:   'COA-USR-001 Draft',
+      center: 'CONFIDENTIAL — Placeholder Certificate of Analysis · Macro Coats Pvt Ltd',
+      right:  'Macro Coats Pvt Ltd · Chennai · India',
+    },
+    body: {
+      batchNumber:    'TBD',
+      batchSize:      'TBD',
+      productionDate: 'TBD',
+      expiryDate:     'TBD',
+      grade:          'Industrial Grade',
+      appearance:     'TBD',
+      tests: [
+        { parameter: 'Appearance',               method: 'Visual',    specification: 'Amber coloured clear liquid', result: 'TBD', status: 'Pending' },
+        { parameter: 'Active Content',           method: 'Titration', specification: '31 – 33 %',                  result: 'TBD', status: 'Pending' },
+        { parameter: 'Specific Gravity @ 25 °C', method: 'ISO 2811',  specification: '1.28 – 1.32',                result: 'TBD', status: 'Pending' },
+        { parameter: 'pH (1% solution)',         method: 'pH meter',  specification: '6 – 8',                      result: 'TBD', status: 'Pending' },
+        { parameter: 'Chlorides (as Cl)',        method: 'Titration', specification: '≤ 5 %',                      result: 'TBD', status: 'Pending' },
+      ],
+      statement: 'Placeholder Certificate of Analysis for UNISLUDGE SR. No batch has been tested yet; this record will be populated once batch data is available.',
       approvals: {
         preparedBy: 'TBD',
         reviewedBy: 'TBD',

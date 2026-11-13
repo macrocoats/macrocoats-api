@@ -37,6 +37,7 @@ export const PRODUCT_KEYS = [
   'unikbrightner',
   'unikstrip-hd',
   'uni-dunk-oil',
+  'unisludge-sr',
 ] as const
 type ProductKey = typeof PRODUCT_KEYS[number]
 
