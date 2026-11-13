@@ -10,9 +10,11 @@ import {
   customerInvoicePdf,
   customerInvoices,
   getCertificatePdf,
+  getCompanyLogoFile,
   getCustomerAccount,
   getOrder,
   getOrderDocumentFile,
+  getPortalSummary,
   listCertificates,
   listOrders,
   PortalInvoiceError,
@@ -44,6 +46,14 @@ export async function customerPortalRoutes(app: FastifyInstance) {
   const companyOf = (request: FastifyRequest) => scopedCompanies.get(request)!
 
   app.get('/company', async (request) => ({ data: toProfile(companyOf(request)) }))
+
+  app.get('/company/logo', async (request, reply) => {
+    const logo = await getCompanyLogoFile(companyOf(request))
+    if (!logo) return reply.code(404).send({ error: 'COMPANY_LOGO_NOT_FOUND' })
+    return reply.type(logo.mimeType).send(createReadStream(logo.path))
+  })
+
+  app.get('/summary', async (request) => ({ data: await getPortalSummary(companyOf(request)) }))
 
   app.get('/orders', async (request, reply) => {
     const q = portalListQuerySchema.safeParse(request.query)

@@ -9,6 +9,7 @@ import {
   isNotNull,
   isNull,
   ne,
+  notInArray,
   or,
   sql,
 } from 'drizzle-orm'
@@ -57,7 +58,29 @@ export const toProfile = (c: PortalCompany) => ({
   city: c.city,
   state: c.state,
   pincode: c.pincode,
+  hasLogo: Boolean(c.logoStorageKey),
+  logoUpdatedAt: c.logoUpdatedAt?.toISOString() ?? null,
 })
+
+// Resolve a stored file and refuse anything outside the storage root.
+async function storedFile(storageKey: string) {
+  try {
+    const root = await realpath(env.PROCUREMENT_STORAGE_PATH)
+    const path = await realpath(storageKey)
+    const within = relative(root, path)
+    if (within.startsWith('..') || isAbsolute(within) || !(await stat(path)).isFile())
+      return null
+    return path
+  } catch {
+    return null
+  }
+}
+
+export async function getCompanyLogoFile(company: PortalCompany) {
+  if (!company.logoStorageKey || !company.logoMimeType) return null
+  const path = await storedFile(company.logoStorageKey)
+  return path ? { path, mimeType: company.logoMimeType } : null
+}
 
 const orderFields = {
   id: orders.id,
@@ -197,16 +220,8 @@ export async function getOrderDocumentFile(
       ),
     )
   if (!document) return null
-  try {
-    const root = await realpath(env.PROCUREMENT_STORAGE_PATH)
-    const path = await realpath(document.storageKey)
-    const within = relative(root, path)
-    if (within.startsWith('..') || isAbsolute(within) || !(await stat(path)).isFile())
-      return null
-    return { path, filename: document.filename, mimeType: document.mimeType }
-  } catch {
-    return null
-  }
+  const path = await storedFile(document.storageKey)
+  return path ? { path, filename: document.filename, mimeType: document.mimeType } : null
 }
 
 export async function listCertificates(companyId: string, page: number, search: string) {
@@ -363,4 +378,36 @@ export async function customerInvoicePdf(customerId: string | null, invoiceId: s
   const pdf = await fetchZohoInvoicePdf(invoiceId)
   if ('code' in pdf) throw new PortalInvoiceError('INVOICES_UNAVAILABLE', 502)
   return pdf.pdf
+}
+
+async function outstandingBalance(customerId: string | null) {
+  if (!customerId || !isZohoConfigured()) return null
+  try {
+    const { contact } = await zohoGet<{
+      contact?: { contact_id?: string; outstanding_receivable_amount?: number; currency_code?: string }
+    }>(`/invoice/v3/contacts/${encodeURIComponent(customerId)}`)
+    if (!contact || contact.contact_id !== customerId) return null
+    return {
+      amount: Number(contact.outstanding_receivable_amount ?? 0),
+      currencyCode: contact.currency_code ?? 'INR',
+    }
+  } catch {
+    return null // Zoho outage must not break the overview
+  }
+}
+
+export async function getPortalSummary(company: PortalCompany) {
+  const [[openOrders], [certificates], outstanding] = await Promise.all([
+    db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(orders)
+      .where(and(ownedOrder(company.id), notInArray(orders.status, ['completed', 'cancelled']))),
+    db
+      .select({ count: sql<number>`count(distinct ${batches.id})::int` })
+      .from(dispatches)
+      .innerJoin(batches, eq(dispatches.batchId, batches.id))
+      .where(supplied(company.id)),
+    outstandingBalance(company.zohoCustomerId),
+  ])
+  return { openOrders: openOrders.count, certificates: certificates.count, outstanding }
 }

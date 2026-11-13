@@ -267,6 +267,47 @@ describe('customer portal ownership', () => {
         .data.items.map((r: { id: string }) => r.id),
     ).toEqual(expect.arrayContaining([batchIds[0], batchIds[1]]))
   })
+  it('summarises open orders, eligible certificates and Zoho outstanding', async () => {
+    vi.mocked(zohoGet).mockResolvedValueOnce({
+      contact: { contact_id: `${stamp}0`, outstanding_receivable_amount: 1234.5, currency_code: 'INR' },
+    })
+    const response = await get('summary')
+    expect(response.statusCode).toBe(200)
+    expect(response.json().data).toEqual({
+      openOrders: 1,
+      certificates: 1,
+      outstanding: { amount: 1234.5, currencyCode: 'INR' },
+    })
+    // A mismatched or failing Zoho contact never breaks the summary.
+    vi.mocked(zohoGet).mockResolvedValueOnce({ contact: { contact_id: 'someone-else' } })
+    expect((await get('summary')).json().data.outstanding).toBeNull()
+    vi.mocked(zohoGet).mockRejectedValueOnce(new Error('outage'))
+    const outage = await get('summary')
+    expect(outage.statusCode).toBe(200)
+    expect(outage.json().data.outstanding).toBeNull()
+  })
+  it('serves only the caller\'s own logo from safe storage', async () => {
+    const profile = (await get('company')).json().data
+    expect(profile.hasLogo).toBe(false)
+    expect(JSON.stringify(profile)).not.toMatch(/storage|logoStorageKey|logoMimeType/i)
+    expect((await get('company/logo')).statusCode).toBe(404)
+    await writeFile(join(storage, 'logo.png'), 'png fixture')
+    await db
+      .update(companies)
+      .set({ logoStorageKey: join(storage, 'logo.png'), logoMimeType: 'image/png', logoUpdatedAt: new Date() })
+      .where(eq(companies.id, companyIds[0]))
+    const logo = await get('company/logo')
+    expect(logo.statusCode).toBe(200)
+    expect(logo.headers['content-type']).toContain('image/png')
+    expect((await get('company')).json().data.hasLogo).toBe(true)
+    expect((await get('company/logo', 1)).statusCode).toBe(404)
+    await db.update(companies).set({ logoStorageKey: '/etc/hosts' }).where(eq(companies.id, companyIds[0]))
+    expect((await get('company/logo')).statusCode).toBe(404)
+    await db
+      .update(companies)
+      .set({ logoStorageKey: null, logoMimeType: null, logoUpdatedAt: null })
+      .where(eq(companies.id, companyIds[0]))
+  })
   it('renders a certificate from safe saved test results, with the actual recipient', async () => {
     const render = vi.spyOn(pdfService, 'generatePDF').mockResolvedValueOnce({
       buffer: Buffer.from('%PDF-1.4'),
