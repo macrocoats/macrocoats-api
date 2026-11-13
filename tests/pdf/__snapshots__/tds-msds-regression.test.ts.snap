@@ -72,6 +72,10 @@ exports[`TDS/MSDS PDF regression — every seeded product > uniprotect-oil msds 
 
 exports[`TDS/MSDS PDF regression — every seeded product > uniprotect-oil tds renders and matches its recorded page count > uniprotect-oil-tds-page-count 1`] = `1`;
 
+exports[`TDS/MSDS PDF regression — every seeded product > unisludge-sr msds renders and matches its recorded page count > unisludge-sr-msds-page-count 1`] = `3`;
+
+exports[`TDS/MSDS PDF regression — every seeded product > unisludge-sr tds renders and matches its recorded page count > unisludge-sr-tds-page-count 1`] = `2`;
+
 exports[`TDS/MSDS PDF regression — every seeded product > unisolve-h3 msds renders and matches its recorded page count > unisolve-h3-msds-page-count 1`] = `4`;
 
 exports[`TDS/MSDS PDF regression — every seeded product > unisolve-h3 tds renders and matches its recorded page count > unisolve-h3-tds-page-count 1`] = `2`;
