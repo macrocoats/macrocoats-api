@@ -1743,4 +1743,40 @@ export async function seedFormulationVariants() {
       console.log(`   ✅ Created ${grade.name} variant for UNI-DUNK OIL (id: ${variant.id})`)
     }
   }
+
+  // ── UNISLUDGE SR — Standard (repacked as supplied) ───────────────────────
+  // 'draft' on purpose: an approved/production variant starts overriding the
+  // TDS/MSDS composition and hazards from these components, which would surface
+  // the actual material name on customer documents.
+  const SLUDGE_VARIANT = 'UNISLUDGE SR Standard'
+  const [sludgeProduct] = await db.select().from(products).where(eq(products.key, 'unisludge-sr'))
+
+  if (!sludgeProduct) {
+    console.warn('   ⚠️  Product unisludge-sr not found — skipping UNISLUDGE SR variant seed')
+  } else {
+    const [existing] = await db
+      .select()
+      .from(productFormulationVariants)
+      .where(and(eq(productFormulationVariants.productKey, 'unisludge-sr'), variantNameIs(SLUDGE_VARIANT)))
+
+    if (existing) {
+      console.log(`   ↩️  ${SLUDGE_VARIANT} variant already exists (id: ${existing.id})`)
+    } else {
+      const [variant] = await db
+        .insert(productFormulationVariants)
+        .values({ productKey: 'unisludge-sr', companyId: null, variantName: SLUDGE_VARIANT, isDefault: false, status: 'draft' })
+        .returning()
+
+      await db.insert(formulationVariantComponents).values({
+        variantId:    variant.id,
+        materialName: 'DTPMP Sodium Salt Solution (Aquacid 1067EX)',
+        percentage:   '100',
+        unit:         'Kg',
+        density:      '1.30',
+        sortOrder:    0,
+      })
+
+      console.log(`   ✅ Created ${SLUDGE_VARIANT} variant (id: ${variant.id})`)
+    }
+  }
 }
