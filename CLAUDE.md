@@ -139,8 +139,17 @@ Routes never import from other modules' services. Cross-cutting concerns (auth, 
 | `letterheads` | GET/POST /letterheads/templates, GET/PUT/DELETE /letterheads/templates/:id, POST /letterheads/templates/:id/duplicate, GET/POST /letterheads/documents, GET/PUT /letterheads/documents/:id, GET/POST /letterheads/documents/:id/versions |
 | `zoho-invoice` | GET /zoho-invoices (live list from Zoho; `customer` = exact name → Zoho `customer_name`), GET /zoho-invoices/receivables (every open invoice, aged by due date), GET /zoho-invoices/customers (every customer name on a Zoho invoice, read from the invoice list because the self-client has only the invoices READ scope; 10-min cache, `?refresh=true`), GET /zoho-invoices/:invoiceId/pdf (live PDF from Zoho), GET /zoho-invoices/:invoiceId/eway-bill/pdf (live e-way bill PDF), GET /zoho-invoices/:dispatchId (stored status), POST /zoho-invoices/:dispatchId/sync |
 | `customer-supply` | GET /customer-supply/summary (Zoho-derived supply), GET/POST /customer-supply/pipeline, PATCH/DELETE /customer-supply/pipeline/:id |
+| `customer-portal` | **company role only:** GET /customer-portal/company, /orders, /orders/:id, /orders/:id/documents/:documentId, /certificates, /certificates/:id/pdf, /invoices, /invoices/:id/pdf |
 
-All endpoints except auth are `superadmin`-only, except product document reads which use `checkProductAccess` for company users. Within `products`, only `GET /products/:productLine/:docType` uses `checkProductAccess` — every other `products` endpoint (including status transitions, audit trail, and expiry summary) is `requireSuperAdmin`-only. `GET /products/expiry-summary` is registered before the `/:productLine/:docType` route so the literal segment `expiry-summary` never matches as a `:productLine` param.
+All endpoints except auth are `superadmin`-only, except product document reads which use `checkProductAccess` for company users, and `customer-portal`, which is company-only (see below).
+
+### Customer portal (customer-portal)
+
+Read-only self-service for `company` users (web `/portal`). A module-level preHandler rejects every other role (403 `CUSTOMER_ACCESS_REQUIRED`), then resolves the user's company **live from the DB** (`getCustomerAccount`, not the JWT) and rejects an expired company (403 `CUSTOMER_ACCESS_EXPIRED`); every query is scoped to that company id. Responses carry `Cache-Control: private, no-store`.
+- **Orders**: non-draft, non-deleted customer POs; detail adds lines, `po_pdf` attachments only (downloads are realpath-checked to stay inside `PROCUREMENT_STORAGE_PATH`) and non-voided dispatches.
+- **Certificates**: batches dispatched to the company, `released`/`closed`, with a non-empty `coaSnapshot.tests` all `Pass`. The PDF is rendered from safe fields only — the one sanctioned exception to the company `coa` block (root `CLAUDE.md` §7).
+- **Invoices**: live from Zoho by `companies.zoho_customer_id` (numeric, unique; set on the Companies form). Results are re-filtered by `customer_id` — the upstream filter is not trusted as an authorization boundary; drafts hidden. Unmapped company → 409 `CUSTOMER_NOT_MAPPED`; Zoho not configured → 503; upstream failure → 502.
+- Company magic-link login (`loginWithToken`) now returns `redirectTo: '/portal'`. Within `products`, only `GET /products/:productLine/:docType` uses `checkProductAccess` — every other `products` endpoint (including status transitions, audit trail, and expiry summary) is `requireSuperAdmin`-only. `GET /products/expiry-summary` is registered before the `/:productLine/:docType` route so the literal segment `expiry-summary` never matches as a `:productLine` param.
 
 ### Purchase analytics (purchase-entries, Nov 2026 redesign)
 
@@ -259,7 +268,7 @@ Two-token RS256 system. Both tokens carry a `typ` claim (`'access'` / `'refresh'
 Three roles: `superadmin`, `company`, and `operator`.
 
 - `superadmin`: unrestricted access to all routes.
-- `company`: can only access TDS/MSDS for products in their `allowedProducts` list. `formula`, `label`, `coa` doc types are always blocked for company users (`RESTRICTED_DOC_TYPES` in `src/types/index.ts`).
+- `company`: can only access TDS/MSDS for products in their `allowedProducts` list. `formula`, `label`, `coa` doc types are always blocked for company users (`RESTRICTED_DOC_TYPES` in `src/types/index.ts`). Also reaches the company-scoped `customer-portal` module (own orders, invoices, supplied-batch CoAs).
 - `operator` ("Factory Operator"): a narrow, curated grant — view access to Batches (formula/cost stripped, see below), Finished Goods (full, incl. status transitions), Dispatch (full, incl. creation), and Production Planning (already formula/cost-free by design), plus two production-control writes: creating a batch **from a work order** (`POST /production-work-orders/:id/batches` — the server builds the snapshots and returns the sanitized view) and recording CoA results (`PATCH /batches/:batchNumber/coa`, sanitized response). No pricing, no formula composition, no company/customer/vendor management, no free-form `POST /batches`, no QC release, no payment, no dispatch void. Not tied to a `companyId` — `allowedProducts` stays `null` for this role, same as superadmin, since batches/dispatch/finished-goods are cross-company operational data, not company-scoped.
 
 `allowedProducts` is loaded from `company_product_access` at login and embedded in the JWT — not re-queried per request.
