@@ -40,9 +40,6 @@ export async function dispatchRoutes(app: FastifyInstance) {
     if ('code' in result && result.code === 'DISPATCH_CONTEXT_INVALID') {
       return reply.code(409).send({ error: result.code, message: result.message })
     }
-    if ('code' in result && result.code === 'ORDER_QUANTITY_EXCEEDED') {
-      return reply.code(409).send({ error: result.code, message: 'Dispatch quantity exceeds the order-line remainder.', remaining: result.remaining })
-    }
     if ('code' in result && result.code === 'INSUFFICIENT_STOCK') {
       return reply.code(409).send({
         error:     AppErrors.DISPATCH_INSUFFICIENT_STOCK,

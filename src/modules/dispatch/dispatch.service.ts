@@ -1,6 +1,6 @@
 import { and, eq, sql, type SQL } from 'drizzle-orm'
 import { db, type DB } from '../../db/index.js'
-import { dispatches, batches, companies, customerPurchaseOrders, customerPurchaseOrderItems } from '../../db/schema/index.js'
+import { dispatches, batches, companies, customerPurchaseOrders, customerPurchaseOrderItems, customerPurchaseOrderBatches } from '../../db/schema/index.js'
 import { nextDispatchNumber } from '../../utils/dispatchNumber.js'
 import { incrementDispatchedQuantity, reverseDispatchedQuantity } from '../finished-goods/finished-goods.service.js'
 import { recordDispatchAgainstOrder, reverseDispatchAgainstOrder } from '../customer-purchase-orders/customer-purchase-orders.service.js'
@@ -121,7 +121,6 @@ type CreateDispatchResult =
   | { code: 'FINISHED_GOODS_NOT_FOUND' }
   | { code: 'BATCH_NOT_RELEASED' }
   | { code: 'DISPATCH_CONTEXT_INVALID'; message: string }
-  | { code: 'ORDER_QUANTITY_EXCEEDED'; remaining: number }
   | { code: 'INSUFFICIENT_STOCK'; available: number }
 
 async function validateDispatchContext(tx: DB, data: CreateDispatchBody): Promise<Exclude<CreateDispatchResult, DispatchRow> | null> {
@@ -151,40 +150,19 @@ async function validateDispatchContext(tx: DB, data: CreateDispatchBody): Promis
       .innerJoin(customerPurchaseOrders, eq(customerPurchaseOrders.id, customerPurchaseOrderItems.orderId))
       .where(and(eq(customerPurchaseOrderItems.id, data.customerPurchaseOrderItemId), eq(customerPurchaseOrders.id, data.customerPurchaseOrderId)))
       .for('update')
-    if (!context || context.customerId !== data.companyId || context.productKey !== batch.productCode || ['draft', 'cancelled', 'completed'].includes(context.orderStatus)) {
+    if (!context || context.customerId !== data.companyId || context.productKey !== batch.productCode || ['draft', 'cancelled'].includes(context.orderStatus)) {
       return { code: 'DISPATCH_CONTEXT_INVALID', message: 'Order, customer, product, or status does not match the selected batch.' }
     }
     if (context.variantId && batch.variantId && context.variantId !== batch.variantId) {
       return { code: 'DISPATCH_CONTEXT_INVALID', message: 'Order-line variant does not match the selected batch.' }
     }
-    const dispatchedRows = await tx.execute<{ dispatched: string }>(sql`
-      SELECT COALESCE(SUM(quantity), 0) AS dispatched FROM dispatches
-      WHERE customer_purchase_order_item_id = ${data.customerPurchaseOrderItemId} AND voided_at IS NULL
-    `)
-    const remaining = Math.max(0, Number(context.quantityOrdered) - Number(dispatchedRows[0]?.dispatched ?? 0))
-    if (data.quantity > remaining) return { code: 'ORDER_QUANTITY_EXCEEDED', remaining }
-
-    const allocationRows = await tx.execute<{ allocated: string; dispatched: string }>(sql`
-      SELECT
-        COALESCE((SELECT SUM(linked_quantity)
-          FROM customer_purchase_order_batches
-          WHERE order_item_id = ${data.customerPurchaseOrderItemId}
-            AND batch_id = ${data.batchId}), 0) AS allocated,
-        COALESCE((SELECT SUM(quantity)
-          FROM dispatches
-          WHERE customer_purchase_order_item_id = ${data.customerPurchaseOrderItemId}
-            AND batch_id = ${data.batchId}
-            AND voided_at IS NULL), 0) AS dispatched
-    `)
-    const allocationRemaining = Math.max(
-      0,
-      Number(allocationRows[0]?.allocated ?? 0) - Number(allocationRows[0]?.dispatched ?? 0),
-    )
-    if (data.quantity > allocationRemaining) {
-      return {
-        code: 'DISPATCH_CONTEXT_INVALID',
-        message: 'Dispatch quantity exceeds the released batch allocation for this order line.',
-      }
+    // The PO quantity does not cap a dispatch (over-runs ship against the PO); finished-goods
+    // stock is the limit. The batch must still be linked to this line for traceability.
+    const [linked] = await tx.select({ id: customerPurchaseOrderBatches.id }).from(customerPurchaseOrderBatches)
+      .where(and(eq(customerPurchaseOrderBatches.orderItemId, data.customerPurchaseOrderItemId), eq(customerPurchaseOrderBatches.batchId, data.batchId)))
+      .limit(1)
+    if (!linked) {
+      return { code: 'DISPATCH_CONTEXT_INVALID', message: 'This batch is not linked to the selected order line.' }
     }
   } else if (company.displayName.toLowerCase() !== batch.companyName.toLowerCase()) {
     return { code: 'DISPATCH_CONTEXT_INVALID', message: 'Customer does not match the batch customer.' }

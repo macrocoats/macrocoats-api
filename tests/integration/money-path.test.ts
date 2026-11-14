@@ -155,9 +155,9 @@ describe('money path: batch → finished goods → customer PO → dispatch', ()
     expect(await getOrderStatus()).toBe('ready_for_dispatch')
   })
 
-  it('rejects a dispatch larger than the order-line remainder with 409 and writes nothing', async () => {
+  it('caps a PO dispatch by stock, not the PO quantity, and writes nothing when refused', async () => {
     const res = await dispatch(BATCH_SIZE + 50).expect(409)
-    expect(res.body.remaining).toBe(BATCH_SIZE)
+    expect(res.body.available).toBe(BATCH_SIZE)
 
     const fg = await getFinishedGoods()
     expect(Number(fg.dispatchedQuantity)).toBe(0)
@@ -225,6 +225,21 @@ describe('money path: batch → finished goods → customer PO → dispatch', ()
       .set('Cookie', adminCookies)
       .send({ reason: 'again' })
     expect(again.status).toBeGreaterThanOrEqual(400)
+  })
+
+  it('ships a yield over-run against the PO even after it is completed', async () => {
+    await dispatch(60).expect(201)
+    expect(await getOrderStatus()).toBe('completed')
+
+    const { version } = (await req().get(`/v1/batches/${batchNumber}`).set('Cookie', adminCookies).expect(200)).body
+    await req().put(`/v1/batches/${batchNumber}/yield`).set('Cookie', adminCookies)
+      .send({ actualYield: BATCH_SIZE + 10, version }).expect(200)
+
+    await dispatch(10).expect(201)
+    const fg = await getFinishedGoods()
+    expect(Number(fg.dispatchedQuantity)).toBe(BATCH_SIZE + 10)
+    expect(fg.status).toBe('Fully Dispatched')
+    expect(await getOrderStatus()).toBe('completed')
   })
 })
 
