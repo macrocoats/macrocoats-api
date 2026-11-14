@@ -380,16 +380,32 @@ export async function customerInvoicePdf(customerId: string | null, invoiceId: s
   return pdf.pdf
 }
 
+// Sum open invoices: the self-client has only the invoices READ scope, so no contacts API.
+// Zoho's `unpaid` filter isn't documented to include the other two, hence the de-dupe.
+const OPEN_STATUSES = ['unpaid', 'overdue', 'partially_paid']
+type OpenPage = { invoices?: Invoice[]; page_context?: { has_more_page?: boolean } }
+const OPEN_MAX_PAGES = 5 // shortcut: 1,000 open invoices per status, raise if a customer ever exceeds it
+
 async function outstandingBalance(customerId: string | null) {
   if (!customerId || !isZohoConfigured()) return null
   try {
-    const { contact } = await zohoGet<{
-      contact?: { contact_id?: string; outstanding_receivable_amount?: number; currency_code?: string }
-    }>(`/invoice/v3/contacts/${encodeURIComponent(customerId)}`)
-    if (!contact || contact.contact_id !== customerId) return null
+    const open = new Map<string, Invoice>()
+    for (const status of OPEN_STATUSES) {
+      for (let page = 1; page <= OPEN_MAX_PAGES; page++) {
+        const result: OpenPage = await zohoGet<OpenPage>(
+          '/invoice/v3/invoices',
+          { customer_id: customerId, status, page: String(page), per_page: '200' },
+        )
+        // Re-filter: the upstream filter is not an authorization boundary.
+        for (const row of result.invoices ?? [])
+          if (row.customer_id === customerId && Number(row.balance) > 0) open.set(row.invoice_id, row)
+        if (!result.page_context?.has_more_page) break
+      }
+    }
+    const rows = [...open.values()]
     return {
-      amount: Number(contact.outstanding_receivable_amount ?? 0),
-      currencyCode: contact.currency_code ?? 'INR',
+      amount: Math.round(rows.reduce((sum, row) => sum + Number(row.balance), 0) * 100) / 100,
+      currencyCode: rows[0]?.currency_code ?? 'INR',
     }
   } catch {
     return null // Zoho outage must not break the overview

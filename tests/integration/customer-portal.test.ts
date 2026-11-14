@@ -268,9 +268,20 @@ describe('customer portal ownership', () => {
     ).toEqual(expect.arrayContaining([batchIds[0], batchIds[1]]))
   })
   it('summarises open orders, eligible certificates and Zoho outstanding', async () => {
-    vi.mocked(zohoGet).mockResolvedValueOnce({
-      contact: { contact_id: `${stamp}0`, outstanding_receivable_amount: 1234.5, currency_code: 'INR' },
-    })
+    const own = `${stamp}0`
+    const byStatus: Record<string, unknown[]> = {
+      unpaid: [{ invoice_id: 'a', customer_id: own, balance: 1000, currency_code: 'INR' }],
+      // 'a' again (overlapping filters), a foreign row and a settled row must not count.
+      overdue: [
+        { invoice_id: 'a', customer_id: own, balance: 1000 },
+        { invoice_id: 'b', customer_id: own, balance: 234.5 },
+        { invoice_id: 'x', customer_id: 'someone-else', balance: 9999 },
+      ],
+      partially_paid: [{ invoice_id: 'c', customer_id: own, balance: 0 }],
+    }
+    vi.mocked(zohoGet).mockImplementation(async (_path, params) => ({
+      invoices: byStatus[params?.status ?? ''] ?? [],
+    }))
     const response = await get('summary')
     expect(response.statusCode).toBe(200)
     expect(response.json().data).toEqual({
@@ -278,13 +289,17 @@ describe('customer portal ownership', () => {
       certificates: 1,
       outstanding: { amount: 1234.5, currencyCode: 'INR' },
     })
-    // A mismatched or failing Zoho contact never breaks the summary.
-    vi.mocked(zohoGet).mockResolvedValueOnce({ contact: { contact_id: 'someone-else' } })
-    expect((await get('summary')).json().data.outstanding).toBeNull()
-    vi.mocked(zohoGet).mockRejectedValueOnce(new Error('outage'))
+    expect(zohoGet).toHaveBeenCalledWith(
+      '/invoice/v3/invoices',
+      expect.objectContaining({ customer_id: own, status: 'overdue' }),
+    )
+    vi.mocked(zohoGet).mockReset()
+    // A Zoho outage never breaks the summary.
+    vi.mocked(zohoGet).mockRejectedValue(new Error('outage'))
     const outage = await get('summary')
     expect(outage.statusCode).toBe(200)
     expect(outage.json().data.outstanding).toBeNull()
+    vi.mocked(zohoGet).mockReset()
   })
   it('serves only the caller\'s own logo from safe storage', async () => {
     const profile = (await get('company')).json().data
