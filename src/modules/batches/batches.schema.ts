@@ -135,5 +135,11 @@ export const listBatchesQuerySchema = z.object({
 })
 
 export type CreateBatchBody    = z.infer<typeof createBatchSchema>
+export const recordActualYieldSchema = z.object({
+  actualYield: z.number().positive().max(10_000_000),
+  version:     z.number().int().positive(),
+})
+
+export type RecordActualYieldBody = z.infer<typeof recordActualYieldSchema>
 export type UpdateBatchMetadataBody = z.infer<typeof updateBatchMetadataSchema>
 export type ListBatchesQuery   = z.infer<typeof listBatchesQuerySchema>

@@ -1,6 +1,6 @@
 import { eq, ilike, and, gte, lte, desc, count, sql, isNull, isNotNull } from 'drizzle-orm'
 import { db } from '../../db/index.js'
-import { batches, productFormulationVariants, finishedGoods, productionWorkOrderDemands, productionEvents, inventoryItems, inventoryMovements } from '../../db/schema/index.js'
+import { batches, productFormulationVariants, finishedGoods, productionWorkOrderDemands, productionEvents, inventoryItems, inventoryMovements, customerPurchaseOrderBatches } from '../../db/schema/index.js'
 import { allocateReleasedBatch } from '../customer-purchase-orders/customer-purchase-orders.service.js'
 import { syncWorkOrderProgress } from '../../utils/workOrderProgress.js'
 import { nextBatchNumber } from '../../utils/batchNumber.js'
@@ -8,7 +8,7 @@ import { findMaterialMatch, isWaterMaterial } from '../../utils/materialMatch.js
 import { round3, toInventoryQuantity } from '../../utils/materialQuantity.js'
 import { createFinishedGoodsRecord } from '../finished-goods/finished-goods.service.js'
 import { USABLE_VARIANT_STATUSES, type VariantStatus } from '../../types/index.js'
-import type { CreateBatchBody, UpdateBatchMetadataBody, ListBatchesQuery, SaveCoaSnapshotBody } from './batches.schema.js'
+import type { CreateBatchBody, UpdateBatchMetadataBody, ListBatchesQuery, SaveCoaSnapshotBody, RecordActualYieldBody } from './batches.schema.js'
 import { findPackContainer } from './packContainers.js'
 import { updateTransportCostSummary } from './batchCostSummary.js'
 import {
@@ -366,6 +366,55 @@ export async function updateBatchMetadata(batchNumber: string, data: UpdateBatch
       version: existing.version + 1,
     }).where(and(eq(batches.id, existing.id), eq(batches.version, existing.version))).returning()
     return updated ?? { code: 'VERSION_CONFLICT' as const }
+  })
+  return 'code' in outcome ? outcome : withInvoice(outcome)
+}
+
+/**
+ * Record what a batch actually produced. Output only: raw-material deductions
+ * stay as planned. Finished goods follow the new quantity, and the yield can
+ * never drop below what is already dispatched, reserved or allocated to orders.
+ */
+export async function recordActualYield(batchNumber: string, data: RecordActualYieldBody, actorId: string | null) {
+  const outcome = await db.transaction(async (tx) => {
+    const [existing] = await tx.select().from(batches).where(eq(batches.batchNumber, batchNumber)).for('update')
+    if (!existing) return { code: 'BATCH_NOT_FOUND' as const }
+    if (existing.lifecycleStatus === 'cancelled') return { code: 'BATCH_CANCELLED' as const }
+    if (existing.version !== data.version) return { code: 'VERSION_CONFLICT' as const }
+
+    const [fg] = await tx.select().from(finishedGoods).where(eq(finishedGoods.batchId, existing.id)).for('update')
+    const [linked] = await tx
+      .select({ total: sql<string>`COALESCE(SUM(${customerPurchaseOrderBatches.linkedQuantity}), 0)` })
+      .from(customerPurchaseOrderBatches)
+      .where(eq(customerPurchaseOrderBatches.batchId, existing.id))
+    const committed = Math.max(
+      fg ? Number(fg.dispatchedQuantity) + Number(fg.reservedQuantity) : 0,
+      Number(linked?.total ?? 0),
+    )
+    if (data.actualYield < committed) return { code: 'YIELD_BELOW_COMMITTED' as const, committed }
+
+    const [updated] = await tx.update(batches)
+      .set({ actualYield: String(data.actualYield), version: existing.version + 1 })
+      .where(and(eq(batches.id, existing.id), eq(batches.version, existing.version)))
+      .returning()
+    if (!updated) return { code: 'VERSION_CONFLICT' as const }
+
+    if (fg) {
+      await tx.update(finishedGoods).set({
+        producedQuantity: String(data.actualYield),
+        // Quarantined/Cancelled keep their status; otherwise re-derive from quantities (same rule as dispatch).
+        status: sql`CASE
+          WHEN ${finishedGoods.status} IN ('Quarantined', 'Cancelled') THEN ${finishedGoods.status}
+          WHEN ${finishedGoods.dispatchedQuantity} <= 0 THEN 'Available'
+          WHEN ${data.actualYield}::numeric - ${finishedGoods.dispatchedQuantity} - ${finishedGoods.reservedQuantity} <= 0 THEN 'Fully Dispatched'
+          ELSE 'Partially Dispatched' END`,
+        updatedAt: new Date(),
+      }).where(eq(finishedGoods.id, fg.id))
+    }
+    // Released output drives work-order completion (±5% tolerance).
+    if (updated.workOrderId && updated.lifecycleStatus === 'released')
+      await syncWorkOrderProgress(tx, updated.workOrderId, actorId, { batchId: updated.id })
+    return updated
   })
   return 'code' in outcome ? outcome : withInvoice(outcome)
 }

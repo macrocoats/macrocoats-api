@@ -3,8 +3,8 @@ import { authenticate, requireAuth } from '../../middleware/authenticate.js'
 import { requireSuperAdmin } from '../../middleware/requireSuperAdmin.js'
 import { requireRole } from '../../middleware/requireRole.js'
 import { AppErrors } from '../../types/errors.js'
-import { createBatchSchema, updateBatchMetadataSchema, listBatchesQuerySchema, saveCoaSnapshotSchema, setPaymentStatusSchema, releaseBatchSchema, releaseBatchesSchema, setBatchLifecycleSchema } from './batches.schema.js'
-import { listPackContainersWithStock, createBatch, updateBatchMetadata, listBatches, getBatchByNumber, deleteBatch, saveCoaSnapshot, clearCoaSnapshot, setPaymentStatus, releaseBatch, releaseBatches, setBatchLifecycle } from './batches.service.js'
+import { createBatchSchema, updateBatchMetadataSchema, listBatchesQuerySchema, saveCoaSnapshotSchema, setPaymentStatusSchema, releaseBatchSchema, releaseBatchesSchema, setBatchLifecycleSchema, recordActualYieldSchema } from './batches.schema.js'
+import { listPackContainersWithStock, createBatch, updateBatchMetadata, listBatches, getBatchByNumber, deleteBatch, saveCoaSnapshot, clearCoaSnapshot, setPaymentStatus, releaseBatch, releaseBatches, setBatchLifecycle, recordActualYield } from './batches.service.js'
 
 const preHandler = [authenticate, requireAuth, requireSuperAdmin]
 // Operators may VIEW batches (with formula/cost stripped — see toOperatorBatchResponse
@@ -82,6 +82,23 @@ export async function batchRoutes(app: FastifyInstance) {
     if ('code' in result) {
       const status = result.code === 'BATCH_NOT_FOUND' ? 404 : 409
       return reply.code(status).send({ error: result.code })
+    }
+    return reply.send({ data: result })
+  })
+
+  // ── PUT /batches/:batchNumber/yield — record the actual produced quantity ──
+  app.put<{ Params: { batchNumber: string } }>('/:batchNumber/yield', { preHandler }, async (request, reply) => {
+    const body = recordActualYieldSchema.safeParse(request.body)
+    if (!body.success) return reply.code(400).send({ error: AppErrors.VALIDATION_ERROR, issues: body.error.flatten() })
+    const result = await recordActualYield(request.params.batchNumber, body.data, request.authUser?.id ?? null)
+    if ('code' in result) {
+      if (result.code === 'BATCH_NOT_FOUND') return reply.code(404).send({ error: result.code })
+      return reply.code(409).send({
+        error: result.code,
+        ...(result.code === 'YIELD_BELOW_COMMITTED'
+          ? { committed: result.committed, message: `Already dispatched, reserved or allocated: ${result.committed}.` }
+          : {}),
+      })
     }
     return reply.send({ data: result })
   })
