@@ -164,6 +164,17 @@ describe('money path: batch → finished goods → customer PO → dispatch', ()
     expect(await getOrderStatus()).toBe('ready_for_dispatch')
   })
 
+  it('still refuses a PO that belongs to another customer', async () => {
+    const companies = (await req().get('/v1/companies').set('Cookie', adminCookies).expect(200)).body.data
+    const other = companies.find((c: { id: string }) => c.id !== companyId)
+    const res = await req().post('/v1/dispatches').set('Cookie', adminCookies).send({
+      batchId, companyId: other.id, customerPurchaseOrderId: orderId, customerPurchaseOrderItemId: orderItemId,
+      dispatchDate: new Date().toISOString().slice(0, 10), quantity: 1,
+    }).expect(409)
+    expect(res.body.error).toBe('DISPATCH_CONTEXT_INVALID')
+    expect(Number((await getFinishedGoods()).dispatchedQuantity)).toBe(0)
+  })
+
   it('a partial dispatch decrements stock and marks the order partially_dispatched', async () => {
     await dispatch(40).expect(201)
 

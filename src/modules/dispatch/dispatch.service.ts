@@ -1,6 +1,6 @@
 import { and, eq, sql, type SQL } from 'drizzle-orm'
 import { db, type DB } from '../../db/index.js'
-import { dispatches, batches, companies, customerPurchaseOrders, customerPurchaseOrderItems, customerPurchaseOrderBatches } from '../../db/schema/index.js'
+import { dispatches, batches, companies, customerPurchaseOrders, customerPurchaseOrderItems } from '../../db/schema/index.js'
 import { nextDispatchNumber } from '../../utils/dispatchNumber.js'
 import { incrementDispatchedQuantity, reverseDispatchedQuantity } from '../finished-goods/finished-goods.service.js'
 import { recordDispatchAgainstOrder, reverseDispatchAgainstOrder } from '../customer-purchase-orders/customer-purchase-orders.service.js'
@@ -127,7 +127,6 @@ async function validateDispatchContext(tx: DB, data: CreateDispatchBody): Promis
   const [batch] = await tx.select({
     productCode: batches.productCode,
     companyName: batches.companyName,
-    variantId: batches.variantId,
     lifecycleStatus: batches.lifecycleStatus,
     expiryDate: batches.expiryDate,
   }).from(batches).where(eq(batches.id, data.batchId))
@@ -142,27 +141,17 @@ async function validateDispatchContext(tx: DB, data: CreateDispatchBody): Promis
     const [context] = await tx.select({
       orderId: customerPurchaseOrderItems.orderId,
       productKey: customerPurchaseOrderItems.productKey,
-      variantId: customerPurchaseOrderItems.variantId,
-      quantityOrdered: customerPurchaseOrderItems.quantityOrdered,
       customerId: customerPurchaseOrders.customerId,
       orderStatus: customerPurchaseOrders.status,
     }).from(customerPurchaseOrderItems)
       .innerJoin(customerPurchaseOrders, eq(customerPurchaseOrders.id, customerPurchaseOrderItems.orderId))
       .where(and(eq(customerPurchaseOrderItems.id, data.customerPurchaseOrderItemId), eq(customerPurchaseOrders.id, data.customerPurchaseOrderId)))
       .for('update')
-    if (!context || context.customerId !== data.companyId || context.productKey !== batch.productCode || ['draft', 'cancelled'].includes(context.orderStatus)) {
-      return { code: 'DISPATCH_CONTEXT_INVALID', message: 'Order, customer, product, or status does not match the selected batch.' }
-    }
-    if (context.variantId && batch.variantId && context.variantId !== batch.variantId) {
-      return { code: 'DISPATCH_CONTEXT_INVALID', message: 'Order-line variant does not match the selected batch.' }
-    }
-    // The PO quantity does not cap a dispatch (over-runs ship against the PO); finished-goods
-    // stock is the limit. The batch must still be linked to this line for traceability.
-    const [linked] = await tx.select({ id: customerPurchaseOrderBatches.id }).from(customerPurchaseOrderBatches)
-      .where(and(eq(customerPurchaseOrderBatches.orderItemId, data.customerPurchaseOrderItemId), eq(customerPurchaseOrderBatches.batchId, data.batchId)))
-      .limit(1)
-    if (!linked) {
-      return { code: 'DISPATCH_CONTEXT_INVALID', message: 'This batch is not linked to the selected order line.' }
+    // Deliberately light (Nov 2026): only what stops a dispatch landing on the wrong
+    // customer's order or product. No PO-quantity cap, batch-link, variant or draft checks;
+    // finished-goods stock is the real limit.
+    if (!context || context.customerId !== data.companyId || context.productKey !== batch.productCode || context.orderStatus === 'cancelled') {
+      return { code: 'DISPATCH_CONTEXT_INVALID', message: 'The PO belongs to another customer, is for a different product, or is cancelled.' }
     }
   } else if (company.displayName.toLowerCase() !== batch.companyName.toLowerCase()) {
     return { code: 'DISPATCH_CONTEXT_INVALID', message: 'Customer does not match the batch customer.' }
